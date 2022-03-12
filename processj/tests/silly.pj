@@ -1,0 +1,7 @@
+import std.*;
+
+public void foo(int i, chan<int>.read a, chan<int>.read b) {
+    for (int j = 0; (a.read() + b.read()) > j; ++j) {
+        println("Blah!");
+    }
+}

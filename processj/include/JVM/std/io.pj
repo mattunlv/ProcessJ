@@ -1,0 +1,23 @@
+#pragma LIBRARY;
+#pragma NATIVE;
+#pragma FILE "io";
+#pragma LANGUAGE "JVM";
+
+package std;
+
+public native void println();
+public native void println(string s);
+public native void println(byte b);
+public native void println(short s);
+public native void println(int i);
+public native void println(long l);
+public native void println(float f);
+public native void println(double d);
+
+public native void print(string s);
+public native void print(byte b);
+public native void print(short s);
+public native void print(int i);
+public native void print(long l);
+public native void print(float f);
+public native void print(double d);

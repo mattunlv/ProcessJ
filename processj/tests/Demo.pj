@@ -1,0 +1,114 @@
+package tests;
+
+import std.io;
+//import tests.Matt;
+
+//// BOOK
+// Concurrent programming in Java: design principles and patterns (D.lea)
+// Concurrent and real-time programming in Java (AJ Weelings)
+// Concurrent programming: principles and practice (GR Andrews)
+
+public record T {
+    int a;
+}
+
+public record K {
+    int z;
+    T t;
+}
+
+protected record X extends T {
+    int p;
+    string b;
+}
+
+protected record P extends K, X, T {
+    int x;
+    int y;
+}
+
+private record L {
+    K k;
+    string str;
+}
+
+public protocol PP {
+  request : { int number; double amount; }
+  reply : { boolean status; }
+}
+
+public protocol P1 extends PP {
+  deny : { int code; }
+}
+
+public protocol XX {
+  accept : { int code; double b; }
+  yeah : { double d; }
+}
+
+public proc void writer(chan<L>.write out, barrier b1) {
+  K k = new K { z = 3, t = new T { a = 45 } };
+  X x = new X { b = "Ben", p = 300, a = 20 };
+  L l = new L { k = new K { z = 4, t = new T { a = 65 }}, str = "Benjamin" };
+  b1.sync();
+
+  out.write(l);
+}
+
+public proc void reader(chan<L>.read in, barrier b1) {
+  b1.sync();
+  L value;
+  value = in.read();
+  switch (value.k.t.a) {
+    case 4: println("case 4"); break;
+    case 5: println("case 5"); break;
+    case 45: println("case 45"); break;
+    case 6: println("case 6"); break;
+    default: break;
+  }
+  println("The value is " + value.k.t.a);
+}
+
+public proc void readXX(chan<XX>.read in, barrier b2) {
+  b2.sync();
+  XX value;
+  value = in.read();
+  println("Done reading xx!");
+}
+
+public proc void writeXX(chan<XX>.write out, barrier b2) {
+  b2.sync();
+  XX xx = new XX { accept : b = 35, code = 45 };
+  switch (xx) {
+    case accept: println("the tag value is " + xx.code + ", " + xx.b); break;
+  }
+  out.write(xx);
+}
+
+public proc void foo(int x) {
+}
+
+public proc void main(string args[]) {
+  chan<L> c;
+  chan<XX> x;
+  int a = 2;
+  barrier b1, b2;
+  par {
+    writer(c.write, b1);
+    reader(c.read, b1);
+
+    writeXX(x.write, b2);
+    readXX(x.read, b2);
+  }
+
+  println((a + (2 + 45)) * 4);
+
+  //int x, y, z;
+  //switch(x) {
+  //  case 1: y = 2; foo(y);; //println("default!!");
+  //  case 2: z = 4; println("default!!" + 4); break;
+  //  default: z = 45; y = 56; foo(y); break;
+  //    //println("default!!");
+  //    //break;
+  //}
+}

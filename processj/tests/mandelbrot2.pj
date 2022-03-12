@@ -1,0 +1,42 @@
+import image.pgm;
+
+public int computePixel(double real, double imag) {
+    int count = 0;
+    int max = 256;
+    double zReal = 0;
+    double zImag = 0;
+    double tmp;
+    double len;
+
+    do {
+        tmp = zReal * zReal - zImag * zImag + real;
+        zImag = 2 * zReal * zImag + imag;
+        zReal = tmp;
+        len = zReal * zReal + zImag * zImag;
+        ++count;
+    } while ((len < 4.0) && (count < max));
+
+    return count;
+}
+
+public void main(string[] args) {
+    int width = 4000;
+    int height = 3000;
+    int mandelbrot[][] = new int[height][width];
+    double realMin = -0.7801785714285;
+    double realMax = -0.7676785714285;
+    double imagMin = -0.1279296875000;
+    double imagMax = -0.1181640625000;
+    double scaleReal = (realMax - realMin) / width;
+    double scaleImag = (imagMax - imagMin) / height;
+
+    par for (int y = 0; y < height; ++y) {
+        par for (int x = 0; x < width; ++x) {
+            double cReal = realMin + ((double) x * scaleReal);
+            double cImag = imagMin + ((double) y * scaleImag);
+            mandelbrot[y][x] = 256 - computePixel(cReal, cImag);
+        }
+    }
+
+    writePGM(mandelbrot, "mm.pgm", 256);
+}

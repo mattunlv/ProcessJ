@@ -1,0 +1,79 @@
+import std.*;
+
+public void integrate(chan<int>.read in,
+                           chan<int>.write out,
+                           chan<boolean>.read killMe,
+                           chan<boolean>.write killConsumer) {
+  int total = 0;
+  boolean ok = true;
+  while (ok) {
+    boolean y;
+    int x;
+    pri alt {
+      y = killMe.read() :
+        {
+          killConsumer.write(true);
+          ok = false;
+        }
+      x = in.read() :
+        {
+          total = total + x;
+          out.write(total);
+        }
+     }
+  }
+}
+
+public void produce(chan<int>.write out,
+                         chan<boolean>.read killMe,
+                         chan<boolean>.write killIntegrate) {
+  int i = 0;
+  boolean ok = true;
+  while (ok) {
+    boolean b;
+    alt {
+      b = killMe.read(): {
+        ok = false;
+        killIntegrate.write(true);
+      }
+      skip: {
+        out.write(i);
+        i=i+1;
+      }
+    }
+  }
+}
+
+public void consume(chan<int>.read in,
+                         chan<boolean>.read killMe) {
+  boolean ok = true;
+  while (ok) {
+    int x;
+    boolean b;
+    pri alt {
+      x = in.read() : {
+        println(x);
+      }
+      b = killMe.read(): {
+        ok = false;
+      }
+    }
+  }
+}
+
+public void killer(chan<boolean>.write killProduce) {
+  timer t;
+  t.timeout(100);
+  killProduce.write(true);
+}
+
+public void main(string args[]) {
+  chan<int> in, out;
+  chan<boolean> killProduce, killIntegrate, killConsume;
+  par {
+    produce(in.write, killProduce.read, killIntegrate.write);
+    integrate(in.read, out.write, killIntegrate.read, killConsume.write);
+    killer(killProduce.write);
+    consume(out.read, killConsume.read);
+  }
+}

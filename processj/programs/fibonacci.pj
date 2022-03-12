@@ -1,0 +1,25 @@
+import std.*;
+
+void writer(int id, chan<int>.write out) {
+	out.write(id);
+}
+
+void reader(chan<int>.read in) {
+	println(in.read());
+}
+
+void fib(chan<int>.write c, chan<int>.read d) {
+	int x = 0;
+	int y = 1;
+	par for (int i = 0; i < 10; ++i) {
+		writer(x, c);
+		reader(d);/*
+		x = y;
+		y = x + y;*/
+	}
+}
+
+public void main(string[] args) {
+	chan<int> c;
+	fib(c.write, c.read);
+}

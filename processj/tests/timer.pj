@@ -1,0 +1,8 @@
+import std.*;
+
+public void main(string[] agrs) {
+    timer t;
+    t.timeout(100);
+    long a = t.read();
+    println("> " + a);
+}

@@ -1,0 +1,23 @@
+import std.*;
+
+public void reader(chan<int[]>.read r) {
+	int[] a = r.read();
+	for (int i = 0; i < a.size; ++i)
+		print(a[i] + " ");
+	println();
+}
+
+public void writer(chan<int[]>.write w) {
+	int[] a = new int[4];
+	for (int i = 0; i < a.size; ++i)
+		a[i] = i * i;
+	w.write(a);
+}
+
+public void main(string[] args) {
+	chan<int[]> c;
+	par {
+		reader(c.read);
+		writer(c.write);
+	}
+}

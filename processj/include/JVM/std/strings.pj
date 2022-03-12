@@ -1,0 +1,37 @@
+#pragma LIBRARY;
+#pragma NATIVE;
+#pragma FILE "strings";
+#pragma LANGUAGE "JVM";
+package std;
+
+public native char charAt(string str, int pos);
+public native int length(string str);
+public native boolean isEmpty(string str);
+public native boolean equals(string s1, string s2);
+public native boolean equalsIgnoreCase(string s1, string s2);
+public native int compareTo(string s1, string s2);
+public native int compareToIgnoreCase(string s1, string s2);
+public native boolean startsWith(string str, string prefix);
+public native boolean startsWith(string str, string prefix, int offset);
+public native boolean endsWith(string str, string suffix);
+public native int indexOf(string str, int ch);
+public native int indexOf(string str, int ch, int fromIndex);
+public native int indexOf(string str, string s);
+public native int indexOf(string str, string s, int fromIndex);
+public native int lastIndexOf(string str, string s);
+public native int lastIndexOf(string str, int ch);
+public native int lastIndexOf(string str, int ch, int fromIndex);
+public native string substring(string str, int beginIndex);
+public native string substring(string str, int beginIndex, int endIndex);
+public native string concat(string s1, string s2);
+public native string replace(string str, char oldChar, char newChar);
+public native boolean matches(string str, string regex);
+public native string replaceFirst(string str, string regex, string replacement);
+public native string replaceAll(string str, string regex, string replacement);
+public native string[] split(string str, string regex);
+public native string[] split(string str, string regex, int limit);
+public native string toLowerCase(string str);
+public native string toUpperCase(string str);
+public native string trim();
+public native char[] toCharArray();
+

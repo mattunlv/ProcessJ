@@ -1,0 +1,27 @@
+import std.io;
+
+public void reader(int id, shared chan<int>.read in) {
+  while (true) {
+    int v; v = in.read();
+    println(id + ": " + v);
+  }
+}
+
+public void writer(chan<int>.write out) {
+  int v = 0;
+  while (true) {
+    out.write(v);
+    v = v + 1;
+  }
+}
+
+public void main(string args[]) {
+  shared read chan<int> c;
+  int a = 129;
+  par {
+    reader(1, c.read);
+    reader(2, c.read);
+    reader(3, c.read);
+    writer(c.write);
+  }
+}

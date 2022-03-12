@@ -1,0 +1,94 @@
+<project name="ProcessJ" default="javac" basedir=".">
+        <property name="library.path" value="lib" />
+        <property name="debug" value="on" />
+        <property name="optimize" value="off" />
+        <property name="dist" value="dist" />
+        <property name="src" location="src"/>
+        <property name="build" value="bin" />
+        <property name="parserdir" location="src/parser/"/>
+        <property name="scannerdir" location="src/scanner/"/>
+        <property name="cupJar" location="resources/jars/java_cup.jar"/>
+        <property name="cupRuntimeJar" location="resources/jars/java_cup_runtime.jar"/>
+        <property name="jflexJar" location="resources/jars/JFlex.jar"/>
+        <property name="stringtemplatejar" location="resources/jars/ST-4.0.7.jar"/>
+        <property name="asmjar" location="resources/jars/asm-all-5.2.jar"/>
+	    <property name="guava" location="resources/jars/guava-30.1.1-jre.jar"/>
+	
+	<!-- =================================================================== -->
+	<!-- classpath to use within project                                     -->
+	<!-- =================================================================== -->
+        <property name="classpath" value="${cupJar}:${cupRuntimeJar}:${jflexJar}:${stringtemplatejar}:${asmjar}:${guava}:."/>
+        <description>
+                Build File for ProcessJ Compiler Project
+        </description>
+
+        <target name="javac" depends="init, scanner, parser, pjc">
+        </target>
+
+        <target name="compile" depends="initlight, pjc">
+        </target>
+
+        <target name="pjc">
+                <javac srcdir="${src}" destdir="${build}"
+                       optimize="${optimize}"
+                       debug="${debug}"
+                       classpath="${classpath}"
+                       includeantruntime="false">
+                </javac>
+
+        </target>
+
+        <target name="parser">
+                <java jar="${cupJar}" input="src/parser/ProcessJ.cup" fork="true" failonerror="true">
+                        <arg value="-package"/>
+                        <arg value="parser"/>
+                </java>
+                <move file="parser.java" todir="${src}/parser" />
+                <move file="sym.java" todir="${src}/parser" />
+        </target>
+
+        <target name="scanner">
+                <java jar="${jflexJar}" fork="true" failonerror="true">
+                        <arg value="-d"/>
+                        <arg value="src/scanner"/>
+                        <arg value="src/scanner/ProcessJ.flex"/>
+                </java>
+        </target>
+
+        <target name="init" depends="clean">
+                <mkdir dir="${build}" />
+        </target>
+
+        <target name="initlight" depends="dust">
+                <mkdir dir="${build}" />
+        </target>
+
+        <target name="dust">
+                <delete dir="${build}" />
+            <delete>
+                <fileset dir="${src}" includes="**/*~" defaultexcludes="no" />
+            </delete>
+        </target>
+
+	<!-- =================================================================== -->
+	<!-- Clean targets                                                       -->
+	<!-- =================================================================== -->
+        <target name="clean">
+                <delete dir="${build}" />
+                <delete file="${src}/parser/parser.java"/>
+                <delete file="${src}/parser/sym.java"/>
+                <delete file="${src}/scanner/Scanner.java"/>
+            <delete>
+                <fileset dir="${src}" includes="**/*~" defaultexcludes="no" />
+            </delete>
+        </target>
+
+	<!-- =================================================================== -->
+	<!-- Compiles the source directory                                       -->
+	<!-- =================================================================== -->
+        <target name="run">
+                <java classpath="${classpath}:${build}" classname="ProcessJc">
+                <arg value="${arg0}"/>
+                </java>
+        </target>
+</project>

@@ -1,0 +1,20 @@
+import std.*;
+
+public void foo(chan<int>.read r) {
+    int d;
+    d = r.read();
+    println("d = " + d);
+}
+
+public void bar(chan<int>.write w) {
+    int a = 6;
+    w.write(a);
+}
+
+public void main(string[] args) {
+    chan<int> c;
+    par {
+        foo(c.read);
+        bar(c.write);
+    }
+}
