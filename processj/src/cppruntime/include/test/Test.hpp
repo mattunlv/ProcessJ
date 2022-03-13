@@ -8,8 +8,8 @@ namespace ProcessJTest { /* Empty */ }
 //#include<tests/singlecore_test.hpp>
 #include<OneToOneTest.hpp>
 #include<OneToManyTest.hpp>
-//#include<tests/many2one_test.hpp>
-//#include<tests/many2many_test.hpp>
+#include<ManyToOneTest.hpp>
+#include<ManyToManyTest.hpp>
 //#include<tests/multicore_test.hpp>
 //#include<tests/timer_test.hpp>
 //#include<tests/barrier_test.hpp>

@@ -43,4 +43,9 @@ public:
 
 };
 
+/// ---------------------
+/// Static Initialization
+
+std::mutex ProcessJRuntime::pj_logger::log_mtx;
+
 #endif

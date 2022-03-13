@@ -10,4 +10,3 @@
 
 #include <ProcessJRuntime.hpp>
 
-std::mutex ProcessJRuntime::pj_logger::log_mtx;

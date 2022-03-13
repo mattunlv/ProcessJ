@@ -30,8 +30,8 @@
 #include<sched.h>
 #include<pthread.h>
 
-#include<Utilities.hpp>
 #include<Logger.hpp>
+#include<Utilities.hpp>
 #include<Process.hpp>
 #include<Timer.hpp>
 #include<TimerQueue.hpp>
