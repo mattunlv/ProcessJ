@@ -9,6 +9,7 @@ import ast.Compilation;
 import butters.Butters;
 import codegen.Helper;
 import codegen.java.CodeGenJava;
+import codegen.cpp.CodeGenCPP;
 import library.Library;
 import namechecker.ResolveImports;
 import parser.parser;
@@ -109,7 +110,6 @@ public class ProcessJc {
         // only if the size of the error file is 1MB or more.
         // Otherwise, we ignore the request made by the compiler
 //        FrequencyFileProcessing.updateFrequency();
-
         ProcessJc pJc = new ProcessJc(args);
         // Do we have any arguments??
         if ( args.length==2 ) { // @0: -include, @1: path
@@ -379,6 +379,18 @@ public class ProcessJc {
         String code = (String) c.visit(codeGen);
         // Write the output to a file
         Helper.writeToFile(code, c.fileNoExtension(), codeGen.workingDir());
+    }
+
+    private void generateCodeCPP(Compilation c, File inFile, SymbolTable s) {
+        Properties p = utilities.ConfigFileReader.getProcessJConfig();
+        CodeGenCPP codeGen = new CodeGenCPP(s);
+
+        codeGen.setWorkingDir(p.getProperty("workingdir"));
+        // codeGen.sourceProgam(c.fileNoExtension());
+
+        String code = (String) c.visit(codeGen);
+
+        Helper.writeToFile(code, c.fileNoExtension(), codeGen.getWorkingDir());
     }
 
     public ProcessJc(String[] args) {
