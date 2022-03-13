@@ -10,7 +10,7 @@ namespace ProcessJTest { /* Empty */ }
 #include<OneToManyTest.hpp>
 #include<ManyToOneTest.hpp>
 #include<ManyToManyTest.hpp>
-//#include<tests/multicore_test.hpp>
+#include<MulticoreTest.hpp>
 //#include<tests/timer_test.hpp>
 //#include<tests/barrier_test.hpp>
 //#include<tests/alt_test.hpp>
