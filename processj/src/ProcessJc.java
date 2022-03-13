@@ -348,11 +348,10 @@ public class ProcessJc {
             }
 
             // Run the code generator for the known (specified) target language
-            if ( pJc.target == Language.CPLUS || pJc.target == Language.JVM/*Settings.language==pJc.target*/ )
+            if (pJc.target == Language.CPLUS || pJc.target == Language.JVM/*Settings.language==pJc.target*/ )
                 if (pJc.target == Language.JVM/*Settings.language == Language.JVM*/) {
                     pJc.generateCodeJava(c, inFile, globalTypeTable);
                 } else if (pJc.target == Language.CPLUS/*Settings.language == Language.CPLUS*/) {
-
                     Log.startLogging();
                     pJc.generateCodeCPP(c, inFile, globalTypeTable);
                 }
