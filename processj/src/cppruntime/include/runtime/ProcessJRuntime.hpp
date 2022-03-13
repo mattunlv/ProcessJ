@@ -42,9 +42,9 @@
 #include<ManyToManyChannel.hpp>
 #include<Barrier.hpp>
 #include<Alternation.hpp>
-//#include <pj_record.hpp>
-//#include <pj_protocol.hpp>
-//#include <pj_par.hpp>
+#include<Record.hpp>
+#include<Protocol.hpp>
+#include<Par.hpp>
 //#include <pj_array.hpp>
 //#include <pj_string.hpp>
 
