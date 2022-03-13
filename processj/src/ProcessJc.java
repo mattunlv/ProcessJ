@@ -105,7 +105,6 @@ public class ProcessJc {
      *          A vector of command arguments passed to the compiler.
      */
     public static void main(String[] args) {
-
         // Send frequency file over HTTP to the ProcessJ server but
         // only if the size of the error file is 1MB or more.
         // Otherwise, we ignore the request made by the compiler
@@ -422,11 +421,19 @@ public class ProcessJc {
                         Class<? extends ProcessJc> c = this.getClass();
                         try {
                             Field f = c.getField(o.fieldName);
-                            if ( optionValue!=null )
-                                f.set(this, optionValue);
+                            if ( optionValue!=null ) {
+                                // Setting the Language enum directly from a String is incompatible.
+                                // Reflecting the type is necessary since the generic way of setting
+                                // the field (e.g. field.set()) will not work but retrieving the value
+                                // corresponding to the enum field does. TODO: Can we do better?
+                                if(f.getType().getName().equals("utilities.Language")) {
+                                    f.set(this, Language.valueOf((Class<Language>) f.getType(), optionValue));
+                                } else f.set(this, optionValue);
+                            }
                             else
                                 f.set(this, true);
                         } catch (Exception e) {
+                        System.out.println(e);
                             System.out.println("Failed to access field '" + o.fieldName + "'");
                             exit(101);
                         }
