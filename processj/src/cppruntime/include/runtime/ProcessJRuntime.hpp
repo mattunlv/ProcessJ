@@ -11,6 +11,8 @@
 #ifndef UNLV_PROCESS_J_RUNTIME_HPP
 #define UNLV_PROCESS_J_RUNTIME_HPP
 
+#pragma once
+
 #include<iostream>
 #include<ostream>
 #include<string>
@@ -20,8 +22,8 @@
 #include<thread>
 #include<queue>
 #include<sys/types.h>
-
-#pragma once
+#include<sched.h>
+#include<pthread.h>
 
 #include<Utilities.hpp>
 #include<Logger.hpp>
@@ -30,7 +32,7 @@
 #include<TimerQueue.hpp>
 #include<RunQueue.hpp>
 #include<InactivePool.hpp>
-//#include <pj_scheduler.hpp>
+#include<Scheduler.hpp>
 //#include <pj_channel.hpp>
 //#include <pj_one2one_channel.hpp>
 //#include <pj_one2many_channel.hpp>
