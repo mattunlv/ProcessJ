@@ -12,7 +12,7 @@
 
 namespace ProcessJRuntime { class pj_par; }
 
-class pj_par {
+class ProcessJRuntime::pj_par {
 
     public:
         pj_par() = delete;
