@@ -5,7 +5,7 @@ TARGET:=cppruntime# Originally pj_runtime
 NAMESPACE:=ProcessJ
 ROOT:=src/$(TARGET)/
 #RUNTIMEFLAGS:=-L$(ROOT)lib -l$(TARGET)
-
+#java -cp .:bin:resources/jars/* ProcessJc -target CPLUS -include include tests/alttest.pj
 # ----------
 # Extensions
 
