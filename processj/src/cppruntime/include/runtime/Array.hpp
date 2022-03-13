@@ -21,7 +21,7 @@ namespace ProcessJRuntime {
 }
 
 template<typename T>
-class pj_array {
+class ProcessJRuntime::pj_array {
 
     public:
         int32_t length;
@@ -102,7 +102,7 @@ class pj_array {
     };
 
     template<class T>
-    class pj_md_array
+    class ProcessJRuntime::pj_md_array
     {
     public:
         int32_t length;

@@ -12,7 +12,7 @@
 
 namespace ProcessJRuntime { class pj_string; }
 
-class pj_string {
+class ProcessJRuntime::pj_string {
 
     public:
         pj_string()
