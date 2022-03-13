@@ -1,3 +1,13 @@
+/*!
+ * ProcessJRuntime library header file. Stitches the C++
+ * runtime together into a single header.
+ *
+ * \author Alexander C. Thomason
+ * \author Carlos L. Cuenca
+ * \date 03/12/2022
+ * \version 1.0.0
+ */
+
 #ifndef UNLV_PROCESS_J_RUNTIME_HPP
 #define UNLV_PROCESS_J_RUNTIME_HPP
 
