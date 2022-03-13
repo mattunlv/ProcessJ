@@ -11,8 +11,8 @@ namespace ProcessJTest { /* Empty */ }
 #include<ManyToOneTest.hpp>
 #include<ManyToManyTest.hpp>
 #include<MulticoreTest.hpp>
-//#include<tests/timer_test.hpp>
-//#include<tests/barrier_test.hpp>
+#include<TimerTest.hpp>
+#include<BarrierTest.hpp>
 //#include<tests/alt_test.hpp>
 //#include<tests/record_test.hpp>
 #include<ProtocolTest.hpp>
