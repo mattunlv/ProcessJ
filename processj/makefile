@@ -65,8 +65,8 @@ INCLUDES:=-Ilib/C++ $(INCLUDEPATH) $(RUNTIME_INCLUDE_PATH) $(TESTS_INCLUDE_PATH)
 $(LIB_DIR)/$(TARGET)$(AAACONST):
 	reset && clear
 	@echo "Checking for lib directory."
-	if [ ! -d "./$(RUNTIME_DIR)lib" ]; then mkdir -p $(RUNTIME_DIR)lib; fi
-	if [ ! -d "./$(RUNTIME_DIR)obj" ]; then mkdir -p $(RUNTIME_DIR)obj; fi
+	if [ ! -d "./$(ROOT)$(RUNTIME_DIR)/lib" ]; then mkdir -p $(ROOT)$(RUNTIME_DIR)/lib; fi
+	if [ ! -d "./$(ROOT)$(RUNTIME_DIR)/obj" ]; then mkdir -p $(ROOT)$(RUNTIME_DIR)/obj; fi
 	@echo "Creating objects."
 	$(COMPILER) $(CPPFLAGS) $(UTILITIES_INCLUDE_PATH) $(RUNTIME_INCLUDE_PATH) $(OBJFLAGS) -o $(OBJECTPATH)$(TARGET)$(OBJCONST) $(RUNTIME_SOURCE_PATH)$(ALLCPPCONST)
 	$(COMPILER) $(CPPFLAGS) $(UTILITIES_INCLUDE_PATH) $(OBJFLAGS) -o $(OBJECTPATH)$(TARGET)_utilities$(OBJCONST) $(UTILITIES_SOURCE_PATH)$(ALLCPPCONST)
