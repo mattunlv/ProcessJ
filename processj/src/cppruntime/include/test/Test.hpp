@@ -1,10 +1,7 @@
 #ifndef PJ_PROCESS_TEST_HPP
 #define PJ_PROCESS_TEST_HPP
 
-#include <ProcessJRuntime.hpp>
-
-namespace ProcessJTest { /* Empty */ }
-
+#include<ProcessJRuntime.hpp>
 #include<SingleCoreTest.hpp>
 #include<OneToOneTest.hpp>
 #include<OneToManyTest.hpp>
@@ -20,6 +17,6 @@ namespace ProcessJTest { /* Empty */ }
 #include<ParTest.hpp>
 #include<StaticMethodTest.hpp>
 #include<ArrayTest.hpp>
-//#include<tests/string_test.hpp>
+#include<StringTest.hpp>
 
 #endif
