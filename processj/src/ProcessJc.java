@@ -15,6 +15,7 @@ import namechecker.ResolveImports;
 import parser.parser;
 import printers.ParseTreePrinter;
 import rewriters.CastRewrite;
+import rewriters.IOCallsRewrite;
 import scanner.Scanner;
 import utilities.PJBugManager;
 import utilities.ConfigFileReader;
@@ -339,9 +340,21 @@ public class ProcessJc {
 
             System.out.println("-- Collecting left-hand sides for par for code generation.");
             c.visit(new rewriters.ParFor());
+
+            // If we're generating C++ code, we need to rewrite print/println statements
+            if (Settings.language == Language.CPLUS) {
+                System.out.println("-- Rewriting calls to print() and println().");
+                c.visit(new IOCallsRewrite());
+            }
+
             // Run the code generator for the known (specified) target language
             if ( Settings.language==pJc.target )
-                pJc.generateCodeJava(c, inFile, globalTypeTable);
+                if (Settings.language == Language.JVM) {
+                    pJc.generateCodeJava(c, inFile, globalTypeTable);
+                } else if (Settings.language == Language.CPLUS) {
+                    Log.startLogging();
+                    pJc.generateCodeCPP(c, inFile, globalTypeTable);
+                }
             else {
                 // Unknown target language so abort/terminate program
                 System.out.println("Invalid target language!");
