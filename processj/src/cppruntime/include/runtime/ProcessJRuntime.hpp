@@ -21,6 +21,7 @@
 #include<atomic>
 #include<thread>
 #include<queue>
+#include<variant>
 #include<sys/types.h>
 #include<sched.h>
 #include<pthread.h>
@@ -39,8 +40,8 @@
 #include<OneToManyChannel.hpp>
 #include<ManyToOneChannel.hpp>
 #include<ManyToManyChannel.hpp>
-//#include <pj_barrier.hpp>
-//#include <pj_alt.hpp>
+#include<Barrier.hpp>
+#include<Alternation.hpp>
 //#include <pj_record.hpp>
 //#include <pj_protocol.hpp>
 //#include <pj_par.hpp>
