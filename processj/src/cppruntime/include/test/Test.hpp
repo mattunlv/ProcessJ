@@ -7,7 +7,7 @@ namespace ProcessJTest { /* Empty */ }
 
 //#include<tests/singlecore_test.hpp>
 #include<OneToOneTest.hpp>
-//#include<tests/one2many_test.hpp>
+#include<OneToManyTest.hpp>
 //#include<tests/many2one_test.hpp>
 //#include<tests/many2many_test.hpp>
 //#include<tests/multicore_test.hpp>
