@@ -137,7 +137,7 @@ public:
     <if(lvars)><ltypes,lvars:{t,v | <t> <v>}; separator=";\n">;<\n><endif>
     <if(altLocals)>
     std::vector\<bool> boolean_guards;
-    std::vector\<ProcessJRuntime::pj_alt_guard_type> object_guards;
+    std::vector\<ProcessJRuntime::AlternationGuardType> object_guards;
     bool alt_ready;
     int selected;
     <endif>
@@ -967,7 +967,7 @@ case <number>:
 // 8) cases:
 // 9) index:
 AltStat(alt, count, initBooleanGuards, initGuards, procName, jump, cases, index, timerLocals) ::= <<
-<alt> = new ProcessJRuntime::pj_alt(<count>, this);
+<alt> = new ProcessJRuntime::Alternation(<count>, this);
 <timerLocals>
 boolean_guards = <initBooleanGuards>;
 object_guards = <initGuards>;

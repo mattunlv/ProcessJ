@@ -107,10 +107,10 @@ public:
 
     int _ld$v1;
     int _ld$index2;
-    ProcessJRuntime::pj_alt* _ld$alt3;
+    ProcessJRuntime::Alternation* _ld$alt3;
 
     std::vector<bool> boolean_guards;
-    std::vector<ProcessJRuntime::pj_alt_guard_type> object_guards;
+    std::vector<ProcessJRuntime::AlternationGuardType> object_guards;
     bool alt_ready;
     int selected;
 
@@ -139,9 +139,9 @@ public:
         _proc$reader2$682474708L0:
 
         _ld$v1 = static_cast<int>(0);
-        _ld$alt3 = new ProcessJRuntime::pj_alt(2, this);
+        _ld$alt3 = new ProcessJRuntime::Alternation(2, this);
         boolean_guards = { true, true };
-        object_guards = { _pd$in13, ProcessJRuntime::pj_alt::SKIP };
+        object_guards = { _pd$in13, ProcessJRuntime::Alternation::SKIP };
         alt_ready = _ld$alt3->set_guards(boolean_guards, object_guards);
         selected = static_cast<int>(0);
         _ld$index2 = static_cast<int>(0);

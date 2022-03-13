@@ -1,5 +1,5 @@
 /*!
- * ProcessJRuntime::Alternation declaration
+ * ProcessJRuntime::Alternationernation declaration
  *
  * \author Alexander C. Thomason
  * \author Carlos L. Cuenca
@@ -12,30 +12,30 @@
 
 namespace ProcessJRuntime {
 
-    typedef std::variant<std::string, pj_channel*, pj_timer*> pj_alt_guard_type;
+    typedef std::variant<std::string, pj_channel*, pj_timer*> AlternationGuardType;
 
-    class pj_alt;
+    class Alternation;
 
 }
 
-class ProcessJRuntime::pj_alt {
+class ProcessJRuntime::Alternation {
     public:
         inline static const std::string SKIP = "skip";
 
-        pj_alt() = delete;
+        Alternation() = delete;
 
-        pj_alt(uint64_t count, ProcessJRuntime::pj_process* p)
+        Alternation(uint64_t count, ProcessJRuntime::pj_process* p)
         {
             this->process = p;
         }
 
-        ~pj_alt()
+        ~Alternation()
         {
 
         }
 
         bool set_guards(std::vector<bool>            b_guards,
-                        std::vector<pj_alt_guard_type> guards)
+                        std::vector<AlternationGuardType> guards)
         {
             this->b_guards = b_guards;
             this->guards   = guards;
@@ -139,7 +139,7 @@ class ProcessJRuntime::pj_alt {
 
     private:
         ProcessJRuntime::pj_process* process;
-        std::vector<pj_alt_guard_type> guards;
+        std::vector<AlternationGuardType> guards;
         std::vector<bool> b_guards;
     };
 

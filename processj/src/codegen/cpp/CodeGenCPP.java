@@ -2400,7 +2400,7 @@ public class CodeGenCPP extends Visitor<Object> {
                 guards.add((String) cr.channel().visit(this));
             } else if (stat instanceof SkipStat) {
                 // guards.add(PJAlt.class.getSimpleName() + ".SKIP");
-                guards.add("ProcessJRuntime::pj_alt::SKIP");
+                guards.add("ProcessJRuntime::Alternation::SKIP");
             } else if (stat instanceof TimeoutStat) {
                 TimeoutStat ts = (TimeoutStat)stat;
                 ST stTimeout = stGroup.getInstanceOf("TimeoutStatCase");
@@ -2427,8 +2427,8 @@ public class CodeGenCPP extends Visitor<Object> {
 
         // Create a tag for this local alt declaration.
         String newName = Helper.makeVariableName("alt", ++localDecId, Tag.LOCAL_NAME);
-        localParams.put(newName, "ProcessJRuntime::pj_alt*");
-        // localInits.put(newName, "new ProcessJRuntime::pj_alt(" + cases.size() + ", this)");
+        localParams.put(newName, "ProcessJRuntime::Alternation*");
+        // localInits.put(newName, "new ProcessJRuntime::Alternation(" + cases.size() + ", this)");
         // localDeletes.put(newName, "delete " + newName + ";");
         paramDeclNames.put(newName, newName);
         // -->
@@ -2442,7 +2442,7 @@ public class CodeGenCPP extends Visitor<Object> {
         // need to reroute these to be declared/initialized before the switch-case
         // localParams.put("boolean_guards", "std::vector<bool>");
         // localInits.put("boolean_guards", stBooleanGuards.render());
-        // localParams.put("object_guards", "std::vector<ProcessJRuntime::pj_alt_guard_type>");
+        // localParams.put("object_guards", "std::vector<ProcessJRuntime::Alternation_guard_type>");
         // localInits.put("object_guards", stObjectGuards.render());
         // localParams.put("alt_ready", "bool");
         // localInits.put("alt_ready", "false");
@@ -2453,7 +2453,7 @@ public class CodeGenCPP extends Visitor<Object> {
         stAltStat.add("cases", altCases);
         stAltStat.add("index", n.visit(this));
 
-        // localParams.put(newName, "ProcessJRuntime::pj_alt");
+        // localParams.put(newName, "ProcessJRuntime::Alternation");
 
         // Add the jump label to the switch list.
         switchLabelList.add(renderSwitchLabel(jumpLabel));

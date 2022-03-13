@@ -92,12 +92,12 @@ template <typename T>
          */
         void run()
         {
-            static std::vector<ProcessJRuntime::pj_alt_guard_type> guards;
+            static std::vector<ProcessJRuntime::AlternationGuardType> guards;
             static std::vector<bool> b_guards;
             static int32_t enable_result;
             static int32_t disable_result;
             static bool ready;
-            static ProcessJRuntime::pj_alt alt(2, this);
+            static ProcessJRuntime::Alternation alt(2, this);
             switch(this->get_label())
             {
                 case 0: goto L0;   break;
@@ -193,9 +193,9 @@ template <typename T>
 
         void run()
         {
-            // static ProcessJRuntime::pj_alt alt(2, this);
-            static ProcessJRuntime::pj_alt alt(1, this);
-            static std::vector<ProcessJRuntime::pj_alt_guard_type> guards;
+            // static ProcessJRuntime::Alternation alt(2, this);
+            static ProcessJRuntime::Alternation alt(1, this);
+            static std::vector<ProcessJRuntime::AlternationGuardType> guards;
             static std::vector<bool> b_guards;
             static int32_t enable_result;
             static int32_t disable_result;
@@ -291,8 +291,8 @@ template <typename T>
 
         void run()
         {
-            static ProcessJRuntime::pj_alt alt(1, this);
-            static std::vector<ProcessJRuntime::pj_alt_guard_type> guards;
+            static ProcessJRuntime::Alternation alt(1, this);
+            static std::vector<ProcessJRuntime::AlternationGuardType> guards;
             static std::vector<bool> b_guards;
             static int32_t enable_result;
             static int32_t disable_result;
