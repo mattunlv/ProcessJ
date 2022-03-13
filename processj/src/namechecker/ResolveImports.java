@@ -21,10 +21,10 @@ import utilities.Visitor;
 import utilities.VisitorMessageNumber;
 
 public class ResolveImports<T extends AST> extends Visitor<T> {
-    
+
     public static String currentFileName = PJBugManager.INSTANCE.getFileName();
     private SymbolTable importChild = null;
-    
+
     public ResolveImports(SymbolTable importChild) {
         this.importChild = importChild;
         Log.logHeader("****************************************");
@@ -32,7 +32,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
         Log.logHeader("****************************************");
         Log.logHeader("> File: " + PJBugManager.INSTANCE.getFileName());
     }
-    
+
     public static String packageNameToString(Sequence<Name> packageName) {
         StringBuilder sb = new StringBuilder();
         Iterator<Name> it = packageName.iterator();
@@ -42,10 +42,10 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
                 sb.append(".");
             }
         }
-        
+
         return sb.toString();
     }
-    
+
     /**
      * Imports (by scanning, parsing, and building a tree) one file, checks
      * its path format, and then validates the extension (path) of all the
@@ -67,12 +67,12 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
         try {
             // Set the package name
             PJBugManager.INSTANCE.setPackageName(fileName);
-            
+
             Log.log(a.line + " Starting import of file: '" + fileName + "'");
             Scanner s1 = new Scanner(new java.io.FileReader(fileName));
             parser p1 = new parser(s1);
             java_cup.runtime.Symbol r = p1.parse();
-            
+
             TopLevelDecls.alreadyImportedFiles.put(fileName, (Compilation) r.value);
             return (Compilation) r.value;
         } catch (java.io.FileNotFoundException e) {
@@ -90,7 +90,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
         }
         return null;
     }
-    
+
     /**
      * Static class used for filtering files in imports (only the ones ending in
      * the proper extension will be considered) PJFiles takes a directory and a
@@ -137,7 +137,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
                 makeFileList(list, directory + "/" + s);
         }
     }
-    
+
     public static String makeImportPath(Import im) {
         String path = "";
         if (im.path() != null) {
@@ -166,7 +166,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
 
         Log.log("visitImport(): Package path is : " + path);
         Log.log("visitImport(): Package file name is : " + im.file().getname());
-        
+
         // Try local first
         String fileName = new File("").getAbsolutePath() + "/" + path;
 
@@ -247,7 +247,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
             // Set current filename
             PJBugManager.INSTANCE.setFileName(fn);
             Compilation c = ResolveImports.importFile(im, fn);
-            
+
             // Set absolute path, file and package name from where the Import is created
             c.fileName = fn.substring(fn.lastIndexOf(File.separator) + 1, fn.length());
             c.path = fn.substring(0, fn.lastIndexOf(File.separator));
@@ -257,21 +257,21 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
             im.addCompilation(c);
             // Create a symboltable for it
             SymbolTable symtab = new SymbolTable("Import: " + fn);
-            
+
             importChild.setImportParent(symtab);
             // Point to whoever called you
             symtab.setParent(SymbolTable.hook);
             SymbolTable.hook = symtab;
-            
+
             SymbolTable oldHook = SymbolTable.hook;
             SymbolTable.hook = null;
-            
+
             // Visit imports in the current process file
             c.visit(new ResolveImports<AST>(symtab));
             // Declare types and constants for handling it's imports
             c.visit(new TopLevelDecls<AST>(symtab));
             SymbolTable.hook = oldHook;
-            
+
             currentFileName = oldCurrentFileName;
             // Reset filename
             PJBugManager.INSTANCE.setFileName(oldCurrentFileName);

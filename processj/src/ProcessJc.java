@@ -129,7 +129,6 @@ public class ProcessJc {
         if ( pJc.version ) {
             pJc.version();
         }
-
         Settings.includeDir = pJc.include;
         AST root = null;
 
@@ -391,7 +390,7 @@ public class ProcessJc {
         // after returning strings rendered by the string template
         String code = (String) c.visit(codeGen);
         // Write the output to a file
-        Helper.writeToFile(code, c.fileNoExtension(), codeGen.workingDir());
+        Helper.writeToFile(code, c.fileNoExtension(), codeGen.workingDir(), ".java");
     }
 
     private void generateCodeCPP(Compilation c, File inFile, SymbolTable s) {
@@ -400,7 +399,7 @@ public class ProcessJc {
         codeGen.setWorkingDir(p.getProperty("workingdir"));
         // codeGen.sourceProgam(c.fileNoExtension());
         String code = (String) c.visit(codeGen);
-        Helper.writeToFile(code, c.fileNoExtension(), codeGen.getWorkingDir());
+        Helper.writeToFile(code, c.fileNoExtension(), codeGen.getWorkingDir(), ".cpp");
     }
 
     public ProcessJc(String[] args) {

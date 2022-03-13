@@ -177,7 +177,6 @@ public class CodeGenCPP extends Visitor<Object> {
         Log.logHeader("*****************************************");
         Log.logHeader("* C O D E - G E N E R A T O R   C P P   *");
         Log.logHeader("*****************************************");
-
         topLevelDecls = s;
         stGroup = new STGroupFile(stGrammarFile);
     }
@@ -1008,7 +1007,7 @@ public class CodeGenCPP extends Visitor<Object> {
                 // and rewrite the timerRead ST definition to be what we
                 // place here.
                 // val = "static_cast<" + type + ">(0)";
-                val = "new pj_runtime::pj_timer(this, 0)";
+                val = "new ProcessJRuntime::pj_timer(this, 0)";
             }
 
             if (ld.type() instanceof PrimitiveType && ((PrimitiveType)ld.type()).isNumericType()) {
@@ -1117,7 +1116,7 @@ public class CodeGenCPP extends Visitor<Object> {
         // This is for protocol inheritance.
         if (nt.type() != null && nt.type().isProtocolType()) {
             // type = PJProtocolCase.class.getSimpleName();
-            type = "pj_runtime::pj_protocol_case*";
+            type = "ProcessJRuntime::pj_protocol_case*";
         }
 
         return type;
@@ -1149,10 +1148,10 @@ public class CodeGenCPP extends Visitor<Object> {
             typeStr = "bool";
         } else if (py.isTimerType()) {
             // typeStr = PJTimer.class.getSimpleName();
-            typeStr = "pj_runtime::pj_timer*";
+            typeStr = "ProcessJRuntime::pj_timer*";
         } else if (py.isBarrierType()) {
             // typeStr = PJBarrier.class.getSimpleName();
-            typeStr = "pj_runtime::pj_barrier";
+            typeStr = "ProcessJRuntime::pj_barrier";
         }
 
         return typeStr;
@@ -1179,18 +1178,18 @@ public class CodeGenCPP extends Visitor<Object> {
         String chantype = "";
         switch (ct.shared()) {
         case ChannelType.NOT_SHARED:
-            chantype = "pj_runtime::pj_one2one_channel";
+            chantype = "ProcessJRuntime::pj_one2one_channel";
             break;
         case ChannelType.SHARED_READ:
-            // chantype = "pj_runtime::pj_one2many_channel";
-            chantype = "pj_runtime::pj_many2many_channel";
+            // chantype = "ProcessJRuntime::pj_one2many_channel";
+            chantype = "ProcessJRuntime::pj_many2many_channel";
             break;
         case ChannelType.SHARED_WRITE:
-            // chantype = "pj_runtime::pj_many2one_channel";
-            chantype = "pj_runtime::pj_many2many_channel";
+            // chantype = "ProcessJRuntime::pj_many2one_channel";
+            chantype = "ProcessJRuntime::pj_many2many_channel";
             break;
         case ChannelType.SHARED_READ_WRITE:
-            chantype = "pj_runtime::pj_many2many_channel";
+            chantype = "ProcessJRuntime::pj_many2many_channel";
             break;
         }
         // Resolve parameterized type for channel, e.g., chan<T>
@@ -1222,19 +1221,19 @@ public class CodeGenCPP extends Visitor<Object> {
 
         // Channel class type.
         // String chanType = PJOne2OneChannel.class.getSimpleName();
-        String chanType = "pj_runtime::pj_one2one_channel";
+        String chanType = "ProcessJRuntime::pj_one2one_channel";
         if (ct.isShared()) {  // Is it a shared channel?
             if (ct.isRead())  // One-2-many channel.
                 // chanType = PJOne2ManyChannel.class.getSimpleName();
-                // chanType = "pj_runtime::pj_one2many_channel";
-                chanType = "pj_runtime::pj_many2many_channel";
+                // chanType = "ProcessJRuntime::pj_one2many_channel";
+                chanType = "ProcessJRuntime::pj_many2many_channel";
             else if (ct.isWrite()) // Many-2-one channel.
                 // chanType = PJMany2OneChannel.class.getSimpleName();
-                // chanType = "pj_runtime::pj_many2one_channel";
-                chanType = "pj_runtime::pj_many2many_channel";
+                // chanType = "ProcessJRuntime::pj_many2one_channel";
+                chanType = "ProcessJRuntime::pj_many2many_channel";
             else // Many-2-many channel.
                 // chanType = PJMany2ManyChannel.class.getSimpleName();
-                chanType = "pj_runtime::pj_many2many_channel";
+                chanType = "ProcessJRuntime::pj_many2many_channel";
         }
         // Resolve parameterized type for channels, e.g., chan<T>
         // where 'T' is the type to be resolved.
@@ -1411,12 +1410,12 @@ public class CodeGenCPP extends Visitor<Object> {
         if (!at.baseType().isPrimitiveType() || !at.baseType().isNamedType()) {
             if (at.getActualDepth() > 1) {
                 Log.log(at, "depth > 1, pj_md_array used");
-                return "pj_runtime::pj_md_array<" + stArrayType + ">*";
+                return "ProcessJRuntime::pj_md_array<" + stArrayType + ">*";
             }
-            // return "pj_runtime::pj_array<" + stArrayType + ">*";
+            // return "ProcessJRuntime::pj_array<" + stArrayType + ">*";
         }
         Log.log(at, "base of array, pj_array used");
-        return "pj_runtime::pj_array<" + stArrayType + ">*";
+        return "ProcessJRuntime::pj_array<" + stArrayType + ">*";
     }
 
     @Override
@@ -1620,7 +1619,6 @@ public class CodeGenCPP extends Visitor<Object> {
         // Name of invoked procedure.
         String pdName = pd.name().getname();
         String pdGenName = generatedProcNames.get(pdName);
-
         Log.log(in, "NOTE: " + pdName + " gets us " + generatedProcNames.get(pdName));
         // Check local procedures, if none is found then the procedure must come
         // from a different file and maybe package.
@@ -1708,7 +1706,7 @@ public class CodeGenCPP extends Visitor<Object> {
                 }
                 stInvocation.add("barrier", barrierList);
                 // stInvocation.add("vars", barrierList);
-                // stInvocation.add("types", "pj_runtime::pj_barrier*");
+                // stInvocation.add("types", "ProcessJRuntime::pj_barrier*");
             }
 
             // Add the types for our vars
@@ -2159,11 +2157,11 @@ public class CodeGenCPP extends Visitor<Object> {
             stParBlock.add("parent", getParentString());
         }
 
-        // we should also add a pj_runtime::pj_par to the locals of whatever
+        // we should also add a ProcessJRuntime::pj_par to the locals of whatever
         // process we're in
-        localParams.put(currentParBlock, "pj_runtime::pj_par*");
+        localParams.put(currentParBlock, "ProcessJRuntime::pj_par*");
         // TODO: do we need this as an init? probably not...
-        localInits.put(currentParBlock, "static_cast<pj_runtime::pj_par*>(0)");
+        localInits.put(currentParBlock, "static_cast<ProcessJRuntime::pj_par*>(0)");
         // localDeletes.put(currentParBlock, "delete " + currentParBlock + ";");
 
         // Increment the jump label.
@@ -2402,7 +2400,7 @@ public class CodeGenCPP extends Visitor<Object> {
                 guards.add((String) cr.channel().visit(this));
             } else if (stat instanceof SkipStat) {
                 // guards.add(PJAlt.class.getSimpleName() + ".SKIP");
-                guards.add("pj_runtime::pj_alt::SKIP");
+                guards.add("ProcessJRuntime::pj_alt::SKIP");
             } else if (stat instanceof TimeoutStat) {
                 TimeoutStat ts = (TimeoutStat)stat;
                 ST stTimeout = stGroup.getInstanceOf("TimeoutStatCase");
@@ -2429,8 +2427,8 @@ public class CodeGenCPP extends Visitor<Object> {
 
         // Create a tag for this local alt declaration.
         String newName = Helper.makeVariableName("alt", ++localDecId, Tag.LOCAL_NAME);
-        localParams.put(newName, "pj_runtime::pj_alt*");
-        // localInits.put(newName, "new pj_runtime::pj_alt(" + cases.size() + ", this)");
+        localParams.put(newName, "ProcessJRuntime::pj_alt*");
+        // localInits.put(newName, "new ProcessJRuntime::pj_alt(" + cases.size() + ", this)");
         // localDeletes.put(newName, "delete " + newName + ";");
         paramDeclNames.put(newName, newName);
         // -->
@@ -2444,7 +2442,7 @@ public class CodeGenCPP extends Visitor<Object> {
         // need to reroute these to be declared/initialized before the switch-case
         // localParams.put("boolean_guards", "std::vector<bool>");
         // localInits.put("boolean_guards", stBooleanGuards.render());
-        // localParams.put("object_guards", "std::vector<pj_runtime::pj_alt_guard_type>");
+        // localParams.put("object_guards", "std::vector<ProcessJRuntime::pj_alt_guard_type>");
         // localInits.put("object_guards", stObjectGuards.render());
         // localParams.put("alt_ready", "bool");
         // localInits.put("alt_ready", "false");
@@ -2455,7 +2453,7 @@ public class CodeGenCPP extends Visitor<Object> {
         stAltStat.add("cases", altCases);
         stAltStat.add("index", n.visit(this));
 
-        // localParams.put(newName, "pj_runtime::pj_alt");
+        // localParams.put(newName, "ProcessJRuntime::pj_alt");
 
         // Add the jump label to the switch list.
         switchLabelList.add(renderSwitchLabel(jumpLabel));
