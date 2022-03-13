@@ -29,7 +29,7 @@
 #include<Timer.hpp>
 #include<TimerQueue.hpp>
 #include<RunQueue.hpp>
-//#include <pj_inactive_pool.hpp>
+#include<InactivePool.hpp>
 //#include <pj_scheduler.hpp>
 //#include <pj_channel.hpp>
 //#include <pj_one2one_channel.hpp>
