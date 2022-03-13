@@ -1,3 +1,12 @@
+/*!
+ * ProcessJTest::ManyToManyTest declaration
+ *
+ * \author Alexander C. Thomason
+ * \author Carlos L. Cuenca
+ * \date 03/13/2022
+ * \version 1.0.0
+ */
+
 #ifndef PROCESS_J_MANY_TO_MANY_TEST_HPP
 #define PROCESS_J_MANY_TO_MANY_TEST_HPP
 
