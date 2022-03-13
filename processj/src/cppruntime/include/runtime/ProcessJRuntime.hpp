@@ -50,6 +50,6 @@
 #include<Protocol.hpp>
 #include<Par.hpp>
 #include<Array.hpp>
-//#include <pj_string.hpp>
+#include<String.hpp>
 
 #endif
