@@ -177,8 +177,7 @@ class ProcessJTest::alt_process : public ProcessJRuntime::pj_process
         ProcessJRuntime::pj_one2one_channel<T>* chan;
     };
 
-    class ProcessJRuntime::alt_timeout_process : public ProcessJRuntime::pj_process
-    {
+class ProcessJTest::alt_timeout_process : public ProcessJRuntime::pj_process {
     public:
         alt_timeout_process() = delete;
 
@@ -275,8 +274,7 @@ class ProcessJTest::alt_process : public ProcessJRuntime::pj_process
         ProcessJRuntime::pj_scheduler* sched;
     };
 
-    class ProcessJRuntime::alt_skip_process : public ProcessJRuntime::pj_process
-    {
+class ProcessJTest::alt_skip_process : public ProcessJRuntime::pj_process {
     public:
         alt_skip_process() = delete;
 
@@ -374,7 +372,7 @@ class ProcessJTest::alt_process : public ProcessJRuntime::pj_process
         ProcessJRuntime::pj_scheduler* sched;
     };
 
-    class ProcessJTest::alt_test {
+class ProcessJTest::alt_test {
     public:
         alt_test()
         {
@@ -393,17 +391,17 @@ class ProcessJTest::alt_process : public ProcessJRuntime::pj_process
                 new ProcessJRuntime::pj_one2one_channel<uint32_t>();
 
             std::cout << "\n *** CREATING PROCESS FOR ALT *** \n\n";
-            alt_process<uint32_t>* a_process = new alt_process<uint32_t>(0, &sched, chan1);
+            ProcessJTest::alt_process<uint32_t>* a_process = new ProcessJTest::alt_process<uint32_t>(0, &sched, chan1);
 
             std::cout << "\n *** CREATING PROCESS FOR ALT ON CHANNEL READ *** \n\n";
-            alt_writer<uint32_t>* process = new alt_writer<uint32_t>(1, &sched, chan2, 1);
+            ProcessJTest::alt_writer<uint32_t>* process = new ProcessJTest::alt_writer<uint32_t>(1, &sched, chan2, 1);
 
             std::cout << "\n *** CREATING PROCESS FOR ALT ON TIMEOUT *** \n\n";
             // alt_timeout_process* at_process = new alt_timeout_process(2, timer);
-            alt_timeout_process* at_process = new alt_timeout_process(2, &sched);
+            ProcessJTest::alt_timeout_process* at_process = new ProcessJTest::alt_timeout_process(2, &sched);
 
             std::cout << "\n *** CREATING PROCESS FOR ALT ON SKIP *** \n\n";
-            alt_skip_process* as_process = new alt_skip_process(3, &sched);
+            ProcessJTest::alt_skip_process* as_process = new ProcessJTest::alt_skip_process(3, &sched);
 
             std::cout << "\n *** SCHEDULING PROCESSES *** \n\n";
             sched.insert(a_process);

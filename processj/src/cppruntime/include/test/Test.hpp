@@ -13,7 +13,7 @@ namespace ProcessJTest { /* Empty */ }
 #include<MulticoreTest.hpp>
 #include<TimerTest.hpp>
 #include<BarrierTest.hpp>
-//#include<tests/alt_test.hpp>
+#include<AltTest.hpp>
 //#include<tests/record_test.hpp>
 #include<ProtocolTest.hpp>
 //#include<tests/anonproc_test.hpp>
