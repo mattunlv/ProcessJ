@@ -12,7 +12,7 @@
 
 namespace ProcessJRuntime { class pj_scheduler; }
 
-class ProcessJRuntime::pj_scheduler
+    class ProcessJRuntime::pj_scheduler
     {
 
     public:
@@ -53,7 +53,7 @@ class ProcessJRuntime::pj_scheduler
             rq.insert(p);
         }
 
-        void insert(ProcessJRuntime::pj_timer* t)
+        void insert(pj_timer* t)
         {
             std::lock_guard<std::mutex> lk(mutex);
             tq.insert(t);
@@ -300,7 +300,7 @@ class ProcessJRuntime::pj_scheduler
             ProcessJRuntime::pj_logger::log("thread ", th_id, "'s cpu_set successfully modified\n");
             lock.unlock();
         }
-};
+    };
 
 
 #endif

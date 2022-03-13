@@ -18,8 +18,8 @@ namespace ProcessJRuntime {
 }
 
 template <typename T>
-class ProcessJRuntime::pj_one2one_channel : public ProcessJRuntime::pj_channel {
-
+    class ProcessJRuntime::pj_one2one_channel : public ProcessJRuntime::pj_channel
+    {
     public:
         pj_one2one_channel()
         {

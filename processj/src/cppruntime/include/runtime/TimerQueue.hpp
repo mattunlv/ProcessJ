@@ -12,7 +12,7 @@
 
 namespace ProcessJRuntime { class pj_timer_queue; }
 
-class ProcessJRuntime::pj_timer_queue {
+ class ProcessJRuntime::pj_timer_queue {
 
     friend class ProcessJRuntime::pj_timer;
 
@@ -53,7 +53,7 @@ class ProcessJRuntime::pj_timer_queue {
 
                     timer->expire();
 
-                    ProcessJRuntime::pj_process* p = timer->get_process();
+                    pj_process* p = timer->get_process();
 
                     /* check if we can safely exit as a thread */
                     if(!p && exit_value)
@@ -117,7 +117,7 @@ class ProcessJRuntime::pj_timer_queue {
         std::atomic<bool>    kill_flag;
 
         ProcessJRuntime::pj_timer* kill_timer = nullptr;
-};
+    };
 
 
 #endif

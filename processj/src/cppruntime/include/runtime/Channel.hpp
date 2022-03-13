@@ -12,7 +12,8 @@
 
 namespace ProcessJRuntime { class pj_channel; }
 
-class ProcessJRuntime::pj_channel {
+class ProcessJRuntime::pj_channel
+    {
     public:
         pj_channel()
         : type(ProcessJRuntime::pj_channel_types::NONE)
@@ -21,7 +22,7 @@ class ProcessJRuntime::pj_channel {
         }
 
         pj_channel(ProcessJRuntime::pj_channel_types t)
-        : type(ProcessJRuntime::pj_channel_type(t))
+        : type(pj_channel_type(t))
         {
 
         }
@@ -121,8 +122,6 @@ class ProcessJRuntime::pj_channel {
         std::mutex mtx;
         ProcessJRuntime::pj_process* writer = nullptr;
         ProcessJRuntime::pj_process* reader = nullptr;
-
-};
-
+    };
 
 #endif

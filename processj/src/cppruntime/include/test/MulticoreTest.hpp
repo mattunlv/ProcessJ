@@ -23,8 +23,8 @@ namespace ProcessJTest {
 
 }
 
-class ProcessJTest::mc_process : public ProcessJRuntime::pj_process {
-
+class ProcessJTest::mc_process : public ProcessJRuntime::pj_process
+    {
     public:
         mc_process() = delete;
         mc_process(int32_t id, ProcessJRuntime::pj_scheduler* sched)
@@ -74,7 +74,8 @@ class ProcessJTest::mc_process : public ProcessJRuntime::pj_process {
         ProcessJRuntime::pj_scheduler* sched;
     };
 
-class ProcessJTest::multicore_test {
+    class ProcessJTest::multicore_test
+    {
     public:
         multicore_test()
         {

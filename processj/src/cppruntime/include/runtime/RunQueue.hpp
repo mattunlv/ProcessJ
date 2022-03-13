@@ -12,8 +12,8 @@
 
 namespace ProcessJRuntime { class pj_run_queue; }
 
-class ProcessJRuntime::pj_run_queue {
-
+class ProcessJRuntime::pj_run_queue
+    {
     public:
 
         pj_run_queue()
@@ -52,7 +52,7 @@ class ProcessJRuntime::pj_run_queue {
 
     private:
         std::mutex rq_mutex;
-};
+    };
 
 
 #endif

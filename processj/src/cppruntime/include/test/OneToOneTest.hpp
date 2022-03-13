@@ -18,13 +18,13 @@ namespace ProcessJTest {
     template<typename Type>
     class one2one_reader;
 
-    template<typename Type>
     class one2one_test;
 
 }
 
 template <typename T>
 class ProcessJTest::one2one_writer : public ProcessJRuntime::pj_process {
+
     public:
         one2one_writer() = delete;
 
@@ -63,11 +63,11 @@ class ProcessJTest::one2one_writer : public ProcessJRuntime::pj_process {
         int32_t                              id;
         T                                  data;
         ProcessJRuntime::pj_one2one_channel<T>* chan;
-};
+    };
 
-template <typename T>
-class ProcessJTest::one2one_reader : public ProcessJRuntime::pj_process {
-
+    template <typename T>
+    class ProcessJTest::one2one_reader : public ProcessJRuntime::pj_process
+    {
     public:
         one2one_reader() = delete;
 
@@ -117,10 +117,10 @@ class ProcessJTest::one2one_reader : public ProcessJRuntime::pj_process {
         int32_t                              id;
         T                                  data;
         ProcessJRuntime::pj_one2one_channel<T>* chan;
-};
+    };
 
-class one2one_test {
-
+    class ProcessJTest::one2one_test
+    {
     public:
         one2one_test()
         {
@@ -136,9 +136,9 @@ class one2one_test {
             ProcessJRuntime::pj_scheduler sch;
 
             std::cout << "\n *** CREATING TWO PROCESSES FOR R/W *** \n\n";
-            ProcessJTest::one2one_reader<int32_t>* oto_r = new ProcessJTest::one2one_reader<int32_t>(0, &oto_ch);
+            one2one_reader<int32_t>* oto_r = new one2one_reader<int32_t>(0, &oto_ch);
 
-            ProcessJTest::one2one_writer<int32_t>* oto_w = new ProcessJTest::one2one_writer<int32_t>(1,
+            one2one_writer<int32_t>* oto_w = new one2one_writer<int32_t>(1,
                                                                          &oto_ch,
                                                                          69);
 

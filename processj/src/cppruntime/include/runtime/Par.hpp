@@ -12,8 +12,8 @@
 
 namespace ProcessJRuntime { class pj_par; }
 
-class ProcessJRuntime::pj_par {
-
+    class ProcessJRuntime::pj_par
+    {
     public:
         pj_par() = delete;
 
@@ -61,5 +61,6 @@ class ProcessJRuntime::pj_par {
         int32_t process_count;
         std::mutex mtx;
     };
+
 
 #endif

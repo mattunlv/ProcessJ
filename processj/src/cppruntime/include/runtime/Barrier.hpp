@@ -26,9 +26,10 @@
 
 namespace ProcessJRuntime { class pj_barrier; }
 
-class ProcessJRuntime::pj_barrier {
+class ProcessJRuntime::pj_barrier
+    {
     public:
-        std::vector<pj_process*> synced;
+        std::vector<ProcessJRuntime::pj_process*> synced;
         uint32_t enrolled;
 
         pj_barrier()
@@ -61,7 +62,7 @@ class ProcessJRuntime::pj_barrier {
             }
         }
 
-        void sync(pj_process* process)
+        void sync(ProcessJRuntime::pj_process* process)
         {
             std::lock_guard<std::mutex> lock(this->mtx);
             ProcessJRuntime::pj_logger::log("process ", process, " called sync()");
@@ -82,6 +83,5 @@ class ProcessJRuntime::pj_barrier {
     private:
         std::mutex mtx;
     };
-
 
 #endif

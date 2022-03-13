@@ -17,8 +17,8 @@ namespace ProcessJRuntime {
 
 }
 
-template <typename T>
-class ProcessJRuntime::pj_one2many_channel : public ProcessJRuntime::pj_one2one_channel<T>
+    template <typename T>
+    class ProcessJRuntime::pj_one2many_channel : public ProcessJRuntime::pj_one2one_channel<T>
     {
     public:
         pj_one2many_channel()
@@ -68,7 +68,6 @@ class ProcessJRuntime::pj_one2many_channel : public ProcessJRuntime::pj_one2one_
     protected:
         ProcessJRuntime::pj_process* read_claim = nullptr;
         std::queue<ProcessJRuntime::pj_process*> read_queue;
-};
-
+    };
 
 #endif

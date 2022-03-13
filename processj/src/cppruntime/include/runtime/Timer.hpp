@@ -17,10 +17,10 @@
 
 namespace ProcessJRuntime { class pj_timer; }
 
-class ProcessJRuntime::pj_timer {
-
-    friend class pj_timer_queue;
-    friend class pj_alt;
+class ProcessJRuntime::pj_timer
+    {
+        friend class pj_timer_queue;
+        friend class pj_alt;
 
     public:
         bool m_started;
@@ -133,7 +133,7 @@ protected:
         long m_timeout;
         bool m_killed;
         ProcessJRuntime::pj_process* m_process;
-};
+    };
 
 
 #endif

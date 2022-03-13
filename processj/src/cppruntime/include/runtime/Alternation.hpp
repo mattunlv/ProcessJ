@@ -18,8 +18,7 @@ namespace ProcessJRuntime {
 
 }
 
-class ProcessJRuntime::pj_alt
-    {
+class ProcessJRuntime::pj_alt {
     public:
         inline static const std::string SKIP = "skip";
 
@@ -36,7 +35,7 @@ class ProcessJRuntime::pj_alt
         }
 
         bool set_guards(std::vector<bool>            b_guards,
-                        std::vector<ProcessJRuntime::pj_alt_guard_type> guards)
+                        std::vector<pj_alt_guard_type> guards)
         {
             this->b_guards = b_guards;
             this->guards   = guards;
@@ -140,7 +139,7 @@ class ProcessJRuntime::pj_alt
 
     private:
         ProcessJRuntime::pj_process* process;
-        std::vector<ProcessJRuntime::pj_alt_guard_type> guards;
+        std::vector<pj_alt_guard_type> guards;
         std::vector<bool> b_guards;
     };
 
