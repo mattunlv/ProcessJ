@@ -14,7 +14,7 @@ namespace ProcessJTest { /* Empty */ }
 #include<TimerTest.hpp>
 #include<BarrierTest.hpp>
 #include<AltTest.hpp>
-//#include<tests/record_test.hpp>
+#include<RecordTest.hpp>
 #include<ProtocolTest.hpp>
 //#include<tests/anonproc_test.hpp>
 //#include<tests/par_test.hpp>
