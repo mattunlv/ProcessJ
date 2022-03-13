@@ -342,16 +342,17 @@ public class ProcessJc {
             c.visit(new rewriters.ParFor());
 
             // If we're generating C++ code, we need to rewrite print/println statements
-            if (Settings.language == Language.CPLUS) {
+            if (pJc.target/*Settings.language*/ == Language.CPLUS) {
                 System.out.println("-- Rewriting calls to print() and println().");
                 c.visit(new IOCallsRewrite());
             }
 
             // Run the code generator for the known (specified) target language
-            if ( Settings.language==pJc.target )
-                if (Settings.language == Language.JVM) {
+            if ( pJc.target == Language.CPLUS || pJc.target == Language.JVM/*Settings.language==pJc.target*/ )
+                if (pJc.target == Language.JVM/*Settings.language == Language.JVM*/) {
                     pJc.generateCodeJava(c, inFile, globalTypeTable);
-                } else if (Settings.language == Language.CPLUS) {
+                } else if (pJc.target == Language.CPLUS/*Settings.language == Language.CPLUS*/) {
+
                     Log.startLogging();
                     pJc.generateCodeCPP(c, inFile, globalTypeTable);
                 }
@@ -397,12 +398,9 @@ public class ProcessJc {
     private void generateCodeCPP(Compilation c, File inFile, SymbolTable s) {
         Properties p = utilities.ConfigFileReader.getProcessJConfig();
         CodeGenCPP codeGen = new CodeGenCPP(s);
-
         codeGen.setWorkingDir(p.getProperty("workingdir"));
         // codeGen.sourceProgam(c.fileNoExtension());
-
         String code = (String) c.visit(codeGen);
-
         Helper.writeToFile(code, c.fileNoExtension(), codeGen.getWorkingDir());
     }
 
