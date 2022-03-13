@@ -18,8 +18,8 @@ namespace ProcessJTest { /* Empty */ }
 #include<ProtocolTest.hpp>
 #include<AnonProcTest.hpp>
 #include<ParTest.hpp>
-//#include<tests/static_method_test.hpp>
-//#include<tests/array_test.hpp>
+#include<StaticMethodTest.hpp>
+#include<ArrayTest.hpp>
 //#include<tests/string_test.hpp>
 
 #endif
