@@ -33,11 +33,12 @@
 #include<RunQueue.hpp>
 #include<InactivePool.hpp>
 #include<Scheduler.hpp>
-//#include <pj_channel.hpp>
-//#include <pj_one2one_channel.hpp>
-//#include <pj_one2many_channel.hpp>
-//#include <pj_many2one_channel.hpp>
-//#include <pj_many2many_channel.hpp>
+#include<ChannelType.hpp>
+#include<Channel.hpp>
+#include<OneToOneChannel.hpp>
+#include<OneToManyChannel.hpp>
+#include<ManyToOneChannel.hpp>
+#include<ManyToManyChannel.hpp>
 //#include <pj_barrier.hpp>
 //#include <pj_alt.hpp>
 //#include <pj_record.hpp>
