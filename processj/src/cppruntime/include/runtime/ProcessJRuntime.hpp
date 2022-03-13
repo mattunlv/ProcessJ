@@ -11,11 +11,22 @@
 #ifndef UNLV_PROCESS_J_RUNTIME_HPP
 #define UNLV_PROCESS_J_RUNTIME_HPP
 
-/* include guards for the runtime types */
-//#include <pj_logger.hpp>
-//#include <pj_process.hpp>
-//#include <pj_timer.hpp>
-//#include <pj_timer_queue.hpp>
+#include<iostream>
+#include<ostream>
+#include<string>
+#include<mutex>
+#include<chrono>
+#include<atomic>
+#include<thread>
+#include<sys/types.h>
+
+#pragma once
+
+#include<Utilities.hpp>
+#include<Logger.hpp>
+#include<Process.hpp>
+#include<Timer.hpp>
+#include<TimerQueue.hpp>
 //#include <pj_run_queue.hpp>
 //#include <pj_inactive_pool.hpp>
 //#include <pj_scheduler.hpp>
