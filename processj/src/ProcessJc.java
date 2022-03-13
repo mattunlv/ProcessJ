@@ -425,7 +425,7 @@ public class ProcessJc {
                                 // Setting the Language enum directly from a String is incompatible.
                                 // Reflecting the type is necessary since the generic way of setting
                                 // the field (e.g. field.set()) will not work but retrieving the value
-                                // corresponding to the enum field does. TODO: Can we do better?
+                                // corresponding to the enum field will. TODO: Can we do better?
                                 if(f.getType().getName().equals("utilities.Language")) {
                                     f.set(this, Language.valueOf((Class<Language>) f.getType(), optionValue));
                                 } else f.set(this, optionValue);
