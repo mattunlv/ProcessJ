@@ -22,6 +22,10 @@
 #include<thread>
 #include<queue>
 #include<variant>
+#include<sstream>
+#include<array>
+#include<memory>
+#include<cstring>
 #include<sys/types.h>
 #include<sched.h>
 #include<pthread.h>
@@ -45,7 +49,7 @@
 #include<Record.hpp>
 #include<Protocol.hpp>
 #include<Par.hpp>
-//#include <pj_array.hpp>
+#include<Array.hpp>
 //#include <pj_string.hpp>
 
 #endif
