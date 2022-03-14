@@ -1,7 +1,9 @@
 #ifndef PJ_PROCESS_TEST_HPP
 #define PJ_PROCESS_TEST_HPP
 
+#pragma once
 #include<ProcessJRuntime.hpp>
+#include<Test.hpp>
 #include<SingleCoreTest.hpp>
 #include<OneToOneTest.hpp>
 #include<OneToManyTest.hpp>

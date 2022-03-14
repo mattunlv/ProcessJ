@@ -30,6 +30,11 @@
 #include<sched.h>
 #include<pthread.h>
 
+#include<Types.hpp>
+#include<Constants.hpp>
+#include<Variables.hpp>
+
+#include<System.hpp>
 #include<Logger.hpp>
 #include<Utilities.hpp>
 #include<Process.hpp>

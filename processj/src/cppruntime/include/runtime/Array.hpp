@@ -1,5 +1,6 @@
 /*!
- * ProcessJRuntime::Array declaration
+ * ProcessJRuntime::Array declaration & implementation.
+ * Implements a parameterized array.
  *
  * \author Alexander C. Thomason
  * \author Carlos L. Cuenca
@@ -13,166 +14,258 @@
 namespace ProcessJRuntime {
 
     template<typename Type>
-    class pj_array;
-
-    template<typename Type>
-    class pj_md_array;
+    class Array;
 
 }
 
-template<typename T>
-class ProcessJRuntime::pj_array {
+template<typename Type>
+class ProcessJRuntime::Array {
 
-    public:
-        int32_t length;
+    /// ---------------
+    /// Private Members
 
-        pj_array()
-        {
-            m_array = nullptr;
+private:
+
+    Type*                       array   ; /*< The underlying block of memory for the ProcessJRuntime::Array */
+    ProcessJRuntime::UInteger32 length  ; /*< The length of the array                                       */
+
+    /// --------------
+    /// Public Members
+
+public:
+
+    /// ------------
+    /// Constructors
+
+    /*!
+     * Default Constructor. Initializes the ProcessJRuntime::Array
+     * to its' default state.
+     */
+
+    Array();
+
+    /*!
+     * Initializes the ProcessJRuntime::Array with a default
+     * size of the given length.
+     *
+     * \param length The desired length of the array.
+     */
+
+    Array(ProcessJRuntime::UInteger32);
+
+    /*!
+     * Initialize the ProcessJRuntime::Array as a copy
+     * of the given memory boundaries.
+     *
+     * \param start The beginning of the block to copy.
+     * \param end The end of the block to copy.
+     */
+
+    Array(Type*, Type*);
+
+    /*!
+     * Initializes the ProcessJRuntime::Array as a copy of the given
+     * values in the std::initializer_list
+     *
+     * \param values The values to copy
+     */
+
+    Array(std::initializer_list<Type>);
+
+    /*!
+     * Destructor. Releases the memory held by the ProcessJRuntime::Array.
+     */
+
+    ~Array();
+
+    /// -------
+    /// Methods
+
+    /*!
+     * Returns the size of the ProcessJRuntime::Array.
+     *
+     * \return ProcessJRuntime::UInteger32
+     */
+
+    const ProcessJRuntime::UInteger32& size() const;
+
+    /// --------------------
+    /// Overloaded Operators
+
+    /*!
+     * Attempts to access the element at the specified index.
+     * If the index is greater than or equal to the length (out of bounds)
+     * this will throw a ProcessJRuntime::Array::IndexOutOfBoundsException.
+     *
+     * \param index The index to access
+     * \return Reference to a Type
+     */
+
+    Type& operator[](ProcessJRuntime::UInteger32);
+
+    /*!
+     * Attempts to access the element at the specified index.
+     * If the index is greater than or equal to the length (out of bounds)
+     * this will throw a ProcessJRuntime::Array::IndexOutOfBoundsException.
+     *
+     * \param index The index to access
+     * \return Reference to an immutable Type
+     */
+
+    const Type& operator[](ProcessJRuntime::UInteger32) const;
+
+    /// ----------
+    /// Exceptions
+
+    /*!
+     * ProcessJRuntime::Exception that gets thrown when attempting to
+     * access an out of bounds index in the array
+     *
+     * \author Carlos L. Cuenca
+     * \date 03/13/2022
+     * \version 1.1.0
+     */
+
+    class IndexOutOfBoundsException : public ProcessJRuntime::Exception {
+
+        /*!
+         * Displays the message for the ProcessJRuntime::Array::IndexOutOfBoundsException
+         *
+         * \return StringLiteral
+         */
+
+        ProcessJRuntime::StringLiteral what() const noexcept {
+
+            return ProcessJRuntime::ExceptionMessageIndexOutOfBounds;
+
         }
 
-        pj_array(int32_t length)
-        : length(length)
-        {
-           m_array = new T[length];
-        }
-
-        pj_array(T* data, T* data_end)
-        :length(data_end - data)
-        {
-            m_array = new T[length];
-            T* iter = data;
-            std::size_t i = 0;
-            while(iter != data_end)
-            {
-               m_array[i++] = (*iter++);
-            }
-        }
-
-        pj_array(std::initializer_list<T> values)
-        :length(values.size())
-        {
-            m_array = new T[length];
-
-            std::copy(values.begin(), values.end(), m_array);
-        }
-
-        ~pj_array()
-        {
-            if(m_array)
-            {
-                delete[] m_array;
-                m_array = nullptr;
-            }
-        }
-
-        T& operator[](int32_t idx)
-        {
-            if(idx > length)
-            {
-                std::ostringstream message;
-                message << "Invalid Argument: index "
-                        << idx << " is out of bounds (size is "
-                        << length << ")."
-                        << std::endl;
-                throw std::invalid_argument(message.str());
-            }
-
-            return m_array[idx];
-        }
-
-        const T& operator[](int32_t idx) const
-        {
-            if(idx > length)
-            {
-                std::ostringstream message;
-                message << "Invalid Argument: index "
-                        << idx << " is out of bounds (size is "
-                        << length << ")."
-                        << std::endl;
-                throw std::invalid_argument(message.str());
-            }
-
-            return m_array[idx];
-        }
-
-
-    private:
-        T* m_array;
     };
 
-    template<class T>
-    class ProcessJRuntime::pj_md_array
-    {
-    public:
-        int32_t length;
+};
 
-        pj_md_array()
-        {
-            m_array = nullptr;
-        }
+/*!
+ * Default Constructor. Initializes the ProcessJRuntime::Array
+ * to its' default state.
+ */
 
-        pj_md_array(std::initializer_list<T> values)
-        :length(values.size())
-        {
-            m_array = new T[length];
+template<typename Type>
+ProcessJRuntime::Array<Type>::Array():
+    array(nullptr) { /* Empty */ }
 
-            std::copy(values.begin(), values.end(), m_array);
-        }
+/*!
+ * Initializes the ProcessJRuntime::Array with a default
+ * size of the given length.
+ *
+ * \param length The desired length of the array.
+ */
 
-        pj_md_array(int32_t length)
-        : length(length)
-        {
-            m_array = new T[length];
-        }
+template<typename Type>
+ProcessJRuntime::Array<Type>::Array(ProcessJRuntime::UInteger32 length):
+    array(new Type[length]), length(length) { /* Empty */ }
 
-        ~pj_md_array()
-        {
-            if(m_array)
-            {
-                for(int32_t i = 0; i < length; ++i)
-                {
-                    delete m_array[i];
-                }
-                delete[] m_array;
-                m_array = nullptr;
-            }
-        }
+/*!
+ * Initialize the ProcessJRuntime::Array as a copy
+ * of the given memory boundaries.
+ *
+ * \param start The beginning of the block to copy.
+ * \param end The end of the block to copy.
+ */
 
-        T& operator[](int32_t idx)
-        {
-            if(idx > length)
-            {
-                std::ostringstream message;
-                message << "Invalid Argument: index "
-                        << idx << " is out of bounds (size is "
-                        << length << ")."
-                        << std::endl;
-                throw std::invalid_argument(message.str());
-            }
+template<typename Type>
+ProcessJRuntime::Array<Type>::Array(Type* start, Type* end):
+    array(new Type[end - start]), length(end - start) {
 
-            return m_array[idx];
-        }
+    // We'll traverse the array like this
+    Type* original = start      ;
+    Type* copy     = array    ;
 
-        const T& operator[](int32_t idx) const
-        {
-            if(idx > length)
-            {
-                std::ostringstream message;
-                message << "Invalid Argument: index "
-                        << idx << " is out of bounds (size is "
-                        << length << ")."
-                        << std::endl;
-                throw std::invalid_argument(message.str());
-            }
+    // Code golf!
+    while(copy ^ original) (*copy++ = *original++);
 
-            return m_array[idx];
-        }
+}
 
+/*!
+ * Initializes the ProcessJRuntime::Array as a copy of the given
+ * values in the std::initializer_list
+ *
+ * \param values The values to copy
+ */
 
-    private:
-        T* m_array;
-    };
+template<typename Type>
+ProcessJRuntime::Array<Type>::Array(std::initializer_list<Type> values):
+    array(new Type[values.size()]), length(values.size()) {
 
+    std::copy(values.begin(), values.end(), array);
+
+}
+
+/*!
+ * Destructor. Releases the memory held by the ProcessJRuntime::Array.
+ */
+
+template<typename Type>
+ProcessJRuntime::Array<Type>::~Array() {
+
+    if(array) delete[] array;
+
+    array = nullptr;
+
+}
+
+/*!
+ * Returns the size of the ProcessJRuntime::Array.
+ *
+ * \return ProcessJRuntime::UInteger32
+ */
+
+template<typename Type>
+const ProcessJRuntime::UInteger32& ProcessJRuntime::Array<Type>::size() const {
+
+    return length;
+
+}
+
+/*!
+ * Attempts to access the element at the specified index.
+ * If the index is greater than or equal to the length (out of bounds)
+ * this will throw a ProcessJRuntime::Array::IndexOutOfBoundsException.
+ *
+ * \param index The index to access
+ * \return Reference to a Type
+ */
+
+template<typename Type>
+Type& ProcessJRuntime::Array<Type>::operator[](ProcessJRuntime::UInteger32 index) {
+
+    // Unsigned number, if we're out of bounds, throw this
+    if(index >= length)
+        throw ProcessJRuntime::Array<Type>::IndexOutOfBoundsException();
+
+    // Otherwise, return it
+    return array[index];
+
+}
+
+/*!
+ * Attempts to access the element at the specified index.
+ * If the index is greater than or equal to the length (out of bounds)
+ * this will throw a ProcessJRuntime::Array::IndexOutOfBoundsException.
+ *
+ * \param index The index to access
+ * \return Reference to an immutable Type
+ */
+
+template<typename Type>
+const Type& ProcessJRuntime::Array<Type>::operator[](ProcessJRuntime::UInteger32 index) const {
+
+    // Unsigned number, if we're out of bounds, throw this
+    if(index >= length)
+        throw ProcessJRuntime::Array<Type>::IndexOutOfBoundsException();
+
+    // Otherwise, return it
+    return array[index];
+
+}
 
 #endif

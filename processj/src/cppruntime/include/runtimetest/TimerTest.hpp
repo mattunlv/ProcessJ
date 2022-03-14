@@ -12,8 +12,8 @@
 
 namespace ProcessJTest {
 
-    class timer_process;
-    class timer_test;
+    class timer_process ;
+    class timer_test    ;
 
 }
 

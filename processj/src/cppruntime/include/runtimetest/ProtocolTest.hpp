@@ -7,8 +7,8 @@
  * \version 1.0.0
  */
 
-#ifndef UNLV_PROCESS_J_TEST_HPP
-#define UNLV_PROCESS_J_TEST_HPP
+#ifndef UNLV_PROCESS_J_PROTOCOL_TEST_HPP
+#define UNLV_PROCESS_J_PROTOCOL_TEST_HPP
 
 namespace ProcessJTest {
 
@@ -24,9 +24,7 @@ namespace ProcessJTest {
 
 struct ProcessJTest::request : public ProcessJRuntime::pj_protocol_case {
 
-        request(int amount, double value)
-        : amount(amount), value(value)
-        {
+        request(int amount, double value): amount(amount), value(value) {
 
         }
 
@@ -35,12 +33,11 @@ struct ProcessJTest::request : public ProcessJRuntime::pj_protocol_case {
 };
 
 struct ProcessJTest::reply : public ProcessJRuntime::pj_protocol_case {
-        reply(bool ack)
-        : ack(ack)
-        {
+        reply(bool ack): ack(ack){
 
         }
-
+UNLV_PROCESS_J_PROTOCOL_TEST_HPP
+UNLV_PROCESS_J_PROTOCOL_TEST_HPP
         bool ack;
 };
 

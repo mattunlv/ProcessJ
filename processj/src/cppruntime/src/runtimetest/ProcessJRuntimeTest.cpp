@@ -1,4 +1,4 @@
-#include <Test.hpp>
+#include <ProcessJRuntimeTest.hpp>
 
 int32_t main(void)
 {
@@ -89,7 +89,7 @@ int32_t main(void)
     ProcessJTest::static_method_test sm_test;
     sm_test.run();
 
-    ProcessJTest::array_test ar_test;
+    ProcessJTest::ArrayTest ar_test;
     ar_test.run();
 
     ProcessJTest::string_test s_test;

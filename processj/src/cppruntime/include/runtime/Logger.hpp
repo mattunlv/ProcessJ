@@ -16,10 +16,9 @@ class ProcessJRuntime::pj_logger {
 
 public:
 
-    static std::mutex log_mtx;
     static void log() {
 
-        std::lock_guard<std::mutex> log_lck(log_mtx);
+        std::lock_guard<std::mutex> log_lck(ProcessJRuntime::LogMutex);
         std::cout << std::endl;
 
     }
@@ -27,7 +26,7 @@ public:
     template <typename T>
     static void log(T value) {
 
-        std::lock_guard<std::mutex> log_lck(log_mtx);
+        std::lock_guard<std::mutex> log_lck(ProcessJRuntime::LogMutex);
         std::cout << value << std::endl;
 
     }
@@ -35,17 +34,12 @@ public:
     template <typename T, typename... Ts>
     static void log(T value, Ts... values) {
 
-        std::unique_lock<std::mutex> log_lck(log_mtx);
+        std::unique_lock<std::mutex> log_lck(ProcessJRuntime::LogMutex);
         std::cout << value;
         log_lck.unlock();
         log(values...);
     }
 
 };
-
-/// ---------------------
-/// Static Initialization
-
-std::mutex ProcessJRuntime::pj_logger::log_mtx;
 
 #endif
