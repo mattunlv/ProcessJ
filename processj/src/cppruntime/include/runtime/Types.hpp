@@ -28,6 +28,13 @@ namespace ProcessJRuntime {
     typedef uint32_t UInteger32         ;
 
     /*!
+     * \var typedef int32_t Integer32;
+     * \brief Defines a 32-bit integer.
+     */
+
+    typedef int32_t Integer32           ;
+
+    /*!
      * \var typedef const char* StringLiteral;
      * \brief Defines a StringLiteral type.
      */
@@ -75,6 +82,13 @@ namespace ProcessJRuntime {
      */
 
     typedef std::mutex Mutex            ;
+
+    /*!
+     * \ver typedef size_t Size;
+     * \brief Type definition for a size in bytes.
+     */
+
+    typedef size_t Size                 ;
 
 
 }

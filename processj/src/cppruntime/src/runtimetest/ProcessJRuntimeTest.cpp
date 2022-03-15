@@ -65,35 +65,35 @@ int32_t main(void)
     //ProcessJTest::many2many_test mtm_test;
     //mtm_test.run();
 
-    ProcessJTest::timer_test t_test;
-    t_test.run();
+    //ProcessJTest::timer_test t_test;
+    //t_test.run();
 
-    ProcessJTest::barrier_test b_test;
-    b_test.run();
+    //ProcessJTest::barrier_test b_test;
+    //b_test.run();
 
-    ProcessJTest::alt_test a_test;
-    a_test.run();
+    //ProcessJTest::alt_test a_test;
+    //a_test.run();
 
-    ProcessJTest::record_test r_test;
-    r_test.run();
+    //ProcessJTest::record_test r_test;
+    //r_test.run();
 
-    ProcessJTest::protocol_test pr_test;
-    pr_test.run();
+    //ProcessJTest::protocol_test pr_test;
+    //pr_test.run();
 
-    ProcessJTest::anonproc_test ap_test;
-    ap_test.run();
+    //ProcessJTest::anonproc_test ap_test;
+    //ap_test.run();
 
-    ProcessJTest::par_test p_test;
-    p_test.run();
+    //ProcessJTest::par_test p_test;
+    //p_test.run();
 
-    ProcessJTest::static_method_test sm_test;
-    sm_test.run();
+    //ProcessJTest::static_method_test sm_test;
+    //sm_test.run();
 
     ProcessJTest::ArrayTest ar_test;
     ar_test.run();
 
-    ProcessJTest::string_test s_test;
-    s_test.run();
+    //ProcessJTest::string_test s_test;
+    //s_test.run();
 
     return 0;
 }

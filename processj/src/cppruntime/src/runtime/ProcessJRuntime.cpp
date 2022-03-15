@@ -9,4 +9,3 @@
  */
 
 #include <ProcessJRuntime.hpp>
-

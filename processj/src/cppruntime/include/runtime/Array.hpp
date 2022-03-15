@@ -114,6 +114,25 @@ public:
 
     const Type& operator[](ProcessJRuntime::UInteger32) const;
 
+    /*!
+     * Overloaded Stream insertion operator. Inserts the data into
+     * the given output stream
+     *
+     * \param outputStream The OutputStream to modify
+     * \param ProcessJRuntime::Array The array to print
+     * \return Mutable reference to OutputStream.
+     */
+
+    template<typename OutputStream>
+    friend OutputStream& operator<<(OutputStream& outputStream, ProcessJRuntime::Array<Type>& array) {
+
+        for(ProcessJRuntime::Size index = 0; index < array.size(); index++)
+            outputStream << array[index] << ", ";
+
+        outputStream << '\n';
+
+    }
+
     /// ----------
     /// Exceptions
 

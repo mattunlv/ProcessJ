@@ -35,6 +35,9 @@
 #include<Variables.hpp>
 
 #include<System.hpp>
+#include<WindowComponentListener.hpp>
+#include<WindowComponent.hpp>
+#include<TerminalWindow.hpp>
 #include<Logger.hpp>
 #include<Utilities.hpp>
 #include<Process.hpp>
