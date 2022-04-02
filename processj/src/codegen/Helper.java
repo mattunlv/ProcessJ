@@ -42,7 +42,7 @@ public class Helper {
      *     identifier.
      * 5.) For protocols, the protocol is encoded as '_prot$name' where
      *     name is a protocol tag and 'X' is the protocol's unique identifier.
-     * 
+     *
      * @param name
      *            The name or tag of a procedure, method, protocol, record,
      *            parameter, or local variable.
@@ -94,14 +94,14 @@ public class Helper {
     public static boolean doesProcYield(final ProcTypeDecl pd) {
         if (pd == null)
             return false;
-        
+
         return pd.yields || (pd.annotations().isDefined("yield") &&
                Boolean.valueOf(pd.annotations().get("yield")));
     }
-    
+
     /**
      * Returns the wrapper class for the given class type.
-     * 
+     *
      * @param type
      *          A wrapper class type or the class itself.
      * @return The type instances represented by a class.
@@ -109,7 +109,7 @@ public class Helper {
     private static Class<?> getWrapperClass(Type type) {
         type = Assert.nonNull(type, "The parameter type cannot be null.");
         Class<?> typeName = null;
-        
+
         if (type.isIntegerType())
             typeName = Integer.class;
         else if (type.isByteType())
@@ -134,14 +134,14 @@ public class Helper {
             typeName = PJTimer.class;
         else if (type.isBarrierType())
             typeName = PJBarrier.class;
-        
+
         return typeName;
     }
-    
+
     /**
      * Returns a string representing a primitive wrapper class or
      * the class itself.
-     * 
+     *
      * @param type
      *          A primitive class type or the class itself.
      * @return A String representation of class type.
@@ -149,11 +149,11 @@ public class Helper {
     public static String getWrapperType(Type type) {
         return getWrapperClass(type).getSimpleName();
     }
-    
+
     /**
      * Returns true if the name of a variable, method, class, etc. that
      * represents an invalid Java identifier or false otherwise.
-     * 
+     *
      * @param identifier
      *              The name of a variable, method, class, etc.
      * @return true if an identifier contains valid Java characters.
@@ -171,7 +171,7 @@ public class Helper {
         }
         return true;
     }
-    
+
     public static String getPackage(String packageName, String sourceFile) {
         // An invocation comes from a external file (an import) if the source
         // file from which the invocation was made is different to the package
@@ -186,17 +186,17 @@ public class Helper {
         // source file
         return sourceFile;
     }
-    
-    public static void writeToFile(String output, String filename, String workdir) {
+
+    public static void writeToFile(String output, String filename, String workdir, String extension) {
         Writer writer = null;
         try {
             String home = System.getProperty("user.home");
-            File f = new File(home + File.separator + workdir);            
+            File f = new File(home + File.separator + workdir);
             if (!f.exists()) {
                 System.out.println("Missing working directory!");
                 System.exit(1);
             }
-            String outFile = f.getAbsolutePath() + File.separator + filename + ".java";
+            String outFile = f.getAbsolutePath() + File.separator + filename + extension;
             writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), "utf-8"));
             writer.write(output);
             writer.close();

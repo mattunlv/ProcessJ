@@ -9,11 +9,13 @@ import ast.Compilation;
 import butters.Butters;
 import codegen.Helper;
 import codegen.java.CodeGenJava;
+import codegen.cpp.CodeGenCPP;
 import library.Library;
 import namechecker.ResolveImports;
 import parser.parser;
 import printers.ParseTreePrinter;
 import rewriters.CastRewrite;
+import rewriters.IOCallsRewrite;
 import scanner.Scanner;
 import utilities.PJBugManager;
 import utilities.ConfigFileReader;
@@ -27,35 +29,35 @@ import utilities.VisitorMessageNumber;
 
 /**
  * ProcessJ compiler.
- * 
+ *
  * @author ben
  */
 public class ProcessJc {
-    
+
     // Kinds of available options for the ProcessJ compiler
     public static enum OptionType {
         STRING,
         BOOLEAN;
     }
-    
+
     public static class Option {
         protected String fieldName;
         protected String optionName;
         protected OptionType optionType;
         protected String description;
-        
+
         public Option(String field, String option, OptionType type, String desc) {
             this.fieldName = field;
             this.optionName = option;
             this.optionType = type;
             this.description = desc;
         }
-        
+
         public Option(String field, String option, String desc) {
             this(field, option, OptionType.BOOLEAN, desc);
         }
     }
-    
+
     // List of available options for the ProcessJ compiler
     public static final Option[] OPTIONS = {
             new Option("showColor", "-showColor", "Use color on terminals that support ansi espace codes"),
@@ -72,7 +74,7 @@ public class ProcessJc {
             new Option("pjfile", "-pjfile", OptionType.STRING, ""),
             new Option("javafile", "-javafile", OptionType.STRING, ""),
     };
-    
+
     // <--
     // Fields used by the ProcessJ compiler
     public boolean showColor = false;
@@ -84,7 +86,7 @@ public class ProcessJc {
     public boolean visitAll = false;
     public boolean showTree = false;
     // -->
-    
+
     // <--
     // Field used by the Butters tool
     public boolean install = false;
@@ -93,24 +95,22 @@ public class ProcessJc {
     public String pjfile = null;
     public String javafile = null;
     // -->
-    
+
     private List<String> inputFiles = new ArrayList<>();
     private String[] args = null;
     private Properties config = ConfigFileReader.openConfiguration();
-    
+
     /**
      * Program execution begins here.
-     * 
+     *
      * @param args
      *          A vector of command arguments passed to the compiler.
      */
     public static void main(String[] args) {
-        
         // Send frequency file over HTTP to the ProcessJ server but
         // only if the size of the error file is 1MB or more.
         // Otherwise, we ignore the request made by the compiler
 //        FrequencyFileProcessing.updateFrequency();
-        
         ProcessJc pJc = new ProcessJc(args);
         // Do we have any arguments??
         if ( args.length==2 ) { // @0: -include, @1: path
@@ -122,17 +122,16 @@ public class ProcessJc {
             System.out.println("...");
             pJc.printUsageAndExit();
         }
-        
+
         if ( pJc.help ) {
             pJc.printUsageAndExit();
         }
         if ( pJc.version ) {
             pJc.version();
         }
-        
         Settings.includeDir = pJc.include;
         AST root = null;
-        
+
         // Process Butters source file, one by one
         if ( pJc.install ) {
             // Process nativelib
@@ -193,7 +192,7 @@ public class ProcessJc {
                 System.err.println(e.getMessage());
                 System.exit(1);
             }
-            
+
             try {
                 java_cup.runtime.Symbol r = ((parser) p).parse();
                 root = (AST) r.value;
@@ -237,30 +236,30 @@ public class ProcessJc {
             if ( pJc.showTree ) {
                 c.visit(new ParseTreePrinter());
             }
-            
+
             SymbolTable.hook = null;
-            
+
             // Visit import declarations
             System.out.println("-- Resolving imports.");
             c.visit(new namechecker.ResolveImports<AST>(globalTypeTable));
             globalTypeTable.printStructure("");
-            
+
             // Visit top-level declarations
             System.out.println("-- Declaring Top Level Declarations.");
             c.visit(new namechecker.TopLevelDecls<AST>(globalTypeTable));
-            
+
             // Visit and re-construct record types correctly
             System.out.println("-- Reconstructing records.");
             c.visit(new rewriters.RecordRewrite(globalTypeTable));
-            
+
             // Visit and re-construct protocol types correctly
             System.out.println("-- Reconstructing protocols.");
             c.visit(new rewriters.ProtocolRewrite(globalTypeTable));
-            
+
             // Visit and re-construct if-stmt, while-stmt, for-stmt, and do-stmt
             System.out.println("-- Reconstructing statements.");
             c.visit(new rewriters.StatementRewrite());
-            
+
             // Visit and resolve import for top-level declarations
             System.out.println("-- Checking native Top Level Declarations.");
             c.visit(new namechecker.ResolveNativeImports());
@@ -268,11 +267,11 @@ public class ProcessJc {
             // Visit and resolve types from imported packages
             System.out.println("-- Resolving imported types.");
             c.visit(new namechecker.ResolvePackageTypes());
-            
+
             // Visit name checker
             System.out.println("-- Checking name usage.");
             c.visit(new namechecker.NameChecker<AST>(globalTypeTable));
-            
+
             // Visit and re-construct array types correctly
             System.out.println("-- Reconstructing array types.");
             root.visit(new namechecker.ArrayTypeConstructor());
@@ -280,79 +279,91 @@ public class ProcessJc {
             // Visit and re-construct array literals
             System.out.println("-- Reconstructing array literas.");
             c.visit(new rewriters.ArraysRewrite());
-            
+
             // Visit resolve named type
             System.out.println("-- Resolving named type.");
             c.visit(new typechecker.ResolveNamedType(globalTypeTable));
-            
+
             // Visit type checker
             System.out.println("-- Checking types.");
             c.visit(new typechecker.TypeChecker(globalTypeTable));
-            
+
             // Visit a switch statement case
             System.out.println("-- Checking break for protocols.");
             c.visit(new rewriters.SwitchStmtRewrite());
-            
+
             // Visit cast-rewrite
             System.out.println("-- Rewriting cast-expressions.");
             c.visit(new CastRewrite());
-            
+
             // Visit reachability
             System.out.println("-- Computing reachability.");
             c.visit(new reachability.Reachability());
-            
+
             // Visit parallel usage
             System.out.println("-- Performing parallel usage check.");
             //c.visit(new parallel_usage_check.ParallelUsageCheck());
-            
+
             // Visit yield
             System.out.println("-- Annotating procedures that may issue a yield call.");
             c.visit(new yield.Yield());
-            
+
             System.out.println("-- Marking yielding statements and expressions.");
             c.visit(new rewriters.Yield());
-            
+
             System.out.println("-- Checking literal inits are free of channel communication.");
             c.visit(new semanticcheck.LiteralInits());
-            
+
             System.out.println("-- Rewriting infinite loops.");
             new rewriters.InfiniteLoopRewrite().go(c);
-            
+
             System.out.println("-- Rewriting loops.");
             c.visit(new rewriters.UnrollLoopRewrite());
-            
+
             System.out.println("-- Performing alt statement usage check.");
             c.visit(new rewriters.AltStatRewrite());
-            
+
 //            Log.doLog = true;
             System.out.println("-- Rewriting yielding expressions.");
             c.visit(new rewriters.ChannelRead());
 //            Log.doLog = false;
-            
+
             System.out.println("-- Rewriting parblocks statements");
             c.visit(new rewriters.ParBlockRewrite());
-            
+
             //System.out.println("Lets reprint it all");
             //c.visit(new printers.ParseTreePrinter());
             //c.visit(new printers.PrettyPrinter());
             System.out.println("-- Checking break and continue labels.");
             new semanticcheck.LabeledBreakContinueCheck().go(c);
-            
+
             System.out.println("-- Collecting left-hand sides for par for code generation.");
             c.visit(new rewriters.ParFor());
+
+            // If we're generating C++ code, we need to rewrite print/println statements
+            if (pJc.target/*Settings.language*/ == Language.CPLUS) {
+                System.out.println("-- Rewriting calls to print() and println().");
+                c.visit(new IOCallsRewrite());
+            }
+
             // Run the code generator for the known (specified) target language
-            if ( Settings.language==pJc.target )
-                pJc.generateCodeJava(c, inFile, globalTypeTable);
+            if (pJc.target == Language.CPLUS || pJc.target == Language.JVM/*Settings.language==pJc.target*/ )
+                if (pJc.target == Language.JVM/*Settings.language == Language.JVM*/) {
+                    pJc.generateCodeJava(c, inFile, globalTypeTable);
+                } else if (pJc.target == Language.CPLUS/*Settings.language == Language.CPLUS*/) {
+                    Log.startLogging();
+                    pJc.generateCodeCPP(c, inFile, globalTypeTable);
+                }
             else {
                 // Unknown target language so abort/terminate program
                 System.out.println("Invalid target language!");
                 System.exit(1);
             }
-            
+
             System.out.println("** COMPILATION COMPLITED SUCCESSFULLY **");
         }
     }
-    
+
     /**
      * Given a ProcessJ Compilation unit, e.g., an abstract syntax tree object,
      * we will generate the code for the JVM. The source range for this type of
@@ -379,9 +390,18 @@ public class ProcessJc {
         // after returning strings rendered by the string template
         String code = (String) c.visit(codeGen);
         // Write the output to a file
-        Helper.writeToFile(code, c.fileNoExtension(), codeGen.workingDir());
+        Helper.writeToFile(code, c.fileNoExtension(), codeGen.workingDir(), ".java");
     }
-    
+
+    private void generateCodeCPP(Compilation c, File inFile, SymbolTable s) {
+        Properties p = utilities.ConfigFileReader.getProcessJConfig();
+        CodeGenCPP codeGen = new CodeGenCPP(s);
+        codeGen.setWorkingDir(p.getProperty("workingdir"));
+        // codeGen.sourceProgam(c.fileNoExtension());
+        String code = (String) c.visit(codeGen);
+        Helper.writeToFile(code, c.fileNoExtension(), codeGen.getWorkingDir(), ".cpp");
+    }
+
     public ProcessJc(String[] args) {
         this.args = args;
         Settings.showColor = Boolean.valueOf(config.getProperty("color"));
@@ -390,8 +410,8 @@ public class ProcessJc {
         // Switch to turn color mode ON/OFF
         ANSIColorMode();
     }
-    
-    public void ANSIColorMode() {        
+
+    public void ANSIColorMode() {
         // Check default value before switching mode to on/off
         if ( !Settings.showColor && this.showColor ) {// Color mode 'ON'
             config.setProperty("color", String.valueOf(Boolean.TRUE));
@@ -401,7 +421,7 @@ public class ProcessJc {
         Settings.showColor = Boolean.valueOf(config.getProperty("color"));
         ConfigFileReader.closeConfiguration(config);
     }
-    
+
     public void parseArgs() {
         for (int pos=0; pos<args.length;) {
             String arg = args[pos++];
@@ -422,11 +442,19 @@ public class ProcessJc {
                         Class<? extends ProcessJc> c = this.getClass();
                         try {
                             Field f = c.getField(o.fieldName);
-                            if ( optionValue!=null )
-                                f.set(this, optionValue);
+                            if ( optionValue!=null ) {
+                                // Setting the Language enum directly from a String is incompatible.
+                                // Reflecting the type is necessary since the generic way of setting
+                                // the field (e.g. field.set()) will not work but retrieving the value
+                                // corresponding to the enum field will. TODO: Can we do better?
+                                if(f.getType().getName().equals("utilities.Language")) {
+                                    f.set(this, Language.valueOf((Class<Language>) f.getType(), optionValue));
+                                } else f.set(this, optionValue);
+                            }
                             else
                                 f.set(this, true);
                         } catch (Exception e) {
+                        System.out.println(e);
                             System.out.println("Failed to access field '" + o.fieldName + "'");
                             exit(101);
                         }
@@ -440,19 +468,19 @@ public class ProcessJc {
             }
         }
     }
-    
+
     public void printUsageAndExit() {
         for (Option o : OPTIONS)
             System.out.println(String.format("%-20s %s", o.optionName, o.description));
         exit(0);
     }
-    
+
     public void version() {
         String msg = "ProcessJ Version: " + Settings.VERSION;
         System.err.println(msg);
         exit(0);
     }
-    
+
     public void exit(int code) {
         System.exit(code);
     }
