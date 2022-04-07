@@ -8,12 +8,12 @@
  * \date 03/13/2022
  */
 
-#ifndef UNLV_PROCESS_J_WINDOW_COMPONENT_LISTENER_HPP
-#define UNLV_PROCESS_J_WINDOW_COMPONENT_LISTENER_HPP
+#ifndef UNLV_PROCESS_J_SYSTEM_WINDOW_COMPONENT_LISTENER_HPP
+#define UNLV_PROCESS_J_SYSTEM_WINDOW_COMPONENT_LISTENER_HPP
 
-namespace ProcessJRuntime{ class WindowComponentListener; }
+namespace ProcessJSystem{ class WindowComponentListener; }
 
-class ProcessJRuntime::WindowComponentListener {
+class ProcessJSystem::WindowComponentListener {
 
     /// ---------------
     /// Public Members
@@ -27,6 +27,14 @@ public:
      */
 
    virtual void OnComponentDirty(void*) = 0;
+
+   /*!
+    * Invoked when a child view is requesting to be re-measured
+    *
+    * \parm component The Component that is requesting to be re-measured
+    */
+
+   virtual void RequestLayout(void*) = 0;
 
 
 };

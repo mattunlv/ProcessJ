@@ -29,15 +29,15 @@
 #include<sys/types.h>
 #include<sched.h>
 #include<pthread.h>
+#include<stdio.h>
+#include<stdarg.h>
 
 #include<Types.hpp>
 #include<Constants.hpp>
 #include<Variables.hpp>
 
-#include<System.hpp>
-#include<WindowComponentListener.hpp>
-#include<WindowComponent.hpp>
-#include<TerminalWindow.hpp>
+#include<Array.hpp>
+#include<String.hpp>
 #include<Logger.hpp>
 #include<Utilities.hpp>
 #include<Process.hpp>
@@ -57,7 +57,5 @@
 #include<Record.hpp>
 #include<Protocol.hpp>
 #include<Par.hpp>
-#include<Array.hpp>
-#include<String.hpp>
 
 #endif

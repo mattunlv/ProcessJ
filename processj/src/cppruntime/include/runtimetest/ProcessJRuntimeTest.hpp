@@ -3,6 +3,7 @@
 
 #pragma once
 #include<ProcessJRuntime.hpp>
+#include<ProcessJSystem.hpp>
 #include<Test.hpp>
 #include<SingleCoreTest.hpp>
 #include<OneToOneTest.hpp>

@@ -89,6 +89,14 @@ public:
 
     const ProcessJRuntime::UInteger32& size() const;
 
+    /*!
+     * Resizes the ProcessJRuntime::Array
+     *
+     * \param size The desired ProcessJRuntime::Array size
+     */
+
+    void resize(ProcessJRuntime::UInteger32);
+
     /// --------------------
     /// Overloaded Operators
 
@@ -242,6 +250,35 @@ template<typename Type>
 const ProcessJRuntime::UInteger32& ProcessJRuntime::Array<Type>::size() const {
 
     return length;
+
+}
+
+/*!
+ * Resizes the ProcessJRuntime::Array
+ *
+ * \param size The desired ProcessJRuntime::Array size
+ */
+
+template<typename Type>
+void ProcessJRuntime::Array<Type>::resize(ProcessJRuntime::UInteger32 size) {
+
+    if(length != size) {
+
+        // Create a new block
+        Type* newBlock = new Type[size];
+
+        // Copy the contents over
+        for(ProcessJRuntime::Size index = 0; (index < length) && (index < size); index++)
+            newBlock[index] = array[index];
+
+        // Release the array
+        delete[] array;
+
+        // Set the members
+        this->length = size     ;
+        this->array  = newBlock ;
+
+    }
 
 }
 

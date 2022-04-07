@@ -22,8 +22,8 @@ private:
     /// --------------
     /// Static Members
 
-    static ProcessJRuntime::System* SystemHandle        ; /*< Pointer to the System                             */
-    static ProcessJRuntime::Flag    SystemInitialized   ; /*< Flag denoting if the System has been initialized  */
+    static ProcessJSystem::System* SystemHandle        ; /*< Pointer to the System                             */
+    static ProcessJSystem::Flag    SystemInitialized   ; /*< Flag denoting if the System has been initialized  */
 
 };
 

@@ -12,5 +12,5 @@
 /// ------------------------------
 /// Static Member Initilialization
 
-ProcessJRuntime::System* ProcessJTest::Test::SystemHandle       = 0 ;
-ProcessJRuntime::Flag    ProcessJTest::Test::SystemInitialized  = 0 ;
+ProcessJSystem::System* ProcessJTest::Test::SystemHandle       = 0 ;
+ProcessJSystem::Flag    ProcessJTest::Test::SystemInitialized  = 0 ;
