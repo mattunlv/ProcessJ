@@ -40,14 +40,6 @@ public:
 
     void onMeasure(ProcessJSystem::Integer32, ProcessJSystem::Integer32);
 
-    /*!
-     * Invoked when the ProcessJSystem::WindowComponent should draw itself
-     */
-
-    template<typename OutputStream>
-    OutputStream& draw(OutputStream&);
-
-
 };
 
 #endif

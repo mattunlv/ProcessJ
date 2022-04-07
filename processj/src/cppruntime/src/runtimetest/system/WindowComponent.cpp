@@ -27,6 +27,7 @@ const ProcessJSystem::Orientation   ProcessJSystem::WindowComponent::Center     
 
 ProcessJSystem::WindowComponent::WindowComponent(ProcessJSystem::WindowComponentListener* windowComponentListener):
 buffer(), height(0), width(0), positionX(0), positionY(0),
+backgroundFill(' '),
 horizontalOrientation(ProcessJSystem::WindowComponent::Center),
 verticalOrientation(ProcessJSystem::WindowComponent::Center),
 horizontalViewSpecification(ProcessJSystem::WindowComponent::Exactly),
@@ -104,6 +105,52 @@ void ProcessJSystem::WindowComponent::setYPosition(ProcessJSystem::Integer32 pos
 
     this->positionY = positionY ;
     this->isDirty   = true      ;
+
+    if(windowComponentListener)
+        windowComponentListener->OnComponentDirty(this);
+
+}
+
+/*!
+ * Mutates the backgroundFill of the ProcessJSystem::WindowComponent
+ *
+ * \param backgroundFill The desired backgroundFill for the ProcessJSystem::WindowComponent
+ */
+
+void ProcessJSystem::WindowComponent::setBackgroundFill(ProcessJSystem::Character backgroundFill) {
+
+    this->backgroundFill = backgroundFill   ;
+    this->isDirty        = true             ;
+
+    if(windowComponentListener)
+        windowComponentListener->OnComponentDirty(this);
+
+}
+
+/*!
+ * Sets the horizontal orientation of the ProcessJSystem::WindowComponent
+ *
+ * \param horizontalOrientation The desired horizontalOrientation
+ */
+
+void ProcessJSystem::WindowComponent::setHorizontalOrientation(ProcessJSystem::Orientation horizontalOrientation) {
+
+    this->horizontalOrientation = horizontalOrientation;
+
+    if(windowComponentListener)
+        windowComponentListener->OnComponentDirty(this);
+
+}
+
+/*!
+ * Mutates the vertical orientation of the ProcessJSystem::WindowComponent
+ *
+ * \param verticalOrientation The desired verticalOrientation
+ */
+
+void ProcessJSystem::WindowComponent::setVerticalOrientation(ProcessJSystem::Orientation verticalOrientation) {
+
+    this->verticalOrientation = verticalOrientation;
 
     if(windowComponentListener)
         windowComponentListener->OnComponentDirty(this);
