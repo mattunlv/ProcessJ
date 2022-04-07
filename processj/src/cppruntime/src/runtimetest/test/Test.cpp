@@ -12,5 +12,31 @@
 /// ------------------------------
 /// Static Member Initilialization
 
-ProcessJSystem::System* ProcessJTest::Test::SystemHandle       = 0 ;
-ProcessJSystem::Flag    ProcessJTest::Test::SystemInitialized  = 0 ;
+#ifndef PROCESS_J_RUNTIME_TEST_TEST_STATIC_MEMBERS
+#define PROCESS_J_RUNTIME_TEST_TEST_STATIC_MEMBERS
+
+ProcessJSystem::System*     ProcessJTest::Test::SystemHandle       = 0 ;
+ProcessJSystem::Flag        ProcessJTest::Test::SystemInitialized  = 0 ;
+ProcessJTest::UInteger32    ProcessJTest::Test::Instances          = 0 ;
+
+#endif
+
+
+/*!
+ * Primary constructor. Initializes the ProcessJTest::Test
+ * to its' default state.
+ */
+
+ProcessJTest::Test::Test(): start(), end(), windowComponent(0) { /* Empty */ }
+
+/*!
+ * Destructor. Releases any memory managed by the
+ * ProcessJTest::Test
+ */
+
+ProcessJTest::Test::~Test() {
+
+    // Release if we have it
+    if(windowComponent) delete windowComponent;
+
+}

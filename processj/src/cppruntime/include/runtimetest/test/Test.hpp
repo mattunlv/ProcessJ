@@ -22,15 +22,33 @@ private:
     /// --------------
     /// Static Members
 
-    static ProcessJSystem::System* SystemHandle        ; /*< Pointer to the System                             */
-    static ProcessJSystem::Flag    SystemInitialized   ; /*< Flag denoting if the System has been initialized  */
+    static ProcessJSystem::System* SystemHandle         ; /*< Pointer to the System                             */
+    static ProcessJSystem::Flag    SystemInitialized    ; /*< Flag denoting if the System has been initialized  */
+    static ProcessJTest::UInteger32 Instances           ; /*< The number of active test instances               */
 
     /// ----------------
     /// Member Variables
 
     ProcessJTest::TimePoint          start             ; /*< ProcessJTest::TimePoint instance that represents the start time    */
     ProcessJTest::TimePoint          end               ; /*< ProcessJTest::TimePoint instance that represents the end time      */
-    ProcessJSystem::WindowComponent* windowCompoent    ; /*< ProcessJSystem::WindowComponent that displays test results         */
+    ProcessJTest::WindowComponent*   windowComponent   ; /*< ProcessJSystem::WindowComponent that displays test results         */
+
+    /// ------------
+    /// Constructors
+
+    /*!
+     * Primary constructor. Initializes the ProcessJTest::Test
+     * to its' default state.
+     */
+
+    Test();
+
+    /*!
+     * Destructor. Releases any memory managed by the
+     * ProcessJTest::Test
+     */
+
+    ~Test();
 
 };
 
