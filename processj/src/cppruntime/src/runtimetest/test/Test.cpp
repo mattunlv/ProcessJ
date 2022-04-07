@@ -27,7 +27,12 @@ ProcessJTest::UInteger32    ProcessJTest::Test::Instances          = 0 ;
  * to its' default state.
  */
 
-ProcessJTest::Test::Test(): start(), end(), windowComponent(0) { /* Empty */ }
+ProcessJTest::Test::Test(): start(), end(), windowComponent(0) {
+
+    // Increase the number of active instances
+    ProcessJTest::Test::Instances++;
+
+}
 
 /*!
  * Destructor. Releases any memory managed by the
@@ -38,5 +43,8 @@ ProcessJTest::Test::~Test() {
 
     // Release if we have it
     if(windowComponent) delete windowComponent;
+
+    // Decrease the number of active instances
+    ProcessJTest::Test::Instances--;
 
 }
