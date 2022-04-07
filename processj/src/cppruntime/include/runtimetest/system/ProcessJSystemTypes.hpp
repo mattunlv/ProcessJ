@@ -1,17 +1,17 @@
 /*!
  *
- * ProcessJRuntime::Types declaration. Defines types that are used throughout
- * the ProcessJRuntime to promote refactorablility
+ * ProcessJSystem::Types declaration. Defines types that are used throughout
+ * the ProcessJSystem to promote refactorablility
  *
  * \author Carlos L. Cuenca
  * \date 03/13/2022
  * \version 1.0.0
  */
 
-#ifndef UNLV_PROCESS_J_TYPES_HPP
-#define UNLV_PROCESS_J_TYPES_HPP
+#ifndef UNLV_PROCESS_J_SYSTEM_TYPES_HPP
+#define UNLV_PROCESS_J_SYSTEM_TYPES_HPP
 
-namespace ProcessJRuntime {
+namespace ProcessJSystem {
 
     /*!
      * \var typedef bool Flag;
@@ -132,6 +132,14 @@ namespace ProcessJRuntime {
      */
 
     typedef std::ostream OutputStream   ;
+
+    /*!
+     * \var typedef ProcessJRuntime::Array Array;
+     * \brief Type definition for a ProcessJRuntime::Array
+     */
+
+    template<typename Type>
+    using Array = ProcessJRuntime::Array<Type>;
 
 }
 
