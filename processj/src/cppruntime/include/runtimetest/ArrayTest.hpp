@@ -25,13 +25,33 @@ protected:
      * \return ProcessJTest::WindowComponent pointer.
      */
 
-    ProcessJTest::WindowComponent* getCreatedWindowComponent() const;
+    ProcessJTest::WindowComponent* createWindowComponent() const;
 
     /*!
      * Contains the ProcessJTest::ArrayTest logic.
      */
 
     void run();
+
+    /// --------------
+    /// Public Members
+
+public:
+
+    /// --------------------
+    /// Overloaded Operators
+
+    /*!
+     * Overloaded implicit/explicit conversion operator. Simply returns
+     * the ProcessJTest::TextComponent reference associated
+     * with the ProcessJTest::ArrayTest. If no ProcessJSystem::TextComponent
+     * exists (ProcessJTest::Test::createWindowComponent is not overridden),
+     * then this throws a ProcessJTest::Test::NoWindowComponentException().
+     *
+     * \return Mutable reference to the ProcessJ::Test::TextComponent.
+     */
+
+    operator ProcessJSystem::TextComponent&();
 
 };
 

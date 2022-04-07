@@ -28,7 +28,7 @@ public:
      * callbacks on ProcessJRuntim::VerticalLayout state mutations
      */
 
-    VerticalLayout(ProcessJSystem::WindowComponentListener*);
+    VerticalLayout(ProcessJSystem::WindowComponent::Listener*);
 
     /*!
      * Invoked when the ProcessJSystem::WindowComponent should

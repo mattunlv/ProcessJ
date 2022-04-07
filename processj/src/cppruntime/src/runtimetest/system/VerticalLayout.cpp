@@ -16,7 +16,7 @@
  * callbacks on ProcessJRuntim::WindowComponent state mutations
  */
 
-ProcessJSystem::VerticalLayout::VerticalLayout(ProcessJSystem::WindowComponentListener* windowComponentListener):
+ProcessJSystem::VerticalLayout::VerticalLayout(ProcessJSystem::WindowComponent::Listener* windowComponentListener):
 ProcessJSystem::WindowComponentGroup(windowComponentListener) { /* Empty */ }
 
 /*!
@@ -40,7 +40,6 @@ void ProcessJSystem::VerticalLayout::onMeasure(ProcessJSystem::Integer32 width, 
     for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
         for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
             buffer[row][column] = backgroundFill;
-
     for(ProcessJSystem::Size child = 0; child < children.size(); child++) {
 
         // Retrieve the component

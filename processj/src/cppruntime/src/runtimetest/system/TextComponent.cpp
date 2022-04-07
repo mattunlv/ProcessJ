@@ -18,7 +18,7 @@
  * callbacks on ProcessJRuntim::TextComponent state mutations
  */
 
-ProcessJSystem::TextComponent::TextComponent(ProcessJSystem::WindowComponentListener* windowComponentListener):
+ProcessJSystem::TextComponent::TextComponent(ProcessJSystem::WindowComponent::Listener* windowComponentListener):
 ProcessJSystem::WindowComponent(windowComponentListener),
 text(0), textLength(0), leftBorderWidth(0), rightBorderWidth(0),
 topBorderWidth(0), bottomBorderWidth(0), leftBorderFill('/'), rightBorderFill('/'),
@@ -261,16 +261,16 @@ void ProcessJSystem::TextComponent::setBorderWidth(ProcessJSystem::UInteger32 bo
  * \param text The desired Text
  */
 
-void ProcessJSystem::TextComponent::setText(ProcessJSystem::SimpleString text) {
+void ProcessJSystem::TextComponent::setText(ProcessJSystem::SimpleString string) {
 
-    ProcessJSystem::UInteger32     length  = 0     ;
-    ProcessJSystem::SimpleString   current = text  ;
+    ProcessJSystem::UInteger32     length  = 0          ;
+    ProcessJSystem::SimpleString   current = string     ;
 
     // Count the characters
     while(*current++) length++;
 
     this->textLength = length   ;
-    this->text       = text     ;
+    this->text       = string   ;
 
     if(windowComponentListener)
         windowComponentListener->RequestLayout(this);

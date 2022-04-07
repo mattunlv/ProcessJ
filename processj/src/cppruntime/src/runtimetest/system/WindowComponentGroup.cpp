@@ -16,7 +16,7 @@
  * callbacks on ProcessJRuntim::WindowComponent state mutations
  */
 
-ProcessJSystem::WindowComponentGroup::WindowComponentGroup(ProcessJSystem::WindowComponentListener* windowComponentListener):
+ProcessJSystem::WindowComponentGroup::WindowComponentGroup(ProcessJSystem::WindowComponent::Listener* windowComponentListener):
 ProcessJSystem::WindowComponent(windowComponentListener) { /* Empty */ }
 
 /*!
@@ -25,11 +25,11 @@ ProcessJSystem::WindowComponent(windowComponentListener) { /* Empty */ }
  * \param component The Component to be drawn as a void pointer
  */
 
-void ProcessJSystem::WindowComponentGroup::OnComponentDirty(void* component) {
+void ProcessJSystem::WindowComponentGroup::OnComponentDirty(ProcessJSystem::WindowComponent* component) {
 
     // Simply Delegate up
     if(windowComponentListener)
-        windowComponentListener->OnComponentDirty(this);
+        windowComponentListener->OnComponentDirty(component);
 
 }
 
@@ -39,11 +39,32 @@ void ProcessJSystem::WindowComponentGroup::OnComponentDirty(void* component) {
  * \parm component The Component that is requesting to be re-measured
  */
 
-void ProcessJSystem::WindowComponentGroup::RequestLayout(void* component) {
+void ProcessJSystem::WindowComponentGroup::RequestLayout(ProcessJSystem::WindowComponent* component) {
 
     if(windowComponentListener)
         windowComponentListener->RequestLayout(component);
 
+}
+
+/*!
+ * Invoked when a child is releasing itself.
+ *
+ * \param component The Component that had its' destructor called.
+ */
+
+void ProcessJSystem::WindowComponentGroup::OnChildReleased(ProcessJSystem::WindowComponent* component) {
+
+    auto start = children.begin();
+    auto end   = children.end();
+
+    // Iterate until the end or we find a match
+    while((start != end) && (*start != component)) start++;
+
+    // Erase the current if we haven't reached the end
+    if(start != end) children.erase(start);
+
+    if(windowComponentListener)
+        windowComponentListener->RequestLayout(this);
 }
 
 /*!

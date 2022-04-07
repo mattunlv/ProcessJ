@@ -60,7 +60,7 @@ int32_t main(void) {
     ProcessJSystem::System::SetRawMode();
 
     // Create a terminal window
-    ProcessJSystem::TerminalWindow window(80, 24);
+    ProcessJSystem::TerminalWindow window(160, 48);
 
     //ProcessJTest::one2one_test oto_test;
     //oto_test.run();
@@ -99,28 +99,24 @@ int32_t main(void) {
     //sm_test.run();
 
     ProcessJTest::ArrayTest arrayTest;
+    //ProcessJTest::ArrayTest otherArrayTest;
     arrayTest();
 
-    // Get the window component
-    ProcessJTest::WindowComponent*  windowComponent = arrayTest.getWindowComponent();
-    ProcessJSystem::VerticalLayout* verticalLayout  = new ProcessJSystem::VerticalLayout(&window);
 
-    ProcessJSystem::TextComponent* textComponent = dynamic_cast<ProcessJTest::TextComponent*>(windowComponent);
-    ProcessJSystem::TextComponent* other            = new ProcessJSystem::TextComponent(0);
+    // Create the window view
+    ProcessJSystem::VerticalLayout  verticalLayout(&window);
+    ProcessJSystem::TextComponent&   textComponent      = arrayTest;
 
-    textComponent->setLeftBorderFill('/');
-    textComponent->setTopBorderFill('-');
-    textComponent->setLeftBorderWidth(2);
-    textComponent->setRightBorderWidth(2);
-    textComponent->setBottomBorderWidth(1);
-    textComponent->setTopBorderWidth(1);
+    //ProcessJSystem::TextComponent   otherTextComponent = otherArrayTest;
 
     // Add the child
-    verticalLayout->addChild(windowComponent);
+    verticalLayout.addChild(&textComponent);
     //verticalLayout->addChild(other);
 
+    //textComponent.setText("Hello, world!");
+
     // Set it as the root view
-    window.setRootView(verticalLayout);
+    window.setRootView(&verticalLayout);
 
     // Set it back to cooked
     ProcessJSystem::System::SetCookedMode();

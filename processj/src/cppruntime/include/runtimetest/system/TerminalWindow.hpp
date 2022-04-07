@@ -13,7 +13,7 @@
 
 namespace ProcessJSystem{ class TerminalWindow; }
 
-class ProcessJSystem::TerminalWindow : public ProcessJSystem::WindowComponentListener {
+class ProcessJSystem::TerminalWindow : public ProcessJSystem::WindowComponent::Listener {
 
     /// ---------------
     /// Private Members
@@ -46,7 +46,7 @@ public:
      * \param component The Component to be drawn as a void pointer
      */
 
-   void OnComponentDirty(void*);
+   void OnComponentDirty(ProcessJSystem::WindowComponent*);
 
    /*!
     * Invoked when a child view is requesting to be re-measured
@@ -54,7 +54,15 @@ public:
     * \parm component The Component that is requesting to be re-measured
     */
 
-   void RequestLayout(void*);
+   void RequestLayout(ProcessJSystem::WindowComponent*);
+
+   /*!
+    * Invoked when a child is releasing itself.
+    *
+    * \param component The Component that had its' destructor called.
+    */
+
+   void OnChildReleased(ProcessJSystem::WindowComponent*);
 
     /*!
      * Mutates the terminal's root view
