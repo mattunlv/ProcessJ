@@ -28,7 +28,9 @@ private:
     /// ----------------
     /// Member Variables
 
-    ProcessJSystem::WindowComponent* windowCompoent    ; /*< ProcessJSystem::WindowComponent that displays test results */
+    ProcessJTest::TimePoint          start             ; /*< ProcessJTest::TimePoint instance that represents the start time    */
+    ProcessJTest::TimePoint          end               ; /*< ProcessJTest::TimePoint instance that represents the end time      */
+    ProcessJSystem::WindowComponent* windowCompoent    ; /*< ProcessJSystem::WindowComponent that displays test results         */
 
 };
 
