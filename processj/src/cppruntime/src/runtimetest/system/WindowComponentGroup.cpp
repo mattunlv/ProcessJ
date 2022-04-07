@@ -74,18 +74,18 @@ void ProcessJSystem::WindowComponentGroup::OnChildReleased(ProcessJSystem::Windo
  * \param child The child to add to the WindowComponent tree
  */
 
-void ProcessJSystem::WindowComponentGroup::addChild(ProcessJSystem::WindowComponent* child) {
+void ProcessJSystem::WindowComponentGroup::addChild(ProcessJSystem::WindowComponent& child) {
 
     ProcessJSystem::Flag inList = false;
 
     for(ProcessJSystem::Size index = 0; (index < children.size()) && !inList; index++)
-        inList = (children[index] == child);
+        inList = (children[index] == &child);
 
     if(!inList) {
 
         this->isDirty = true;
-        child->setWindowComponentListener(this);
-        children.push_back(child);
+        child.setWindowComponentListener(this);
+        children.push_back(&child);
 
         if(windowComponentListener)
             windowComponentListener->RequestLayout(this);
