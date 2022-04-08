@@ -13,6 +13,11 @@
 
 namespace ProcessJSystem {
 
+    /// -------
+    /// Strings
+
+    static SimpleString AssertionErrorSubscriptOperatorDoesNotThrowExceptionMessage = "Error: Subscript operator does not throw exception with invalid indices.";
+
     /// ----------
     /// Characters
 
