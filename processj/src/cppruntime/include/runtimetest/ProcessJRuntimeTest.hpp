@@ -24,7 +24,6 @@
 #include<AnonProcTest.hpp>
 #include<ParTest.hpp>
 #include<StaticMethodTest.hpp>
-#include<ArrayTest.hpp>
 #include<StringTest.hpp>
 
 #endif

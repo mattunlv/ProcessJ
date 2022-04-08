@@ -150,7 +150,7 @@ public:
      * \param text The desired Text
      */
 
-    void setText(ProcessJSystem::SimpleString);
+    void setText(ProcessJSystem::StringLiteral);
 
     /*!
      * Sets the horizontal text orientation
