@@ -97,21 +97,12 @@ int32_t main(void) {
     ProcessJSystem::System::SetRawMode();
     ProcessJSystem::TerminalWindow window(160, 48);
 
-    ProcessJSystem::Vector<ProcessJTest::ArrayTest> tests(12);
-    // Create the window view
-    ProcessJSystem::VerticalLayout verticalLayout(&window);
-
-    for(int index = 0; index < 12; index++) {
-
-        tests[index]();
-
-        verticalLayout.addChild(tests[index]);
-
-    }
+    ProcessJTest::ArrayBatch arrayBatch;
 
     // Set it as the root view
-    window.setRootView(&verticalLayout);
+    window.setRootView(arrayBatch);
 
+    arrayBatch();
 
     // Set it back to cooked
     ProcessJSystem::System::SetCookedMode();

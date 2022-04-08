@@ -70,7 +70,7 @@ public:
      * \param rootView The root view
      */
 
-    void setRootView(ProcessJSystem::WindowComponentGroup*);
+    void setRootView(ProcessJSystem::WindowComponentGroup&);
 
 };
 
