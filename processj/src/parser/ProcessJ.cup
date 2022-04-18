@@ -1217,6 +1217,10 @@ alt_statement ::=
 	 LPAREN expression:ex RPAREN ANDAND left_hand_side:l EQ chan_read_expression:cre COLON statement:s RBRACE
         {: RESULT = new AltStat(i, e, u,
 	   new Sequence(new AltCase(ex, new Guard(new ExprStat(new Assignment(l, e, Assignment.EQ))), s)), false /* ALT */); :}
+	| ALT LPAREN for_init_opt:i SEMICOLON expression_opt:e SEMICOLON for_update_opt:u RPAREN LBRACE
+	  left_hand_side:l EQ chan_read_expression:cre COLON statement:s RBRACE
+        {: RESULT = new AltStat(i, e, u,
+	   new Sequence(new AltCase(null, new Guard(new ExprStat(new Assignment(l, e, Assignment.EQ))), s)), false /* ALT */); :}
     ;
 
 //- Sequence[AltCase :> AST] :> AST
