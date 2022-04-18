@@ -939,7 +939,7 @@ statement_without_trailing_substatement ::=
         | primary:p DOT WRITE LPAREN expression:e RPAREN SEMICOLON    
             {: RESULT = new ChannelWriteStat(p, e); :} 
         | alt_statement:s                 {: RESULT = s; :}
-        ;
+	;
 
 // **************************************************
 // 9.1 If statements
@@ -1213,8 +1213,8 @@ alt_statement ::=
         {: RESULT = new AltStat(i, e, u, b, true /* PRI ALT */); :}
         | ALT LBRACE alt_body:b RBRACE     
         {: RESULT = new AltStat(b, false /* ALT */); :}
-        | ALT LPAREN for_init_opt:i SEMICOLON expression_opt:e SEMICOLON for_update_opt:u RPAREN LBRACE alt_body:b RBRACE
-        {: RESULT = new AltStat(i, e, u, b, false /* ALT */); :}
+        | ALT LPAREN for_init_opt:i SEMICOLON expression_opt:e SEMICOLON for_update_opt:u RPAREN LBRACE alt_case:b RBRACE
+        {: RESULT = new AltStat(i, e, u, new Sequence(b), false /* ALT */); :}
     ;
 
 //- Sequence[AltCase :> AST] :> AST
