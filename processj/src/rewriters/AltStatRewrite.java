@@ -3,6 +3,7 @@ package rewriters;
 import ast.AST;
 import ast.AltCase;
 import ast.AltStat;
+import ast.Block;
 import ast.ChannelReadExpr;
 import ast.Invocation;
 import ast.Sequence;
@@ -23,9 +24,33 @@ public class AltStatRewrite extends Visitor<AST> {
     public AST visitAltStat(AltStat as) {
         Log.log(as, "Visiting an AltStat");
         Sequence<AltCase> se = as.body();
-        for (int i = 0; i < se.size(); ++i)
+	Sequence<AltCase> newBody = new Sequence<AltCase>();
+        for (int i = 0; i < se.size(); ++i) {
             se.child(i).visit(this);
-        return (AST) null;
+	    if (se.child(i).isAltStat) {
+		// Note: the actual alt statement has been wrapped in a block - take the 0th child of that block.
+		AltStat as2 = (AltStat)((Block)se.child(i).stat()).stats().child(0);
+		if (as2.isPri() && !as.isPri()) {
+		    // 1006: no pri alt inside a non-pri alt
+		    PJBugManager.INSTANCE.reportMessage(
+                            new PJMessage.Builder()
+                            .addAST(as)
+                            .addError(VisitorMessageNumber.REWRITE_1006)
+                            .build());		   
+		}
+		// now flatten by either merging se.child(i)'s children (if it is a nested alt) or just re-append.
+		// TODO: for now replicated alts just left.
+		if (as2.isReplicated()) {
+		    as2.dynamic = true;      
+		    newBody.append(se.child(i));
+		} else
+		    newBody.merge(as2.body());
+		as.dynamic = as.dynamic || as2.isDynamic();		
+	    } else
+		newBody.append(se.child(i));   
+	}
+	as.children[3] = newBody;
+	return (AST) null;
     }
     
     @Override
@@ -62,6 +87,8 @@ public class AltStatRewrite extends Visitor<AST> {
                         .addError(VisitorMessageNumber.REWRITE_1003)
                         .build());
         }
+	if (ac.isAltStat())
+	    ac.stat().visit(this);
         return (AST) null;
     }
 }

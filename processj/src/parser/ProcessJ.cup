@@ -1208,20 +1208,15 @@ skip_statement ::=
 //- AltStat :> AST
 alt_statement ::=
           PRI ALT LBRACE alt_body:b RBRACE 
-        {: RESULT = new AltStat(b, true /* PRI ALT */); :}
+             {: RESULT = new AltStat(b, true /* PRI ALT */); :}
         | PRI ALT LPAREN for_init_opt:i SEMICOLON expression_opt:e SEMICOLON for_update_opt:u RPAREN LBRACE alt_body:b RBRACE
-        {: RESULT = new AltStat(i, e, u, b, true /* PRI ALT */); :}
-        | ALT LBRACE alt_body:b RBRACE     
-        {: RESULT = new AltStat(b, false /* ALT */); :}
-        | ALT LPAREN for_init_opt:i SEMICOLON expression_opt:e SEMICOLON for_update_opt:u RPAREN LBRACE
-	 LPAREN expression:ex RPAREN ANDAND left_hand_side:l EQ chan_read_expression:cre COLON statement:s RBRACE
-        {: RESULT = new AltStat(i, e, u,
-	   new Sequence(new AltCase(ex, new Guard(new ExprStat(new Assignment(l, e, Assignment.EQ))), s)), false /* ALT */); :}
-	| ALT LPAREN for_init_opt:i SEMICOLON expression_opt:e SEMICOLON for_update_opt:u RPAREN LBRACE
-	  left_hand_side:l EQ chan_read_expression:cre COLON statement:s RBRACE
-        {: RESULT = new AltStat(i, e, u,
-	   new Sequence(new AltCase(null, new Guard(new ExprStat(new Assignment(l, e, Assignment.EQ))), s)), false /* ALT */); :}
-    ;
+             {: RESULT = new AltStat(i, e, u, b, true /* PRI ALT */); :}
+
+	| ALT LBRACE alt_body:b RBRACE     
+             {: RESULT = new AltStat(b, false /* ALT */); :}
+        | ALT LPAREN for_init_opt:i SEMICOLON expression_opt:e SEMICOLON for_update_opt:u RPAREN LBRACE alt_body:b RBRACE
+             {: RESULT = new AltStat(i, e, u, b, false /* ALT */); :}
+        ;
 
 //- Sequence[AltCase :> AST] :> AST
 alt_body ::= 
@@ -1233,7 +1228,8 @@ alt_body ::=
 alt_case ::=
           LPAREN expression:e RPAREN ANDAND guard:g COLON statement:s {: RESULT = new AltCase(e, g, s); :}
         | guard:g COLON statement:s                                   {: RESULT = new AltCase(null, g, s); :}
-        ;
+	| alt_statement:as                                            {: RESULT = new AltCase(as); :}
+;
 
 //- Guard (takes in a statement) :> AST
 guard ::=

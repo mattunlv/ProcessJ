@@ -690,8 +690,9 @@ public class ChannelRead extends Visitor<Pair<Sequence, Expression>> {
     public Pair<Sequence, Expression> visitAltCase(AltCase ac) {
         Log.log(ac, "Visiting an AltCase");
         Pair<Sequence, Expression> p = null;
-        // Rewrite the guard statement if needed
-        p = ac.guard().visit(this);
+        // Rewrite the guard statement if needed (if null => nested alt)
+	if (ac.guard() != null)
+          p = ac.guard().visit(this);
         // Rewrite the statement if needed
         p = ac.stat().visit(this);
         if (p != null) {

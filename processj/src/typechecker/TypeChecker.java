@@ -93,7 +93,9 @@ public class TypeChecker extends Visitor<Type> {
             // .addArguments(t.typeName())
             // .build(), MessageType.PRINT_CONTINUE);
         }
-        ac.guard().visit(this);
+	// guard is only null if the case is a nested alt.
+	if (ac.guard() != null)
+	    ac.guard().visit(this);
         ac.stat().visit(this);
         return null;
     }
