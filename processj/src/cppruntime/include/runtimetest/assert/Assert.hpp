@@ -52,31 +52,6 @@ public:
 
     }
 
-    /*!
-     * Asserts that the given type will throw an exception when attempting
-     * to access the specified element. If an exception is not thrown (and subsequently caught)
-     * a SubscriptOperatorDoesNotThrowException will be thrown
-     * \param instance An immutable reference to type
-     */
-
-    template<typename Type>
-    static void InvalidSubscriptAccessThrowsException(const Type& instance, ProcessJSystem::Integer32 index) {
-
-        // Note to future readers: If this looks redundant to you, or it looks like an exception is always
-        // going to be thrown, take a look at subscript operator overloading for user-defined types
-        // and read up on exceptions. If the given type throws an exception, this method will exit gracefully.
-        try {
-
-            // Attempt to access here
-            instance[index];
-
-            // If we're here, an exception was not thrown
-            throw ProcessJTest::Assert::SubscriptOperatorDoesNotThrowException();
-
-        } catch(ProcessJSystem::Exception& exception) { /* We do nothing here */ }
-
-    }
-
     /// ----------
     /// Exceptions
 
@@ -116,24 +91,6 @@ public:
 
     };
 
-    /*!
-     * Thrown when a Type's subscript operator does not throw an exception
-     * when attempting to access with an invalid index.
-     *
-     * \author Carlos L. Cuenca
-     * \date 04/07/2022
-     * \version 0.1.0
-     */
-
-    class SubscriptOperatorDoesNotThrowException: public ProcessJSystem::Exception {
-
-        ProcessJSystem::SimpleString what() throw() {
-
-            return ProcessJSystem::AssertionErrorSubscriptOperatorDoesNotThrowExceptionMessage;
-
-        }
-
-    };
 
 };
 

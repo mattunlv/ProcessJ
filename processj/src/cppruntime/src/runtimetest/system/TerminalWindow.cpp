@@ -66,6 +66,7 @@ void ProcessJSystem::TerminalWindow::OnChildReleased(ProcessJSystem::WindowCompo
 
 }
 
+
 /*!
  * Mutates the terminal's root view
  *
