@@ -320,7 +320,7 @@ void ProcessJRuntime::Array<Type>::resize(ProcessJRuntime::UInteger32 size) {
         array  = newBlock   ;
         length = size       ;
 
-    } else if(!size) {
+    } else {
 
         if(array) delete[] array;
 

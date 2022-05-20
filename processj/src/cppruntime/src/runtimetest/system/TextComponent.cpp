@@ -68,11 +68,11 @@ void ProcessJSystem::TextComponent::onMeasure(ProcessJSystem::Integer32 width, P
             for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
                 buffer[row][column] = bottomBorderFill;
 
+        ProcessJSystem::UInteger32 textXPosition = 0;
+        ProcessJSystem::UInteger32 textYPosition = 0;
+        ProcessJSystem::UInteger32 index         = 0;
 
-        if((buffer.size() > 0) && (buffer[0].size()) && (textLength > 0)) {
-
-            ProcessJSystem::UInteger32 textXPosition = 0;
-            ProcessJSystem::UInteger32 textYPosition = 0;
+        if((buffer.size() > 0) && (buffer[0].size() > 0)) {
 
             if(verticalTextOrientation == ProcessJSystem::WindowComponent::End)
                 textYPosition = (buffer.size() - 1);
@@ -84,18 +84,14 @@ void ProcessJSystem::TextComponent::onMeasure(ProcessJSystem::Integer32 width, P
                 textXPosition =  buffer[0].size() - textLength;
 
             else if(horizontalTextOrientation == ProcessJSystem::WindowComponent::Center)
-                textXPosition = ((buffer[0].size() / 2) - (textLength / 2));
+                textXPosition = ((width / 2) - (textLength / 2));
 
             if(textXPosition < leftBorderWidth) textXPosition = leftBorderWidth;
 
             if(textYPosition < topBorderWidth) textYPosition = topBorderWidth;
 
-            // We're going to iterate with this
-            ProcessJSystem::SimpleString    current = text  ;
-            ProcessJSystem::UInteger32      index   = 0     ;
-
-            while(current && (*current) && ((textXPosition + index) < buffer[textYPosition].size()))
-                buffer[textYPosition][textXPosition + index++] = *current++;
+            for(;(index < textLength) && (index < width) && (textXPosition < width); textXPosition++)
+                if(buffer[textYPosition].size() > 0) buffer[textYPosition][textXPosition] = text[index++];
 
         }
 
@@ -269,32 +265,17 @@ void ProcessJSystem::TextComponent::setBorderWidth(ProcessJSystem::UInteger32 bo
  * \param text The desired Text
  */
 
-void ProcessJSystem::TextComponent::setText(ProcessJSystem::StringLiteral string) {
+void ProcessJSystem::TextComponent::setText(ProcessJSystem::SimpleString string) {
 
-    ProcessJSystem::UInteger32     length   = 0             ;
-    ProcessJSystem::StringLiteral  current  = string        ;
+    ProcessJSystem::UInteger32     length  = 0          ;
+    ProcessJSystem::SimpleString   current = string     ;
 
     // Count the characters
     while(*current++) length++;
 
-    // If we already have a string, delete it
-    if(text && (textLength > 0))  delete[] text;
+    this->textLength = length   ;
+    this->text       = string   ;
 
-    text        = 0 ;
-    textLength  = 0 ;
-
-    // Create the new container
-    text        = new ProcessJSystem::Character[length + 1] ;
-    textLength  = length                                    ;
-
-    // Delimit
-    text[length] = '\0';
-
-    // Copy the string
-    for(ProcessJSystem::Size index = 0; index < length; index++)
-        text[index] = string[index];
-
-    // Callback
     if(windowComponentListener)
         windowComponentListener->RequestLayout(this);
 

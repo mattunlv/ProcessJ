@@ -47,9 +47,6 @@ void ProcessJSystem::TerminalWindow::RequestLayout(ProcessJSystem::WindowCompone
     if(rootView)
         rootView->onMeasure(width, height);
 
-    // Redraw
-    output << *(rootView);
-
 }
 
 /*!

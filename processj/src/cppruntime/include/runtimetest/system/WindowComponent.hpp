@@ -115,7 +115,7 @@ public:
      * if the ProcessJTest::WindowComponent has a listener.
      */
 
-    virtual ~WindowComponent();
+    ~WindowComponent();
 
     /// -------
     /// Methods

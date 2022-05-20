@@ -37,13 +37,6 @@ public:
 
     WindowComponentGroup(ProcessJSystem::WindowComponent::Listener*);
 
-    /*!
-     * Default Constructor. Releases any memory managed by
-     * the ProcessJSystem::WindowComponentGroup
-     */
-
-    virtual ~WindowComponentGroup() { /* Empty */ }
-
     /// ----------------------------------------
     /// ProcessJSystem::WindowComponentListener
 
