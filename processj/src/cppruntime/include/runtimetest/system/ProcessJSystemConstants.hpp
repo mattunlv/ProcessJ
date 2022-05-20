@@ -17,8 +17,6 @@ namespace ProcessJSystem {
     /// Strings
 
     static SimpleString AssertionErrorSubscriptOperatorDoesNotThrowExceptionMessage = "Error: Subscript operator does not throw exception with invalid indices.";
-    static SimpleString AssertionErrorAreNotEqualMessage                            = "Error: Instances are not equal."                                         ;
-    static SimpleString AssertionErrorAreEqualMessage                               = "Error: Instances are equal."                                             ;
 
     /// ----------
     /// Characters

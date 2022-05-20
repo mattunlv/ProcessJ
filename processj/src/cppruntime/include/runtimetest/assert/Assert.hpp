@@ -60,7 +60,7 @@ public:
      */
 
     template<typename Type>
-    static void InvalidSubscriptAccessThrowsException(Type& instance, ProcessJSystem::Integer32 index) {
+    static void InvalidSubscriptAccessThrowsException(const Type& instance, ProcessJSystem::Integer32 index) {
 
         // Note to future readers: If this looks redundant to you, or it looks like an exception is always
         // going to be thrown, take a look at subscript operator overloading for user-defined types
@@ -77,44 +77,6 @@ public:
 
     }
 
-    /*!
-     * Asserts the two given types are of equal value. This assumes that
-     * type coercion will occur (with underlying semantics) if the two
-     * given instances are compatible or one type implements an overloaded
-     * operator that adapts to the type. If the types are not equal either
-     * through semantic differences or any other reason, a AreNotEqualException
-     * is thrown.
-     *
-     * \parameter first The left hand side of the equality
-     * \parameter second The right hand side of the equaliy
-     */
-
-    template<typename First, typename Second>
-    static void AreEqual(First first, Second second) {
-
-        if(first != second) throw ProcessJTest::Assert::AreNotEqualException();
-
-    }
-
-    /*!
-     * Asserts the two given types are not of equal value. This assumes that
-     * type coercion will occur (with underlying semantics) if the two
-     * given instances are compatible or one type implements an overloaded
-     * operator that adapts to the type. If the types are equal either
-     * through semantics or any other reason, a AreEqualException
-     * is thrown.
-     *
-     * \parameter first The left hand side of the inequality
-     * \parameter second The right hand side of the inequaliy
-     */
-
-    template<typename First, typename Second>
-    static void AreNotEqual(First first, Second second) {
-
-        if(first == second) throw ProcessJTest::Assert::AreEqualException();
-
-    }
-
     /// ----------
     /// Exceptions
 
@@ -126,7 +88,7 @@ public:
      * \version 0.1.0
      */
 
-    class TypePointerIsNullException: public ProcessJSystem::Exception {
+    class TypePointerIsNullException : public ProcessJSystem::Exception {
 
         ProcessJSystem::SimpleString what() throw() {
 
@@ -144,7 +106,7 @@ public:
      * \version 0.1.0
      */
 
-    class TypePointerIsNotNullException: public ProcessJSystem::Exception {
+    class TypePointerIsNotNullException : public ProcessJSystem::Exception {
 
         ProcessJSystem::SimpleString what() throw() {
 
@@ -168,40 +130,6 @@ public:
         ProcessJSystem::SimpleString what() throw() {
 
             return ProcessJSystem::AssertionErrorSubscriptOperatorDoesNotThrowExceptionMessage;
-
-        }
-
-    };
-
-    /*!
-     * Thrown when two instances are not equal.
-     * \author Carlos L. Cuenca
-     * \date 04/07/2022
-     * \version 0.1.0
-     */
-
-    class AreNotEqualException: public ProcessJSystem::Exception {
-
-        ProcessJSystem::SimpleString what() throw() {
-
-            return ProcessJSystem::AssertionErrorAreNotEqualMessage;
-
-        }
-
-    };
-
-    /*!
-     * Thrown when two instances are equal (when they're not supposed to be).
-     * \author Carlos L. Cuenca
-     * \date 04/07/2022
-     * \version 0.1.0
-     */
-
-    class AreEqualException: public ProcessJSystem::Exception {
-
-        ProcessJSystem::SimpleString what() throw() {
-
-            return ProcessJSystem::AssertionErrorAreEqualMessage;
 
         }
 

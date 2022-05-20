@@ -6,7 +6,6 @@
 #include<ProcessJSystem.hpp>
 #include<ProcessJRuntimeTestTypes.hpp>
 #include<ProcessJRuntimeTestConstants.hpp>
-#include<ProcessJRuntimeTestVariables.hpp>
 #include<Assert.hpp>
 #include<Test.hpp>
 #include<TestBatch.hpp>

@@ -108,7 +108,7 @@ protected:
      */
 
     template<typename Type>
-    class ArrayStackConstructorTest: public ProcessJTest::ArrayBatch::ArrayTest {
+    class ArrayStackTest : public ProcessJTest::ArrayBatch::ArrayTest {
 
         /// -----------------------------------
         /// ProcessJTest::ArrayBatch::ArrayTest
@@ -123,31 +123,8 @@ protected:
             // Set the message
             view.setText("Starting ArrayStackTest");
 
-            // Iterate through the range
-            for(ProcessJSystem::UInteger32 size = ProcessJTest::RuntimeArrayMinimumSize;
-                size < ProcessJTest::RuntimeArrayMaximumSize; size++) {
-
-                // Create the ProcessJRuntime::Array
-                ProcessJRuntime::Array<Type> array(size);
-
-                // Assert so we don't continue if there's a discrepancy
-                Assert::AreEqual(size, array.size());
-
-                // Report Completion (if Applicable)
-                if(!(size % ProcessJTest::RuntimeArrayCompletionInterval)) {
-
-                    // Remove this and the std invocation. We don't want to muck with
-                    // namespaces
-                    ProcessJSystem::String string = "ArrayStackConstructorTest Completed: " +
-                                                    std::to_string(size) + "/" +
-                                                    std::to_string(ProcessJTest::RuntimeArrayMaximumSize);
-
-                    // Set the text
-                    view.setText(string.c_str());
-
-                }
-
-            }
+            // Create an array
+            ProcessJRuntime::Array<Type> array;
 
         }
 
@@ -163,7 +140,7 @@ protected:
      */
 
     template<typename Type>
-    class ArrayResizeTest: public ProcessJTest::ArrayBatch::ArrayTest {
+    class ArrayResizeTest : public ProcessJTest::ArrayBatch::ArrayTest {
 
         /// -----------------------------------
         /// ProcessJTest::ArrayBatch::ArrayTest
@@ -211,37 +188,19 @@ protected:
             // Get the view
             ProcessJSystem::TextComponent& view = *this;
 
-            // Create the array
-            ProcessJRuntime::Array<Type> array;
+            // Set the message
+            view.setText("Starting ArrayOutOfBoundsTest");
 
-            // Loop through the range
-            for(ProcessJSystem::Integer32 start = ProcessJTest::RuntimeArrayMinimumSize;
-                start < ProcessJTest::RuntimeArrayMaximumSize; start++) {
+            // Create an array
+            ProcessJRuntime::Array<Type> array(250);
 
-                // Restart
-                array.resize(start);
+            try {
 
-                // Make sure we don't continue if there's a discrepancy
-                Assert::AreEqual(start, array.size());
+                array[250];
 
-                Assert::AreNotEqual(start, array.size());
+            } catch(ProcessJSystem::Exception& exception) {
 
-                // Attempt to go out of bounds
-                Assert::InvalidSubscriptAccessThrowsException(array, start);
-
-                // Report Completion (if Applicable)
-                if(!(start % ProcessJTest::RuntimeArrayCompletionInterval)) {
-
-                    // Remove this and the std invocation. We don't want to muck with
-                    // namespaces
-                    ProcessJSystem::String string = "ArrayOutOfBoundsTest Completed: " +
-                                                    std::to_string(start) + "/" +
-                                                    std::to_string(ProcessJTest::RuntimeArrayMaximumSize);
-
-                    // Set the text
-                    view.setText(string.c_str());
-
-                }
+                view.setText("Exception Caught");
 
             }
 
@@ -263,7 +222,7 @@ public:
 
     ArrayBatch(): ProcessJTest::TestBatch() {
 
-        add(new ProcessJTest::ArrayBatch::ArrayStackConstructorTest<ProcessJSystem::UInteger32>);
+        add(new ProcessJTest::ArrayBatch::ArrayStackTest<ProcessJSystem::UInteger32>);
         add(new ProcessJTest::ArrayBatch::ArrayResizeTest<ProcessJSystem::UInteger32>);
         add(new ProcessJTest::ArrayBatch::ArrayOutOfBoundsTest<ProcessJSystem::UInteger32>);
 
