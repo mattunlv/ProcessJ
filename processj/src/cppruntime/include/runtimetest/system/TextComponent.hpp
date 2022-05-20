@@ -41,7 +41,14 @@ protected:
      * \param height The available height
      */
 
-    void onMeasure(ProcessJSystem::Integer32, ProcessJSystem::Integer32);
+    virtual void onMeasure(ProcessJSystem::Size, ProcessJSystem::Size) = 0;
+
+    /*!
+     * Invoked when the ProcessJSystem::TextComponent should draw itself
+     */
+
+    template<typename OutputStream>
+    OutputStream& draw(OutputStream&);
 
     /// --------------
     /// Public Members
@@ -66,7 +73,7 @@ public:
      * \param leftBorderFill The desired left border fill
      */
 
-    void setLeftBorderFill(ProcessJSystem::Character);
+    void setLeftBorderFill(ProcessJSystem::Character&);
 
 
     /*!
@@ -75,7 +82,7 @@ public:
      * \param rightBorderFill The desired right border fill
      */
 
-    void setRightBorderFill(ProcessJSystem::Character);
+    void setRightBorderFill(ProcessJSystem::Character&);
 
 
     /*!
@@ -84,7 +91,7 @@ public:
      * \param topBorderFill The desired top border fill
      */
 
-    void setTopBorderFill(ProcessJSystem::Character);
+    void setTopBorderFill(ProcessJSystem::Character&);
 
     /*!
      * Sets the bottom borer fill
@@ -92,7 +99,7 @@ public:
      * \param bottomBorderFill The desired bottom border fill
      */
 
-    void setBottomBorderFill(ProcessJSystem::Character);
+    void setBottomBorderFill(ProcessJSystem::Character&);
 
     /*!
      * Sets the border fill
@@ -100,7 +107,7 @@ public:
      * \param topBorderFill The desired border fill
      */
 
-    void setBorderFill(ProcessJSystem::Character);
+    void setBorderFill(ProcessJSystem::Character&);
 
     /*!
      * Sets the left border width
@@ -108,7 +115,7 @@ public:
      * \param leftBorderFill The desired left border width
      */
 
-    void setLeftBorderWidth(ProcessJSystem::UInteger32);
+    void setLeftBorderWidth(ProcessJSystem::Character&);
 
 
     /*!
@@ -117,7 +124,7 @@ public:
      * \param rightBorderWidth The desired right border width
      */
 
-    void setRightBorderWidth(ProcessJSystem::UInteger32);
+    void setRightBorderWidth(ProcessJSystem::Character&);
 
 
     /*!
@@ -126,7 +133,7 @@ public:
      * \param topBorderWidth The desired top border width
      */
 
-    void setTopBorderWidth(ProcessJSystem::UInteger32);
+    void setTopBorderWidth(ProcessJSystem::Character&);
 
     /*!
      * Sets the bottom borer width
@@ -134,7 +141,7 @@ public:
      * \param bottomBorderWidth The desired bottom border width
      */
 
-    void setBottomBorderWidth(ProcessJSystem::UInteger32);
+    void setBottomBorderWidth(ProcessJSystem::Character&);
 
     /*!
      * Sets the border width
@@ -142,7 +149,7 @@ public:
      * \param topBorderWidth The desired border width
      */
 
-    void setBorderWidth(ProcessJSystem::UInteger32);
+    void setBorderWidth(ProcessJSystem::Character&);
 
     /*!
      * Sets the text.

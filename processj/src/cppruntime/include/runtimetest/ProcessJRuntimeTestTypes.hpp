@@ -25,28 +25,21 @@ namespace ProcessJTest {
      * \brief Defines a flag that corresponds to true or false.
      */
 
-    typedef bool Flag                                           ;
+    typedef bool Flag                   ;
 
     /*!
      * \var typedef uint32_t UInteger32;
      * \brief Defines an unsigned 32-bit integer.
      */
 
-    typedef uint32_t UInteger32                                 ;
+    typedef uint32_t UInteger32         ;
 
     /*!
      * \var typedef ProcessJSystem::WindowComponent WindowComponent;
      * \brief Defines a WindowComponent
      */
 
-    typedef ProcessJSystem::WindowComponent WindowComponent     ;
-
-    /*!
-     * \var typedef ProcessJSystem::TextComponent TextComponent;
-     * \brief Defines a TextComponent
-     */
-
-    typedef ProcessJSystem::TextComponent TextComponent         ;
+    typedef ProcessJSystem::WindowComponent WindowComponent;
 
 }
 

@@ -24,8 +24,8 @@ width(width), height(height), rootView(0), output() { /* Empty */ }
 
 void ProcessJSystem::TerminalWindow::OnComponentDirty(void* component) {
 
-    // Resize first; The extra one is to account for an additional line (prompt)
-    output.resize(width, height + 1);
+    // Resize first
+    output.resize(width, height);
 
     // Attempt to convert
     ProcessJSystem::WindowComponent* windowComponent = reinterpret_cast<ProcessJSystem::WindowComponent*>(component);
@@ -44,15 +44,12 @@ void ProcessJSystem::TerminalWindow::OnComponentDirty(void* component) {
 
 void ProcessJSystem::TerminalWindow::RequestLayout(void* component) {
 
-    // Resize first; The extra one is to account for an additional line (prompt)
-    output.resize(width, height + 1);
-
-    // Attempt to convert
-    ProcessJSystem::WindowComponent* windowComponent = reinterpret_cast<ProcessJSystem::WindowComponent*>(component);
+    // Resize
+    output.resize(width, height);
 
     // Dispatch measure
-    if(windowComponent)
-        windowComponent->onMeasure(width, height);
+    if(rootView)
+        rootView->onMeasure(width, height);
 
 }
 
@@ -67,10 +64,18 @@ void ProcessJSystem::TerminalWindow::setRootView(ProcessJSystem::WindowComponent
     // Set the root view
     rootView = rootView;
 
+    // Clear the terminal
+    ProcessJSystem::System::Clear();
+
+    // Move to the beginning
+    output.move(1, 1);
+
     // Measure it
     rootView->onMeasure(width, height);
 
     // Draw
     rootView->draw(output);
+
+    output << '\n';
 
 }

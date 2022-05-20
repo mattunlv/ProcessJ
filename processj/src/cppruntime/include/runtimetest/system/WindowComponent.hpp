@@ -20,18 +20,17 @@ class ProcessJSystem::WindowComponent {
 
 protected:
 
-    ProcessJSystem::Array<ProcessJSystem::Array<ProcessJSystem::Character>> buffer     ; /*< The View's Buffer                                              */
-    ProcessJSystem::Integer32                  height                                  ; /*< The Terminal Window height                                     */
-    ProcessJSystem::Integer32                  width                                   ; /*< The Terminal Window width                                      */
-    ProcessJSystem::Integer32                  positionX                               ; /*< The x position of the window component                         */
-    ProcessJSystem::Integer32                  positionY                               ; /*< The y position of the window component                         */
-    ProcessJSystem::Character                  backgroundFill                          ; /*< The background fill for the ProcessJSystem::WindowComponent    */
-    ProcessJSystem::Orientation                verticalOrientation                     ; /*< Vertical Orientation                                           */
-    ProcessJSystem::Orientation                horizontalOrientation                   ; /*< Horizontal Orientation                                         */
-    ProcessJSystem::Integer32                  horizontalViewSpecification             ; /*< The horizontal view specification                              */
-    ProcessJSystem::Integer32                  verticalViewSpecification               ; /*< The Vertical view specification                                */
-    ProcessJSystem::Flag                       isDirty                                 ; /*< Flag denotes that the Window Component needs to be redrawn     */
-    ProcessJSystem::WindowComponentListener*   windowComponentListener                 ; /*< Send window state callbacks                                    */
+    ProcessJSystem::Array<ProcessJSystem::Array<ProcessJSystem::Character>> buffer   ; /*< The View's Buffer                                          */
+    ProcessJSystem::Integer32                  height                                  ; /*< The Terminal Window height                                 */
+    ProcessJSystem::Integer32                  width                                   ; /*< The Terminal Window width                                  */
+    ProcessJSystem::Integer32                  positionX                               ; /*< The x position of the window component                     */
+    ProcessJSystem::Integer32                  positionY                               ; /*< The y position of the window component                     */
+    ProcessJSystem::Orientation                verticalOrientation                     ; /*< Vertical Orientation                                       */
+    ProcessJSystem::Orientation                horizontalOrientation                   ; /*< Horizontal Orientation                                     */
+    ProcessJSystem::Integer32                  horizontalViewSpecification             ; /*< The horizontal view specification                          */
+    ProcessJSystem::Integer32                  verticalViewSpecification               ; /*< The Vertical view specification                            */
+    ProcessJSystem::Flag                       isDirty                                 ; /*< Flag denotes that the Window Component needs to be redrawn */
+    ProcessJSystem::WindowComponentListener*   windowComponentListener                 ; /*< Send window state callbacks                                */
 
     /// --------------
     /// Public Members
@@ -109,14 +108,6 @@ public:
      */
 
     void setYPosition(ProcessJSystem::Integer32);
-
-    /*!
-     * Mutates the backgroundFill of the ProcessJSystem::WindowComponent
-     *
-     * \param backgroundFill The desired backgroundFill for the ProcessJSystem::WindowComponent
-     */
-
-    void setBackgroundFill(ProcessJSystem::Character);
 
     /*!
      * Sets the horizontal orientation of the ProcessJSystem::WindowComponent
@@ -239,21 +230,7 @@ public:
     template<typename OutputStream>
     OutputStream& draw(OutputStream& outputStream) {
 
-        // Clear the terminal
-        ProcessJSystem::System::Clear();
-
-        for(ProcessJSystem::Size row = 0; row < buffer.size(); row++) {
-
-            // Print the row with a Linefeed
-            outputStream << buffer[row];
-
-            // Print a new line
-            outputStream << ProcessJSystem::NewLine;
-
-            // Move back
-            outputStream.move((row + 2), 1);
-
-        }
+        outputStream << buffer;
 
         return outputStream;
 
@@ -267,7 +244,7 @@ public:
      */
 
     template<typename OutputStream>
-    friend OutputStream& operator<<(OutputStream& outputStream, ProcessJSystem::WindowComponent& windowComponent) {
+    friend WindowComponent& operator<<(OutputStream& outputStream, ProcessJSystem::WindowComponent& windowComponent) {
 
         // Simply return the outputstream passed to draw
         return windowComponent.draw(outputStream);

@@ -39,46 +39,71 @@ void ProcessJSystem::VerticalLayout::onMeasure(ProcessJSystem::Integer32 width, 
 
     for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
         for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
-            buffer[row][column] = backgroundFill;
+            buffer[row][column] = ' ';
 
     for(ProcessJSystem::Size child = 0; child < children.size(); child++) {
 
-        // Retrieve the component
         ProcessJSystem::WindowComponent* component = children[child];
 
+        ProcessJSystem::Integer32 childWidth  = 0   ;
+        ProcessJSystem::Integer32 childHeight = 0   ;
+
+        if(component->getHorizontalViewSpecification() == ProcessJSystem::WindowComponent::FillParent)
+            childWidth = width;
+
+        else if(component->getHorizontalViewSpecification() == ProcessJSystem::WindowComponent::Exactly)
+            childWidth = component->getWidth();
+
+        else childWidth = width;
+
+        if(component->getVerticalViewSpecification() == ProcessJSystem::WindowComponent::FillParent)
+            childHeight = height;
+
+        else if(component->getVerticalViewSpecification() == ProcessJSystem::WindowComponent::Exactly)
+            childHeight = component->getHeight();
+
+        else childHeight = height;
+
         // Invoke On Measure
-        component->onMeasure(width, (height / children.size()));
+        component->onMeasure(childWidth, childHeight);
 
     }
 
-    ProcessJSystem::Size layoutRow      = 0 ;
-    ProcessJSystem::Size layoutColumn   = 0 ;
+    ProcessJSystem::Size threshold = 0;
 
-    for(ProcessJSystem::Size index = 0; index < children.size(); index++) {
+    for(ProcessJSystem::Size index = 0; (index < children.size()) && (threshold < buffer.size()); index++) {
 
-        // Get the child
         ProcessJSystem::WindowComponent* component = children[index];
 
-        // Iterate through the child
-        for(ProcessJSystem::Size row = 0; row < component->getBuffer().size(); row++) {
-
-            if(layoutRow > height) break;
-
-            for(ProcessJSystem::Size column = 0; column < component->getBuffer()[row].size(); column++) {
-
-                if(layoutColumn > width) break;
-
-                buffer[layoutRow][layoutColumn++] = component->getBuffer()[row][column];
-
-            }
-
-            layoutRow++;
-            layoutColumn = 0;
-
-        }
-
-        if(layoutRow > height) break;
+        for(ProcessJSystem::Size row = 0; (row < component->getBuffer().size()) &&
+            (threshold < buffer.size()); row++, threshold++)
+            for(ProcessJSystem::Size column = 0; (column < buffer[0].size()) &&
+                (column < component->getBuffer()[row].size()); column++)
+                    buffer[row][column] = component->getBuffer()[row][column];
 
     }
+
+
+}
+
+/*!
+ * Invoked when the ProcessJSystem::VerticalLayout should draw itself
+ *
+ * \param outputStream The output stream to modify
+ * \return modified outputStream
+ */
+
+template<typename OutputStream>
+OutputStream& ProcessJSystem::VerticalLayout::draw(OutputStream& outputStream) {
+
+    for(ProcessJSystem::Size row = 0; row < buffer.size(); row++) {
+        for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
+            outputStream << buffer[row][column];
+
+        outputStream << '\n';
+
+    }
+
+    return outputStream;
 
 }

@@ -135,7 +135,9 @@ public:
     friend OutputStream& operator<<(OutputStream& outputStream, ProcessJRuntime::Array<Type>& array) {
 
         for(ProcessJRuntime::Size index = 0; index < array.size(); index++)
-            outputStream << array[index];
+            outputStream << array[index] << ", ";
+
+        outputStream << '\n';
 
     }
 
