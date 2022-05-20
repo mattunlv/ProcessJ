@@ -58,7 +58,7 @@ public:
      * callbacks on ProcessJRuntim::TextComponent state mutations
      */
 
-    TextComponent(ProcessJSystem::WindowComponent::Listener*);
+    TextComponent(ProcessJSystem::WindowComponentListener*);
 
     /*!
      * Sets the left border fill

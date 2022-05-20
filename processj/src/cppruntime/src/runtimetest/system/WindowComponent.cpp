@@ -25,7 +25,7 @@ const ProcessJSystem::Orientation   ProcessJSystem::WindowComponent::Center     
 
 #endif
 
-ProcessJSystem::WindowComponent::WindowComponent(ProcessJSystem::WindowComponent::Listener* windowComponentListener):
+ProcessJSystem::WindowComponent::WindowComponent(ProcessJSystem::WindowComponentListener* windowComponentListener):
 buffer(), height(0), width(0), positionX(0), positionY(0),
 backgroundFill(' '),
 horizontalOrientation(ProcessJSystem::WindowComponent::Center),
@@ -34,21 +34,6 @@ horizontalViewSpecification(ProcessJSystem::WindowComponent::Exactly),
 verticalViewSpecification(ProcessJSystem::WindowComponent::Exactly),
 isDirty(false),
 windowComponentListener(windowComponentListener) { /* Empty */ }
-
-/*!
- * Removes any ProcessJTest::WindowComponent::Listeners
- * associated with the ProcessJTest::WindowComponent.
- * Calls back ProcessJTest::WindowComponent::Listener::OnChildReleased()
- * if the ProcessJTest::WindowComponent has a listener.
- */
-
-ProcessJSystem::WindowComponent::~WindowComponent() {
-
-    // Let the window component listener know of the release
-    if(windowComponentListener)
-        windowComponentListener->OnChildReleased(this);
-
-}
 
 /*!
  * Retrieves the ProcessJSystem::WindowComponent's view buffer
@@ -215,7 +200,7 @@ void ProcessJSystem::WindowComponent::setVerticalViewSpecification(ProcessJSyste
  * to assign
  */
 
-void ProcessJSystem::WindowComponent::setWindowComponentListener(ProcessJSystem::WindowComponent::Listener* windowComponentListener){
+void ProcessJSystem::WindowComponent::setWindowComponentListener(ProcessJSystem::WindowComponentListener* windowComponentListener){
 
     this->isDirty = true;
 

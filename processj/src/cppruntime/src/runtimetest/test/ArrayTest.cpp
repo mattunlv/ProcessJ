@@ -15,21 +15,9 @@
  * \return ProcessJTest::WindowComponent pointer.
  */
 
-ProcessJTest::WindowComponent* ProcessJTest::ArrayTest::createWindowComponent() const {
+ProcessJTest::WindowComponent* ProcessJTest::ArrayTest::getCreatedWindowComponent() const {
 
-    // Create the component
-    ProcessJSystem::TextComponent* textComponent = new ProcessJTest::TextComponent(0);
-
-    // Style the component
-    textComponent->setLeftBorderFill('/');
-    textComponent->setTopBorderFill('-');
-    textComponent->setLeftBorderWidth(2);
-    textComponent->setRightBorderWidth(2);
-    textComponent->setBottomBorderWidth(1);
-    textComponent->setTopBorderWidth(1);
-
-    // Return it
-    return textComponent;
+    return new ProcessJTest::TextComponent(0);
 
 }
 
@@ -39,9 +27,9 @@ ProcessJTest::WindowComponent* ProcessJTest::ArrayTest::createWindowComponent() 
 
 void ProcessJTest::ArrayTest::run() {
 
-    ProcessJSystem::TextComponent& view = *this;
+    ProcessJSystem::TextComponent* windowComponent = dynamic_cast<ProcessJTest::TextComponent*>(getWindowComponent());
 
-    view.setText("Hello, world!");
+    windowComponent->setText("Testing ProcessJRuntime::Array");
 
     ProcessJRuntime::Array<ProcessJRuntime::Integer32>* pj_arr = new ProcessJRuntime::Array<ProcessJRuntime::Integer32>({1, 2, 3, 4});
 
@@ -74,22 +62,5 @@ void ProcessJTest::ArrayTest::run() {
                                                                                                  new ProcessJRuntime::Array<ProcessJRuntime::Integer32>{61, 62, 63, 64}}};
 
             delete pj_md_arr_c;
-
-}
-
-/*!
- * Overloaded implicit/explicit conversion operator. Simply returns
- * the ProcessJTest::TextComponent reference associated
- * with the ProcessJTest::ArrayTest. If no ProcessJSystem::TextComponent
- * exists (ProcessJTest::Test::createWindowComponent is not overridden),
- * then this throws a ProcessJTest::Test::NoWindowComponentException().
- *
- * \return Mutable reference to the ProcessJ::Test::TextComponent.
- */
-
-ProcessJTest::ArrayTest::operator ProcessJSystem::TextComponent&() {
-
-    // Static cast the super class's overloaded operator.
-    return static_cast<ProcessJSystem::TextComponent&>(ProcessJTest::Test::operator ProcessJSystem::WindowComponent&());
 
 }

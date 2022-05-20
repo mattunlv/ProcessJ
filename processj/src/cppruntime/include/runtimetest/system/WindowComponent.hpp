@@ -15,57 +15,6 @@ namespace ProcessJSystem{ class WindowComponent; }
 
 class ProcessJSystem::WindowComponent {
 
-    /// --------------
-    /// Public Classes
-
-public:
-
-    /// -------
-    /// Classes
-
-    /*!
-     * Listener class that receives callbacks based on
-     * ProcessJSystem::WindowComponent state changes.
-     *
-     * \author Carlos L. Cuenca
-     * \date 04/07/2022
-     * \version 0.1.0
-     */
-
-    class Listener {
-
-        /// ---------------
-        /// Public Members
-
-    public:
-
-        /*!
-         * Invoked when the window component is dirty and needs to be drawn.
-         *
-         * \param component The Component to be drawn as a void pointer
-         */
-
-       virtual void OnComponentDirty(ProcessJSystem::WindowComponent*) = 0;
-
-       /*!
-        * Invoked when a child view is requesting to be re-measured
-        *
-        * \parm component The Component that is requesting to be re-measured
-        */
-
-       virtual void RequestLayout(ProcessJSystem::WindowComponent*) = 0;
-
-       /*!
-        * Invoked when a child is releasing itself.
-        *
-        * \param component The Component that had its' destructor called.
-        */
-
-       virtual void OnChildReleased(ProcessJSystem::WindowComponent*) = 0;
-
-
-    };
-
     /// ------------------
     /// Protected Members
 
@@ -82,7 +31,7 @@ protected:
     ProcessJSystem::Integer32                  horizontalViewSpecification             ; /*< The horizontal view specification                              */
     ProcessJSystem::Integer32                  verticalViewSpecification               ; /*< The Vertical view specification                                */
     ProcessJSystem::Flag                       isDirty                                 ; /*< Flag denotes that the Window Component needs to be redrawn     */
-    ProcessJSystem::WindowComponent::Listener* windowComponentListener                 ; /*< Send window state callbacks                                    */
+    ProcessJSystem::WindowComponentListener*   windowComponentListener                 ; /*< Send window state callbacks                                    */
 
     /// --------------
     /// Public Members
@@ -106,16 +55,7 @@ public:
      * callbacks on ProcessJRuntim::WindowComponent state mutations
      */
 
-    WindowComponent(ProcessJSystem::WindowComponent::Listener*);
-
-    /*!
-     * Removes any ProcessJTest::WindowComponent::Listeners
-     * associated with the ProcessJTest::WindowComponent.
-     * Calls back ProcessJTest::WindowComponent::Listener::OnChildReleased()
-     * if the ProcessJTest::WindowComponent has a listener.
-     */
-
-    ~WindowComponent();
+    WindowComponent(ProcessJSystem::WindowComponentListener*);
 
     /// -------
     /// Methods
@@ -220,7 +160,7 @@ public:
      * to assign
      */
 
-    void setWindowComponentListener(ProcessJSystem::WindowComponent::Listener*);
+    void setWindowComponentListener(ProcessJSystem::WindowComponentListener*);
 
     /*!
      * retrieves the height of the ProcessJSystem::WindowComponent

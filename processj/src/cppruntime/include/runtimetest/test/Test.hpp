@@ -33,17 +33,6 @@ private:
     ProcessJTest::TimePoint          end               ; /*< ProcessJTest::TimePoint instance that represents the end time      */
     ProcessJTest::WindowComponent*   windowComponent   ; /*< ProcessJSystem::WindowComponent that displays test results         */
 
-    /// -------
-    /// Methods
-
-    /*!
-     * Mutates the ProcessJTest::Test's ProcessJSystem::WindowComponent.
-     *
-     * \param windowComponent The desired ProcessJSystem::WindowComponent
-     */
-
-    void setWindowComponent(ProcessJSystem::WindowComponent*);
-
     /// -----------------
     /// Protected Members
 
@@ -56,7 +45,7 @@ protected:
      * \return ProcessJTest::WindowComponent pointer.
      */
 
-    virtual ProcessJSystem::WindowComponent* createWindowComponent() const;
+    virtual ProcessJTest::WindowComponent* getCreatedWindowComponent() const;
 
     /*!
      * Marks the starting point of the ProcessJTest::Test
@@ -121,6 +110,18 @@ public:
 
     ~Test();
 
+    /// -------
+    /// Methods
+
+    /*!
+     * Returns the window component associated with the
+     * ProcessJTest::Test.
+     *
+     * \return ProcessJTest::WindowComponent instance
+     */
+
+    ProcessJTest::WindowComponent* const getWindowComponent() const;
+
     /// --------------------
     /// Overloaded Operators
 
@@ -132,40 +133,6 @@ public:
      */
 
     ProcessJTest::Flag operator()();
-
-    /*!
-     * Overloaded implicit/explicit conversion operator. Simply returns
-     * the ProcessJTest::WindowComponent reference associated
-     * with the ProcessJTest::Test. If no ProcessJSystem::WindowComponent
-     * exists (ProcessJTest::Test::createWindowComponent is not overridden),
-     * then this throws a ProcessJTest::Test::NoWindowComponentException().
-     *
-     * \return Mutable reference to the ProcessJ::Test::WindowComponent.
-     */
-
-    operator ProcessJSystem::WindowComponent&();
-
-    /// ----------
-    /// Exceptions
-
-    /*!
-     * Thrown if a ProcessJTest::Test does not create a
-     * ProcessJ::System::WindowComponent.
-     */
-
-    class NoWindowComponentException : public ProcessJSystem::Exception {
-
-        /*!
-         * Returns the exception message that describes the error.
-         */
-
-        ProcessJSystem::StringLiteral what() throw() {
-
-            return ProcessJTest::ExceptionMessageNoWindowComponent;
-
-        }
-
-    };
 
 };
 

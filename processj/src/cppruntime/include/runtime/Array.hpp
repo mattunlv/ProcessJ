@@ -176,7 +176,7 @@ public:
 
 template<typename Type>
 ProcessJRuntime::Array<Type>::Array():
-    array(nullptr), length(0) { /* Empty */ }
+    array(nullptr) { /* Empty */ }
 
 /*!
  * Initializes the ProcessJRuntime::Array with a default
@@ -270,7 +270,7 @@ void ProcessJRuntime::Array<Type>::resize(ProcessJRuntime::UInteger32 size) {
             newBlock[index] = array[index];
 
         // Release the array
-        if(this->array) delete[] this->array;
+        delete[] array;
 
         // Set the members
         this->length = size     ;

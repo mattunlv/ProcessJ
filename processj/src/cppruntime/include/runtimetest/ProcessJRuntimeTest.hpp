@@ -5,7 +5,6 @@
 #include<ProcessJRuntime.hpp>
 #include<ProcessJSystem.hpp>
 #include<ProcessJRuntimeTestTypes.hpp>
-#include<ProcessJRuntimeTestConstants.hpp>
 #include<Test.hpp>
 #include<SingleCoreTest.hpp>
 #include<OneToOneTest.hpp>

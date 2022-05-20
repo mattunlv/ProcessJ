@@ -22,13 +22,17 @@ width(width), height(height), rootView(0), output() { /* Empty */ }
  * \param component The Component to be drawn as a void pointer
  */
 
-void ProcessJSystem::TerminalWindow::OnComponentDirty(ProcessJSystem::WindowComponent* component) {
+void ProcessJSystem::TerminalWindow::OnComponentDirty(void* component) {
 
     // Resize first; The extra one is to account for an additional line (prompt)
     output.resize(width, height + 1);
 
-    // If the root view is not null, redraw
-    if(rootView) output << *rootView;
+    // Attempt to convert
+    ProcessJSystem::WindowComponent* windowComponent = reinterpret_cast<ProcessJSystem::WindowComponent*>(component);
+
+    // Redraw
+    if(windowComponent)
+        windowComponent->draw(output);
 
 }
 
@@ -38,31 +42,19 @@ void ProcessJSystem::TerminalWindow::OnComponentDirty(ProcessJSystem::WindowComp
  * \parm component The Component that is requesting to be re-measured
  */
 
-void ProcessJSystem::TerminalWindow::RequestLayout(ProcessJSystem::WindowComponent* component) {
+void ProcessJSystem::TerminalWindow::RequestLayout(void* component) {
 
     // Resize first; The extra one is to account for an additional line (prompt)
     output.resize(width, height + 1);
 
-    // Re-measure the view tree
-    if(rootView)
-        rootView->onMeasure(width, height);
+    // Attempt to convert
+    ProcessJSystem::WindowComponent* windowComponent = reinterpret_cast<ProcessJSystem::WindowComponent*>(component);
+
+    // Dispatch measure
+    if(windowComponent)
+        windowComponent->onMeasure(width, height);
 
 }
-
-/*!
- * Invoked when a child is releasing itself.
- *
- * \param component The Component that had its' destructor called.
- */
-
-void ProcessJSystem::TerminalWindow::OnChildReleased(ProcessJSystem::WindowComponent* component) {
-
-    // The only possible instance that can invoke this is the rootView. So clear
-    // it out, this must mean the ProcessJSystem::TerminalWindow is being destroyed.
-    if(rootView == component) rootView = 0;
-
-}
-
 
 /*!
  * Mutates the terminal's root view
@@ -73,20 +65,12 @@ void ProcessJSystem::TerminalWindow::OnChildReleased(ProcessJSystem::WindowCompo
 void ProcessJSystem::TerminalWindow::setRootView(ProcessJSystem::WindowComponentGroup* rootView) {
 
     // Set the root view
-    this->rootView = rootView;
+    rootView = rootView;
 
-    // Null check
-    if(this->rootView) {
+    // Measure it
+    rootView->onMeasure(width, height);
 
-        // Set the listener
-        this->rootView->setWindowComponentListener(this);
-
-        // Measure it
-        this->rootView->onMeasure(width, height);
-
-        // Draw it
-        output << *rootView;
-
-    }
+    // Draw
+    rootView->draw(output);
 
 }

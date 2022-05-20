@@ -13,7 +13,7 @@
 
 namespace ProcessJSystem{ class WindowComponentGroup; }
 
-class ProcessJSystem::WindowComponentGroup : public ProcessJSystem::WindowComponent, ProcessJSystem::WindowComponent::Listener {
+class ProcessJSystem::WindowComponentGroup : public ProcessJSystem::WindowComponent, ProcessJSystem::WindowComponentListener {
 
     /// ------------------
     /// Protected Members
@@ -35,7 +35,7 @@ public:
      * callbacks on ProcessJRuntim::WindowComponentGroup state mutations
      */
 
-    WindowComponentGroup(ProcessJSystem::WindowComponent::Listener*);
+    WindowComponentGroup(ProcessJSystem::WindowComponentListener*);
 
     /// ----------------------------------------
     /// ProcessJSystem::WindowComponentListener
@@ -46,7 +46,7 @@ public:
      * \param component The Component to be drawn as a void pointer
      */
 
-    void OnComponentDirty(ProcessJSystem::WindowComponent*);
+    void OnComponentDirty(void*);
 
     /*!
      * Invoked when a child view is requesting to be re-measured
@@ -54,15 +54,7 @@ public:
      * \parm component The Component that is requesting to be re-measured
      */
 
-   void RequestLayout(ProcessJSystem::WindowComponent*);
-
-   /*!
-    * Invoked when a child is releasing itself.
-    *
-    * \param component The Component that had its' destructor called.
-    */
-
-   void OnChildReleased(ProcessJSystem::WindowComponent*);
+   void RequestLayout(void*);
 
     /// -------
     /// Methods
