@@ -123,44 +123,6 @@ public:
     const Type& operator[](ProcessJRuntime::UInteger32) const;
 
     /*!
-     * Overloaded assignment operator. Sets the current instance to a copy
-     * of the right hand side and returns a mutable reference to Array.
-     *
-     * \param rightHandSide The ProcessJRuntim::Array to copy
-     * \return mutableReference to ProcessJRuntime::Array
-     */
-
-    Array& operator=(Array& rightHandSide) {
-
-        if((rightHandSide.size() > 0) && (length != rightHandSide.size())) {
-
-            Type* newBlock = new Type[rightHandSide.size()];
-
-            for(ProcessJRuntime::Size index = 0; (index < rightHandSide.size()) && (index < length); index++)
-                newBlock[index] = rightHandSide[index];
-
-            if(array) delete[] array;
-
-            array  = newBlock             ;
-            length = rightHandSide.size() ;
-
-        } else if((length > 0) && (length == rightHandSide.size())) {
-
-            for(ProcessJRuntime::Size index = 0; index < rightHandSide.size(); index++)
-                array[index] = rightHandSide[index];
-
-        } else {
-
-            if(array) delete[] array;
-
-            array   = 0;
-            length  = 0;
-
-        }
-
-    }
-
-    /*!
      * Overloaded Stream insertion operator. Inserts the data into
      * the given output stream
      *
@@ -237,21 +199,14 @@ ProcessJRuntime::Array<Type>::Array(ProcessJRuntime::UInteger32 length):
 
 template<typename Type>
 ProcessJRuntime::Array<Type>::Array(Type* start, Type* end):
-    array(0), length(0) {
-
-    if((end - start) > 0) {
-
-        array = new Type[end - start];
-        length = (end - start);
-
-    }
+    array(new Type[end - start]), length(end - start) {
 
     // We'll traverse the array like this
-    Type* original = start    ;
+    Type* original = start      ;
     Type* copy     = array    ;
 
     // Code golf!
-    while(copy && start && (copy ^ original)) (*copy++ = *original++);
+    while(copy ^ original) (*copy++ = *original++);
 
 }
 
@@ -305,27 +260,21 @@ const ProcessJRuntime::UInteger32& ProcessJRuntime::Array<Type>::size() const {
 template<typename Type>
 void ProcessJRuntime::Array<Type>::resize(ProcessJRuntime::UInteger32 size) {
 
-    if((size > 0) && (length != size)) {
+    if(length != size) {
 
+        // Create a new block
         Type* newBlock = new Type[size];
 
         // Copy the contents over
-        for(ProcessJRuntime::Size index = 0; (index < size) && (index < length); index++)
+        for(ProcessJRuntime::Size index = 0; (index < length) && (index < size); index++)
             newBlock[index] = array[index];
 
-        // If there's an existing array, delete it
-        if(array) delete[] array;
+        // Release the array
+        if(this->array) delete[] this->array;
 
-        // Set the value of the new array and size
-        array  = newBlock   ;
-        length = size       ;
-
-    } else {
-
-        if(array) delete[] array;
-
-        array   = 0;
-        length  = 0;
+        // Set the members
+        this->length = size     ;
+        this->array  = newBlock ;
 
     }
 

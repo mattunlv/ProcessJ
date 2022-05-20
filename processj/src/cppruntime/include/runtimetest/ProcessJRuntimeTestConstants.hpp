@@ -16,8 +16,7 @@ namespace ProcessJTest {
     /// ------------------
     /// Exception Messages
 
-    static ProcessJSystem::StringLiteral ExceptionMessageNoWindowComponent      = "Error: Class does not create a ProcessJTest::WindowComponent.";
-    static ProcessJSystem::StringLiteral ExceptionMessageNoWindowComponentGroup = "Error: Class does not create a ProcessJTest::WindowComponentGroup.";
+    static ProcessJSystem::StringLiteral ExceptionMessageNoWindowComponent = "Error: Class does not create a ProcessJTest::WindowComponent.";
 
 }
 

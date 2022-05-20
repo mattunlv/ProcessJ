@@ -53,14 +53,14 @@ void ProcessJSystem::TextComponent::onMeasure(ProcessJSystem::Integer32 width, P
                 buffer[row][column] = backgroundFill;
 
         for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
-            for(ProcessJSystem::Size column = 0; buffer[row].size() && (column < leftBorderWidth); column++)
+            for(ProcessJSystem::Size column = 0; column < leftBorderWidth; column++)
                 buffer[row][column] = leftBorderFill;
 
         for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
-            for(ProcessJSystem::Size column = (buffer[row].size() - rightBorderWidth); column < buffer[row].size(); column++)
+            for(ProcessJSystem::Size column = (width - rightBorderWidth); column < width; column++)
                 buffer[row][column] = rightBorderFill;
 
-        for(ProcessJSystem::Size row = 0; (row < topBorderWidth) && (row < buffer.size()); row++)
+        for(ProcessJSystem::Size row = 0; row < topBorderWidth; row++)
             for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
                 buffer[row][column] = topBorderFill;
 
@@ -72,28 +72,24 @@ void ProcessJSystem::TextComponent::onMeasure(ProcessJSystem::Integer32 width, P
         ProcessJSystem::UInteger32 textYPosition = 0;
         ProcessJSystem::UInteger32 index         = 0;
 
-        if((buffer.size() > 0) && (buffer[0].size() > 0)) {
+        if(verticalTextOrientation == ProcessJSystem::WindowComponent::End)
+            textYPosition = (buffer.size() - 1);
 
-            if(verticalTextOrientation == ProcessJSystem::WindowComponent::End)
-                textYPosition = (buffer.size() - 1);
+        else if(verticalTextOrientation == ProcessJSystem::WindowComponent::Center)
+            textYPosition = (buffer.size() - 1) / 2;
 
-            else if(verticalTextOrientation == ProcessJSystem::WindowComponent::Center)
-                textYPosition = (buffer.size() - 1) / 2;
+        if(horizontalTextOrientation == ProcessJSystem::WindowComponent::End)
+            textXPosition = width - textLength;
 
-            if(horizontalTextOrientation == ProcessJSystem::WindowComponent::End)
-                textXPosition =  buffer[0].size() - textLength;
+        else if(horizontalTextOrientation == ProcessJSystem::WindowComponent::Center)
+            textXPosition = ((width / 2) - (textLength / 2));
 
-            else if(horizontalTextOrientation == ProcessJSystem::WindowComponent::Center)
-                textXPosition = ((width / 2) - (textLength / 2));
+        if(textXPosition < leftBorderWidth) textXPosition = leftBorderWidth;
 
-            if(textXPosition < leftBorderWidth) textXPosition = leftBorderWidth;
+        if(textYPosition < topBorderWidth) textYPosition = topBorderWidth;
 
-            if(textYPosition < topBorderWidth) textYPosition = topBorderWidth;
-
-            for(;(index < textLength) && (index < width) && (textXPosition < width); textXPosition++)
-                if(buffer[textYPosition].size() > 0) buffer[textYPosition][textXPosition] = text[index++];
-
-        }
+        for(;(index < textLength) && (textXPosition < width); textXPosition++)
+            buffer[textYPosition][textXPosition] = text[index++];
 
     }
 

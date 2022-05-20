@@ -53,16 +53,15 @@ void ProcessJSystem::VerticalLayout::onMeasure(ProcessJSystem::Integer32 width, 
     ProcessJSystem::Size layoutRow      = 0 ;
     ProcessJSystem::Size layoutColumn   = 0 ;
 
-    for(ProcessJSystem::Size index = 0; buffer.size() && (index < children.size()); index++) {
+    for(ProcessJSystem::Size index = 0; index < children.size(); index++) {
 
-        if(layoutRow >= height) break;
         // Get the child
         ProcessJSystem::WindowComponent* component = children[index];
 
         // Iterate through the child
-        for(ProcessJSystem::Size row = 0; (component) && (row < component->getBuffer().size()); row++) {
+        for(ProcessJSystem::Size row = 0; row < component->getBuffer().size(); row++) {
 
-            if(layoutRow >= height) break;
+            if(layoutRow > height) break;
 
             for(ProcessJSystem::Size column = 0; column < component->getBuffer()[row].size(); column++) {
 
@@ -76,6 +75,8 @@ void ProcessJSystem::VerticalLayout::onMeasure(ProcessJSystem::Integer32 width, 
             layoutColumn = 0;
 
         }
+
+        if(layoutRow > height) break;
 
     }
 

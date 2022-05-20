@@ -70,10 +70,10 @@ void ProcessJSystem::TerminalWindow::OnChildReleased(ProcessJSystem::WindowCompo
  * \param rootView The root view
  */
 
-void ProcessJSystem::TerminalWindow::setRootView(ProcessJSystem::WindowComponentGroup& rootView) {
+void ProcessJSystem::TerminalWindow::setRootView(ProcessJSystem::WindowComponentGroup* rootView) {
 
     // Set the root view
-    this->rootView = &rootView;
+    this->rootView = rootView;
 
     // Null check
     if(this->rootView) {
@@ -85,7 +85,7 @@ void ProcessJSystem::TerminalWindow::setRootView(ProcessJSystem::WindowComponent
         this->rootView->onMeasure(width, height);
 
         // Draw it
-        output << *(this->rootView);
+        output << *rootView;
 
     }
 

@@ -85,20 +85,19 @@ protected:
     virtual void onDisplayResults();
 
     /*!
+     * Executes the ProcessJTest::Test while marking the
+     * start and end times of the ProcessJTest::Test
+     */
+
+    virtual void execute();
+
+    /*!
      * Returns a ProcessJTest::Flag denoting if the test
      * passed. This should be implemented by any child classes
      * since test passing may vary
      */
 
     virtual ProcessJTest::Flag didPass();
-
-
-    /*!
-     * Executes the ProcessJTest::Test while marking the
-     * start and end times of the ProcessJTest::Test
-     */
-
-    void execute();
 
     /// --------------
     /// Public Members
