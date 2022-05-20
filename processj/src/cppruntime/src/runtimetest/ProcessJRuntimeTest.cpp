@@ -53,6 +53,15 @@ int32_t main(void) {
     //std::cout << "total time difference between sc/mc: "
     //          << diff.count() << " microseconds\n";
 
+    // Retrieve the system instance
+    ProcessJSystem::System* system = ProcessJSystem::System::GetInstance();
+
+    // Set the output to raw
+    ProcessJSystem::System::SetRawMode();
+
+    // Create a terminal window
+    ProcessJSystem::TerminalWindow window(160, 48);
+
     //ProcessJTest::one2one_test oto_test;
     //oto_test.run();
 
@@ -89,33 +98,31 @@ int32_t main(void) {
     //ProcessJTest::static_method_test sm_test;
     //sm_test.run();
 
-    //ProcessJTest::string_test s_test;
-    //s_test.run();
-    // Set the output to raw
+    ProcessJTest::ArrayTest arrayTest;
+    //ProcessJTest::ArrayTest otherArrayTest;
+    arrayTest();
 
-    // Set the terminal to raw mode and create a terminal window instance
-    ProcessJSystem::System::SetRawMode();
-    ProcessJSystem::TerminalWindow window(160, 48);
 
-    ProcessJSystem::Vector<ProcessJTest::ArrayTest> tests(12);
     // Create the window view
-    ProcessJSystem::VerticalLayout verticalLayout(&window);
+    ProcessJSystem::VerticalLayout  verticalLayout(&window);
+    ProcessJSystem::TextComponent&   textComponent      = arrayTest;
 
-    for(int index = 0; index < 12; index++) {
+    //ProcessJSystem::TextComponent   otherTextComponent = otherArrayTest;
 
-        tests[index]();
+    // Add the child
+    verticalLayout.addChild(&textComponent);
+    //verticalLayout->addChild(other);
 
-        verticalLayout.addChild(tests[index]);
-
-    }
+    //textComponent.setText("Hello, world!");
 
     // Set it as the root view
     window.setRootView(&verticalLayout);
 
-
     // Set it back to cooked
     ProcessJSystem::System::SetCookedMode();
 
-    return 0;
+    //ProcessJTest::string_test s_test;
+    //s_test.run();
 
+    return 0;
 }

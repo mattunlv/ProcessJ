@@ -74,7 +74,7 @@ public:
      * \param child The child to add to the WindowComponent tree
      */
 
-    void addChild(ProcessJSystem::WindowComponent&);
+    void addChild(ProcessJSystem::WindowComponent*);
 
 };
 
