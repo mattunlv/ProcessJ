@@ -10,4 +10,3 @@
 #include<vector>
 
 #include <DelayQueue.hpp>
-#include <RTTI.hpp>
