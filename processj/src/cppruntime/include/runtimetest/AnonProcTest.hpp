@@ -21,7 +21,7 @@ namespace ProcessJTest {
 class ProcessJTest::anon : public ProcessJRuntime::pj_process {
             public:
                 anon() = delete;
-                anon(int32_t id, ProcessJRuntime::pj_scheduler* sched)
+                anon(int32_t id, ProcessJRuntime::Scheduler* sched)
                 : id(id)
                 {
                     this->sched = sched;
@@ -53,14 +53,14 @@ class ProcessJTest::anon : public ProcessJRuntime::pj_process {
 
             private:
                 int32_t id;
-                ProcessJRuntime::pj_scheduler* sched;
+                ProcessJRuntime::Scheduler* sched;
 
 };
 
 class ProcessJTest::anonproc_process : public ProcessJRuntime::pj_process {
     public:
         anonproc_process() = delete;
-        anonproc_process(int32_t id, ProcessJRuntime::pj_scheduler* sched)
+        anonproc_process(int32_t id, ProcessJRuntime::Scheduler* sched)
         : id(id)
         {
             this->sched = sched;
@@ -103,7 +103,7 @@ class ProcessJTest::anonproc_process : public ProcessJRuntime::pj_process {
 
     private:
         int32_t id;
-        ProcessJRuntime::pj_scheduler* sched;
+        ProcessJRuntime::Scheduler* sched;
     };
 
 class ProcessJTest::anonproc_test {
@@ -116,7 +116,7 @@ class ProcessJTest::anonproc_test {
         void run()
         {
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::pj_scheduler sched;
+            ProcessJRuntime::Scheduler sched;
 
             std::cout << "\n *** CREATING PROCESS *** \n\n";
             ProcessJTest::anonproc_process* ap = new ProcessJTest::anonproc_process(0, &sched);

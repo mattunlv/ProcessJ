@@ -27,7 +27,7 @@ class ProcessJTest::mc_process : public ProcessJRuntime::pj_process
     {
     public:
         mc_process() = delete;
-        mc_process(int32_t id, ProcessJRuntime::pj_scheduler* sched)
+        mc_process(int32_t id, ProcessJRuntime::Scheduler* sched)
         : id(id)
         {
             this->sched = sched;
@@ -71,7 +71,7 @@ class ProcessJTest::mc_process : public ProcessJRuntime::pj_process
         }
     private:
         int32_t id;
-        ProcessJRuntime::pj_scheduler* sched;
+        ProcessJRuntime::Scheduler* sched;
     };
 
     class ProcessJTest::multicore_test
@@ -85,7 +85,7 @@ class ProcessJTest::mc_process : public ProcessJRuntime::pj_process
         void run()
         {
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            std::vector<ProcessJRuntime::pj_scheduler> schedulers(4);
+            std::vector<ProcessJRuntime::Scheduler> schedulers(4);
 
             std::cout << "\n *** CREATING PROCESSES *** \n\n";
             ProcessJTest::mc_process* processes[4];

@@ -156,7 +156,7 @@ public:
             ProcessJRuntime::pj_one2many_channel<int32_t> otm_ch;
 
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::pj_scheduler sch;
+            ProcessJRuntime::Scheduler sch;
 
             std::cout << "\n *** CREATING PROCESSES FOR R/W *** \n\n";
             one2many_writer<int32_t>* otm_w = new one2many_writer<int32_t>(3,

@@ -24,7 +24,7 @@ class ProcessJTest::par_anon : public ProcessJRuntime::pj_process {
             public:
                 par_anon() = delete;
                 par_anon(int32_t id,
-                     ProcessJRuntime::pj_scheduler* sched,
+                     ProcessJRuntime::Scheduler* sched,
                      ProcessJRuntime::pj_par* par)
                 : id(id)
                 {
@@ -65,7 +65,7 @@ class ProcessJTest::par_anon : public ProcessJRuntime::pj_process {
 
             private:
                 int32_t id;
-                ProcessJRuntime::pj_scheduler* sched;
+                ProcessJRuntime::Scheduler* sched;
                 ProcessJRuntime::pj_par* par;
 };
 
@@ -74,7 +74,7 @@ class ProcessJTest::par_process: public ProcessJRuntime::pj_process {
     public:
         par_process() = delete;
 
-        par_process(int32_t id, ProcessJRuntime::pj_scheduler* sched)
+        par_process(int32_t id, ProcessJRuntime::Scheduler* sched)
         : id(id)
         {
             this->sched = sched;
@@ -123,7 +123,7 @@ class ProcessJTest::par_process: public ProcessJRuntime::pj_process {
 
     private:
         int32_t id;
-        ProcessJRuntime::pj_scheduler* sched;
+        ProcessJRuntime::Scheduler* sched;
     };
 
 class ProcessJTest::par_test {
@@ -139,7 +139,7 @@ public:
     void run() {
 
         std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-        ProcessJRuntime::pj_scheduler sched;
+        ProcessJRuntime::Scheduler sched;
 
         std::cout << "\n *** CREATING PROCESS *** \n\n";
         ProcessJTest::par_process* pp = new ProcessJTest::par_process(0, &sched);

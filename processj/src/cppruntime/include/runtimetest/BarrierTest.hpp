@@ -70,7 +70,7 @@ class ProcessJTest::barrier_test {
         void run()
         {
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::pj_scheduler sched;
+            ProcessJRuntime::Scheduler sched;
 
             std::cout << "\n *** CREATING BARRIER *** \n\n";
             std::shared_ptr<ProcessJRuntime::pj_barrier> bar =

@@ -10,27 +10,26 @@
 #ifndef UNLV_PROCESS_J_SCHEDULER_HPP
 #define UNLV_PROCESS_J_SCHEDULER_HPP
 
-namespace ProcessJRuntime { class pj_scheduler; }
+namespace ProcessJRuntime { class Scheduler; }
 
-    class ProcessJRuntime::pj_scheduler
-    {
+class ProcessJRuntime::Scheduler {
 
     public:
         pj_inactive_pool ip;
 
-        pj_scheduler()
+        Scheduler()
         : cpu(0), cpus(std::thread::hardware_concurrency())
         {
 
         }
 
-        pj_scheduler(uint32_t cpu)
+        Scheduler(uint32_t cpu)
         : cpu(cpu), cpus(std::thread::hardware_concurrency())
         {
 
         }
 
-        ~pj_scheduler()
+        ~Scheduler()
         {
             if(this->sched_thread.joinable())
             {
@@ -63,7 +62,7 @@ namespace ProcessJRuntime { class pj_scheduler; }
         {
             /* only need to start the timer queue once */
             tq.start();
-            this->sched_thread = std::thread(&pj_scheduler::run, this);
+            this->sched_thread = std::thread(&Scheduler::run, this);
 
             /* this allows us to use heap-allocated variables
              * in the main driver for the code (i.e. run() in alt_test).

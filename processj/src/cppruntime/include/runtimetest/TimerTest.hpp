@@ -19,7 +19,7 @@ namespace ProcessJTest {
 
 class ProcessJTest::timer_process : public ProcessJRuntime::pj_process {
     public:
-        timer_process(ProcessJRuntime::pj_scheduler* sched)
+        timer_process(ProcessJRuntime::Scheduler* sched)
         : m_sched(sched)
         { }
 
@@ -53,7 +53,7 @@ class ProcessJTest::timer_process : public ProcessJRuntime::pj_process {
         }
 
     private:
-        ProcessJRuntime::pj_scheduler* m_sched;
+        ProcessJRuntime::Scheduler* m_sched;
     };
 
 class ProcessJTest::timer_test {
@@ -65,7 +65,7 @@ class ProcessJTest::timer_test {
 
         void run()
         {
-            ProcessJRuntime::pj_scheduler sched;
+            ProcessJRuntime::Scheduler sched;
             sched.insert(new timer_process(&sched));
             sched.start();
         }

@@ -31,7 +31,7 @@ class ProcessJTest::static_method_process : public ProcessJRuntime::pj_process {
     public:
         static_method_process() = delete;
 
-        static_method_process(int32_t id, ProcessJRuntime::pj_scheduler* sched)
+        static_method_process(int32_t id, ProcessJRuntime::Scheduler* sched)
         : id(id)
         {
             this->sched = sched;
@@ -66,7 +66,7 @@ class ProcessJTest::static_method_process : public ProcessJRuntime::pj_process {
 
     private:
         int32_t id;
-        ProcessJRuntime::pj_scheduler* sched;
+        ProcessJRuntime::Scheduler* sched;
     };
 
     class ProcessJTest::static_method_test
@@ -80,7 +80,7 @@ class ProcessJTest::static_method_process : public ProcessJRuntime::pj_process {
         void run()
         {
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::pj_scheduler sched;
+            ProcessJRuntime::Scheduler sched;
 
             std::cout << "\n *** CREATING PROCESS *** \n\n";
             ProcessJTest::static_method_process* sm_proc =
