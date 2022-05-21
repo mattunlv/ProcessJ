@@ -91,6 +91,20 @@ class SchedulerNamespace::Scheduler {
 
 private:
 
+    ProcessJRuntime::pj_timer_queue tq;
+    ProcessJRuntime::pj_run_queue   rq;
+
+    std::mutex mutex;
+    std::mutex iomutex;
+
+    uint64_t start_time       = 0;
+    int32_t  context_switches = 0;
+    size_t   max_rq_size      = 0;
+
+    std::thread sched_thread;
+    uint32_t             cpu;
+    uint32_t            cpus;
+
     /*!
      * TBD
      */
@@ -177,22 +191,6 @@ public:
      */
 
     void run(void);
-
-private:
-
-        ProcessJRuntime::pj_timer_queue tq;
-        ProcessJRuntime::pj_run_queue   rq;
-
-        std::mutex mutex;
-        std::mutex iomutex;
-
-        uint64_t start_time       = 0;
-        int32_t  context_switches = 0;
-        size_t   max_rq_size      = 0;
-
-        std::thread sched_thread;
-        uint32_t             cpu;
-        uint32_t            cpus;
 
 };
 
