@@ -43,7 +43,6 @@
 #include<Process.hpp>
 #include<Timer.hpp>
 #include<TimerQueue.hpp>
-#include<RunQueue.hpp>
 #include<InactivePool.hpp>
 #include<Scheduler.hpp>
 #include<ChannelType.hpp>

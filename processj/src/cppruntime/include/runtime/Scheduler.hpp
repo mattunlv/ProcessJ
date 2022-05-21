@@ -22,7 +22,6 @@
 #include<Timer.hpp>
 #include<DelayQueue.hpp>
 #include<TimerQueue.hpp>
-#include<RunQueue.hpp>
 #include<InactivePool.hpp>
 
 /// --------------------
@@ -92,10 +91,12 @@ class SchedulerNamespace::Scheduler {
 private:
 
     ProcessJRuntime::pj_timer_queue tq;
-    ProcessJRuntime::pj_run_queue   rq;
 
-    std::mutex mutex;
-    std::mutex iomutex;
+    std::queue<ProcessJRuntime::pj_process*> runQueue;
+
+    std::mutex mutex            ;
+    std::mutex iomutex          ;
+    std::mutex runQueueMutex    ;
 
     uint64_t start_time       = 0;
     int32_t  context_switches = 0;

@@ -56,8 +56,8 @@ Scheduler::~Scheduler() {
 
 void Scheduler::insert(ProcessJRuntime::pj_process* p) {
 
-    std::lock_guard<std::mutex> lk(mutex);
-    rq.insert(p);
+    std::lock_guard<std::mutex> runQueueLock(runQueueMutex);
+    runQueue.push(p);
 
 }
 
@@ -109,12 +109,20 @@ void Scheduler::run(void) {
 
     this->isolate_thread();
 
-    while(rq.size() > 0) {
+    while(runQueue.size() > 0) {
 
-        if(static_cast<size_t>(rq.size()) > max_rq_size)
-            max_rq_size = rq.size();
+        if(static_cast<size_t>(runQueue.size()) > max_rq_size)
+            max_rq_size = runQueue.size();
 
-        ProcessJRuntime::pj_process* p = rq.next();
+        ProcessJRuntime::pj_process* p = nullptr;
+
+        {
+
+            std::lock_guard<std::mutex> queueLock(runQueueMutex);
+            p = runQueue.front();
+            runQueue.pop();
+
+        }
 
         if(p->is_ready()) {
 
@@ -122,7 +130,7 @@ void Scheduler::run(void) {
             context_switches++;
 
             if(!p->is_terminated())
-                rq.insert(p);
+                insert(p);
 
             else {
 
@@ -131,7 +139,7 @@ void Scheduler::run(void) {
 
             }
 
-        } else rq.insert(p);
+        } else insert(p);
 
     }
 
@@ -147,7 +155,7 @@ void Scheduler::run(void) {
 int Scheduler::size() {
 
     std::lock_guard<std::mutex> lk(mutex);
-    return rq.size();
+    return runQueue.size();
 
 }
 
