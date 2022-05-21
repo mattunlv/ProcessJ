@@ -25,11 +25,6 @@ private:
     static ProcessJSystem::System* SystemHandle        ; /*< Pointer to the System                             */
     static ProcessJSystem::Flag    SystemInitialized   ; /*< Flag denoting if the System has been initialized  */
 
-    /// ----------------
-    /// Member Variables
-
-    ProcessJSystem::WindowComponent* windowCompoent    ; /*< ProcessJSystem::WindowComponent that displays test results */
-
 };
 
 #endif
