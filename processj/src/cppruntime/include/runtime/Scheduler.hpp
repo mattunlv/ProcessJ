@@ -4,15 +4,99 @@
  * \author Alexander C. Thomason
  * \author Carlos L. Cuenca
  * \date 03/12/2022
- * \version 1.0.0
+ * \version 1.3.0
  */
 
 #ifndef UNLV_PROCESS_J_SCHEDULER_HPP
 #define UNLV_PROCESS_J_SCHEDULER_HPP
 
-namespace ProcessJRuntime { class Scheduler; }
+#include<cstddef>
+#include<atomic>
+#include<vector>
+#include<condition_variable>
+#include<algorithm>
+#include<thread>
+#include<queue>
 
-class ProcessJRuntime::Scheduler {
+#include<Logger.hpp>
+#include<Process.hpp>
+#include<Timer.hpp>
+#include<DelayQueue.hpp>
+#include<TimerQueue.hpp>
+#include<RunQueue.hpp>
+#include<InactivePool.hpp>
+
+/// --------------------
+/// Namespace Resolution
+
+#ifdef SCHEDULER_NAMESPACE
+
+    #define SchedulerNamespace SCHEDULER_NAMESPACE
+
+#else
+
+    #define SchedulerNamespace ProcessJRuntime
+
+#endif
+
+/// --------------
+/// Inline options
+
+#ifdef SCHEDULER_INLINE_CONSTRUCTORS
+
+    #define SchedulerConstructorInline inline __attribute__((always_inline))
+
+#else
+
+    #define SchedulerConstructorInline
+
+#endif
+
+#ifdef SCHEDULER_INLINE_OPERATORS
+
+    #define SchedulerOperatorInline inline __attribute__((always_inline))
+
+#else
+
+    #define SchedulerOperatorInline
+
+#endif
+
+#ifdef SCHEDULER_INLINE_METHODS
+
+    #define SchedulerMethodInline inline __attribute__((always_inline))
+
+#else
+
+    #define SchedulerMethodInline
+
+#endif
+
+/// ---------------------
+/// Namespace Declaration
+
+namespace SchedulerNamespace { class Scheduler; }
+
+/// -----
+/// Alias
+
+using Scheduler = SchedulerNamespace::Scheduler;
+
+/// -----------------
+/// Class Declaration
+
+class SchedulerNamespace::Scheduler {
+
+    /// -----------------
+    /// Protected Members
+
+    protected:
+
+        int size();
+
+        void inc_context_switches();
+
+        void inc_max_rq_size(size_t);
 
     public:
         pj_inactive_pool ip;
@@ -103,29 +187,6 @@ class ProcessJRuntime::Scheduler {
                 } else rq.insert(p);
 
             }
-
-        }
-
-    protected:
-
-        int size() {
-
-            std::lock_guard<std::mutex> lk(mutex);
-            return rq.size();
-
-        }
-
-        void inc_context_switches() {
-
-            std::lock_guard<std::mutex> lk(mutex);
-            context_switches++;
-
-        }
-
-        void inc_max_rq_size(size_t size) {
-
-            std::lock_guard<std::mutex> lk(mutex);
-            if(size > max_rq_size) max_rq_size = size;
 
         }
 
@@ -306,6 +367,5 @@ class ProcessJRuntime::Scheduler {
         }
 
 };
-
 
 #endif
