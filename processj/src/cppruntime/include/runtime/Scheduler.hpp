@@ -10,7 +10,6 @@
 #ifndef UNLV_PROCESS_J_SCHEDULER_HPP
 #define UNLV_PROCESS_J_SCHEDULER_HPP
 
-#include<cstddef>
 #include<atomic>
 #include<vector>
 #include<condition_variable>
@@ -92,9 +91,25 @@ class SchedulerNamespace::Scheduler {
 
     protected:
 
+        /*!
+         * Returns the amount of processes executing
+         * in the scheduler.
+         * \return Number of processes executing in the scheduler.
+         */
+
         int size();
 
+        /*!
+         * Increments the amount of context switches
+         * the Scheduler has performed.
+         */
+
         void inc_context_switches();
+
+        /*!
+         * Increments the amount of processes the runqueue
+         * can handle.
+         */
 
         void inc_max_rq_size(size_t);
 

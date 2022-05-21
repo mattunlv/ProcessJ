@@ -9,6 +9,12 @@
 
 #include<Scheduler.hpp>
 
+/*!
+ * Returns the amount of processes executing
+ * in the scheduler.
+ * \return Number of processes executing in the scheduler.
+ */
+
 int Scheduler::size() {
 
     std::lock_guard<std::mutex> lk(mutex);
@@ -16,12 +22,22 @@ int Scheduler::size() {
 
 }
 
+/*!
+ * Increments the amount of context switches
+ * the Scheduler has performed.
+ */
+
 void Scheduler::inc_context_switches() {
 
     std::lock_guard<std::mutex> lk(mutex);
     context_switches++;
 
 }
+
+/*!
+ * Increments the amount of processes the runqueue
+ * can handle.
+ */
 
 void Scheduler::inc_max_rq_size(size_t size) {
 
