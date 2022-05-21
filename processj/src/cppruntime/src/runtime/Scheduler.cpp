@@ -174,3 +174,166 @@ void Scheduler::inc_max_rq_size(size_t size) {
     if(size > max_rq_size) max_rq_size = size;
 
 }
+
+/*!
+ * TBD
+ */
+
+void Scheduler::isolate_thread(void) {
+
+    std::unique_lock<std::mutex> lock(this->iomutex, std::defer_lock);
+    std::thread::id th_id = this->sched_thread.get_id();
+
+    lock.lock();
+
+    ProcessJRuntime::pj_logger::log("isolating thread ", th_id, " to cpu ", cpu);
+
+    lock.unlock();
+
+    cpu_set_t cur_set;
+    cpu_set_t new_set;
+    pthread_t    p_th;
+    uint32_t        i;
+
+    CPU_ZERO(&new_set);
+
+    if(!this->cpus) {
+
+        lock.lock();
+        std::cerr << "error: hardware_concurrency not set/determinable\n";
+        lock.unlock();
+        abort();
+
+    }
+
+    uint8_t arr_cur_set[this->cpus];
+    uint8_t arr_new_set[this->cpus];
+
+    for(i = 0; i < this->cpus; ++i) {
+
+        arr_cur_set[i] = 0;
+        arr_new_set[i] = 0;
+
+    }
+
+    p_th = this->sched_thread.native_handle();
+    lock.lock();
+
+    ProcessJRuntime::pj_logger::log("the native_handle is ", p_th);
+    lock.unlock();
+
+    if(!p_th) {
+
+        lock.lock();
+        std::cerr << "error: native_handle() returned null\n";
+        lock.unlock();
+        abort();
+
+    }
+
+    lock.lock();
+    ProcessJRuntime::pj_logger::log("getting thread cpu_set...");
+    lock.unlock();
+
+    CPU_ZERO(&cur_set);
+
+    if(pthread_getaffinity_np(p_th, sizeof(cpu_set_t), &cur_set)) {
+
+        lock.lock();
+        perror("pthread_getaffinity_np");
+        lock.unlock();
+        abort();
+
+    }
+
+    lock.lock();
+    for(i = 0; i < this->cpus; ++i) {
+
+        if(CPU_ISSET(i, &cur_set)) {
+
+            ProcessJRuntime::pj_logger::log("cpu ", i, " is in thread ", th_id, "'s current cpu set");
+
+        }
+
+    }
+
+    ProcessJRuntime::pj_logger::log("now setting thread ", th_id, "'s cpu_set to ", cpu);
+    lock.unlock();
+
+    CPU_SET(cpu, &new_set);
+    arr_new_set[cpu] = 1;
+
+    lock.lock();
+    ProcessJRuntime::pj_logger::log("new cpu_set is:");
+    for(i = 0; i < cpus; ++i) {
+
+        std::cout << static_cast<uint32_t>(arr_new_set[i]) << " ";
+
+    }
+
+    ProcessJRuntime::pj_logger::log("which implies:");
+    for(i = 0; i < cpus; ++i) {
+
+        if(CPU_ISSET(i, &new_set))
+            ProcessJRuntime::pj_logger::log(i);
+
+    }
+
+    std::cout << std::endl;
+    lock.unlock();
+
+    if(pthread_setaffinity_np(p_th, sizeof(cpu_set_t), &new_set)) {
+
+        lock.lock();
+        perror("pthread_setaffinity_np");
+        lock.unlock();
+        abort();
+
+    }
+
+    lock.lock();
+    ProcessJRuntime::pj_logger::log("verifying thread ", th_id, "'s cpu_set...");
+    lock.unlock();
+
+    CPU_ZERO(&cur_set);
+    if(pthread_getaffinity_np(p_th, sizeof(cpu_set_t), &cur_set)) {
+
+        lock.lock();
+        perror("pthread_getaffinity_np");
+        lock.unlock();
+        abort();
+
+    }
+
+    lock.lock();
+    for(i = 0; i < cpus; ++i) {
+
+        if(CPU_ISSET(i, &cur_set)) {
+
+            ProcessJRuntime::pj_logger::log("cpu ", i, " is in new current cpu set");
+            arr_cur_set[i] = 1;
+
+        }
+
+    }
+
+    for(i = 0; i < cpus; ++i) {
+
+        if(arr_cur_set[i] != arr_new_set[i]) {
+
+            std::cerr << "error: cpu " << i << " is in thread " << th_id
+                      << "'s cpu_set\n";
+            lock.unlock();
+            abort();
+
+        }
+
+    }
+
+    lock.unlock();
+
+    lock.lock();
+    ProcessJRuntime::pj_logger::log("thread ", th_id, "'s cpu_set successfully modified\n");
+    lock.unlock();
+
+}
