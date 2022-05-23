@@ -12,14 +12,57 @@
 
 namespace ProcessJRuntime { class pj_timer_queue; }
 
- class ProcessJRuntime::pj_timer_queue {
+class ProcessJRuntime::pj_timer_queue {
+
+private:
+
+    /* the ProcessJRuntime::pj_timer_queue essentially needs to grab a timer, and wait for
+     * it to timeout before setting it's _expired flag to true, and
+     * handling the the process that had that timer appropriately
+     * ---
+     * allow a "fake timer" to be placed in the timer queue, which will
+     * both disallow permanent waiting for a timer from the delayqueue,
+     * and make it so that when that is placed in the queue, it is
+     * taken out immediately, the flag is then checked, and if
+     * it is set to true the timerqueue thread dies, else we have
+     * not received a fake timer, and we should handle that timer
+     * however we are supposed to
+     */
+
+    ProcessJUtilities::delay_queue<ProcessJRuntime::pj_timer*> dq;
+    std::thread                timer_thread;
+    std::mutex                          mtx;
+
+    /* TODO: need to implement exit_value counter
+     * ---
+     * exit_value must be 1 initially (first process does not
+     * increment), and must be 0 for the TimerQueue to be
+     * allowed to exit properly
+     * ---
+     * incrememted on fork, decremented on process end
+     */
+    std::atomic<int32_t> exit_value;
+    std::atomic<bool>    kill_flag;
+
+    ProcessJRuntime::pj_timer* kill_timer = nullptr;
+
+    std::vector<std::pair<ProcessJRuntime::pj_timer*, std::chrono::system_clock::time_point>> vec;
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool closed = false;
 
     friend class ProcessJRuntime::pj_timer;
 
-    public:
+public:
         pj_timer_queue()
         : exit_value(1)
         {
+
+        }
+
+        pj_timer_queue(size_t size) {
+
+            vec.reserve(size);
 
         }
 
@@ -88,35 +131,6 @@ namespace ProcessJRuntime { class pj_timer_queue; }
             return dq.size();
         }
 
-    private:
-        /* the ProcessJRuntime::pj_timer_queue essentially needs to grab a timer, and wait for
-         * it to timeout before setting it's _expired flag to true, and
-         * handling the the process that had that timer appropriately
-         * ---
-         * allow a "fake timer" to be placed in the timer queue, which will
-         * both disallow permanent waiting for a timer from the delayqueue,
-         * and make it so that when that is placed in the queue, it is
-         * taken out immediately, the flag is then checked, and if
-         * it is set to true the timerqueue thread dies, else we have
-         * not received a fake timer, and we should handle that timer
-         * however we are supposed to
-         */
-        ProcessJUtilities::delay_queue<ProcessJRuntime::pj_timer*> dq;
-        std::thread                timer_thread;
-        std::mutex                          mtx;
-
-        /* TODO: need to implement exit_value counter
-         * ---
-         * exit_value must be 1 initially (first process does not
-         * increment), and must be 0 for the TimerQueue to be
-         * allowed to exit properly
-         * ---
-         * incrememted on fork, decremented on process end
-         */
-        std::atomic<int32_t> exit_value;
-        std::atomic<bool>    kill_flag;
-
-        ProcessJRuntime::pj_timer* kill_timer = nullptr;
     };
 
 

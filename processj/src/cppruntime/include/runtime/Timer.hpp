@@ -19,11 +19,19 @@ namespace ProcessJRuntime { class pj_timer; }
 
 class ProcessJRuntime::pj_timer {
 
-private:
+    private:
+
+        long m_delay;
+        std::chrono::system_clock::time_point m_real_delay;
+        long m_timeout;
+        bool m_killed;
+        ProcessJRuntime::pj_process* m_process;
+
         friend class pj_timer_queue;
         friend class Alternation;
 
     public:
+
         bool m_started;
         bool m_expired;
 
@@ -127,12 +135,7 @@ private:
             return o << "Process: " << t.m_process;
         }
 
-    private:
-        long m_delay;
-        std::chrono::system_clock::time_point m_real_delay;
-        long m_timeout;
-        bool m_killed;
-        ProcessJRuntime::pj_process* m_process;
+
     };
 
 
