@@ -282,72 +282,16 @@ public void main(string[] args) {
     println("SANTA OUTPUT       ELF OUTPUT      REINDEER OUTPUT");
     println("-----------------------------------------------------------------------------------");
 
-    /*
     par {
         par enroll (santa_reindeer) {
             santa (seed + (N_REINDEER + N_ELVES), knock.read, reindeer_santa.read, elf_santa.read, santa_reindeer, santa_elves_a.write, santa_elves_b.write, report.write);
+            
             par for (int i=0; i<N_REINDEER; i++) enroll (just_reindeer, santa_reindeer) {
                 reindeer (i, seed + i, just_reindeer, santa_reindeer, reindeer_santa.write, report.write);
             }
         }
         par for (int i=0; i<N_ELVES; i++) {
             elf (i, N_REINDEER + (seed + i), elves_a.write, elves_b.write, santa_elves_a.write, santa_elves_b.write, elf_santa.write, report.write);
-        }
-
-        display (report.read);
-        p_barrier_knock (G_ELVES, elves_a.read, elves_b.read, knock.write); p_barrier (G_ELVES + 1, santa_elves_a.read, santa_elves_b.read);
-    }*/
-
-    par {
-        par enroll santa_reindeer {
-            santa(seed + (N_REINDEER + N_ELVES),
-                  knock.read, reindeer_santa.read,
-                  elf_santa.read, santa_reindeer,
-                  santa_elves_a.write, santa_elves_b.write,
-                  report.write);
-            par enroll just_reindeer, santa_reindeer {
-                reindeer(0, seed, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);
-                reindeer(1, seed + 1, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);
-                reindeer(2, seed + 2, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);
-                /*reindeer(3, seed + 3, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);
-                reindeer(4, seed + 4, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);
-                reindeer(5, seed + 5, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);
-                reindeer(6, seed + 6, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);
-                reindeer(7, seed + 7, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);
-                reindeer(8, seed + 8, just_reindeer, santa_reindeer,
-                    reindeer_santa.write, report.write);*/
-            }
-        }
-
-        par {
-            elf(0, N_REINDEER + seed, elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            elf(1, N_REINDEER + (seed + 1), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            elf(2, N_REINDEER + (seed + 2), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            elf(3, N_REINDEER + (seed + 3), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            /*elf(4, N_REINDEER + (seed + 4), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            elf(5, N_REINDEER + (seed + 5), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            elf(6, N_REINDEER + (seed + 6), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            elf(7, N_REINDEER + (seed + 7), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            elf(8, N_REINDEER + (seed + 8), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);
-            elf(9, N_REINDEER + (seed + 9), elves_a.write, elves_b.write, santa_elves_a.write,
-            santa_elves_b.write, elf_santa.write, report.write);*/
         }
 
         display(report.read);

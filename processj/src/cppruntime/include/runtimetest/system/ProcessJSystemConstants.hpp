@@ -18,11 +18,6 @@ namespace ProcessJSystem {
 
     static StringLiteral ExceptionMessageIndexOutOfBounds = "Error: IndexOutOfBounds";
 
-    /// ----------
-    /// Characters
-
-    static Character NewLine = '\n';
-
 }
 
 

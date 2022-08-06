@@ -80,7 +80,7 @@ OutputStream& ProcessJSystem::TextComponent::draw(OutputStream& outputStream) {
         for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
             outputStream << buffer[row][column];
 
-        outputStream << ProcessJSystem::NewLine;
+        outputStream << '\n';
 
     }
 
