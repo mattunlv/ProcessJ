@@ -21,9 +21,10 @@ Specifically, the script will:
 Otherwise if a custom setup is preferred, follow & adjust according to the steps specified below.
 
 At the time of writing, this installer has been tested on a 64-bit Debian 11 (bullseye) system. 
+
 MacOS coming soon.
 
-### * Pre-Requisites
+### Pre-Requisites
 
 The following dependencies are required prior to installation:
 
@@ -46,7 +47,7 @@ Otherwise if sudo is not configured on your system run:
 $ su && apt-get install -y default-jdk ant make git && exit
 ```
 
-### * Clone the repository
+### Clone the repository
 
 ```bash
 $ git clone https://www.github.com/mattunlv/ProcessJ.git
@@ -74,34 +75,34 @@ $ sudo chown -R $(logname):$(logname) /path/to/installation/folder
 Alternatively, if sudo is not configured on your system:
 
 ```bash
-$ su && chown -r $(logname):$(logname) /path/to/installation/folder && exit
+$ su && chown -R $(logname):$(logname) /path/to/installation/folder && exit
 ```
 
 The included setup script performs the clone, places the contents into /opt/, & gives the corresponding permissions automatically.
 
-### * Working Directory
+### Working Directory
 
 The ProcessJ compiler uses a working directory to place the generated code. Furthermore, the working directory 
 must be placed in the user's home folder and be titled "workingpj"
 
 ```bash
-$ mkdir ~/workingpj
+$ mkdir /home/$(logname)/workingpj
 ```
 
 The included setup script generates this folder automatically
 
-### * Configuration File
+### Configuration File
 
-A valid configuration file must be placed in the user's home directory and must include the following two lines:
+A valid configuration file must be placed and titled "processjrc" in the user's home directory and must include the following two lines:
 
-```
+```bash
 workingdir=workingpj
 installdir=/path/to/installation/folder
 ```
 
 The included setup script generates this file automatically.
 
-### * Symbolic Links
+### Symbolic Links
 
 Symbolic links that point to the compiler and executor can be created in order to compile from any directory:
 
@@ -110,7 +111,7 @@ $ ln -s /path/to/installation/folder/pjc /usr/bin/pjc
 $ ln -s /path/to/installation/folder/pj  /usr/bin/pj
 ```
 
-The included setup script generates the links automatically
+The included setup script creates the symbolic links automatically
 
 ## Compilation
 
@@ -133,7 +134,7 @@ In order to execute the compiled program, the `.jar` file extension must be omit
 
 For example (if symbolic links were created):
 
-    ```bash
+```bash
 $ pjc coolprogram.pj
 $ pj coolprogram
 ```
@@ -142,5 +143,5 @@ Otherwise, navigate to the ProcessJ directory:
 
 ```bash
 $ ./pjc /path/to/source/coolprogram.pj
-$ pj coolprogram
+$ ./pj coolprogram
 ```
