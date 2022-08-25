@@ -20,9 +20,10 @@ Specifically, the script will:
 
 Otherwise if a custom setup is preferred, follow & adjust according to the steps specified below.
 
-At the time of writing, this installer has been tested on a 64-bit Debian 11 (bullseye) system. 
+At the time of writing, this installer has been tested on:
 
-MacOS coming soon.
+- 64-Bit Debian 11 (bullseye) system
+- 64-Bit Macbook Pro M1
 
 ### Pre-Requisites
 
@@ -79,11 +80,17 @@ $ mkdir /path/to/installation/folder && git clone https://www.github.com/mattunl
 If placing the files into a system directory (root-owned), read/write/execute permissions for all subfolders & files
 must be granted:
 
+For Debian-Based systems:
 ```bash
 $ sudo chown -R $(logname):$(logname) /path/to/installation/folder
 ```
 
-Alternatively, if sudo is not configured on your system:
+For MacOS systems:
+```bash
+$ sudo chown -R $(logname):staff /path/to/installation/folder
+```
+
+Alternatively, if sudo is not configured on your system (Debian-Based systems):
 
 ```bash
 $ su && chown -R $(logname):$(logname) /path/to/installation/folder && exit
@@ -96,15 +103,37 @@ The included setup script performs the clone, places the contents into /opt/, & 
 The ProcessJ compiler uses a working directory to place the generated code. Furthermore, the working directory 
 must be placed in the user's home folder and be titled "workingpj"
 
+For Debian-Based systems:
+
 ```bash
 $ mkdir /home/$(logname)/workingpj
+```
+
+For MacOS systems:
+
+```bash
+$ mkdir /Users/$(logname)/workingpj
 ```
 
 The included setup script generates this folder automatically
 
 ### Configuration File
 
-A valid configuration file must be placed and titled "processjrc" in the user's home directory and must include the following two lines:
+A valid configuration file must be placed and titled "processjrc" in the user's home directory:
+
+For Debian-Based systems:
+
+```bash
+$ touch /home/$(logname)/processjrc
+```
+
+For MacOS systems:
+
+```bash
+$ touch /Users/$(logname)/processjrc
+```
+
+and must include the following two lines:
 
 ```bash
 workingdir=workingpj
@@ -117,9 +146,18 @@ The included setup script generates this file automatically.
 
 Symbolic links that point to the compiler and executor can be created in order to compile from any directory:
 
+For Debian-Based systems:
+
 ```bash
 $ ln -s /path/to/installation/folder/pjc /usr/bin/pjc
 $ ln -s /path/to/installation/folder/pj  /usr/bin/pj
+```
+
+For MacOS systems:
+
+```bash
+$ ln -s /path/to/installation/folder/pjc /usr/local/bin/pjc
+$ ln -s /path/to/installation/folder/pj /user/local/bin/pj
 ```
 
 The included setup script creates the symbolic links automatically
