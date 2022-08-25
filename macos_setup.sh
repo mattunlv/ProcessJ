@@ -21,8 +21,8 @@ CONFIGURATION_PATH="/Users/$USER/processjrc"
 COMPILER_PATH="$INSTALL_DIRECTORY/pjc"
 EXECUTOR_PATH="$INSTALL_DIRECTORY/pj"
 
-COMPILER_LINK_PATH="/usr/bin/pjc"
-EXECUTOR_LINK_PATH="/usr/bin/pj"
+COMPILER_LINK_PATH="/usr/local/bin/pjc"
+EXECUTOR_LINK_PATH="/usr/local/bin/pj"
 
 ## ----------------
 ## Directory Checks
@@ -74,7 +74,7 @@ fi
 echo "Creating working directory: $WORKING_DIRECTORY"
 mkdir $WORKING_DIRECTORY
 chown -R $USER:$GROUP $WORKING_DIRECTORY
-chmod -R 755 $WORKINGDIRECTORY
+chmod 755 $WORKINGDIRECTORY
 
 ## -----------
 ## File Checks
@@ -107,8 +107,8 @@ echo "workingdir=workingpj"                                                     
 echo "installdir=$INSTALL_DIRECTORY"                                                 >> $CONFIGURATION_PATH
 
 # Give ownership
-chown -R $USER:$USER $CONFIGURATION_PATH
-chmod -R 755 $CONFIGURATION_PATH
+chown -R $USER:$GROUP $CONFIGURATION_PATH
+chmod 755 $CONFIGURATION_PATH
 
 # Clone the repository into the install directory
 echo "Retrieving from $REPOSITORY"
@@ -126,5 +126,5 @@ ant > /dev/null
 
 # Give ownership to the user
 chmod -R 777 $INSTALL_DIRECTORY
-cd /home/$USER
+cd /Users/$USER
 echo "Finished!"
