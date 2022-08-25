@@ -27,8 +27,14 @@ Otherwise if a custom setup is preferred, follow & adjust according to the steps
 
 At the time of writing, this installer has been tested on:
 
-- 64-Bit Debian 11 (bullseye) system
-- 64-Bit Macbook Pro M1
+- x86-64, 64-Bit CentOS
+- x86-64, 64-Bit Debian 11 (bullseye)
+- x86-64, 64-Bit Ubuntu 22.04 (jammy)
+- x86-64, 64-Bit Arch 2022.08.05
+- x86-64, 64-Bit Fedora Cloud Base 34
+- x86-64, 64-Bit Red-Hat Enterprise Linux
+- ARM64,  64-Bit Macbook Pro M1
+
 
 ### Pre-Requisites
 
@@ -53,6 +59,24 @@ Otherwise if sudo is not configured on your system run:
 $ su
 $ apt-get install -y default-jdk ant make git
 $ exit
+```
+
+**Arch:**
+
+```bash
+$ sudo pacman -S jdk-openjdk git make ant
+```
+
+**Fedora:**
+
+```bash
+$ sudo dnf git-all java-latest-openjdk.devel make ant
+```
+
+**CentOS & RHEL:**
+
+```bash
+$ sudo yum install java git make ant
 ```
 
 **MacOS systems:**
@@ -102,14 +126,14 @@ The compiler must build successfully. If there are any problems please contact a
 If placing the files into a system directory (root-owned), read/write/execute permissions for all subfolders & files
 must be granted:
 
-**Debian-based systems:**
+**Arch, CentOS, Debian, Fedora, RHEL, & Ubuntu:**
 
 ```bash
 $ sudo chown -R $(logname):$(logname) /path/to/installation/folder
 $ sudo chmod -R 755 /path/to/installation/folder
 ```
 
-Alternatively, if sudo is not configured on your system (Debian-Based systems):
+Alternatively, if sudo is not configured on your system (Arch, CentOS, Debian, Fedora, RHEL, & Ubuntu):
 
 ```bash
 $ su
@@ -132,7 +156,7 @@ The included setup script performs the clone, places the contents into /opt/, & 
 The ProcessJ compiler uses a working directory to place the generated code. Furthermore, the working directory 
 must be placed in the user's home folder and be titled "workingpj"
 
-**Debian-based systems:**
+**Arch, CentOS, Debian, Fedora, RHEL, & Ubuntu:**
 
 ```bash
 $ mkdir /home/$(logname)/workingpj
@@ -150,7 +174,7 @@ The included setup script generates this folder automatically
 
 A valid configuration file must be placed and titled "processjrc" in the user's home directory:
 
-**Debian-Based systems:**
+**Arch, CentOS, Debian, Fedora, RHEL, & Ubuntu:**
 
 ```bash
 $ touch /home/$(logname)/processjrc
@@ -175,7 +199,7 @@ The included setup script generates this file automatically.
 
 Symbolic links that point to the compiler and executor can be created in order to compile from any directory:
 
-**Debian-based systems:**
+**Arch, CentOS, Debian, Fedora, RHEL, & Ubuntu:**
 
 ```bash
 $ ln -s /path/to/installation/folder/pjc /usr/bin/pjc
