@@ -84,6 +84,21 @@ Otherwise:
 $ mkdir /path/to/installation/folder && git clone https://www.github.com/mattunlv/ProcessJ.git /path/to/installation/folder
 ```
 
+#### Build the compiler
+
+The compiler must be built prior to assigning user permissions & execution:
+
+```bash
+$ cd /path/to/installation/folder
+$ ant
+```
+
+The compiler must build successfully. If there are any problems please contact any or all of the following:
+
+- matt.pedersen@unlv.edu (Dr. Pedersen)
+- cisneo1@unlv.nevada.edu (Ben Cisneros)
+- carlos.cuenca@unlv.edu (Carlos Cuenca)
+
 If placing the files into a system directory (root-owned), read/write/execute permissions for all subfolders & files
 must be granted:
 
@@ -104,6 +119,7 @@ $ exit
 ```
 
 **MacOS systems:**
+
 ```bash
 $ sudo chown -R $(logname):staff /path/to/installation/folder
 $ sudo chmod 755 /path/to/installation/folder
@@ -122,7 +138,7 @@ must be placed in the user's home folder and be titled "workingpj"
 $ mkdir /home/$(logname)/workingpj
 ```
 
-For MacOS systems:
+**MacOS systems:**
 
 ```bash
 $ mkdir /Users/$(logname)/workingpj
@@ -183,7 +199,7 @@ In order to compile programs written in ProcessJ, execute the following command 
 $ pjc /path/to/processj/source/file
 ```
 
-Otherwise, navigate to the ProcessJ directory:
+Otherwise, navigate to the ProcessJ directory and enter:
 
 ```bash
 $ ./pjc /path/to/processj/source/file
@@ -201,7 +217,7 @@ $ pjc coolprogram.pj
 $ pj coolprogram
 ```
 
-Otherwise, navigate to the ProcessJ directory:
+Otherwise, navigate to the ProcessJ directory and enter:
 
 ```bash
 $ ./pjc /path/to/source/coolprogram.pj
