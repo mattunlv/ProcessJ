@@ -5,7 +5,7 @@ A new programming language being developed at the University of Nevada, Las Vega
 ## Setup
 
 This section outlines the required steps to get the ProcessJ compiler functional on your system.
-In order to facilitate a hassle-free installation, a [setup script](../blob/main/setup.sh) is included;
+In order to facilitate a hassle-free installation, a [setup script](https://github.com/mattunlv/ProcessJ/blob/main/setup.sh) is included;
 simply download the script (not the entire repository) and execute with sudo (or su); 
 The setup script will also perform clean-up of any older versions of the ProcessJ compiler and give the
 appropriate permissions in order to allow standard execution.
