@@ -36,7 +36,7 @@ then
     mkdir /Users/
     mkdir /Users/$USER
     chown -R $USER:$GROUP /Users/$USER
-    chmod -R 755 /Users/$USER
+    chmod 755 /Users/$USER
 
 fi
 
@@ -74,7 +74,7 @@ fi
 echo "Creating working directory: $WORKING_DIRECTORY"
 mkdir $WORKING_DIRECTORY
 chown -R $USER:$GROUP $WORKING_DIRECTORY
-chmod 755 $WORKINGDIRECTORY
+chmod 755 $WORKING_DIRECTORY
 
 ## -----------
 ## File Checks
