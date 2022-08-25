@@ -1,0 +1,44 @@
+#pragma LIBRARY;
+#pragma NATIVE;
+#pragma FILE "math";
+#pragma LANGUAGE "JVM";
+
+package std;
+
+public native const double PI;			/* pi */
+
+public native const double M_E;			/* e */
+public native const double M_LOG2E;		/* log_2 e */
+public native const double M_LOG10E;	/* log_10 e */
+public native const double M_LN2;		/* log_e 2 */
+public native const double M_LN10;		/* log_e 10 */
+public native const double M_PI_2;      /* pi/2 */
+public native const double M_PI_4;      /* pi/4 */
+public native const double M_1_PI;      /* 1/pi */ 
+public native const double M_2_PI;      /* 2/pi */ 
+public native const double M_2_SQRTPI;  /* 2/sqrt(pi) */
+public native const double M_SQRT2;     /* sqrt(2) */
+public native const double M_SQRT1_2;   /* 1/sqrt(2) */
+
+public native double acos(double x);
+public native double asin(double x);
+public native double atan(double x);
+public native double atan2(double y, double x);
+public native double cos(double x);
+public native double cosh(double x);
+public native double sin(double x);
+public native double sinh(double x);
+public native double tanh(double x);
+public native double exp(double x);
+public native double log(double x);
+public native double log10(double x);
+public native double pow(double x, double y);
+public native double sqrt(double x);
+public native double cbrt(double x);
+public native double ceil(double x);
+public native double fabs(double x);
+public native long abs(long x);
+public native int abs(int x);
+public native double floor(double x);
+public native double toRadians(double ang);
+public native double toDegrees(double ang);

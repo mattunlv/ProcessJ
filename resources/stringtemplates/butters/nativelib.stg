@@ -1,0 +1,68 @@
+
+Info() ::= <<
+This file contains all required templates for generating a valid ProcessJ
+native library when using the Butters tool. Note that these templates
+and their attributes are __awlays__ rendered before the code generation
+phase.
+>>
+
+//------------------------------------------------------------------------------
+Nativelib(pragmas, fields, methods) ::= <<
+<pragmas>
+
+<if(fields)><fields:{f | <f>}; separator="\n"><\n><endif>
+<if(methods)><methods:{m | <m>}; separator="\n"><\n><endif>
+>>
+
+//------------------------------------------------------------------------------
+Pragmas(file, class, path, language, package) ::= <<
+#pragma LIBRARY "<class>";
+#pragma NATIVELIB "<path>";
+#pragma FILE "<file>";
+#pragma LANGUAGE "<language>";
+
+package <package>;
+>>
+
+//------------------------------------------------------------------------------
+ParamDecls(types, names) ::= <<
+<types, names:{t, n | <t> <n>}; separator=", ">
+>>
+
+//------------------------------------------------------------------------------
+MethodDecls(type, name, params, ref) ::= <<
+public native <type> <name>(<ref> __ref<if(params)>, <params><endif>);
+>>
+
+//------------------------------------------------------------------------------
+FieldDecl(type, name, value) ::= <<
+public native const <type> <name><if(value)> = <value><endif>;
+>>
+
+//==============================================================================
+//==============================================================================
+Classlib(package, name, fields, methods) ::= <<
+package <package>;
+
+public class <name> {
+    <if(fields)><fields:{f | <f>}; separator="\n"><\n><endif>
+    <if(methods)><methods:{m | <m>}; separator="\n\n"><endif>
+}
+>>
+
+//------------------------------------------------------------------------------
+ParamDef(names) ::= <<
+<names:{n | <n>}; separator=", ">
+>>
+
+//------------------------------------------------------------------------------
+MethodDef(type, name, actuals, formals, ref, return) ::= <<
+public static <type> <name>(<ref> __ref<if(actuals)>, <actuals><endif>) {
+    <if(return)>return __ref.<name>(<formals>);<else>__ref.<name>(<formals>);<endif>
+}
+>>
+
+//------------------------------------------------------------------------------
+FieldDef(type, name, value) ::= <<
+public static <type> <name><if(value)> = <value><endif>;
+>>

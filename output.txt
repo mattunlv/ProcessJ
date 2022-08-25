@@ -1,0 +1,3 @@
+reset && clear
+[H[2JCreating Tests.
+g++ -Wall -Wextra -g -pedantic -pthread -std=c++17 -masm=intel -Isrc/cppruntime/include/utilities/ -Isrc/cppruntime/include/runtime/ -Isrc/cppruntime/include/runtimetest/system/ -Isrc/cppruntime/include/runtimetest/ -Isrc/cppruntime/include/runtimetest/test/ -o src/cppruntime/bin/runtimetest src/cppruntime/src/utilities/*.cpp src/cppruntime/src/runtime/*.cpp src/cppruntime/src/runtimetest/system/*.cpp src/cppruntime/src/runtimetest/*.cpp src/cppruntime/src/runtimetest/test/*.cpp 

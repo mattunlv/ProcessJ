@@ -1,0 +1,18 @@
+import std.io;
+
+protocol P {
+  a : { int b; int c; }
+  b : { double d; int a; }
+  c : { R r; }
+}
+
+protocol A extends P {
+  tag1: {}
+}
+
+record R {
+  int b;
+  int c;
+  double d;
+  P p;
+}

@@ -1,0 +1,329 @@
+\documentclass[]{article}
+\usepackage[left=3cm, right3cm, top=2cm, bottom=3cm]{geometry}
+
+\usepackage[table]{xcolor}
+\usepackage{rotating}
+
+
+%opening
+\author{Matt B\ae{}kgaard Pedersen}
+\title{The ProcessJ Type System}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{ProcessJ Types}
+
+\subsection{Primitive Types}
+ProcessJ has 11 primitive types shown in Table~\ref{tab:primitiveTypes}.
+\begin{table}[!h]
+  \begin{center}
+    \caption{ProcessJ primitive types}
+    \label{tab:primitiveTypes} 
+    \begin{tabular}{|l|l|}\hline
+      Type Name & Values \\ \hline\hline
+      byte & \\
+      short & \\
+      char & \\
+      int & \\
+      long & \\
+      float & \\
+      double & \\
+      bool & \{true, false\}\\
+      string & \\
+      barrier & \\
+      timer & \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\subsection{Constructed Types}
+If we count mobile procedures, ProcessJ has 6 constructed types; they are shown in Table~\ref{tab:constructedTypes}.
+\begin{table}[!h]
+  \begin{center}
+    \caption{ProcessJ constructed types}
+    \label{tab:constructedTypes} 
+    \begin{tabular}{|l|l|}\hline
+      Type Name & Representation \\ \hline\hline
+      Array    & {\it Array}($\alpha$, {\it index})\\
+      Record   & {\it Record}({\it name},\{($n_1,t_1$),$\ldots$,($n_m,t_m$)\})\\
+      Protocol & {\it Protocol}({\it name},\{({\it tag}$_1$,\{($n_{1,1},t_{1,1}$),$\ldots$,($n_{1,m_1},t_{1,m_1}$)\})\\
+               & \hspace*{2.6cm}$\vdots$\\
+      & \hspace*{2.475cm}({\it tag}$_k$,\{($n_{k,1},t_{k,1}$),$\ldots$,($n_{k,m_k},t_{1,m_k}$)\})\}\\
+      Channel  & {\it Channel}($\alpha$,{\it access})\\
+      Channel end & {\it ChannelEnd}($\alpha$, {\it end}), $\alpha$ is a Channel.\\ 
+      Procedure & {\it Procedure}({\it name},($t_1,t_2,\ldots,t_n$),$t$)\\\hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\newcommand{\teq}{=_{\cal T}}
+\newcommand{\tev}{\sim_{\cal T}}
+\newcommand{\tac}{:=_{\cal T}}
+\newcommand{\tlt}{<_{\cal T}}
+\newcommand{\tle}{\leq_{\cal T}}
+
+\section{Helper Functions}
+
+\subsection{Ceiling}
+
+\[
+\lceil \alpha, \beta \rceil := \left\{
+\begin{array}{ll}
+\alpha & \beta \tle \alpha\\
+\beta  & \alpha \tlt \beta\\
+\bot   & \mbox{otherwise}
+\end{array}\right.
+\]
+
+\subsection{$\tlt$}
+
+\subsubsection{Primitive Types}
+
+A primitive type $\alpha$ is ``type-wise less than'' another primitive type $\beta$, if 
+a variable of type $\beta$ can hold any value of type $\alpha$. This definition seems to be exactly that of assignment compatible -- and it is, but it has to be defined somewhere, so here we go:
+
+\[
+byte \tlt short \tlt char \tlt int \tlt long
+\]
+as well as 
+\[
+float \tlt double
+\]
+but also
+\[
+int \tlt float \wedge long \tlt double
+\]
+$\tlt$ is, of course, transitive, so if $(\alpha \tlt \beta) \wedge (\beta \tlt \delta) \Rightarrow \alpha \tlt \delta$.
+
+\begin{center}
+\begin{tabular}{|l||l|l|l|l|l|l|l|l|l|l|l|}\hline
+\begin{turn}{45}$\,\,\alpha \tlt \beta$\end{turn} & 
+	\begin{turn}{90}{byte}\end{turn} & 
+	\begin{turn}{90}{short}\end{turn} &
+	\begin{turn}{90}{char}\end{turn} &
+	\begin{turn}{90}{int}\end{turn} &
+	\begin{turn}{90}{long}\end{turn} &
+	\begin{turn}{90}{float} \end{turn}&
+	\begin{turn}{90}{double\quad{}\quad{}}\end{turn} &
+	\begin{turn}{90}{bool}\end{turn}&
+	\begin{turn}{90}{string}\end{turn} &
+	\begin{turn}{90}{barrier}\end{turn} &
+	\begin{turn}{90}{timer}\end{turn} \\ \hline\hline
+byte    & F & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & F & F & F & F\\ \hline
+short   & F & F & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & F & F& F & F\\ \hline
+char    & F & F & F & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & F & F & F & F\\ \hline
+int     & F & F & F & F & \cellcolor{gray!25}T & \cellcolor{gray!25}T & \cellcolor{gray!25}T & F & F & F & F\\ \hline
+long    & F & F & F & F & F & \cellcolor{gray!25}T & \cellcolor{gray!25}T & F & F & F & F\\ \hline
+float   & F & F & F & F & F & F & \cellcolor{gray!25}T & F & F & F & F\\ \hline
+double  & F & F & F & F & F & F & F & F & F & F & F\\ \hline
+bool    & F & F & F & F & F & F & F & F & F & F & F \\ \hline
+string  & F & F & F & F & F & F & F & F & F & F & F \\ \hline
+barrier & F & F & F & F & F & F & F & F & F & F & F \\ \hline
+timer   & F & F & F & F & F & F & F & F & F & F & F\\ \hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Constructed Types}
+
+\paragraph{Protocol}
+
+\[
+\alpha = Protocol(name_1,\{(tag_{1,1},\{(n_{1,1,1},t_{1,1,1}),\ldots,(n_{1,1,m_{1,1}},t_{1,1,m_{1,1}})\}),
+\]
+\[
+\hspace*{3.6cm}(tag_{1,2},\{(n_{1,2,1},t_{1,2,1}),\ldots,(n_{1,2,m_{1,2}},t_{1,2,m_{1,2}})\}),
+\]
+\[
+\vdots
+\]
+\[
+\hspace*{3.9cm}(tag_{1,k_1},\{(n_{1,k_1,1},t_{1,k_1,1}),\ldots,(n_{1,k_1,m_{1,k_1}},t_{1,k_1,m_{1,k_1}})\})\})
+\]
+\[
+\beta = Protocol(name_2,\{(tag_{2,1},\{(n_{2,1,1},t_{2,1,1}),\ldots,(n_{2,1,m_{2,1}},t_{2,1,m_{2,1}})\}),
+\]
+\[
+\hspace*{3.6cm}(tag_{2,2},\{(n_{2,2,1},t_{2,2,1}),\ldots,(n_{2,2,m_{2,2}},t_{2,2,m_{2,2}})\}),
+\]
+\[
+\vdots
+\]
+\[
+\hspace*{3.9cm}(tag_{2,k_2},\{(n_{2,k_2,1},t_{3,k_2,1}),\ldots,(n_{2,k_2,m_{2,k_2}},t_{1,k_2,m_{2,k_2}})\})\})
+\]
+
+\[
+\alpha \tle \beta \Leftrightarrow (\forall i: (1 \leq i \leq k_1): \exists j: (1 \leq j \leq k_2): tag_{1,i} = tag_{2,j} \wedge 
+\]
+\[
+(m_{1,i} = m_{2,j}) \wedge \bigwedge^{m_{1,i}}_{k=1}(n_{1,i,k} = n_{2,i,k}) \wedge (t_{1,i,k} \tev t_{2,i,k})
+\]
+
+\paragraph{Procedures}
+
+Not sure what goes here yet.
+
+
+\subsection{$\tle$}
+
+\[
+\alpha \tle \beta \Leftrightarrow (\alpha \teq \beta) \vee (\alpha \tle \beta)
+\]
+
+\section{Primitive Types}
+
+\subsection{Type Equality ($\teq$)}
+
+\[
+\alpha \teq \beta\ \Leftrightarrow \mbox{Primitive}_?(\alpha) \wedge \mbox{Primitive}_?(\beta) \wedge \alpha = \beta
+\]
+where $\alpha$ and $\beta$ are types.
+
+\subsection{Type Equivalence ($\tev$)}
+
+For primitive types, type equivalence is the same as type equality, so for two types $\alpha$ and $\beta$:
+\[
+\alpha \tev \beta \Leftrightarrow Primitive_?(\alpha) \wedge Primitive_?(\beta) \wedge \alpha \tle \beta
+\]
+
+
+\subsection{Type Assignment Compatibility ($\tac$)}
+
+\[
+\alpha \tac \beta \Leftrightarrow Primitive_?(\alpha) \wedge Primitive_?(\beta) \wedge  \beta \leq \alpha
+\]
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Constructed Types}
+
+\subsection{Type Equality ($\teq$)}
+
+\subsubsection{Arrays}
+\[
+\alpha = Array(t_1, I_1)\ \wedge \beta =  Array(t_2, I_2)
+\]
+\[
+\alpha \teq \beta \Leftrightarrow Array_?(\alpha) \wedge Array_?(\beta) \wedge (t_1 \teq t_2) \wedge ((I_1 = I_2) \vee (I_1 = \bot) \vee (I_2 = \bot))
+\]
+
+\subsubsection{Records}
+
+\[
+\alpha = Record(name_1, \{(n_{1,1},t_{1,1}),\ldots,(n_{1,m_1}, t_{1,m_1})\})
+\]
+\[
+\beta = Record(name_2, \{(n_{2,1},t_{2,1}),\ldots,(n_{2,m_2}, t_{2,m_2})\})
+\]
+\paragraph{Name Equality:}
+\[
+\alpha \teq \beta \Leftrightarrow Record_?(\alpha) \wedge Record_?(\beta) \wedge (name_1 = name_2)
+\]
+\paragraph{Structural Equality:}
+\[
+\alpha \teq \beta \Leftrightarrow Record_?(\alpha) \wedge Record_?(\beta) \wedge (m_1 = m_2) \wedge \bigwedge^{m_1}_{i=1} (t_{1,i} \teq t_{2,i})
+\]
+	
+\subsubsection{Protocols}
+
+\subsubsection{Channel}
+
+The access part of a channel can be {\it shared}, {\it shared read}, {\it shared write}, or {\it not shared}. 
+\
+\[
+\alpha = Channel(t_1, a_1) \wedge \beta = Channel(t_2, a_2)\]
+
+\[
+\alpha \teq \beta \Leftrightarrow Channel_?(\alpha) \wedge Channel_?(\beta) \wedge (t_1 \teq t_2) \wedge (a_1 = a_2)
+\]
+
+\subsubsection{Channel Ends}
+
+For channel ends to be equivalent, they have to be the same ends and their channels have to be equivalent:
+\[
+\alpha = ChannelEnd(\delta, end_1) \wedge \beta = ChannelEnd(\gamma, end_2)
+\]
+\[
+\alpha \teq \beta \Leftrightarrow ChannelEnd_?(\alpha) \wedge ChannelEnd_?(\beta) \wedge Channel_?(\delta) \wedge Channel_?(\gamma) \wedge (end_1 = end_2)
+\]
+
+\subsubsection{Procedures}
+
+\[
+\alpha = procedure(name_1, \{t_{1,1},\ldots,t_{1,m_1}\}, t_1) \wedge
+\beta = procedure(name_2, \{t_{2,1},\ldots,t_{2,m_2}\}, t_2) \wedge
+\]
+\[
+\alpha \teq \beta \Leftrightarrow (m_1 = m_2) \wedge (t_1 \teq t_2) \wedge (name_1 = name_2) \wedge \bigwedge^{m_1}_{i=1}(t_{1,i} \teq t_{2,i})
+\]
+\subsection{Type Equivalence ($\teq=v$)}
+
+For all constructed types $\alpha$ and $\beta$, we have:
+\[
+\alpha \tev \beta \Leftrightarrow \alpha \teq \beta
+\]
+
+\subsection{Type Assignment Compatibility ($\tac$)}
+
+\subsubsection{Arrays}
+
+\[
+\alpha = Array(t_1, I_1) \wedge \beta =  Array(t_2, I_2)
+\]
+\[
+\alpha \tac \beta \Leftrightarrow Array_?(\alpha) \wedge Array_?(\beta) \wedge
+\]
+\[
+((Protocol_?(t_1) \wedge Protocol_?(t_2) \wedge (t_2 \tle t_1)) \vee
+(\neg{}Protocol_?(t_1) \wedge \neg{}Protocol_?(t_2) \wedge (t_1 \teq t_2)
+\]
+\subsubsection{Records}
+
+\[
+\alpha = Record(name_1, \{(n_{1,1},t_{1,1}),\ldots,(n_{1,m_1}, t_{1,m_1})\})
+\]
+\[
+\beta = Record(name_2, \{(n_{2,1},t_{2,1}),\ldots,(n_{2,m_2}, t_{2,m_2})\})
+\]
+
+\[
+\alpha \tac \beta \Leftrightarrow \alpha \tev \beta
+\]
+\subsubsection{Protocols}
+
+
+
+\subsubsection{Channels}
+
+Channels are non-assignable.
+
+\subsubsection{Channel Ends}
+
+\[
+\alpha = ChannelEnd(\delta, end_1) \wedge \beta = ChannelEnd(\gamma, end_2)
+\]
+\[
+\alpha \tac \beta \Leftrightarrow (end_1 = end_2) \wedge
+\]
+\[
+ ((Protocol_?(\delta) \wedge Protocol_?(\gamma) \wedge (\delta \tle \gamma)) \vee
+\]
+\[
+(\neg{}Protocol_?(\delta) \wedge \neg{}Protocol_?(\gamma) \wedge (\delta \teq \gamma))
+\]
+
+
+\subsubsection{Proceudres}
+
+
+
+\end{document}

@@ -1,0 +1,202 @@
+#!/bin/bash
+
+## Licensed to the Apache Software Foundation (ASF) under one or more
+## contributor license agreements.  See the NOTICE file distributed with
+## this work for additional information regarding copyright ownership.
+## The ASF licenses this file to You under the Apache License, Version 2.0
+## (the "License"); you may not use this file except in compliance with
+## the License.  You may obtain a copy of the License at
+##
+##     http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+## See the License for the specific language governing permissions and
+## limitations under the License.
+
+##############################################################################
+##                                                                          ##
+##  ProcessJ Group - University of Nevada, Las Vegas                        ##
+##                                                                          ##
+##  use -classpath just as in java to use a custom classpath                ##
+##                                                                          ##
+##############################################################################
+
+homedir=~
+eval homedir=$homedir
+
+## configuration file containing path and other resource information
+CONFIG_FILE="processjrc"
+
+## working directory for generated Java files
+workingdir=""
+## install directory for processj source files
+installdir=""
+
+############################################################################
+
+## check if configuration file exists
+if [ ! -e "$homedir/$CONFIG_FILE" ] ; then
+  echo "Missing ProcessJ configuration file."
+  echo "The configuration file should be in '$homedir'"
+  exit 1
+fi
+
+## set configuration file
+CONFIG_FILE="$homedir/$CONFIG_FILE"
+
+############################################################################
+
+## check if the processjrc file contains a working directory
+if ! grep "workingdir" "$CONFIG_FILE" > /dev/null ; then
+    echo "Missing 'workingdir' in '$CONFIG_FILE'"
+    exit 1
+else
+    ## check if the working directory is specified in processjrc
+    workingdir="`grep workingdir $CONFIG_FILE | cut -d '=' -f 2 | sed 's/ //g'`"
+    if [ -z  "$workingdir" ]; then
+        echo "Configuration file must contain a line of the form: 'workingdir=...'"
+        exit 1
+    fi
+fi
+
+## set working directory
+workingdir="$homedir/$workingdir"
+
+############################################################################
+
+## check if the working directory exists
+if [ ! -d "$workingdir" ] ; then
+    echo "Missing working directory '$workingdir'"
+    read -p "Do you wish to create '$workingdir'? [y/n] " yn
+    case $yn in
+        [Yy]* )
+            mkdir $workingdir
+            chmod 755 $workingdir
+            echo "Working directory created";;
+        [Nn]* )
+            echo "Working directory not created"
+            exit;;
+        * )
+            exit;;
+    esac
+fi
+
+## clean working directory
+rm -i -rf $workingdir/* > /dev/null
+
+############################################################################
+
+## check if the processjrc file contains an install directory
+installdir="`grep installdir $CONFIG_FILE | cut -d '=' -f 2 | sed 's/ //g'`"
+
+if [ -z "$installdir" ] ; then
+    echo "Configuration file must contain a line of the form: 'installdir=...'"
+    exit 1
+fi
+
+############################################################################
+
+## run the processj compiler
+PROCESSJC=`java -cp $installdir/bin:$installdir/resources/jars/java_cup_runtime.jar:$installdir/resources/jars/ST-4.0.7.jar:$installdir/resources/jars/asm-all-5.2.jar:$installdir:$installdir/bin:. ProcessJc -include $installdir/include $@`
+
+## TODO do silly check for errors
+#ERRORS=`echo "${PROCESSJC}" | awk '{print;}'`
+ERRORS=`echo "${PROCESSJC}" | awk -v n=1 '{if(NR>n) print a[NR%n]; a[NR%n]=$0}'`
+STATUS=`echo "${PROCESSJC}" | awk '/./{line=$0} END{print line}'`
+
+if [ "$STATUS" = "** COMPILATION COMPLITED SUCCESSFULLY **" ] ; then
+  echo "$PROCESSJC"
+  echo "ProcessJ compilation successful"
+else
+  echo "$ERRORS"
+  exit 1
+fi
+
+############################################################################
+
+## run the generated Java files with the JVM
+O=`javac --release 8 -classpath $installdir/bin/:$installdir/lib/JVM:. $workingdir/*.java`
+
+## in the unlikely event of a Java issue
+if [ ! -z "${O}" ] ; then
+  echo "An error has ocurred. Please send the '.pj' file and the generated"
+  echo "output to matt.pedersen@unlv.edu"
+  echo "${O}"
+  exit 1
+else
+  echo "Java compilation successful"
+fi
+
+############################################################################
+
+## execute the rewrite for GOTO and LABEL instructions
+pushd $workingdir >/dev/null
+
+O=`java -classpath $installdir/bin/:$installdir/resources/jars/asm-all-5.2.jar/:. instrument/GotoLabelRewrite .`
+popd > /dev/null
+
+ERRORS=`echo "${O}" | awk -v n=1 '{if(NR>n) print a[NR%n]; a[NR%n]=$0}'`
+STATUS=`echo "${O}" | awk '/./{line=$0} END{print line}'`
+
+if [ "${STATUS}" = "** REWRITING DONE **" ] ; then
+   if [ "${ERROR}" != "" ] ; then
+     echo "${ERROR}"
+   fi
+  echo "Rewriting successful"
+else
+  echo "${ERRORS}"
+  exit 1
+fi
+
+############################################################################
+
+## execute the Instrumenter
+pushd $workingdir >/dev/null
+
+O=`java -classpath $installdir/bin/:$installdir/resources/jars/asm-all-5.2.jar/:. instrument/Instrumenter .`
+popd > /dev/null
+
+ERRORS=`echo "${O}" | awk -v n=1 '{if(NR>n) print a[NR%n]; a[NR%n]=$0}'`
+STATUS=`echo "${O}" | awk '/./{line=$0} END{print line}'`
+
+if [ "${STATUS}" = "** INSTRUMENTATION SUCCEEDED **" ] ; then
+  echo "Instrumentation successful"
+else
+  echo "${ERRORS}"
+  exit 1
+fi
+
+############################################################################
+
+pushd $workingdir > /dev/null
+
+## clean manifest file
+rm -rf META-INF
+## create dir for manifest file
+mkdir META-INF
+
+## $@ is the full path'ed filename of .pj file. we extract just the file name x.pj
+filename="${@##*/}"
+## now extract just the name of the file
+just_filename="${filename%.*}"
+## write the manifest file
+echo "Main-Class: "$just_filename > META-INF/MANIFEST.MF
+
+O=`jar cmvf META-INF/MANIFEST.MF $just_filename.jar *.class > /dev/null`
+
+## in the unlikely event of a Java issue
+if [ "${O}" != "" ] ; then
+  echo "An error has ocurred. Please send the '.pj' file and the"
+  echo "generated output to matt.pedersen@unlv.edu"
+  echo "${O}"
+  exit 1
+else
+  echo "JAR file creation succesfull"
+  printf "Output written to ${just_filename}.jar\n"
+fi
+
+popd > /dev/null
+
+mv $workingdir/$just_filename.jar .

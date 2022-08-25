@@ -1,0 +1,10 @@
+import std.*;
+
+public proc void prefix(int initVal, chan<int>.read in, chan<int>.write out) {
+    out.write(initVal);
+    while (true) {
+        int x;
+        x = in.read();
+        out.write(x);
+    }
+}

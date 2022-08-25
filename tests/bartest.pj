@@ -1,0 +1,35 @@
+import std.*;
+
+public void foo(barrier b, chan<int>.read r, timer t) {
+    b.sync();
+    par {
+        int d = r.read();
+        long time = t.read();
+        t.timeout(1000);
+        println("read: " + d + ", time: " + time);
+    }
+}
+
+public void bar(barrier b, chan<int>.write w) {
+    b.sync();
+    w.write(5);
+}
+
+public void f(int i) [yield=true] { println("f(" + i + ")"); }
+public void b(int i) [yield=true] { println("b(" + i + ")"); }
+
+public void main(string args[]) {
+    timer t;
+    barrier b;
+    chan<int> c;
+    par enroll (b) {
+        bar(b, c.write);
+        foo(b, c.read, t);
+    }
+    //int i = 0;
+    //par {
+    //    f(i);
+    //    b(i + 1);
+    //}
+    //i = 7;
+}

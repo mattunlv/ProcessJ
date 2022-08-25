@@ -1,0 +1,66 @@
+#!/bin/bash
+
+## Licensed to the Apache Software Foundation (ASF) under one or more
+## contributor license agreements.  See the NOTICE file distributed with
+## this work for additional information regarding copyright ownership.
+## The ASF licenses this file to You under the Apache License, Version 2.0
+## (the "License"); you may not use this file except in compliance with
+## the License.  You may obtain a copy of the License at
+##
+##     http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+## See the License for the specific language governing permissions and
+## limitations under the License.
+
+##############################################################################
+##                                                                          ##
+##  ProcessJ Group - University of Nevada, Las Vegas                        ##
+##                                                                          ##
+##  use -cp just as in java to use a custom classpath                       ##
+##                                                                          ##
+##############################################################################
+
+homedir=~
+eval homedir=$homedir
+
+## configuration file containing path and other resource information
+CONFIG_FILE="processjrc"
+
+## working directory for generated Java files
+workingdir=""
+## install directory for processj source files
+installdir=""
+
+############################################################################
+
+## check if configuration file exists
+if [ ! -e "$homedir/$CONFIG_FILE" ] ; then
+  echo "Missing ProcessJ configuration file."
+  echo "The configuration file should be in '$homedir'"
+  exit 1
+fi
+
+## set configuration file
+CONFIG_FILE="$homedir/$CONFIG_FILE"
+
+############################################################################
+
+## check if the processjrc file contains an install directory
+installdir="`grep installdir $CONFIG_FILE | cut -d '=' -f 2 | sed 's/ //g'`"
+
+if [ -z "$installdir" ] ; then
+    echo "Configuration file must contain a line of the form: 'installdir=...'"
+    exit 1
+fi
+
+############################################################################
+
+if [ $# -eq 0 ] ; then
+    echo "usage: blah2 filename"
+    exit 1
+fi
+
+java -cp $installdir/bin/:$installdir/lib/JVM:$@.jar $@

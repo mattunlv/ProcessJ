@@ -1,0 +1,5 @@
+import std.*;
+
+public proc void main(string args[]) {
+    int a = ((5 + 4) * 6) - 7;
+}

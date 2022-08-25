@@ -1,0 +1,7 @@
+import std.*;
+
+public void foo() {
+    boolean a = true;
+    while (true) {
+    }
+}

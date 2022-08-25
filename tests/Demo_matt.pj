@@ -1,0 +1,16 @@
+import std.*;
+
+
+public void main (string args[]) {
+  chan<int> c;
+
+  int x;
+  par {
+    x = c.read() + 3;
+    c.write(4);
+    //c.write(7);
+  }
+
+  println(x);
+
+}

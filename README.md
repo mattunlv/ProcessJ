@@ -1,5 +1,3 @@
-# ProcessJ Compiler
+# The ProcessJ Language
 
-ProcessJ is a process-oriented programming language designed and developed at UNLV. The original compiler and runtime are implemented in Java
-and the runtime has had ports to c++.
-
+A new programming language being developed at the University of Nevada, Las Vegas.

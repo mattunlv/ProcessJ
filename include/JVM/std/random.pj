@@ -1,0 +1,9 @@
+#pragma LIBRARY;
+#pragma NATIVE;
+#pragma FILE "random";
+#pragma LANGUAGE "JVM";
+
+package std;
+
+public native void initRandom(long seed);
+public native long longRandom();
