@@ -47,6 +47,17 @@ Otherwise if sudo is not configured on your system run:
 $ su && apt-get install -y default-jdk ant make git && exit
 ```
 
+#### Installation of dependencies on MacOS systems
+
+In order to install the required dependencies on MacOS, homebrew must be installed from [here](https://brew.sh).
+(Copy & paste the command in a terminal).
+
+Execute this command to install the above dependencies on a MacOS system:
+
+```bash
+$ brew install -y openjdk git ant make
+```
+
 ### Clone the repository
 
 ```bash
