@@ -5,13 +5,18 @@ A new programming language being developed at the University of Nevada, Las Vega
 ## Setup
 
 This section outlines the required steps to get the ProcessJ compiler functional on your system.
-In order to facilitate a hassle-free installation, a [setup script](https://github.com/mattunlv/ProcessJ/blob/main/setup.sh) is included;
-simply download the script (not the entire repository) and execute with sudo (or su); 
-The setup script will also perform clean-up of any older versions of the ProcessJ compiler and give the
-appropriate permissions in order to allow standard execution.
+In order to facilitate a hassle-free installation, a setup script for:
 
-The script will execute the steps outlined below and the compiler will work out-of-the-box.
-Specifically, the script will:
+- [Linux](https://github.com/mattunlv/ProcessJ/blob/main/setup.sh)
+- [MacOS](https://github.com/mattunlv/ProcessJ/blob/main/macos_setup.sh)
+
+are included; simply download the pertinent script (not the entire repository) and execute with sudo (or su);
+
+The setup script will also perform clean-up of any older versions of the ProcessJ compiler and give the
+appropriate permissions in order to allow for standard execution, as well as execute the steps outlined
+below.
+
+More specifically, the script will:
 
 - Place the ProcessJ files in /opt
 - Create a working directory in the user's home directory
@@ -36,7 +41,7 @@ The following dependencies are required prior to installation:
 
 #### Installation of dependencies on Debian-based systems
 
-Execute this command to install the above dependencies on a Debian-based system:
+**Debian-based systems:**
 
 ```bash
 $ sudo apt-get install -y default-jdk ant make git
@@ -45,15 +50,15 @@ $ sudo apt-get install -y default-jdk ant make git
 Otherwise if sudo is not configured on your system run:
 
 ```bash
-$ su && apt-get install -y default-jdk ant make git && exit
+$ su
+$ apt-get install -y default-jdk ant make git
+$ exit
 ```
 
-#### Installation of dependencies on MacOS systems
+**MacOS systems:**
 
 In order to install the required dependencies on MacOS, homebrew must be installed from [here](https://brew.sh).
 (Copy & paste the command in a terminal).
-
-Execute this command to install the above dependencies on a MacOS system:
 
 ```bash
 $ brew install -y openjdk git ant make
@@ -68,11 +73,13 @@ This will clone the repository into the current working directory. If you wish t
 a path to the desired directory can be specified, but must exist before cloning.
 
 If the folder exists:
+
 ```bash
 $ git clone https://www.github.com/mattunlv/ProcessJ.git /path/to/installation/folder
 ```
 
 Otherwise:
+
 ```bash
 $ mkdir /path/to/installation/folder && git clone https://www.github.com/mattunlv/ProcessJ.git /path/to/installation/folder
 ```
@@ -80,20 +87,26 @@ $ mkdir /path/to/installation/folder && git clone https://www.github.com/mattunl
 If placing the files into a system directory (root-owned), read/write/execute permissions for all subfolders & files
 must be granted:
 
-For Debian-Based systems:
+**Debian-based systems:**
+
 ```bash
 $ sudo chown -R $(logname):$(logname) /path/to/installation/folder
-```
-
-For MacOS systems:
-```bash
-$ sudo chown -R $(logname):staff /path/to/installation/folder
+$ sudo chmod -R 755 /path/to/installation/folder
 ```
 
 Alternatively, if sudo is not configured on your system (Debian-Based systems):
 
 ```bash
-$ su && chown -R $(logname):$(logname) /path/to/installation/folder && exit
+$ su
+$ chown -R $(logname):$(logname) /path/to/installation/folder
+$ chmod 755 /path/to/installation/folder
+$ exit
+```
+
+**MacOS systems:**
+```bash
+$ sudo chown -R $(logname):staff /path/to/installation/folder
+$ sudo chmod 755 /path/to/installation/folder
 ```
 
 The included setup script performs the clone, places the contents into /opt/, & gives the corresponding permissions automatically.
@@ -103,7 +116,7 @@ The included setup script performs the clone, places the contents into /opt/, & 
 The ProcessJ compiler uses a working directory to place the generated code. Furthermore, the working directory 
 must be placed in the user's home folder and be titled "workingpj"
 
-For Debian-Based systems:
+**Debian-based systems:**
 
 ```bash
 $ mkdir /home/$(logname)/workingpj
@@ -121,13 +134,13 @@ The included setup script generates this folder automatically
 
 A valid configuration file must be placed and titled "processjrc" in the user's home directory:
 
-For Debian-Based systems:
+**Debian-Based systems:**
 
 ```bash
 $ touch /home/$(logname)/processjrc
 ```
 
-For MacOS systems:
+**MacOS systems:**
 
 ```bash
 $ touch /Users/$(logname)/processjrc
@@ -146,18 +159,18 @@ The included setup script generates this file automatically.
 
 Symbolic links that point to the compiler and executor can be created in order to compile from any directory:
 
-For Debian-Based systems:
+**Debian-based systems:**
 
 ```bash
 $ ln -s /path/to/installation/folder/pjc /usr/bin/pjc
 $ ln -s /path/to/installation/folder/pj  /usr/bin/pj
 ```
 
-For MacOS systems:
+**MacOS systems:**
 
 ```bash
 $ ln -s /path/to/installation/folder/pjc /usr/local/bin/pjc
-$ ln -s /path/to/installation/folder/pj /user/local/bin/pj
+$ ln -s /path/to/installation/folder/pj  /usr/local/bin/pj
 ```
 
 The included setup script creates the symbolic links automatically
@@ -194,3 +207,4 @@ Otherwise, navigate to the ProcessJ directory:
 $ ./pjc /path/to/source/coolprogram.pj
 $ ./pj coolprogram
 ```
+
