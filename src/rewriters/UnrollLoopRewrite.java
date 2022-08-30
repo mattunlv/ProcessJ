@@ -91,7 +91,9 @@ public class UnrollLoopRewrite extends Visitor<AST> {
 
     public AST visitAltCase(AltCase ac) {
         Log.log("LoopRewriter:\tVisiting an AltCase");
-        ac.guard().visit(this);
+	// if ac.guard() is null, it is because we have a nested alt.
+	if (ac.guard() != null)
+	    ac.guard().visit(this);
         ac.children[2] = ac.stat().visit(this);
         return null;
     }

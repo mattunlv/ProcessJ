@@ -377,7 +377,7 @@ void ProcessJSystem::Output<OutputType, BufferSize>::move(ProcessJSystem::Positi
 template<typename OutputType, typename BufferSize>
 void ProcessJSystem::Output<OutputType, BufferSize>::resize(ProcessJSystem::Integer32 width, ProcessJSystem::Integer32 height) const {
 
-    ProcessJSystem::String command = ("\033[8;" + std::to_string(width) + ";" + std::to_string(height) + "t");
+    ProcessJSystem::String command = ("\033[8;" + std::to_string(height) + ";" + std::to_string(width) + "t");
 
     if(this->output) {
 

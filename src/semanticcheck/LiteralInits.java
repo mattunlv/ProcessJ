@@ -14,8 +14,11 @@ public class LiteralInits extends Visitor<Object> {
 
     public Object visitChannelReadExpr(ChannelReadExpr cre) {
         if (insideLiteral != null) {
-            System.out.println("Error, cannot have channel read expressions inside literals");
-            System.exit(1);
+            PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                    .addAST(cre)
+                    .addError(VisitorMessageNumber.SEMATIC_CHECKS_900)
+//                    .addArguments(cre)
+                    .build());
         }
         return null;
     }

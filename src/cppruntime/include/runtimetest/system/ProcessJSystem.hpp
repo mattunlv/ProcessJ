@@ -15,7 +15,6 @@
 #include<ProcessJSystemConstants.hpp>
 #include<System.hpp>
 #include<Output.hpp>
-#include<WindowComponentListener.hpp>
 #include<WindowComponent.hpp>
 #include<WindowComponentGroup.hpp>
 #include<VerticalLayout.hpp>

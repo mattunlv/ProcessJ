@@ -80,7 +80,7 @@ class ProcessJTest::record_test {
         void run()
         {
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::Scheduler sched;
+            ProcessJRuntime::pj_scheduler sched;
 
             std::cout << "\n *** CREATING PROCESS *** \n\n";
             auto* r_proc = new record_process(0);

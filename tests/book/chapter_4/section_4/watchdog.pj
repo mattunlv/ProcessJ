@@ -1,0 +1,59 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 4
+ * Section 4
+ * Page 108
+ */
+
+import std.io;
+
+public void watchdog(const int period,
+                     chan<int>.read in,
+                     chan<int>.write out,
+                     chan<boolean>.write panic) {
+
+    long howLong = t.read() + 200;
+
+    while(true) {
+
+        timer t;
+        int v;
+        alt {
+
+            v = in.read()     : out.write(v);
+            t.timeout(howLong): panic.write(true);
+
+        }
+
+    }
+
+}
+
+public void main(string[] args) {
+
+    chan<int>       c1, c2;
+    chan<boolean>   panic;
+
+    boolean         shouldPanic;
+    int             result;
+
+
+    par {
+
+        watchdog(1000, c1.read, c2.write, panic.write);
+        
+        seq {
+        
+            shouldPanic = panic.read();
+            
+            if(shouldPanic == true) {
+                println("PANIC!!!");
+            } else {
+                println("Everything is ok");
+            }
+
+        }
+
+    }
+
+}

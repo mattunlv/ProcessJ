@@ -1,0 +1,49 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 4
+ * Section 4
+ * Page 109
+ */
+
+import std.io;
+
+public void mux(chan<int>.read in0,
+                chan<int>.read in1,
+                chan<int>.read in2,
+                chan<int>.write out) {
+
+    while(true) {
+
+        int x;
+        alt {
+            
+            x = in0.read(): out.write(x);
+            x = in1.read(): out.write(x);
+            x = in2.read(): out.write(x);
+
+        }
+
+    }
+
+}
+
+public void main(string[] args) {
+
+    chan<int> c1, c2, c3, out;
+    
+    int result;
+
+    par {
+
+        c1.write(1);
+        c2.write(2);
+        c3.write(3);
+        mux(c1.read, c2.read, c3.read, out.write);
+
+        seq {
+            result = out.read();
+            println("Received: " + result);
+        }
+    }
+
+}

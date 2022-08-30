@@ -1,29 +1,38 @@
 package processj.runtime;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PJAlt {
     
     /** Can be skips, timers or channel-reads */
-    private Object[] guards;
+    private List<Object> guards;
     
     /** Boolean guards */
-    private boolean[] bguards;
+    private List<Boolean> bguards;
     
     /** Process declaring the 'alt' */
     private PJProcess process;
     
     public static final String SKIP = "skip";
     
-    public PJAlt(int count, PJProcess p) {
+    public PJAlt(PJProcess p) {
         process = p;
-        guards = new Object[count];
-        bguards = new boolean[count];
+        guards = new ArrayList<>();
+        bguards = new ArrayList<>();
     }
     
-    public boolean setGuards(boolean[] bguards, Object[] guards) {
+    public PJAlt(int count, PJProcess p) {
+        process = p;
+        guards = new ArrayList<>(count);
+        bguards = new ArrayList<>(count);
+    }
+    
+    public boolean setGuards(List<Boolean> bguards, List<Object> guards) {
         this.guards = guards;
         this.bguards = bguards;
         
-        for (boolean b : bguards)
+        for (Boolean b : bguards)
             if (b)
                 return true;
         
@@ -32,27 +41,27 @@ public class PJAlt {
     
     @SuppressWarnings("rawtypes")
     public int enable() {
-        for (int i = 0; i < guards.length; ++i) {
+        for (int i = 0; i < guards.size(); ++i) {
             // If no boolean guard is ready then continue
-            if (!bguards[i])
+            if (!bguards.get(i))
                 continue;
             // A skip?
-            if (guards[i] == PJAlt.SKIP) {
+            if (guards.get(i) == PJAlt.SKIP) {
                 process.setReady();
                 return i;
             }
             // A channel?
-            if (guards[i] instanceof PJChannel) {
-                PJChannel chan = (PJChannel) guards[i];
+            if (guards.get(i) instanceof PJChannel) {
+                PJChannel chan = (PJChannel) guards.get(i);
                 if (chan.altGetWriter(process) != null) {
                     process.setReady();
                     return i;
                 }
             }
             // A timer?
-            if (guards[i] instanceof PJTimer) {
+            if (guards.get(i) instanceof PJTimer) {
                 // TODO: Shouldn't this be formally verified??
-                PJTimer t = (PJTimer) guards[i];
+                PJTimer t = (PJTimer) guards.get(i);
                 if (t.getDelay() <= 0L) {
                     process.setReady();
                     t.expire();
@@ -73,28 +82,28 @@ public class PJAlt {
     public int disable(int i) {
         int selected = -1;
         if (i == -1)
-            i = guards.length - 1;
+            i = guards.size() - 1;
         for (int j = i; j >= 0; --j) {
             // If no boolean guard is ready then continue
-            if (!bguards[j])
+            if (!bguards.get(j))
                 continue;
             // A skip?
-            if (guards[j] == PJAlt.SKIP)
+            if (guards.get(j) == PJAlt.SKIP)
                 selected = j;
             // A channel?
-            if (guards[j] instanceof PJChannel) { 
+            if (guards.get(j) instanceof PJChannel) { 
                 // No race condition on this channel as it is a one-to-one and only THIS
                 // process has access to it. This simply means that we are de-registering
                 // from the channel for now, but may still read from it if selected is not
                 // updated with a value < j.
-                PJChannel chan = (PJChannel) guards[j];
+                PJChannel chan = (PJChannel) guards.get(j);
                 if (chan.setReaderGetWriter(null) != null)
                     selected = j;
             }
             // A timer?
-            if (guards[j] instanceof PJTimer) {
+            if (guards.get(j) instanceof PJTimer) {
                 // TODO: Shouldn't this be formally verified??
-                PJTimer timer = (PJTimer) guards[j];
+                PJTimer timer = (PJTimer) guards.get(j);
                 if (timer.isExpired())
                     selected = j;
                 else

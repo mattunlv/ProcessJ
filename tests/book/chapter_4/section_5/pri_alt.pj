@@ -1,0 +1,68 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 4
+ * Section 5
+ * Page 111
+ */
+
+import std.io;
+
+public void replace(chan<int>.read in,
+                    chan<int>.read inject,
+                    chan<int>.write out) {
+
+    while(true) {
+
+        int x;
+        pri alt {
+
+            x = inject.read(): {
+                
+                par {
+
+                    int any = in.read();
+                    out.write(x);
+
+                }
+
+            }
+
+            x = in.read():
+                out.write(x);
+
+        }
+
+    }
+
+}
+
+public void skip_number_stream(chan<int>.write out, int start) {
+
+    for(int number = start; number < 10; number += 2) {
+
+        out.write(number);
+
+    }
+
+}
+
+public void main(string[] args) {
+
+    chan<int> a, b, c;
+
+    par {
+
+        skip_number_stream(a.write, 0);
+        skip_number_stream(b.write, 1);
+        replace(a.read, b.read, c.write);
+
+        seq {
+
+            int result = c.read();
+            println("Result: " + result);
+
+        }
+
+    }
+
+}

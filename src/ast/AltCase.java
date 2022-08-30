@@ -11,7 +11,8 @@ public class AltCase extends AST {
     /*If this is a Timeout Stat this string will hold the name of what the
       the temp Time should be called.*/
     private String tempTimerName = null;
-
+    public boolean isAltStat = false;
+    
     /* expr can be null */
     public AltCase(Expression expr, Guard guard, Statement stat) {
         super(guard);
@@ -19,6 +20,14 @@ public class AltCase extends AST {
         children = new AST[] { expr, guard, stat };
     }
 
+    /* an alt case can be another alt (this will get rewritten later) */
+    public AltCase(AltStat stat) {
+	super(stat);
+	nchildren = 3;
+	isAltStat = true;
+	children = new AST[] { null, null, stat };
+    }
+    
     public Expression precondition() {
         return (Expression) children[0];
     }
@@ -31,6 +40,11 @@ public class AltCase extends AST {
         return (Statement) children[2];
     }
 
+    public boolean isAltStat() {
+	return isAltStat;
+    }
+
+    
     public <S extends Object> S visit(Visitor<S> v) {
         return v.visitAltCase(this);
     }

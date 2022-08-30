@@ -377,7 +377,7 @@ label(<resume0>);<!-- remove 'line-feed' --!>
 // 1.) chaName: name of the write channel-end.
 // 2.) resume0:
 // 3.) resume1:
-ChannelReadExpr(chanName, lhs, op, resume0, resume1, extendRv) ::= <<
+ChannelReadExpr(chanName, lhs, type, op, resume0, resume1, extendRv) ::= <<
 if (!<chanName>.isReadyToRead(this)) {
     this.runLabel = <resume0>;
     this.yield();
@@ -389,7 +389,7 @@ label(<resume0>);
 <extendRv>
 <chanName>.postReadRendezvous(this);
 <else>
-<if(lhs)><lhs> <op> <chanName>.read(this);
+<if(lhs)><lhs> <op> <if(type)>(<type>) <endif><chanName>.read(this);
 <else><chanName>.read(this);
 <endif>
 <endif>
@@ -703,7 +703,7 @@ int count = 0;
 
 for (<init>; <expr>; <incr>) {
     ++count;
-    <stats:{st | processes.add(<st>)}; separator=";\n">;
+    <if(stats)><stats:{st | processes.add(<st>)}; separator=";\n">;<endif>
 }
 
 <name>.setProcessCount(count);
@@ -723,8 +723,9 @@ label(<jump>);
 // 1.) number:
 // 2.) guardExpr:
 // 3.) stats:
-AltCase(number, guardExpr, stats) ::= <<
+AltCase(number, guardExpr, stats, dynamicAlt) ::= <<
 case <number>:
+    <if(dynamicAlt)><dynamicAlt><endif>
     <guardExpr>
     <if(stats)><stats; separator="\n"><endif>
     break;
@@ -775,15 +776,106 @@ switch(selected) {
 // 2.) constants:
 BooleanGuards(locals, constants) ::= <<
 <if(locals)><locals; separator="\n"><endif>
-<if(constants)>boolean[] booleanGuards = { <constants; separator=", "> };<endif>
+<if(constants)>Boolean[] __booleanGuards = { <constants; separator=", "> };
+List<Boolean> booleanGuards = Arrays.asList(__booleanGuards);
+<endif>
 >>
 
 //========================================================================================
 //
 // 1.) guards:
 ObjectGuards(guards) ::= <<
-<if(guards)>Object[] objectGuards = { <guards; separator=", "> };<endif>
+<if(guards)>Object[] __objectGuards = { <guards; separator=", "> };
+List<Boolean> objectGuards = Arrays.asList(__objectGuards);
+<endif>
 >>
+
+//========================================================================================
+//========================================================================================
+//========================================================================================
+//========================================================================================
+//========================================================================================
+//
+// 1.) alt:
+// 2.) initGuards:
+// 3.) objectGuards:
+// 4.) bguards:
+// 5.) guards:
+// 6.) jump:
+// 7.) cases:
+// 8.) index:
+ReplicatedAltStat(alt, initGuards, objectGuards, bguards, guards, initForStmt, jump, cases, index) ::= <<
+<alt> = new PJAlt(this);
+<initGuards>
+List\<AltGuard> dynamicAltGuards = new ArrayList\<>();
+
+<if(objectGuards)>repAltObjectGuards.addAll(<objectGuards>)<endif>
+<if(initForStmt)><initForStmt; separator="\n"><endif>
+boolean ready = <alt>.setGuards(<bguards>, <guards>);
+
+if (!ready) {
+    System.out.println("RuntimeError: One of the boolean pre-guards must be true!");
+    System.exit(1);
+}
+
+this.setNotReady();
+<index> = <alt>.enable();
+this.runLabel = <jump>;
+this.yield();
+
+label(<jump>);
+int selected = <alt>.disable(<index>);
+AltGuard selectedGuard = dynamicAltGuards.get(selected);
+selected = selectedGuard.getAltCaseNumber();
+
+switch(selected) {
+    <cases; separator="\n">
+    default:
+        break;
+}
+>>
+
+//
+// 1.) indexSet
+RepLocalVars(indexSet) ::= <<
+<indexSet:{v | <v> = selectedGuard.getIndex();}; separator="\n">
+>>
+
+//
+// 1.) locals:
+RepAltGuards(locals) ::= <<
+<if(locals)><locals; separator="\n"><endif>
+List\<Boolean> repAltBooleanGuards = new ArrayList\<>();
+List\<Object> repAltObjectGuards = new ArrayList\<>();
+>>
+
+//
+// 1.) size:
+// 2.) indexSet:
+// 3.) altCase:
+RepAltIndexSet(size, indexSet, altCase) ::= <<
+AltGuard repAltGuard = new AltGuard(<size>);
+repAltGuard.addIndex(<indexSet; separator=", ">);
+repAltGuard.addAltCaseNumber(<altCase>);
+dynamicAltGuards.add(repAltGuard); // add altCaseIndex
+>>
+
+//
+// 1.) objectGuards:
+// 2.) objectValue:
+// 3.) booleanGuards:
+// 4.) booleanValue:
+RepAltObjectGuards(objectGuards, objectValue,booleanGuards,booleanValue) ::= <<
+<objectGuards>.add(<objectValue>);
+<booleanGuards>.add(<booleanValue>);
+>>
+
+
+//========================================================================================
+//========================================================================================
+//========================================================================================
+//========================================================================================
+//========================================================================================
 
 //========================================================================================
 //

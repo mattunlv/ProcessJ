@@ -56,7 +56,7 @@ Main(class, name, types, vars, argc, argv) ::= <<
 int main(int argc, char* argv[])
 {
     std::cout \<\< "\n *** CREATING SCHEDULER *** \n\n";
-    ProcessJRuntime::Scheduler sched;
+    ProcessJRuntime::pj_scheduler sched;
 
     std::cout \<\< "\n *** CREATING MAIN PROCESS *** \n\n";
     <!<name>* main_proc = new <name>(argc, <vars; separator=", ">);!>
@@ -144,7 +144,7 @@ public:
 
     <! -------- Constructors -------- !>
     <name>() = delete;
-    <name>(ProcessJRuntime::Scheduler* sched<if(vars)>,<\n><\t><types,vars:{t,v | <t> <v>}; separator=",\n\t"><endif>)
+    <name>(ProcessJRuntime::pj_scheduler* sched<if(vars)>,<\n><\t><types,vars:{t,v | <t> <v>}; separator=",\n\t"><endif>)
     {
         this->sched = sched;
         <if(vars)>
@@ -173,7 +173,7 @@ protected:
     <if(vars)><types,vars:{t,v | <t> <v>}; separator=";\n">;<endif>
 <! every process has these 2 things in common, so just put them here !>
 private:
-    ProcessJRuntime::Scheduler* sched;
+    ProcessJRuntime::pj_scheduler* sched;
 };
 <! Entry point of the program, e.g.,
  ! void main(int argc, char* argv[]) { ... }
@@ -225,12 +225,12 @@ class <name>_overload_finalize_<anonCounter> : public <name>
 public:
     <parentClass>* parent;
 
-    <!<name>_overload_finalize_<anonCounter>(ProcessJRuntime::Scheduler* sched<if(barrier)>, ProcessJRuntime::pj_barrier* <barrier><endif>)
+    <!<name>_overload_finalize_<anonCounter>(ProcessJRuntime::pj_scheduler* sched<if(barrier)>, ProcessJRuntime::pj_barrier* <barrier><endif>)
     : <name>{id, sched<if(barrier)>, <barrier><endif>}
     {
 
     }!>
-    <name>_overload_finalize_<anonCounter>(ProcessJRuntime::Scheduler* sched<if(vars)>, <types,vars:{t,v | <t> <v>}; separator=", "><endif>, <parentClass>* parent)
+    <name>_overload_finalize_<anonCounter>(ProcessJRuntime::pj_scheduler* sched<if(vars)>, <types,vars:{t,v | <t> <v>}; separator=", "><endif>, <parentClass>* parent)
     : <name>{sched<if(vars)>, <vars; separator=", "><endif>}, parent(parent)
     {
     }
@@ -374,7 +374,7 @@ public:
     <parentClass>* parent;
 
     <name>() = delete;
-    <name>(ProcessJRuntime::Scheduler* sched<if(types && vars)>,<\n><\t><types,vars:{t,v | <t> <v>}; separator=",\n"><endif>,
+    <name>(ProcessJRuntime::pj_scheduler* sched<if(types && vars)>,<\n><\t><types,vars:{t,v | <t> <v>}; separator=",\n"><endif>,
 <\t><parentClass>* parent<if(ltypes && lvars)>,<\n><ltypes,lvars:{t,v | <t> <v>}; separator=",\n"><endif>)
     {
         this->sched = sched;
@@ -408,7 +408,7 @@ protected:
     <if(ltypes && lvars)><ltypes,lvars:{t,v | <t> <v>;}; separator="\n"><endif>
 
 private:
-    ProcessJRuntime::Scheduler* sched;
+    ProcessJRuntime::pj_scheduler* sched;
 };
 
 <if(!inPar)>this->sched->insert(new <name>(this->sched<if(vars)>, <vars; separator=", "><endif>, this));<endif>

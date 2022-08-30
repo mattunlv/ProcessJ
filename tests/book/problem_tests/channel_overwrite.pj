@@ -1,0 +1,72 @@
+import std.io;
+
+public void foo(chan<int>.read in) {
+
+    int x = in.read();
+
+    println("Received: " + x);
+
+}
+
+public void bar(chan<int>.write out) {
+
+    out.write(1);
+
+}
+
+
+public void number_stream(chan<int>.write out, int count) {
+
+    for(int number = 0; number < count; number++) {
+
+        out.write(number);
+
+    }
+
+}
+
+public void main(string[] args) {
+
+    chan<int> a, b;
+
+    /// A Channel overwrite will occur when executing a par for
+    //par for(int index = 0; index < 18; index++) {
+
+      //  a.write(index + 1);
+      //  foo(a.read);
+
+    //}
+
+    // ------------------------------------------------------
+    // this is an example of channel values being overwritten
+    // But this is still illegal?
+
+    int v;
+
+    par for(int index = 0; index < 100; index++) {
+
+        a.write(index + 1);
+        b.write(index + 2);
+
+       alt {
+
+           v = a.read(): println("Value on a: " + v);
+           v = b.read(): println("Value on b: " + v);
+
+       }
+
+    }
+
+    /// The overwrite doesn't happen here
+    //par for(int index = 0; index < 9001; index++) {
+
+    //    a.write(index + 1);
+    //    b.write(index + 2);
+    //    v = a.read();
+
+    //    println("Result: " + v);
+
+
+    //}
+
+}

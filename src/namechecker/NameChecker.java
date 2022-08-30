@@ -3,6 +3,7 @@ package namechecker;
 import java.util.HashSet;
 
 import ast.AST;
+import ast.AltStat;
 import ast.Block;
 import ast.Compilation;
 import ast.ConstantDecl;
@@ -74,7 +75,19 @@ public class NameChecker<T extends Object> extends Visitor<T> {
 
     // AltCase - nothing to do
     // AltStat - nothing to do
-    // AltStat - nothing to do
+    public T visitAltStat(AltStat as) {
+	Log.log(as.line + ": Visiting AltStat");
+	if (as.isReplicated()) {
+	    Log.log(as.line + ": Opening scope (Start of replicated alt)");
+	    currentScope = currentScope.openScope();
+	    super.visitAltStat(as);
+	    currentScope = currentScope.closeScope();
+	    Log.log(as.line + ": Closing scope (end of replicated alt)");
+	} else
+	    super.visitAltStat(as);
+	return null;
+    }
+    
     // ArrayAccessExpr - nothing to do
     // ArrayLiteral - probably nothing to do
     // ArrayType - nothing to do

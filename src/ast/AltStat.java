@@ -4,8 +4,9 @@ import utilities.Visitor;
 
 public class AltStat extends Statement {
 
-    public boolean pri;
-    public boolean replicated;
+    public boolean pri;         // is this a pri alt
+    public boolean replicated;  // is this a replicated alt
+    public boolean dynamic;     // if it contains any replicated alts, it is dynamic
     public AltStat(Sequence<AltCase> body, boolean pri) {
         super(body);
         nchildren = 4;
@@ -21,7 +22,8 @@ public class AltStat extends Statement {
         super(body);
         nchildren = 4;
         this.pri = pri;
-        this.replicated= true;
+        this.replicated = true;
+	this.dynamic = true;
         children = new AST[] { init, expr, incr, body };
     }
 
@@ -33,6 +35,10 @@ public class AltStat extends Statement {
         return replicated;
     }
 
+    public boolean isDynamic() {
+	return dynamic;
+    }    
+    
     public Sequence<Statement> init() {
         return (Sequence<Statement>) children[0];
     }

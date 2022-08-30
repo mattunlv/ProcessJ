@@ -133,7 +133,7 @@ class ProcessJTest::one2one_writer : public ProcessJRuntime::pj_process {
             ProcessJRuntime::pj_one2one_channel<int32_t> oto_ch;
 
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::Scheduler sch;
+            ProcessJRuntime::pj_scheduler sch;
 
             std::cout << "\n *** CREATING TWO PROCESSES FOR R/W *** \n\n";
             one2one_reader<int32_t>* oto_r = new one2one_reader<int32_t>(0, &oto_ch);
