@@ -1,0 +1,16 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 3
+ * Section 9
+ * Page 95
+ */
+
+import std.io;
+
+public void main(string args[]) {
+
+    print("no newline here");
+    println("");
+    println("That was a newline");
+
+}

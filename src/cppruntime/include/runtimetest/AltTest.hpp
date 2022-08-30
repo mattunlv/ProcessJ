@@ -31,7 +31,7 @@ template <typename T>
         alt_writer() = delete;
 
         alt_writer(int32_t                              id,
-                   ProcessJRuntime::Scheduler*         sched,
+                   ProcessJRuntime::pj_scheduler*         sched,
                    ProcessJRuntime::pj_one2one_channel<T>* chan,
                    T                                  data)
         : id(id), data(data)
@@ -61,7 +61,7 @@ template <typename T>
 
     private:
         int32_t                              id;
-        ProcessJRuntime::Scheduler*         sched;
+        ProcessJRuntime::pj_scheduler*         sched;
         T                                  data;
         ProcessJRuntime::pj_one2one_channel<T>* chan;
     };
@@ -73,7 +73,7 @@ template <typename T>
         alt_process() = delete;
 
         alt_process(uint32_t                             id,
-                    ProcessJRuntime::Scheduler*         sched,
+                    ProcessJRuntime::pj_scheduler*         sched,
                     ProcessJRuntime::pj_one2one_channel<T>* chan)
         : id(id)
         {
@@ -173,7 +173,7 @@ template <typename T>
 
     private:
         uint32_t id;
-        ProcessJRuntime::Scheduler*         sched;
+        ProcessJRuntime::pj_scheduler*         sched;
         ProcessJRuntime::pj_one2one_channel<T>* chan;
     };
 
@@ -182,7 +182,7 @@ template <typename T>
     public:
         alt_timeout_process() = delete;
 
-        alt_timeout_process(uint32_t id, ProcessJRuntime::Scheduler* sched)
+        alt_timeout_process(uint32_t id, ProcessJRuntime::pj_scheduler* sched)
         : id(id),
           sched(sched)
         {
@@ -272,7 +272,7 @@ template <typename T>
 
     private:
         uint32_t id;
-        ProcessJRuntime::Scheduler* sched;
+        ProcessJRuntime::pj_scheduler* sched;
     };
 
     class ProcessJTest::alt_skip_process : public ProcessJRuntime::pj_process
@@ -281,7 +281,7 @@ template <typename T>
         alt_skip_process() = delete;
 
         alt_skip_process(uint32_t                     id,
-                         ProcessJRuntime::Scheduler* sched)
+                         ProcessJRuntime::pj_scheduler* sched)
         : id(id)
         {
             this->sched = sched;
@@ -371,7 +371,7 @@ template <typename T>
 
     private:
         uint32_t id;
-        ProcessJRuntime::Scheduler* sched;
+        ProcessJRuntime::pj_scheduler* sched;
     };
 
     class ProcessJTest::alt_test
@@ -385,7 +385,7 @@ template <typename T>
         void run()
         {
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::Scheduler sched;
+            ProcessJRuntime::pj_scheduler sched;
 
             std::cout << "\n *** CREATING CHANNELS FOR ALT GUARDS *** \n\n";
             ProcessJRuntime::pj_one2one_channel<uint32_t>* chan1 =

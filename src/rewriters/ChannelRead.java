@@ -147,9 +147,7 @@ public class ChannelRead extends Visitor<Pair<Sequence, Expression>> {
         Pair<Sequence, Expression> p = bl.stats().visit(this);
         Sequence se = new Sequence(new Block(p.getFirst()));
         if ( log ) {
-            System.out.println(">>>");
             se.visit(new PrettyPrinter());
-            System.out.println("<<<");
         }
         return new Pair<Sequence, Expression>(se, null);
     }
@@ -690,8 +688,9 @@ public class ChannelRead extends Visitor<Pair<Sequence, Expression>> {
     public Pair<Sequence, Expression> visitAltCase(AltCase ac) {
         Log.log(ac, "Visiting an AltCase");
         Pair<Sequence, Expression> p = null;
-        // Rewrite the guard statement if needed
-        p = ac.guard().visit(this);
+        // Rewrite the guard statement if needed (if null => nested alt)
+        if (ac.guard() != null)
+            p = ac.guard().visit(this);
         // Rewrite the statement if needed
         p = ac.stat().visit(this);
         if (p != null) {

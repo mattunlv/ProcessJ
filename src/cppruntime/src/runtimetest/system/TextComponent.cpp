@@ -9,6 +9,23 @@
 #include<ProcessJSystem.hpp>
 
 /*!
+ * Primary Constructor, Initializes the TextComponent
+ * to its' default state
+ *
+ * \param height The height of the component
+ * \param Width  The width  of the component
+ * \param listener The ProcessJSystem::TextComponentListener to receive
+ * callbacks on ProcessJRuntim::TextComponent state mutations
+ */
+
+ProcessJSystem::TextComponent::TextComponent(ProcessJSystem::WindowComponent::Listener* windowComponentListener):
+ProcessJSystem::WindowComponent(windowComponentListener),
+text(0), textLength(0), leftBorderWidth(0), rightBorderWidth(0),
+topBorderWidth(0), bottomBorderWidth(0), leftBorderFill('/'), rightBorderFill('/'),
+topBorderFill('-'), bottomBorderFill('='), horizontalTextOrientation(ProcessJSystem::WindowComponent::Center),
+verticalTextOrientation(ProcessJSystem::WindowComponent::Center) { /* Empty */ }
+
+/*!
  * Invoked when the ProcessJSystem::TextComponent should
  * measure itself. Passes the available width and height
  *
@@ -16,7 +33,7 @@
  * \param height The available height
  */
 
-void ProcessJSystem::TextComponent::onMeasure(ProcessJSystem::Size width, ProcessJSystem::Size height) {
+void ProcessJSystem::TextComponent::onMeasure(ProcessJSystem::Integer32 width, ProcessJSystem::Integer32 height) {
 
     this->width     = width     ;
     this->height    = height    ;
@@ -28,63 +45,61 @@ void ProcessJSystem::TextComponent::onMeasure(ProcessJSystem::Size width, Proces
     for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
         buffer[row].resize(width);
 
-    // Set it to Empty
-    for(ProcessJSystem::Size row; row < buffer.size(); row++)
-        for(ProcessJSystem::Size column; column < buffer[row].size(); column++)
-            buffer[row][column] = ' ';
+    if((width > 0) && (height > 0)) {
 
-    for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
-        for(ProcessJSystem::Size column = 0; column < leftBorderWidth; column++)
-            buffer[row][column] = leftBorderFill;
+        // Set it to Empty
+        for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
+            for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
+                buffer[row][column] = backgroundFill;
 
-    for(ProcessJSystem::Size row = 0; buffer.size(); row++)
-        for(ProcessJSystem::Integer32 column = (buffer[row].size() - rightBorderWidth - 1); column >= 0; column--)
-            buffer[row][column] = rightBorderFill;
+        for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
+            for(ProcessJSystem::Size column = 0; buffer[row].size() && (column < leftBorderWidth); column++)
+                buffer[row][column] = leftBorderFill;
 
-    for(ProcessJSystem::Size row = 0; (row < buffer.size()) && (row < topBorderWidth); row++)
-        for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
-            buffer[row][column] = topBorderFill;
+        for(ProcessJSystem::Size row = 0; row < buffer.size(); row++)
+            for(ProcessJSystem::Size column = (buffer[row].size() - rightBorderWidth); column < buffer[row].size(); column++)
+                buffer[row][column] = rightBorderFill;
 
-    for(ProcessJSystem::Integer32 row = (buffer.size() - bottomBorderWidth - 1); row >= 0; row--)
-        for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
-            buffer[row][column] = bottomBorderFill;
+        for(ProcessJSystem::Size row = 0; (row < topBorderWidth) && (row < buffer.size()); row++)
+            for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
+                buffer[row][column] = topBorderFill;
 
-    ProcessJSystem::Integer32 textXPosition = 0;
-    ProcessJSystem::Integer32 textYPosition = 0;
+        for(ProcessJSystem::Size row = (height - bottomBorderWidth); row < buffer.size(); row++)
+            for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
+                buffer[row][column] = bottomBorderFill;
 
-    if(verticalTextOrientation == ProcessJSystem::WindowComponent::End)
-        textYPosition = (buffer.size() - 1);
 
-    else if(verticalTextOrientation == ProcessJSystem::WindowComponent::Center)
-        textYPosition = (buffer.size() - 1) / 2;
+        if((buffer.size() > 0) && (buffer[0].size()) && (textLength > 0)) {
 
-    if(horizontalTextOrientation == ProcessJSystem::WindowComponent::End)
-        textXPosition = (width - 1) - textLength;
+            ProcessJSystem::UInteger32 textXPosition = 0;
+            ProcessJSystem::UInteger32 textYPosition = 0;
 
-    else if(horizontalTextOrientation == ProcessJSystem::WindowComponent::Center)
-        textXPosition = (width - 1) / 4;
+            if(verticalTextOrientation == ProcessJSystem::WindowComponent::End)
+                textYPosition = (buffer.size() - 1);
 
-    for(; textXPosition < width; textXPosition++)
-        if(textXPosition >= 0) buffer[textYPosition][textXPosition] = text[textXPosition];
+            else if(verticalTextOrientation == ProcessJSystem::WindowComponent::Center)
+                textYPosition = (buffer.size() - 1) / 2;
 
-}
+            if(horizontalTextOrientation == ProcessJSystem::WindowComponent::End)
+                textXPosition =  buffer[0].size() - textLength;
 
-/*!
- * Invoked when the ProcessJSystem::TextComponent should draw itself
- */
+            else if(horizontalTextOrientation == ProcessJSystem::WindowComponent::Center)
+                textXPosition = ((buffer[0].size() / 2) - (textLength / 2));
 
-template<typename OutputStream>
-OutputStream& ProcessJSystem::TextComponent::draw(OutputStream& outputStream) {
+            if(textXPosition < leftBorderWidth) textXPosition = leftBorderWidth;
 
-    for(ProcessJSystem::Size row = 0; row < buffer.size(); row++) {
-        for(ProcessJSystem::Size column = 0; column < buffer[row].size(); column++)
-            outputStream << buffer[row][column];
+            if(textYPosition < topBorderWidth) textYPosition = topBorderWidth;
 
-        outputStream << '\n';
+            // We're going to iterate with this
+            ProcessJSystem::SimpleString    current = text  ;
+            ProcessJSystem::UInteger32      index   = 0     ;
+
+            while(current && (*current) && ((textXPosition + index) < buffer[textYPosition].size()))
+                buffer[textYPosition][textXPosition + index++] = *current++;
+
+        }
 
     }
-
-    return outputStream;
 
 }
 
@@ -94,7 +109,7 @@ OutputStream& ProcessJSystem::TextComponent::draw(OutputStream& outputStream) {
  * \param leftBorderFill The desired left border fill
  */
 
-void ProcessJSystem::TextComponent::setLeftBorderFill(ProcessJSystem::Character& leftBorderFill) {
+void ProcessJSystem::TextComponent::setLeftBorderFill(ProcessJSystem::Character leftBorderFill) {
 
     this->leftBorderFill = leftBorderFill;
 
@@ -110,7 +125,7 @@ void ProcessJSystem::TextComponent::setLeftBorderFill(ProcessJSystem::Character&
  * \param rightBorderFill The desired right border fill
  */
 
-void ProcessJSystem::TextComponent::setRightBorderFill(ProcessJSystem::Character& rightBorderFill) {
+void ProcessJSystem::TextComponent::setRightBorderFill(ProcessJSystem::Character rightBorderFill) {
 
     this->rightBorderFill = rightBorderFill;
 
@@ -126,7 +141,7 @@ void ProcessJSystem::TextComponent::setRightBorderFill(ProcessJSystem::Character
  * \param topBorderFill The desired top border fill
  */
 
-void ProcessJSystem::TextComponent::setTopBorderFill(ProcessJSystem::Character& topBorderFill) {
+void ProcessJSystem::TextComponent::setTopBorderFill(ProcessJSystem::Character topBorderFill) {
 
     this->topBorderFill = topBorderFill;
 
@@ -141,7 +156,7 @@ void ProcessJSystem::TextComponent::setTopBorderFill(ProcessJSystem::Character& 
  * \param bottomBorderFill The desired bottom border fill
  */
 
-void ProcessJSystem::TextComponent::setBottomBorderFill(ProcessJSystem::Character& bottomBorderFill) {
+void ProcessJSystem::TextComponent::setBottomBorderFill(ProcessJSystem::Character bottomBorderFill) {
 
     this->bottomBorderFill = bottomBorderFill;
 
@@ -156,7 +171,7 @@ void ProcessJSystem::TextComponent::setBottomBorderFill(ProcessJSystem::Characte
  * \param topBorderFill The desired border fill
  */
 
-void ProcessJSystem::TextComponent::setBorderFill(ProcessJSystem::Character& borderFill) {
+void ProcessJSystem::TextComponent::setBorderFill(ProcessJSystem::Character borderFill) {
 
     this->leftBorderFill    = borderFill    ;
     this->rightBorderFill   = borderFill    ;
@@ -174,7 +189,7 @@ void ProcessJSystem::TextComponent::setBorderFill(ProcessJSystem::Character& bor
  * \param leftBorderFill The desired left border width
  */
 
-void ProcessJSystem::TextComponent::setLeftBorderWidth(ProcessJSystem::Character& leftBorderWidth) {
+void ProcessJSystem::TextComponent::setLeftBorderWidth(ProcessJSystem::UInteger32 leftBorderWidth) {
 
     this->leftBorderWidth = leftBorderWidth;
 
@@ -190,7 +205,7 @@ void ProcessJSystem::TextComponent::setLeftBorderWidth(ProcessJSystem::Character
  * \param rightBorderWidth The desired right border width
  */
 
-void ProcessJSystem::TextComponent::setRightBorderWidth(ProcessJSystem::Character& rightBorderWidth) {
+void ProcessJSystem::TextComponent::setRightBorderWidth(ProcessJSystem::UInteger32 rightBorderWidth) {
 
     this->rightBorderWidth = rightBorderWidth;
 
@@ -206,7 +221,7 @@ void ProcessJSystem::TextComponent::setRightBorderWidth(ProcessJSystem::Characte
  * \param topBorderWidth The desired top border width
  */
 
-void ProcessJSystem::TextComponent::setTopBorderWidth(ProcessJSystem::Character& topBorderWidth) {
+void ProcessJSystem::TextComponent::setTopBorderWidth(ProcessJSystem::UInteger32 topBorderWidth) {
 
     this->topBorderWidth = topBorderWidth;
 
@@ -221,7 +236,7 @@ void ProcessJSystem::TextComponent::setTopBorderWidth(ProcessJSystem::Character&
  * \param bottomBorderWidth The desired bottom border width
  */
 
-void ProcessJSystem::TextComponent::setBottomBorderWidth(ProcessJSystem::Character& bottomBorderWidth) {
+void ProcessJSystem::TextComponent::setBottomBorderWidth(ProcessJSystem::UInteger32 bottomBorderWidth) {
 
     this->bottomBorderWidth = bottomBorderWidth;
 
@@ -236,7 +251,7 @@ void ProcessJSystem::TextComponent::setBottomBorderWidth(ProcessJSystem::Charact
  * \param topBorderWidth The desired border width
  */
 
-void ProcessJSystem::TextComponent::setBorderWidth(ProcessJSystem::Character& borderWidth) {
+void ProcessJSystem::TextComponent::setBorderWidth(ProcessJSystem::UInteger32 borderWidth) {
 
     this->leftBorderWidth   = borderWidth   ;
     this->rightBorderWidth  = borderWidth   ;
@@ -254,16 +269,34 @@ void ProcessJSystem::TextComponent::setBorderWidth(ProcessJSystem::Character& bo
  * \param text The desired Text
  */
 
-void ProcessJSystem::TextComponent::setText(ProcessJSystem::SimpleString text) {
+void ProcessJSystem::TextComponent::setText(ProcessJSystem::StringLiteral string) {
 
-    ProcessJSystem::UInteger32     length  = 0     ;
-    ProcessJSystem::SimpleString   current = text  ;
+    ProcessJSystem::UInteger32     length   = 0             ;
+    ProcessJSystem::StringLiteral  current  = string        ;
 
     // Count the characters
-    while(*text++) length++;
+    while(*current++) length++;
 
-    this->textLength = length   ;
-    this->text       = text     ;
+    // If we already have a string, delete it
+    if(text && (textLength > 0))  delete[] text;
+
+    text        = 0 ;
+    textLength  = 0 ;
+
+    // Create the new container
+    text        = new ProcessJSystem::Character[length + 1] ;
+    textLength  = length                                    ;
+
+    // Delimit
+    text[length] = '\0';
+
+    // Copy the string
+    for(ProcessJSystem::Size index = 0; index < length; index++)
+        text[index] = string[index];
+
+    // Callback
+    if(windowComponentListener)
+        windowComponentListener->RequestLayout(this);
 
 }
 

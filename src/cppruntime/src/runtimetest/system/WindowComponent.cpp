@@ -25,14 +25,30 @@ const ProcessJSystem::Orientation   ProcessJSystem::WindowComponent::Center     
 
 #endif
 
-ProcessJSystem::WindowComponent::WindowComponent(ProcessJSystem::WindowComponentListener* windowComponentListener):
+ProcessJSystem::WindowComponent::WindowComponent(ProcessJSystem::WindowComponent::Listener* windowComponentListener):
 buffer(), height(0), width(0), positionX(0), positionY(0),
+backgroundFill(' '),
 horizontalOrientation(ProcessJSystem::WindowComponent::Center),
 verticalOrientation(ProcessJSystem::WindowComponent::Center),
 horizontalViewSpecification(ProcessJSystem::WindowComponent::Exactly),
 verticalViewSpecification(ProcessJSystem::WindowComponent::Exactly),
 isDirty(false),
 windowComponentListener(windowComponentListener) { /* Empty */ }
+
+/*!
+ * Removes any ProcessJTest::WindowComponent::Listeners
+ * associated with the ProcessJTest::WindowComponent.
+ * Calls back ProcessJTest::WindowComponent::Listener::OnChildReleased()
+ * if the ProcessJTest::WindowComponent has a listener.
+ */
+
+ProcessJSystem::WindowComponent::~WindowComponent() {
+
+    // Let the window component listener know of the release
+    if(windowComponentListener)
+        windowComponentListener->OnChildReleased(this);
+
+}
 
 /*!
  * Retrieves the ProcessJSystem::WindowComponent's view buffer
@@ -111,6 +127,52 @@ void ProcessJSystem::WindowComponent::setYPosition(ProcessJSystem::Integer32 pos
 }
 
 /*!
+ * Mutates the backgroundFill of the ProcessJSystem::WindowComponent
+ *
+ * \param backgroundFill The desired backgroundFill for the ProcessJSystem::WindowComponent
+ */
+
+void ProcessJSystem::WindowComponent::setBackgroundFill(ProcessJSystem::Character backgroundFill) {
+
+    this->backgroundFill = backgroundFill   ;
+    this->isDirty        = true             ;
+
+    if(windowComponentListener)
+        windowComponentListener->OnComponentDirty(this);
+
+}
+
+/*!
+ * Sets the horizontal orientation of the ProcessJSystem::WindowComponent
+ *
+ * \param horizontalOrientation The desired horizontalOrientation
+ */
+
+void ProcessJSystem::WindowComponent::setHorizontalOrientation(ProcessJSystem::Orientation horizontalOrientation) {
+
+    this->horizontalOrientation = horizontalOrientation;
+
+    if(windowComponentListener)
+        windowComponentListener->OnComponentDirty(this);
+
+}
+
+/*!
+ * Mutates the vertical orientation of the ProcessJSystem::WindowComponent
+ *
+ * \param verticalOrientation The desired verticalOrientation
+ */
+
+void ProcessJSystem::WindowComponent::setVerticalOrientation(ProcessJSystem::Orientation verticalOrientation) {
+
+    this->verticalOrientation = verticalOrientation;
+
+    if(windowComponentListener)
+        windowComponentListener->OnComponentDirty(this);
+
+}
+
+/*!
  * Mutates the horizontal view specification
  *
  * \param horizontalViewSpecification The desired horizontal view
@@ -153,7 +215,7 @@ void ProcessJSystem::WindowComponent::setVerticalViewSpecification(ProcessJSyste
  * to assign
  */
 
-void ProcessJSystem::WindowComponent::setWindowComponentListener(ProcessJSystem::WindowComponentListener* windowComponentListener){
+void ProcessJSystem::WindowComponent::setWindowComponentListener(ProcessJSystem::WindowComponent::Listener* windowComponentListener){
 
     this->isDirty = true;
 

@@ -1,5 +1,6 @@
 import java.io.File;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -52,7 +53,7 @@ public class ProcessJc {
             this.optionType = type;
             this.description = desc;
         }
-
+        
         public Option(String field, String option, String desc) {
             this(field, option, OptionType.BOOLEAN, desc);
         }
@@ -313,6 +314,9 @@ public class ProcessJc {
 
             System.out.println("-- Checking literal inits are free of channel communication.");
             c.visit(new semanticcheck.LiteralInits());
+            
+            System.out.println("-- Checking replicated Alt inits.");
+            c.visit(new semanticcheck.ReplicatedAlts());
 
             System.out.println("-- Rewriting infinite loops.");
             new rewriters.InfiniteLoopRewrite().go(c);
@@ -345,7 +349,7 @@ public class ProcessJc {
                 System.out.println("-- Rewriting calls to print() and println().");
                 c.visit(new IOCallsRewrite());
             }
-
+            
             // Run the code generator for the known (specified) target language
             if (pJc.target == Language.CPLUS || pJc.target == Language.JVM/*Settings.language==pJc.target*/ )
                 if (pJc.target == Language.JVM/*Settings.language == Language.JVM*/) {
@@ -443,15 +447,11 @@ public class ProcessJc {
                         try {
                             Field f = c.getField(o.fieldName);
                             if ( optionValue!=null ) {
-                                // Setting the Language enum directly from a String is incompatible.
-                                // Reflecting the type is necessary since the generic way of setting
-                                // the field (e.g. field.set()) will not work but retrieving the value
-                                // corresponding to the enum field will. TODO: Can we do better?
-                                if(f.getType().getName().equals("utilities.Language")) {
-                                    f.set(this, Language.valueOf((Class<Language>) f.getType(), optionValue));
-                                } else f.set(this, optionValue);
-                            }
-                            else
+                                if ( f.getType() instanceof Class && ((Class<?>) f.getType()).isEnum())
+                                    setEnumField(f, optionValue, String.class);
+                                else
+                                    f.set(this, optionValue);
+                            } else
                                 f.set(this, true);
                         } catch (Exception e) {
                         System.out.println(e);
@@ -467,6 +467,13 @@ public class ProcessJc {
                 }
             }
         }
+    }
+    
+    // This method must be used to get values from 'enum' types
+    private void setEnumField(Field f, Object arg, Class<?> type) throws Exception {
+        Method valueOf = f.getType().getMethod("getValueOf", type);
+        Object value = valueOf.invoke(f.get(this), arg);
+        f.set(this, value);
     }
 
     public void printUsageAndExit() {

@@ -182,7 +182,7 @@ class ProcessJTest::many2many_test {
             std::random_shuffle(processes.begin(), processes.end());
 
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::Scheduler sch;
+            ProcessJRuntime::pj_scheduler sch;
 
             std::cout << "\n *** SCHEDULING PROCESSES *** \n\n";
             for(i = 0; i < 8; ++i)

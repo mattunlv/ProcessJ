@@ -1,22 +1,22 @@
 #include <ProcessJRuntimeTest.hpp>
 
-int32_t main(void)
-{
-    std::chrono::system_clock::time_point start;
-    std::chrono::system_clock::time_point  stop;
-    std::chrono::microseconds sc_elapsed;
-    std::chrono::microseconds mc_elapsed;
-    std::chrono::microseconds diff;
-    std::srand(0);
+int32_t main(void) {
 
-    start = std::chrono::system_clock::now();
-    ProcessJTest::singlecore_test sc_test;
-    sc_test.run();
-    stop = std::chrono::system_clock::now();
-    sc_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    std::cout << "elapsed time of sc_test: "
-              << sc_elapsed.count()
-              << " microseconds\n";
+    //std::chrono::system_clock::time_point start;
+    //std::chrono::system_clock::time_point  stop;
+    //std::chrono::microseconds sc_elapsed;
+    //std::chrono::microseconds mc_elapsed;
+    //std::chrono::microseconds diff;
+    //std::srand(0);
+
+    //start = std::chrono::system_clock::now();
+    //ProcessJTest::singlecore_test sc_test;
+    //sc_test.run();
+    //stop = std::chrono::system_clock::now();
+    //sc_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    //std::cout << "elapsed time of sc_test: "
+    //          << sc_elapsed.count()
+    //          << " microseconds\n";
 
     /* TODO: this test doesn't work because the cores still aren't isolated
      * the correct way. it might need to be rewritten such that the threads
@@ -25,33 +25,33 @@ int32_t main(void)
      * condition variable that would allow them to all sync up in a way
      * and wait until all the others have been isolated before starting them
      */
-    start = std::chrono::system_clock::now();
-    ProcessJTest::multicore_test mc_test;
-    mc_test.run();
-    stop = std::chrono::system_clock::now();
-    mc_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    std::cout << "elapsed time of mc_test: "
-              << mc_elapsed.count()
-              << " microseconds\n";
+    //start = std::chrono::system_clock::now();
+    //ProcessJTest::multicore_test mc_test;
+    //mc_test.run();
+    //stop = std::chrono::system_clock::now();
+    //mc_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    //std::cout << "elapsed time of mc_test: "
+    //          << mc_elapsed.count()
+    //          << " microseconds\n";
 
-    if(mc_elapsed > sc_elapsed)
-    {
-        std::cout << "mc_test took longer than sc_test\n";
-        diff = mc_elapsed - sc_elapsed;
-    }
-    else if(mc_elapsed < sc_elapsed)
-    {
-        std::cout << "sc_test took longer than mc_test\n";
-        diff = sc_elapsed - mc_elapsed;
-    }
-    else
-    {
-        std::cout << "somehow both tests were the same length of time\n";
-        diff = mc_elapsed - sc_elapsed;
-    }
+    //if(mc_elapsed > sc_elapsed)
+    //{
+    //    std::cout << "mc_test took longer than sc_test\n";
+    //    diff = mc_elapsed - sc_elapsed;
+    //}
+    //else if(mc_elapsed < sc_elapsed)
+    //{
+    //    std::cout << "sc_test took longer than mc_test\n";
+    //    diff = sc_elapsed - mc_elapsed;
+    //}
+    //else
+    //{
+    //    std::cout << "somehow both tests were the same length of time\n";
+    //    diff = mc_elapsed - sc_elapsed;
+    //}
 
-    std::cout << "total time difference between sc/mc: "
-              << diff.count() << " microseconds\n";
+    //std::cout << "total time difference between sc/mc: "
+    //          << diff.count() << " microseconds\n";
 
     //ProcessJTest::one2one_test oto_test;
     //oto_test.run();
@@ -89,11 +89,24 @@ int32_t main(void)
     //ProcessJTest::static_method_test sm_test;
     //sm_test.run();
 
-    ProcessJTest::ArrayTest ar_test;
-    ar_test.run();
-
     //ProcessJTest::string_test s_test;
     //s_test.run();
+    // Set the output to raw
+
+    // Set the terminal to raw mode and create a terminal window instance
+    ProcessJSystem::System::SetRawMode();
+    ProcessJSystem::TerminalWindow window(160, 48);
+
+    ProcessJTest::ArrayBatch arrayBatch;
+
+    // Set it as the root view
+    window.setRootView(arrayBatch);
+
+    arrayBatch();
+
+    // Set it back to cooked
+    ProcessJSystem::System::SetCookedMode();
 
     return 0;
+
 }

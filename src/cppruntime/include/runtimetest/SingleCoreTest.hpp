@@ -20,7 +20,7 @@ namespace ProcessJTest {
 class ProcessJTest::sc_process : public ProcessJRuntime::pj_process {
     public:
         sc_process() = delete;
-        sc_process(int32_t id, ProcessJRuntime::Scheduler* sched)
+        sc_process(int32_t id, ProcessJRuntime::pj_scheduler* sched)
         : id(id)
         {
             this->sched = sched;
@@ -64,7 +64,7 @@ class ProcessJTest::sc_process : public ProcessJRuntime::pj_process {
         }
     private:
         int32_t id;
-        ProcessJRuntime::Scheduler* sched;
+        ProcessJRuntime::pj_scheduler* sched;
     };
 
 class ProcessJTest::singlecore_test {
@@ -77,7 +77,7 @@ class ProcessJTest::singlecore_test {
         void run()
         {
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::Scheduler sched;
+            ProcessJRuntime::pj_scheduler sched;
 
             std::cout << "\n *** CREATING PROCESSES *** \n\n";
             ProcessJTest::sc_process* processes[4];

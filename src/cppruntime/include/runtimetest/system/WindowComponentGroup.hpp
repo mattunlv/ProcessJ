@@ -13,7 +13,7 @@
 
 namespace ProcessJSystem{ class WindowComponentGroup; }
 
-class ProcessJSystem::WindowComponentGroup : public ProcessJSystem::WindowComponent, ProcessJSystem::WindowComponentListener {
+class ProcessJSystem::WindowComponentGroup : public ProcessJSystem::WindowComponent, ProcessJSystem::WindowComponent::Listener {
 
     /// ------------------
     /// Protected Members
@@ -35,7 +35,14 @@ public:
      * callbacks on ProcessJRuntim::WindowComponentGroup state mutations
      */
 
-    WindowComponentGroup(ProcessJSystem::WindowComponentListener*);
+    WindowComponentGroup(ProcessJSystem::WindowComponent::Listener*);
+
+    /*!
+     * Default Constructor. Releases any memory managed by
+     * the ProcessJSystem::WindowComponentGroup
+     */
+
+    virtual ~WindowComponentGroup() { /* Empty */ }
 
     /// ----------------------------------------
     /// ProcessJSystem::WindowComponentListener
@@ -46,7 +53,7 @@ public:
      * \param component The Component to be drawn as a void pointer
      */
 
-    void OnComponentDirty(void*);
+    void OnComponentDirty(ProcessJSystem::WindowComponent*);
 
     /*!
      * Invoked when a child view is requesting to be re-measured
@@ -54,7 +61,15 @@ public:
      * \parm component The Component that is requesting to be re-measured
      */
 
-   void RequestLayout(void*);
+   void RequestLayout(ProcessJSystem::WindowComponent*);
+
+   /*!
+    * Invoked when a child is releasing itself.
+    *
+    * \param component The Component that had its' destructor called.
+    */
+
+   void OnChildReleased(ProcessJSystem::WindowComponent*);
 
     /// -------
     /// Methods
@@ -66,7 +81,7 @@ public:
      * \param child The child to add to the WindowComponent tree
      */
 
-    void addChild(ProcessJSystem::WindowComponent*);
+    void addChild(ProcessJSystem::WindowComponent&);
 
 };
 

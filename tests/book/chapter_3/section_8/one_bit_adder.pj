@@ -1,0 +1,249 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 3
+ * Section 8.1
+ * Page 88
+ */
+
+import std.*;
+
+public void notGate(chan<boolean>.read in, chan<boolean>.write out) {
+
+    boolean x;
+    x = in.read();
+    out.write(!x);
+
+}
+
+public void orGate(chan<boolean>.read in1,
+                   chan<boolean>.read in2,
+                   chan<boolean>.write out) {
+
+    boolean x, y;
+    par {
+        x = in1.read();
+        y = in2.read();
+    }
+    out.write(x || y);
+
+}
+
+public void andGate(chan<boolean>.read in1,
+                    chan<boolean>.read in2,
+                    chan<boolean>.write out) {
+
+    boolean x, y;
+    par {
+        x = in1.read();
+        y = in2.read();
+    }
+    out.write(x && y);
+
+}
+
+public void nandGate(chan<boolean>.read in1,
+                     chan<boolean>.read in2,
+                     chan<boolean>.write out) {
+
+    chan<boolean> a;
+    par {
+        andGate(in1, in2, a.write);
+        notGate(a.read, out);
+    }
+
+}
+
+public void deltaGate(chan<boolean>.read in,
+                      chan<boolean>.write out1,
+                      chan<boolean>.write out2) {
+
+    boolean x;
+    x = in.read();
+    par {
+
+        out1.write(x);
+        out2.write(x);
+
+    }
+
+}
+
+public void xorGate(chan<boolean>.read in1,
+                    chan<boolean>.read in2,
+                    chan<boolean>.write out) {
+
+    chan<boolean> a, b, c, d, e, f, g, h, i;
+    par {
+
+        deltaGate(in1, a.write, b.write);
+        deltaGate(in2, c.write, d.write);
+        nandGate(b.read, c.read, e.write);
+        deltaGate(e.read, f.write, g.write);
+        nandGate(a.read, f.read, h.write);
+        nandGate(d.read, g.read, i.write);
+        nandGate(h.read, i.read, out);
+
+    }
+
+}
+
+public void oneBitAdder(chan<boolean>.read in1,
+                        chan<boolean>.read in2,
+                        chan<boolean>.read carryIn,
+                        chan<boolean>.write result,
+                        chan<boolean>.write carryOut) {
+
+    chan<boolean> a, b, c, d, e, f, g, h, i, j, k;
+    par {
+        deltaGate(in1, a.write, b.write);
+        deltaGate(in2, c.write, d.write);
+        xorGate(a.read, c.read, e.write);
+        deltaGate(e.read, f.write, g.write);
+        deltaGate(carryIn, h.write, i.write);
+        xorGate(f.read, h.read, result);
+        andGate(g.read, i.read, j.write);
+        andGate(b.read, d.read, k.write);
+        orGate(j.read, k.read, carryOut);
+    }
+
+}
+
+public void print_next(chan<int>.read in) {
+
+    while(true) {
+
+        int result = in.read();
+
+        println("Received: " + result);
+
+    }
+
+}
+
+public void main(string[] args) {
+
+    chan<boolean> in1, in2, carryIn, result, carryOut;
+
+    boolean res, carry;
+
+    par {
+
+        in1.write(false);
+        in2.write(false);
+        carryIn.write(false);
+
+        oneBitAdder(in1.read, in2.read, carryIn.read, result.write, carryOut.write);
+
+        res     = result.read();
+        carry   = carryOut.read();
+
+    }
+
+    println("Result: " + res + " Carry: " + carry);
+
+    par {
+
+        in1.write(true);
+        in2.write(false);
+        carryIn.write(false);
+
+        oneBitAdder(in1.read, in2.read, carryIn.read, result.write, carryOut.write);
+
+        res     = result.read();
+        carry   = carryOut.read();
+
+    }
+
+    println("Result: " + res + " Carry: " + carry);
+
+    par {
+
+        in1.write(false);
+        in2.write(true);
+        carryIn.write(false);
+
+        oneBitAdder(in1.read, in2.read, carryIn.read, result.write, carryOut.write);
+
+        res     = result.read();
+        carry   = carryOut.read();
+
+    }
+
+    println("Result: " + res + " Carry: " + carry);
+
+    par {
+
+        in1.write(true);
+        in2.write(true);
+        carryIn.write(false);
+
+        oneBitAdder(in1.read, in2.read, carryIn.read, result.write, carryOut.write);
+
+        res     = result.read();
+        carry   = carryOut.read();
+
+    }
+
+    println("Result: " + res + " Carry: " + carry);
+
+    par {
+
+        in1.write(false);
+        in2.write(false);
+        carryIn.write(true);
+
+        oneBitAdder(in1.read, in2.read, carryIn.read, result.write, carryOut.write);
+
+        res     = result.read();
+        carry   = carryOut.read();
+
+    }
+
+    println("Result: " + res + " Carry: " + carry);
+
+    par {
+
+        in1.write(true);
+        in2.write(false);
+        carryIn.write(true);
+
+        oneBitAdder(in1.read, in2.read, carryIn.read, result.write, carryOut.write);
+
+        res     = result.read();
+        carry   = carryOut.read();
+
+    }
+
+    println("Result: " + res + " Carry: " + carry);
+
+    par {
+
+        in1.write(false);
+        in2.write(true);
+        carryIn.write(true);
+
+        oneBitAdder(in1.read, in2.read, carryIn.read, result.write, carryOut.write);
+
+        res     = result.read();
+        carry   = carryOut.read();
+
+    }
+
+    println("Result: " + res + " Carry: " + carry);
+
+    par {
+
+        in1.write(true);
+        in2.write(true);
+        carryIn.write(true);
+
+        oneBitAdder(in1.read, in2.read, carryIn.read, result.write, carryOut.write);
+
+        res     = result.read();
+        carry   = carryOut.read();
+
+    }
+
+    println("Result: " + res + " Carry: " + carry);
+
+}

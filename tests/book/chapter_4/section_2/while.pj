@@ -1,0 +1,19 @@
+/**
+ * ProcessJ Book code
+ * Chapter 4
+ * Section 1
+ * Page 101
+ */
+
+public void main(string[] args) {
+
+    int x = 42;
+
+    do {
+        if(x > 0)
+            x--;
+        else
+            break;
+    } while(true);
+
+}

@@ -18,6 +18,12 @@ namespace ProcessJRuntime {
 
     static StringLiteral ExceptionMessageIndexOutOfBounds = "Error: IndexOutOfBounds";
 
+    /// ----------
+    /// Characters
+
+    static Character NewLine = '\n';
+
+
 }
 
 

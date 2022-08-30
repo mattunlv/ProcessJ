@@ -1,0 +1,155 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 3
+ * Section 7.3
+ * Page 86
+ */
+
+import std.*;
+
+public void id(chan<int>.read in, chan<int>.write out) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+        out.write(x);
+
+    }
+
+}
+
+public void succ(chan<int>.read in, chan<int>.write out) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+        out.write(x + 1);
+
+    }
+
+}
+
+public void plus(chan<int>.read in1, chan<int>.read in2, chan<int>.write out) {
+
+    while (true) {
+
+        int x1, x2;
+
+        par {
+
+            x1 = in1.read();
+            x2 = in2.read();
+
+        }
+
+        out.write(x1 + x2);
+
+    }
+
+}
+
+public void tail(chan<int>.read in, chan<int>.write out) {
+
+    int x;
+
+    x = in.read();
+    id(in, out);
+
+}
+
+public void delta(chan<int>.read in, chan<int>.write outl, chan<int>.write out2) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+
+        par {
+
+            outl.write(x);
+            out2.write(x);
+
+        }
+
+    }
+
+}
+
+public void pairs(chan<int>.read in, chan<int>.write out) {
+
+    chan<int> a, b, c;
+
+    par {
+
+        delta(in, a.write, b.write);
+        tail(a.read, b.write);
+        plus(a.read, b.read, out);
+
+    }
+
+}
+
+public void prefix(const int n, chan<int>.read in, chan<int>.write out) {
+
+    out.write(n);
+    id(in, out);
+
+}
+
+
+
+public void numbers(chan<int>.write out) {
+
+    chan<int> a, b, c;
+
+    par {
+
+        delta(a.read, out, b.write);
+        succ(b.read, c.write);
+        prefix(0, c.read, a.write);
+
+    }
+
+}
+
+public void fibonacci(chan<int>.write out) {
+
+    chan<int> a, b, c, d;
+
+    par {
+
+        delta(a.read, b.write, out);
+        pairs(b.read, c.write);
+        prefix(0, d.read, a.write);
+        prefix(1, c.read, d.write);
+
+    }
+
+}
+
+public void print_next(chan<int>.read in) {
+
+    while(true) {
+
+        int result = in.read();
+
+        println("Received: " + result);
+
+    }
+
+}
+
+public void main(string[] args) {
+
+    chan<int> a;
+
+    par {
+
+        fibonacci(a.write);
+        print_next(a.read);
+
+    }
+
+}

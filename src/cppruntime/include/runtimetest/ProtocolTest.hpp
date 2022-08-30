@@ -45,7 +45,7 @@ UNLV_PROCESS_J_PROTOCOL_TEST_HPP
 class ProcessJTest::protocol_writer : public ProcessJRuntime::pj_process {
     public:
         protocol_writer() = delete;
-        protocol_writer(ProcessJRuntime::Scheduler*                  sched,
+        protocol_writer(ProcessJRuntime::pj_scheduler*                  sched,
                         ProcessJRuntime::pj_one2one_channel<ProcessJTest::protocol_p>* chan)
         : sched(sched), chan(chan)
         {
@@ -82,7 +82,7 @@ class ProcessJTest::protocol_writer : public ProcessJRuntime::pj_process {
 
     protected:
     private:
-        ProcessJRuntime::Scheduler*                  sched;
+        ProcessJRuntime::pj_scheduler*                  sched;
         ProcessJRuntime::pj_one2one_channel<ProcessJTest::protocol_p>* chan;
 };
 
@@ -90,7 +90,7 @@ class ProcessJTest::protocol_reader : public ProcessJRuntime::pj_process
     {
     public:
         protocol_reader() = delete;
-        protocol_reader(ProcessJRuntime::Scheduler*                  sched,
+        protocol_reader(ProcessJRuntime::pj_scheduler*                  sched,
                         ProcessJRuntime::pj_one2one_channel<ProcessJTest::protocol_p>* chan)
         : sched(sched), chan(chan)
         {
@@ -133,7 +133,7 @@ class ProcessJTest::protocol_reader : public ProcessJRuntime::pj_process
         }
     protected:
     private:
-        ProcessJRuntime::Scheduler*                  sched;
+        ProcessJRuntime::pj_scheduler*                  sched;
         ProcessJRuntime::pj_one2one_channel<ProcessJTest::protocol_p>* chan;
 };
 
@@ -147,7 +147,7 @@ class ProcessJTest::protocol_test {
         void run()
         {
             std::cout << "\n *** CREATING SCHEDULER *** \n\n";
-            ProcessJRuntime::Scheduler sched;
+            ProcessJRuntime::pj_scheduler sched;
 
             std::cout << "\n *** CREATING CHANNEL FOR PROTOCOL *** \n\n";
             ProcessJRuntime::pj_one2one_channel<ProcessJTest::protocol_p> oto_ch;
