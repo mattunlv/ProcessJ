@@ -53,7 +53,6 @@ public void plus(chan<int>.read in1, chan<int>.read in2, chan<int>.write out) {
 public void tail(chan<int>.read in, chan<int>.write out) {
 
     int x;
-
     x = in.read();
     id(in, out);
 
@@ -83,9 +82,9 @@ public void pairs(chan<int>.read in, chan<int>.write out) {
 
     par {
 
-        delta(in, a.write, b.write);
         tail(a.read, b.write);
-        plus(a.read, b.read, out);
+        delta(in, a.write, c.write);
+        plus(c.read, b.read, out);
 
     }
 
@@ -98,25 +97,10 @@ public void prefix(const int n, chan<int>.read in, chan<int>.write out) {
 
 }
 
-
-
-public void numbers(chan<int>.write out) {
-
-    chan<int> a, b, c;
-
-    par {
-
-        delta(a.read, out, b.write);
-        succ(b.read, c.write);
-        prefix(0, c.read, a.write);
-
-    }
-
-}
-
 public void fibonacci(chan<int>.write out) {
 
     chan<int> a, b, c, d;
+
 
     par {
 
@@ -129,16 +113,16 @@ public void fibonacci(chan<int>.write out) {
 
 }
 
-public void print_next(chan<int>.read in) {
+public void print_next(chan<int>.read in, int iterations) {
 
-    while(true) {
+   for(int iteration = 0; iteration < iterations; iteration++) {
 
-        int result = in.read();
+       int x = in.read();
 
-        println("Received: " + result);
+       println("Received: " + x);
 
-    }
-
+   }
+   
 }
 
 public void main(string[] args) {
@@ -148,7 +132,7 @@ public void main(string[] args) {
     par {
 
         fibonacci(a.write);
-        print_next(a.read);
+        print_next(a.read, 10);
 
     }
 
