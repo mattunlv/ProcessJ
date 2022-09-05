@@ -9,79 +9,18 @@ REPOSITORY="https://www.github.com/mattunlv/ProcessJ.git"
 ## -----------
 ## Directories
 
-INSTALL_DIRECTORY="/opt/ProcessJ"
-WORKING_DIRECTORY="/home/$USER/workingpj"
+INSTALL_DIRECTORY="~/ProcessJ"
+WORKING_DIRECTORY="~/workingpj"
 
 ## ----------
 ## File Paths
 
-CONFIGURATION_PATH="/home/$USER/processjrc"
+CONFIGURATION_PATH="~/processjrc"
 
 COMPILER_PATH="$INSTALL_DIRECTORY/pjc"
 EXECUTOR_PATH="$INSTALL_DIRECTORY/pj"
 
-COMPILER_LINK_PATH="/usr/bin/pjc"
-EXECUTOR_LINK_PATH="/usr/bin/pj"
-
-## ----------------
-## Directory Checks
-
-# Just in case
-if [ ! -d "/home/" ]
-then
-
-    # Create and give ownership
-    echo "Creating home directory for $USER"
-    mkdir /home/
-    mkdir /home/$USER
-    chown -R $USER:$USER /home/$USER
-
-fi
-
-# Check install directory
-if [ ! -d "/opt/" ]
-then
-
-    echo "Creating /opt"
-    mkdir /opt
-
-fi
-
-# If there's a current version, remove it
-if [ -d "$INSTALL_DIRECTORY" ]
-then
-
-    echo "Cleaning previous installation"
-    rm -r $INSTALL_DIRECTORY
-
-fi
-
-# Create it
-mkdir $INSTALL_DIRECTORY
-
-# Check the working directory
-if [ -d "$WORKING_DIRECTORY" ]
-then
-
-    echo "Removing $WORKING_DIRECTORY"
-    rm -r $WORKING_DIRECTORY
-
-fi
-
-# Create & give ownership
-echo "Creating working directory: $WORKING_DIRECTORY"
-mkdir $WORKING_DIRECTORY
-chown -R $USER:$USER $WORKING_DIRECTORY
-
-## -----------
-## File Checks
-
-# Force removal
-rm $CONFIGURATION_PATH > /dev/null 2>&1
-rm $COMPILER_LINK_PATH > /dev/null 2>&1
-rm $EXECUTOR_LINK_PATH > /dev/null 2>&1
-
-echo "Creating configuration file for $USER"
+echo "Creating configuration file."
 touch $CONFIGURATION_PATH
 
 # Set the license
@@ -103,24 +42,12 @@ echo ""                                                                         
 echo "workingdir=workingpj"                                                          >> $CONFIGURATION_PATH
 echo "installdir=$INSTALL_DIRECTORY"                                                 >> $CONFIGURATION_PATH
 
-# Give ownership
-chown -R $USER:$USER $CONFIGURATION_PATH
-
 # Clone the repository into the install directory
 echo "Retrieving from $REPOSITORY"
 git clone $REPOSITORY $INSTALL_DIRECTORY > /dev/null 2>&1
-
-# Create the Symbolic links
-echo "Creating symbolic links"
-ln -s $COMPILER_PATH $COMPILER_LINK_PATH
-ln -s $EXECUTOR_PATH $EXECUTOR_LINK_PATH
 
 # Build
 cd $INSTALL_DIRECTORY
 echo "Building...."
 ant > /dev/null
 
-# Give ownership to the user
-chmod -R 777 $INSTALL_DIRECTORY
-cd /home/$USER
-echo "Finished!"
