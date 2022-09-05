@@ -58,7 +58,7 @@ public void delta(chan<int>.read in, chan<int>.write outl, chan<int>.write out2)
 
 public void prefix(const int n, chan<int>.read in, chan<int>.write out) {
 
-    out.write (n);
+    out.write(n);
     id(in, out);
 
 }
