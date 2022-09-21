@@ -173,7 +173,13 @@ fi
 pushd $workingdir > /dev/null
 
 ## clean manifest file
-rm -rf META-INF
+if [ d "META-INF" ]
+then
+  
+  rm -r META-INF
+  
+fi
+
 ## create dir for manifest file
 mkdir META-INF
 
