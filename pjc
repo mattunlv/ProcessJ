@@ -83,8 +83,13 @@ if [ ! -d "$workingdir" ] ; then
     esac
 fi
 
-## clean working directory
-rm -i -rf $workingdir/* > /dev/null
+if [ d "$workingdir" ]
+then
+
+    ## clean working directory
+    rm -i -rf $workingdir/* > /dev/null
+    
+fi
 
 ############################################################################
 
