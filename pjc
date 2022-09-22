@@ -87,7 +87,9 @@ if [ d "$workingdir" ]
 then
 
     ## clean working directory
-    rm -i -rf $workingdir/* > /dev/null
+    rm -i -rf $workingdir/*.class > /dev/null
+    rm -i -rf $workingdir/*.java > /dev/null
+    rm -i -rf $workingdir/*.jar > /dev/null
     
 fi
 
