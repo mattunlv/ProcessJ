@@ -180,7 +180,7 @@ fi
 pushd $workingdir > /dev/null
 
 ## clean manifest file
-if [ d "META-INF" ]
+if [ -d "META-INF" ]
 then
   
   rm -r META-INF
