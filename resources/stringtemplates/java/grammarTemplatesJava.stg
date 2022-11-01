@@ -121,7 +121,7 @@ Invocation(name, vars) ::= <<
 // 4.) barrier:
 // 5.) isPar:
 InvocationProcType(name, vars, parBlock, barrier, isPar) ::= <<
-(new <name>(<if(vars)><vars; separator=", "><endif>) {
+(new <name>(<if(vars)><vars:{v | <v>}; separator=", "><endif>) {
     @Override public void finalize() {
         <parBlock>.decrement();
         <if(barrier)><barrier:{b | <b>.resign()}; separator=";\n">;<endif>
@@ -309,7 +309,7 @@ PrimitiveLiteral(value, type) ::= "<value><if(type)><type><endif>"
 // 2.) type:
 // 3.) dims:
 // 4.) vals:
-NewArray(name, type, init) ::= <<
+NewArray(name, type, init, chanInit) ::= <<
 <if(name)><name> = <endif>new <type><init><if(name)>;<endif>
 >>
 
@@ -743,14 +743,14 @@ case <number>:
 // 8.) jump:
 // 9.) cases:
 // 10.) index:
-AltStat(alt, count, timerLocals, initBooleanGuards, initGuards, bguards, guards, jump, cases, index) ::= <<
+AltStat(alt, count, timerLocals, initBooleanGuards, initGuards, bguards, guards, jump, cases, index, readyID) ::= <<
 <alt> = new PJAlt(<count>, this);
 <timerLocals>
 <initBooleanGuards>
 <initGuards>
-boolean ready = <alt>.setGuards(<bguards>, <guards>);
+boolean ready<readyID> = <alt>.setGuards(<bguards>, <guards>);
 
-if (!ready) {
+if (!ready<readyID>) {
     System.out.println("RuntimeError: One of the boolean pre-guards must be true!");
     System.exit(1);
 }
@@ -761,9 +761,9 @@ this.runLabel = <jump>;
 this.yield();
 
 label(<jump>);
-int selected = <alt>.disable(<index>);
+int selected<readyID> = <alt>.disable(<index>);
 
-switch(selected) {
+switch(selected<readyID>) {
     <cases; separator="\n">
     default:
         break;
@@ -774,19 +774,19 @@ switch(selected) {
 //
 // 1.) locals:
 // 2.) constants:
-BooleanGuards(locals, constants) ::= <<
+BooleanGuards(locals, constants, readyID) ::= <<
 <if(locals)><locals; separator="\n"><endif>
-<if(constants)>Boolean[] __booleanGuards = { <constants; separator=", "> };
-List<Boolean> booleanGuards = Arrays.asList(__booleanGuards);
+<if(constants)>Boolean[] __booleanGuards<readyID> = { <constants; separator=", "> };
+List\<Boolean> booleanGuards<readyID> = Arrays.asList(__booleanGuards<readyID>);
 <endif>
 >>
 
 //========================================================================================
 //
 // 1.) guards:
-ObjectGuards(guards) ::= <<
-<if(guards)>Object[] __objectGuards = { <guards; separator=", "> };
-List<Boolean> objectGuards = Arrays.asList(__objectGuards);
+ObjectGuards(guards, readyID) ::= <<
+<if(guards)>Object[] __objectGuards<readyID> = { <guards; separator=", "> };
+List\<Object> objectGuards<readyID> = Arrays.asList(__objectGuards<readyID>);
 <endif>
 >>
 
@@ -804,16 +804,16 @@ List<Boolean> objectGuards = Arrays.asList(__objectGuards);
 // 6.) jump:
 // 7.) cases:
 // 8.) index:
-ReplicatedAltStat(alt, initGuards, objectGuards, bguards, guards, initForStmt, jump, cases, index) ::= <<
+ReplicatedAltStat(alt, initGuards, objectGuards, bguards, guards, initForStmt, jump, cases, index, readyID) ::= <<
 <alt> = new PJAlt(this);
 <initGuards>
 List\<AltGuard> dynamicAltGuards = new ArrayList\<>();
 
 <if(objectGuards)>repAltObjectGuards.addAll(<objectGuards>)<endif>
 <if(initForStmt)><initForStmt; separator="\n"><endif>
-boolean ready = <alt>.setGuards(<bguards>, <guards>);
+boolean ready<readyID> = <alt>.setGuards(<bguards>, <guards>);
 
-if (!ready) {
+if (!ready<readyID>) {
     System.out.println("RuntimeError: One of the boolean pre-guards must be true!");
     System.exit(1);
 }

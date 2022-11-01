@@ -80,6 +80,7 @@ import codegen.Tag;
 import processj.runtime.*;
 import utilities.Log;
 import utilities.SymbolTable;
+import utilities.Tuple;
 import utilities.Visitor;
 
 /**
@@ -363,7 +364,8 @@ public class CodeGenJava extends Visitor<Object> {
                     formals.child(i).visit(this);
             }            
             // Visit all declarations that appear in the procedure
-            String[] body = (String[]) pd.body().visit(this);
+            String[] body = null;
+            if ( pd.body()!=null ) body = (String[]) pd.body().visit(this);
             // Retrieve the modifier(s) attached to the invoked procedure such
             // as private, public, protected, etc.
             String[] modifiers = (String[]) pd.modifiers().visit(this);
@@ -836,8 +838,9 @@ public class CodeGenJava extends Visitor<Object> {
                 val = (String) expr.visit(this);
             else if ( ld.type().isRecordType() || ld.type().isProtocolType() )
                 val = (String) expr.visit(this);
-            else if ( ld.type().isArrayType() )
+            else if ( ld.type().isArrayType() ) {
                 val = (String) expr.visit(this);
+            }
         }
         
         // Is it a barrier declaration? If so, we must generate code
@@ -1140,7 +1143,7 @@ public class CodeGenJava extends Visitor<Object> {
         
         String type = (String) at.baseType().visit(this);
         if ( at.baseType().isChannelType() || at.baseType().isChannelEndType() )
-            type = type.substring(0, type.indexOf("<")) + "<?>";
+            type = type.substring(0, type.indexOf("<"));// + "<?>";
         else if ( at.baseType().isRecordType() )
             type = ((RecordTypeDecl) at.baseType()).name().getname();
         else if ( at.baseType().isProtocolType() )
@@ -1319,8 +1322,6 @@ public class CodeGenJava extends Visitor<Object> {
             // TODO:
         }
         // -->
-        
-        Log.log(in, "Visiting Invocation (" + in.targetProc.name().getname() + ")");
         
         ST stInvocation = null;
         // Target procedure
@@ -1824,6 +1825,11 @@ public class CodeGenJava extends Visitor<Object> {
     ArrayList<String> listOfReplicatedObjectGuards = new ArrayList<>();
     ArrayList<String> listOfReplicatedAltLoops = new ArrayList<>();
     
+    int indexForAltStat = 1;
+    int readyID = 0;
+    int booleanGuardID = 0;
+    int objectGuardID = 0;
+    
     @Override
     public Object visitAltStat(AltStat as) {
         Log.log(as, "Visiting an AltStat");
@@ -1959,7 +1965,7 @@ public class CodeGenJava extends Visitor<Object> {
             // <--
             // This is needed because of the StackMapTable for the generated Java bytecode
             // I don't think this is needed anymore, but we will leave it here for legacy code
-            Name n = new Name("index");
+            Name n = new Name("index" + (++indexForAltStat));
             new LocalDecl(new PrimitiveType(PrimitiveType.IntKind),
                     new Var(n, null),
                     false /* not constant */).visit(this);
@@ -1990,6 +1996,11 @@ public class CodeGenJava extends Visitor<Object> {
         // -->
         // *******************************************************************
         // *******************************************************************
+        
+        int currBooleanGuard = booleanGuardID;
+        booleanGuardID++;
+        int currObjectGuard = objectGuardID;
+        objectGuardID++;
         
         ST stAltStat = stGroup.getInstanceOf("AltStat");
         ST stTimerLocals = stGroup.getInstanceOf("TimerLocals");
@@ -2025,6 +2036,10 @@ public class CodeGenJava extends Visitor<Object> {
         stBooleanGuards.add("constants", bguards);
         stBooleanGuards.add("locals", blocals);
         
+        //
+        stBooleanGuards.add("readyID", booleanGuardID);
+        //
+        
         // Set case number for all AltCases
         for (int i = 0; i<cases.size(); ++i)
             cases.child(i).setCaseNumber(i);
@@ -2058,6 +2073,10 @@ public class CodeGenJava extends Visitor<Object> {
         stTimerLocals.add("timers", tlocals);
         stObjectGuards.add("guards", guards);
         
+        //
+        stObjectGuards.add("readyID", objectGuardID);
+        //
+        
         // <--
         // This is needed because of the StackMapTable for the generated Java bytecode
         Name n = new Name("index");
@@ -2075,14 +2094,21 @@ public class CodeGenJava extends Visitor<Object> {
         stAltStat.add("timerLocals", stTimerLocals.render());
         stAltStat.add("initBooleanGuards", stBooleanGuards.render());
         stAltStat.add("initGuards", stObjectGuards.render());
-        stAltStat.add("bguards", "booleanGuards");
-        stAltStat.add("guards", "objectGuards");
+        stAltStat.add("bguards", "booleanGuards" + booleanGuardID);
+        stAltStat.add("guards", "objectGuards" + objectGuardID);
         stAltStat.add("jump", ++jumpLabel);
         stAltStat.add("cases", altCases);
         stAltStat.add("index", n.visit(this));
         
+        //
+        stAltStat.add("readyID", readyID);
+        //
+        
         // Add the jump label to the switch-stmt list
         switchCases.add(renderSwitchCase(jumpLabel));
+        readyID++;
+        booleanGuardID = currBooleanGuard;
+        objectGuardID = currObjectGuard;
         
         return stAltStat.render();
     }
@@ -2205,6 +2231,81 @@ public class CodeGenJava extends Visitor<Object> {
                 null,                         // Annotations
                 new Block(new Sequence(st))); // Body
     }
+    
+    private Object createChannelArrayInitializer(String lhs, String[] dims, String type) {
+        Log.log("Creating a New Channel Array");
+        
+//        final int size = ((ArrayType) na.type).getDepth();
+        ArrayList<ST> forStmts = new ArrayList<>();
+        for (int i = 0; i < dims.length; ++i) {
+            Tuple<?> tuple = createLocalDeclForLoop(dims[i]);
+            ForStat as = new ForStat(new Token(0, "0", 0, 0, 0), (Sequence<Statement>) tuple.get(0),
+                    (BinaryExpr) tuple.get(1), (Sequence<ExprStat>) tuple.get(2), null, null, false);
+            //
+            ST stForStat = stGroup.getInstanceOf("ForStat");
+            ArrayList<String> init = null; // Initialization part
+            ArrayList<String> incr = null; // Step counter
+            String expr = null; // Conditional expression
+            if ( as.init()!=null ) {
+                init = new ArrayList<>();
+                for (Statement st : as.init())
+                    init.add(((String) st.visit(this)).replace(DELIMITER, ""));
+                // Collect all local variables that pertain to the replicated alt
+                for (String str : init)
+                    indexSetOfAltCase.add(str.substring(0, str.indexOf("=")).trim());
+            }
+            if ( as.expr()!=null )
+                expr = (String) as.expr().visit(this);
+            if ( as.incr()!=null ) {
+                incr = new ArrayList<>();
+                for (Statement st : as.incr())
+                    incr.add(((String) st.visit(this)).replace(DELIMITER, ""));
+            }
+            stForStat.add("init", init);
+            stForStat.add("expr", expr);
+            stForStat.add("incr", incr);
+            forStmts.add(stForStat);
+        }
+//        ForStat forStmt = forStmts.get(0);
+//        for (int i = 1; i < forStmts.size(); ++i) {
+//            forStmt.children[4] = forStmts.get(i);
+//            forStmt = forStmts.get(i);
+//        }
+//        String str = (String) forStmts.get(0).visit(this);
+        ST stChannelDecl = stGroup.getInstanceOf("ChannelDecl");
+        stChannelDecl.add("type", type);
+        ST stForStmt = forStmts.get(forStmts.size() - 1);
+        stForStmt.add("stats", lhs + " = " + stChannelDecl.render());
+        stForStmt = forStmts.get(0);
+        for (int i = 1; i < forStmts.size(); ++i) {
+            stForStmt.add("stats", forStmts.get(i));
+            stForStmt = forStmts.get(i);
+        }
+        System.out.println("XXXXXXXX\n " + forStmts.get(0).render());
+        return null;
+    }
+    
+    
+    int index = 0;
+    
+    private Tuple<?> createLocalDeclForLoop(String dims) {
+        final String localDeclName = Helper.makeVariableName("tmp__", index++, Tag.LOCAL_NAME);
+        Name n = new Name(localDeclName);
+        NameExpr ne = new NameExpr(n);
+        PrimitiveLiteral pl = new PrimitiveLiteral(new Token(0, "0", 0, 0, 0), 4 /* kind */);
+        LocalDecl ld = new LocalDecl(
+                new PrimitiveType(PrimitiveType.IntKind),
+                new Var(n, null),
+                false /* not constant */);
+        ld.visit(this);
+        BinaryExpr be = new BinaryExpr(ne, new NameExpr(new Name(dims)), BinaryExpr.LT);
+        ExprStat es = new ExprStat(new UnaryPreExpr(ne, UnaryPreExpr.PLUSPLUS));
+        Sequence<Statement> init = new Sequence<>();
+        init.append(new ExprStat((Expression) new Assignment(ne, pl, Assignment.EQ)));
+        Sequence<ExprStat> incr = new Sequence<>();
+        incr.append(es);
+        return new Tuple(init, be, incr);
+    }
 
     @SuppressWarnings("unchecked")
     private Object createNewArray(String lhs, NewArray na) {
@@ -2217,7 +2318,7 @@ public class CodeGenJava extends Visitor<Object> {
         // This is done so that we can instantiate arrays of channel types
         // whose types are generic
         if ( na.baseType().isChannelType() || na.baseType().isChannelEndType() )
-            type = type.substring(0, type.indexOf("<")) + "<?>";
+            type = type.substring(0, type.indexOf("<"));// + "<?>";
         
         ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
         if ( na.init()!=null ) {
@@ -2234,6 +2335,8 @@ public class CodeGenJava extends Visitor<Object> {
         else
             stNewArrayLiteral.add("dims", dims);
         
+        createChannelArrayInitializer(lhs, dims, type);
+        
         stNewArray.add("name", lhs);
         stNewArray.add("type", type);
         stNewArray.add("init", stNewArrayLiteral.render());
@@ -2242,6 +2345,15 @@ public class CodeGenJava extends Visitor<Object> {
         isArrayLiteral = false;
         
         return stNewArray.render();
+    }
+    
+    private String createArrayList(String type, int dims) {
+        StringBuilder builder = new StringBuilder();
+        final String str = "ArrayList<%s>";
+        for (int i = 0; i < dims - 1; ++i ) {
+            builder.append(String.format(str, str));
+        }
+        return String.format(builder.toString(), type);
     }
     
     private Object createChannelReadExpr(String lhs, String type, String op, ChannelReadExpr cr) {
@@ -2295,15 +2407,14 @@ public class CodeGenJava extends Visitor<Object> {
     public AltCase createDynamicAltStat(AltCase ac) {
         Name n = new Name("tmp_i");
         NameExpr ne = new NameExpr(n);
-        PrimitiveLiteral pl = new PrimitiveLiteral(new Token(0, "0", 0, 0, 0), 0 /* kind */);
-
+        PrimitiveLiteral pl = new PrimitiveLiteral(new Token(0, "0", 0, 0, 0), 4 /* kind */);
         LocalDecl ld = new LocalDecl(
                 new PrimitiveType(PrimitiveType.IntKind),
                 new Var(n, null),
                 false /* not constant */);
         ld.visit(this);
-        pl = new PrimitiveLiteral(new Token(0, "1", 0, 0, 0), 0 /* kind */);
-        BinaryExpr be = new BinaryExpr(ne, pl, BinaryExpr.LT);
+        PrimitiveLiteral pl2 = new PrimitiveLiteral(new Token(0, "1", 0, 0, 0), 4 /* kind */);
+        BinaryExpr be = new BinaryExpr(ne, pl2, BinaryExpr.LT);
         ExprStat es = new ExprStat(new UnaryPreExpr(ne, UnaryPreExpr.PLUSPLUS));
         Sequence<Statement> init = new Sequence<>();
         init.append(new ExprStat((Expression) new Assignment(ne, pl, Assignment.EQ)));

@@ -30,7 +30,7 @@ public class PJTimer implements Delayed {
     }
 
     public void start() throws InterruptedException {
-        this.delay = System.currentTimeMillis() + timeout;
+        this.delay = /*System.currentTimeMillis() +*/ timeout;
         PJProcess.scheduler.insertTimer(this);
         started = true;
     }

@@ -241,108 +241,144 @@ public class ProcessJc {
             SymbolTable.hook = null;
 
             // Visit import declarations
-            System.out.println("-- Resolving imports.");
+            if ( pJc.showMessage )
+                System.out.println("-- Resolving imports.");
             c.visit(new namechecker.ResolveImports<AST>(globalTypeTable));
             globalTypeTable.printStructure("");
 
             // Visit top-level declarations
-            System.out.println("-- Declaring Top Level Declarations.");
+            if ( pJc.showMessage )
+                System.out.println("-- Declaring Top Level Declarations.");
             c.visit(new namechecker.TopLevelDecls<AST>(globalTypeTable));
 
             // Visit and re-construct record types correctly
-            System.out.println("-- Reconstructing records.");
+            if ( pJc.showMessage )
+                System.out.println("-- Reconstructing records.");
             c.visit(new rewriters.RecordRewrite(globalTypeTable));
 
             // Visit and re-construct protocol types correctly
-            System.out.println("-- Reconstructing protocols.");
+            if ( pJc.showMessage )
+                System.out.println("-- Reconstructing protocols.");
             c.visit(new rewriters.ProtocolRewrite(globalTypeTable));
 
             // Visit and re-construct if-stmt, while-stmt, for-stmt, and do-stmt
-            System.out.println("-- Reconstructing statements.");
+            if ( pJc.showMessage )
+                System.out.println("-- Reconstructing statements.");
             c.visit(new rewriters.StatementRewrite());
 
             // Visit and resolve import for top-level declarations
-            System.out.println("-- Checking native Top Level Declarations.");
+            if ( pJc.showMessage )
+                System.out.println("-- Checking native Top Level Declarations.");
             c.visit(new namechecker.ResolveNativeImports());
 
             // Visit and resolve types from imported packages
-            System.out.println("-- Resolving imported types.");
+            if ( pJc.showMessage )
+                System.out.println("-- Resolving imported types.");
             c.visit(new namechecker.ResolvePackageTypes());
 
             // Visit name checker
-            System.out.println("-- Checking name usage.");
+            if ( pJc.showMessage )
+                System.out.println("-- Checking name usage.");
             c.visit(new namechecker.NameChecker<AST>(globalTypeTable));
 
             // Visit and re-construct array types correctly
-            System.out.println("-- Reconstructing array types.");
+            if ( pJc.showMessage )
+                System.out.println("-- Reconstructing array types.");
             root.visit(new namechecker.ArrayTypeConstructor());
 
             // Visit and re-construct array literals
-            System.out.println("-- Reconstructing array literas.");
+            if ( pJc.showMessage )
+                System.out.println("-- Reconstructing array literas.");
             c.visit(new rewriters.ArraysRewrite());
 
             // Visit resolve named type
-            System.out.println("-- Resolving named type.");
+            if ( pJc.showMessage )
+                System.out.println("-- Resolving named type.");
             c.visit(new typechecker.ResolveNamedType(globalTypeTable));
 
             // Visit type checker
-            System.out.println("-- Checking types.");
+            if ( pJc.showMessage )
+                System.out.println("-- Checking types.");
             c.visit(new typechecker.TypeChecker(globalTypeTable));
 
             // Visit a switch statement case
-            System.out.println("-- Checking break for protocols.");
+            if ( pJc.showMessage )
+                System.out.println("-- Checking break for protocols.");
             c.visit(new rewriters.SwitchStmtRewrite());
 
             // Visit cast-rewrite
-            System.out.println("-- Rewriting cast-expressions.");
+            if ( pJc.showMessage )
+                System.out.println("-- Rewriting cast-expressions.");
             c.visit(new CastRewrite());
 
             // Visit reachability
-            System.out.println("-- Computing reachability.");
+            if ( pJc.showMessage )
+                System.out.println("-- Computing reachability.");
             c.visit(new reachability.Reachability());
 
             // Visit parallel usage
-            System.out.println("-- Performing parallel usage check.");
-            //c.visit(new parallel_usage_check.ParallelUsageCheck());
+            if ( pJc.showMessage )
+                System.out.println("-- Performing parallel usage check.");
+//            c.visit(new parallel_usage_check.ParallelUsageCheck());
 
             // Visit yield
-            System.out.println("-- Annotating procedures that may issue a yield call.");
+            if ( pJc.showMessage )
+                System.out.println("-- Annotating procedures that may issue a yield call.");
             c.visit(new yield.Yield());
-
-            System.out.println("-- Marking yielding statements and expressions.");
+            
+            if ( pJc.showMessage )
+                System.out.println("-- Marking yielding statements and expressions.");
             c.visit(new rewriters.Yield());
-
-            System.out.println("-- Checking literal inits are free of channel communication.");
+            
+            if ( pJc.showMessage )
+                System.out.println("-- Checking literal inits are free of channel communication.");
             c.visit(new semanticcheck.LiteralInits());
             
-            System.out.println("-- Checking replicated Alt inits.");
+            if ( pJc.showMessage )
+                System.out.println("-- Checking replicated Alt inits.");
             c.visit(new semanticcheck.ReplicatedAlts());
-
-            System.out.println("-- Rewriting infinite loops.");
+            
+            if ( pJc.showMessage )
+                System.out.println("-- Rewriting infinite loops.");
             new rewriters.InfiniteLoopRewrite().go(c);
-
-            System.out.println("-- Rewriting loops.");
+            
+            // <--
+            System.out.println("-- Rewriting channel arrays local decls");
+            new rewriters.ChannelArrayDeclRewrite().go(c);
+            // -->
+            
+            if ( pJc.showMessage )
+                System.out.println("-- Rewriting loops.");
             c.visit(new rewriters.UnrollLoopRewrite());
-
-            System.out.println("-- Performing alt statement usage check.");
+            
+            if ( pJc.showMessage )
+                System.out.println("-- Performing alt statement usage check.");
             c.visit(new rewriters.AltStatRewrite());
 
 //            Log.doLog = true;
-            System.out.println("-- Rewriting yielding expressions.");
+            if ( pJc.showMessage )
+                System.out.println("-- Rewriting yielding expressions.");
             c.visit(new rewriters.ChannelRead());
 //            Log.doLog = false;
-
-            System.out.println("-- Rewriting parblocks statements");
+            if ( pJc.showMessage )
+                System.out.println("-- Rewriting parblocks statements");
             c.visit(new rewriters.ParBlockRewrite());
 
             //System.out.println("Lets reprint it all");
             //c.visit(new printers.ParseTreePrinter());
             //c.visit(new printers.PrettyPrinter());
-            System.out.println("-- Checking break and continue labels.");
+            if ( pJc.showMessage )
+                System.out.println("-- Checking break and continue labels.");
             new semanticcheck.LabeledBreakContinueCheck().go(c);
 
-            System.out.println("-- Collecting left-hand sides for par for code generation.");
+            if ( pJc.showMessage )
+                System.out.println("-- Collecting left-hand sides for par for code generation.");
             c.visit(new rewriters.ParFor());
+            
+            // Terminate if we have any errors
+            if ( PJBugManager.INSTANCE.getErrorCount() > 0 ) {
+                pJc.exit(1);
+            }
 
             // If we're generating C++ code, we need to rewrite print/println statements
             if (pJc.target/*Settings.language*/ == Language.CPLUS) {

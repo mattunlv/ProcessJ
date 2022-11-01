@@ -33,7 +33,7 @@ public class PJAlt {
         this.bguards = bguards;
         
         for (Boolean b : bguards)
-            if (b)
+            if (b.booleanValue())
                 return true;
         
         return false;

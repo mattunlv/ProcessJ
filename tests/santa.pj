@@ -231,10 +231,8 @@ public void santa(const long seed,
 
                     //println(">>>>>>>>>>>>> i = " + i + " ... G_REINDEER = " + G_REINDEER);
                 }
-                //println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! about to sync");
-                santa_reindeer.sync();
-                //println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! done sync'ing");
                 report.write(new Santa_msg{ mush_mush: });
+                santa_reindeer.sync();
                 t = tim.read();
                 tim.timeout(100);
                 //random_wait(DELIVERY_TIME, my_seed);
@@ -281,22 +279,6 @@ public void main(string[] args) {
 
     println("SANTA OUTPUT       ELF OUTPUT      REINDEER OUTPUT");
     println("-----------------------------------------------------------------------------------");
-
-    /*
-    par {
-        par enroll (santa_reindeer) {
-            santa (seed + (N_REINDEER + N_ELVES), knock.read, reindeer_santa.read, elf_santa.read, santa_reindeer, santa_elves_a.write, santa_elves_b.write, report.write);
-            par for (int i=0; i<N_REINDEER; i++) enroll (just_reindeer, santa_reindeer) {
-                reindeer (i, seed + i, just_reindeer, santa_reindeer, reindeer_santa.write, report.write);
-            }
-        }
-        par for (int i=0; i<N_ELVES; i++) {
-            elf (i, N_REINDEER + (seed + i), elves_a.write, elves_b.write, santa_elves_a.write, santa_elves_b.write, elf_santa.write, report.write);
-        }
-
-        display (report.read);
-        p_barrier_knock (G_ELVES, elves_a.read, elves_b.read, knock.write); p_barrier (G_ELVES + 1, santa_elves_a.read, santa_elves_b.read);
-    }*/
 
     par {
         par enroll santa_reindeer {

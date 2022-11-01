@@ -13,7 +13,7 @@ public class Tuple<T> extends AbstractList<T> {
 
     private final T[] values;
 
-    public Tuple(T[] values) {
+    public Tuple(T... values) {
         this.values = values;
     }
 

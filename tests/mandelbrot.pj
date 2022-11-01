@@ -1,43 +1,42 @@
 import image.pgm;
-import std.*;
 
-public int cal_pixel(double real, double imag) {
-	int count, max;
-	double z_real, z_imag;
-	double temp, lengthsq;
+public int computePixel(double real, double imag) {
+    int count = 0;
+    int max = 256;
+    double zReal = 0;
+    double zImag = 0;
+    double tmp;
+    double len;
 
-	max = 256;
-	z_real = 0;
-	z_imag = 0;
-	count = 0;
-	do {
-		temp = z_real * z_real - z_imag * z_imag + real;
-		z_imag = 2 * z_real * z_imag + imag;
-		z_real = temp;
-		lengthsq = z_real * z_real + z_imag * z_imag;
-		count++;
-	} while ((lengthsq < 4.0) && (count < max));
-	return count;
+    do {
+        tmp = zReal * zReal - zImag * zImag + real;
+        zImag = 2 * zReal * zImag + imag;
+        zReal = tmp;
+        len = zReal * zReal + zImag * zImag;
+        ++count;
+    } while ((len < 4.0) && (count < max));
+
+    return count;
 }
 
 public void main(string[] args) {
-	int disp_width = 1024;
-	int disp_height = 768;
-	int mandelbrot[][] = new int[disp_height][disp_width];
-	double real_min = -0.7801785714285;
-	double real_max = -0.7676785714285;
-	double imag_min = -0.1279296875000;
-	double imag_max = -0.1181640625000;
+    int width = 4000;
+    int height = 3000;
+    int mandelbrot[][] = new int[height][width];
+    double realMin = -0.7801785714285;
+    double realMax = -0.7676785714285;
+    double imagMin = -0.1279296875000;
+    double imagMax = -0.1181640625000;
+    double scaleReal = (realMax - realMin) / width;
+    double scaleImag = (imagMax - imagMin) / height;
 
-	double scale_real = (real_max - real_min) / disp_width;
-	double scale_imag = (imag_max - imag_min) / disp_height;
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            double cReal = realMin + ((double) x * scaleReal);
+            double cImag = imagMin + ((double) y * scaleImag);
+            mandelbrot[y][x] = 256 - computePixel(cReal, cImag);
+        }
+    }
 
-	par for (int y = 0; y < disp_height; ++y) {
-		par for (int x = 0; x < disp_width; ++x) {
-			double c_real = real_min + ((double) x * scale_real);
-			double c_imag = imag_min + ((double) y * scale_imag);
-			mandelbrot[y][x] = 256 - cal_pixel(c_real, c_imag);
-		}
-	}
-	writePGM(mandelbrot, "mm.pgm", 256);
+    writePGM(mandelbrot, "mm.pgm", 256);
 }

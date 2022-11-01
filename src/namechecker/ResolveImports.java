@@ -10,6 +10,7 @@ import ast.Compilation;
 import ast.Import;
 import ast.Name;
 import ast.Sequence;
+import codegen.java.CodeGenJava;
 import parser.parser;
 import scanner.Scanner;
 import utilities.PJMessage;
