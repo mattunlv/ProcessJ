@@ -83,7 +83,7 @@ if [ ! -d "$workingdir" ] ; then
     esac
 fi
 
-if [ d "$workingdir" ]
+if [ -d "$workingdir" ]
 then
 
     ## clean working directory
