@@ -1,5 +1,6 @@
 package codegen.java;
 
+import java.util.List;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1119,20 +1120,27 @@ public class CodeGenJava extends Visitor<Object> {
 
     private String buildIndexList(final StringBuilder builder, ArrayAccessExpr arrayAccessExpr) {
 
-        final String index = (String) arrayAccessExpr.index().visit(this);
+        final List<String> expressions = new ArrayList<>();
 
-        if(arrayAccessExpr.target() instanceof ArrayAccessExpr)
-            return buildIndexList(builder
-                                  .append(index)
-                                  .append(","),
-                           (ArrayAccessExpr) arrayAccessExpr.target());
+        expressions.add((String) arrayAccessExpr.index().visit(this));
 
-        else {
+        while(arrayAccessExpr.target() instanceof ArrayAccessExpr) {
 
+            arrayAccessExpr = (ArrayAccessExpr) arrayAccessExpr.target();
 
-            return builder.append(index).toString();
+            expressions.add((String) arrayAccessExpr.index().visit(this));
 
         }
+
+        for(int index = expressions.size() - 1; index >= 0; index--) {
+
+            builder.append(expressions.get(index));
+
+            if(index > 0) builder.append(",");
+
+        }
+
+        return builder.toString();
 
     }
 

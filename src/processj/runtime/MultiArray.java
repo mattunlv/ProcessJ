@@ -49,14 +49,8 @@ public class MultiArray {
 
         Object result = this.array;
 
-        for(int index = 0; index < indices.length; index++) {
-
-            if(index == (indices.length - 1))
-                result = (Object) ((List) result).get(indices[index]);
-
-            else result = ((List) result).get(indices[index]);
-
-        }
+        for(int index = 0; index < indices.length; index++)
+            result = ((List) result).get(indices[index]);
 
         return result;
 
