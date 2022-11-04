@@ -1,0 +1,11 @@
+import std.*;
+
+void main(string args[]) {
+     int n = 10;
+     chan<int>[]  channels  = new chan<int>[n];
+
+     for(int i=0; i<n; i++) {
+     	 channels[i].write(i);
+     }
+
+}

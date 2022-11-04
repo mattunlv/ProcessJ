@@ -102,7 +102,7 @@ if [ -z "$installdir" ] ; then
     echo "Configuration file must contain a line of the form: 'installdir=...'"
     exit 1
 fi
-
+installdir="./"
 ############################################################################
 
 ## run the processj compiler

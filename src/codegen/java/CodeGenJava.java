@@ -394,7 +394,7 @@ public class CodeGenJava extends Visitor<Object> {
                 // Do we have any access modifier? If so, add them
                 if ( modifiers!=null && modifiers.length>0 )
                     stProcTypeDecl.add("modifier", modifiers);
-                stProcTypeDecl.add("body", body);
+                stProcTypeDecl.add("syncBody", body);
             }
             
             // Create an entry point for the ProcessJ program, which is just
@@ -857,6 +857,7 @@ public class CodeGenJava extends Visitor<Object> {
             stChannelDecl.add("type", chanType);
             val = stChannelDecl.render();
         }
+
         // After making this local declaration a field of the procedure
         // in which it was declared, we return iff this local variable
         // is not initialized
@@ -1143,7 +1144,7 @@ public class CodeGenJava extends Visitor<Object> {
         
         String type = (String) at.baseType().visit(this);
         if ( at.baseType().isChannelType() || at.baseType().isChannelEndType() )
-            type = type.substring(0, type.indexOf("<"));// + "<?>";
+            type = type.substring(0, type.indexOf("<")) + "<Object>";
         else if ( at.baseType().isRecordType() )
             type = ((RecordTypeDecl) at.baseType()).name().getname();
         else if ( at.baseType().isProtocolType() )
@@ -1170,6 +1171,11 @@ public class CodeGenJava extends Visitor<Object> {
         // invocations or sequence of statements
         String[] stats = (String[]) bl.stats().visit(this);
         
+        for(int index = 0; index < stats.length; index++) {
+            System.out.println(stats[index]);
+            System.out.println("---------------------");
+        }
+
         return stats;
     }
     
@@ -2318,7 +2324,7 @@ public class CodeGenJava extends Visitor<Object> {
         // This is done so that we can instantiate arrays of channel types
         // whose types are generic
         if ( na.baseType().isChannelType() || na.baseType().isChannelEndType() )
-            type = type.substring(0, type.indexOf("<"));// + "<?>";
+            type = type.substring(0, type.indexOf("<")) + "<Object>";
         
         ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
         if ( na.init()!=null ) {
