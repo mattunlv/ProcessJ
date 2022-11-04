@@ -90,7 +90,7 @@ then
     rm -i -rf $workingdir/*.class > /dev/null
     rm -i -rf $workingdir/*.java > /dev/null
     rm -i -rf $workingdir/*.jar > /dev/null
-    
+
 fi
 
 ############################################################################
@@ -102,7 +102,7 @@ if [ -z "$installdir" ] ; then
     echo "Configuration file must contain a line of the form: 'installdir=...'"
     exit 1
 fi
-installdir="./"
+
 ############################################################################
 
 ## run the processj compiler
@@ -182,9 +182,9 @@ pushd $workingdir > /dev/null
 ## clean manifest file
 if [ -d "META-INF" ]
 then
-  
+
   rm -r META-INF
-  
+
 fi
 
 ## create dir for manifest file

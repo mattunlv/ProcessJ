@@ -37,7 +37,7 @@ import utilities.*;
  * @since 1.2
  */
 public class <name> {
-    
+
     <if(body)><body; separator="\n\n"><endif>
 }
 >>
@@ -74,12 +74,12 @@ public static void main(<types,vars:{t,v | <t> <v>}; separator=", ">) {
 // 7.) main: the entry point of the program.
 // 8.) switchBlock: switch statement to jump through blocks to resume points.
 // 9.) syncBody: the body (content) of synchronized method that runs/starts a process.
-ProcClass(name, types, vars, ltypes, lvars, methods, main, switchBlock, syncBody) ::= <<
+ProcClass(name, types, vars, ltypes, lvars, lvals, methods, main, switchBlock, syncBody) ::= <<
 public static class <name> extends PJProcess {
     <! -------- Instance variables for formal parameters -------- !>
     <if(vars)><types,vars:{t,v | protected <t> <v>}; separator=";\n">;<\n><endif>
     <! -------- Instance variables for local parameters -------- !>
-    <if(lvars)><ltypes,lvars:{t,v | protected <t> <v>}; separator=";\n">;<\n><endif>
+    <if(lvars)><ltypes,lvars,lvals:{t,v,l | protected <t> <v> = <l>}; separator=";\n">;<\n><endif>
     <! -------- Instance methods -------- !>
     <if(methods)><methods; separator="\n"><\n><endif>
     <! -------- Default Constructor -------- !>
@@ -190,7 +190,7 @@ switch (this.runLabel) {
 //========================================================================================
 // Defines a statement in a 'switch' block with one case. The
 // case evaluates to a label representing the resume point of
-// a process. 
+// a process.
 // 1.) jump: the label to restart from.
 SwitchCase(jump) ::= "case <jump>: resume(<jump>); break;"
 
@@ -251,7 +251,7 @@ new PJProcess() {
         <if(syncBody)><syncBody; separator="\n"><endif>
         terminate();
     }
-    
+
     <! Finalize method !>
     @Override public void finalize() {
         <if(parBlock)><parBlock>.decrement();<endif>
@@ -273,7 +273,7 @@ new PJProcess() {
         <if(syncBody)><syncBody; separator="\n"><endif>
         terminate();
     }
-    
+
     <! Finalize method !>
     @Override public void finalize() {
         <if(parBlock)><parBlock>.decrement();<endif>
@@ -554,7 +554,7 @@ RecordType(modifiers, name, types, vars, extend) ::= <<
         <! Initialize member fields !>
         <if(vars)><vars:{v | this.<v> = <v>}; separator=";\n">;<endif>
     }
-    
+
     @Override public String toString() {
     	return "*" + toString(null, 0);
     }

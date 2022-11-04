@@ -53,7 +53,7 @@ public class ProcessJc {
             this.optionType = type;
             this.description = desc;
         }
-        
+
         public Option(String field, String option, String desc) {
             this(field, option, OptionType.BOOLEAN, desc);
         }
@@ -325,32 +325,32 @@ public class ProcessJc {
             if ( pJc.showMessage )
                 System.out.println("-- Annotating procedures that may issue a yield call.");
             c.visit(new yield.Yield());
-            
+
             if ( pJc.showMessage )
                 System.out.println("-- Marking yielding statements and expressions.");
             c.visit(new rewriters.Yield());
-            
+
             if ( pJc.showMessage )
                 System.out.println("-- Checking literal inits are free of channel communication.");
             c.visit(new semanticcheck.LiteralInits());
-            
+
             if ( pJc.showMessage )
                 System.out.println("-- Checking replicated Alt inits.");
             c.visit(new semanticcheck.ReplicatedAlts());
-            
+
             if ( pJc.showMessage )
                 System.out.println("-- Rewriting infinite loops.");
             new rewriters.InfiniteLoopRewrite().go(c);
-            
+
             // <--
             System.out.println("-- Rewriting channel arrays local decls");
-            new rewriters.ChannelArrayDeclRewrite().go(c);
+            //new rewriters.ChannelArrayDeclRewrite().go(c);
             // -->
-            
+
             if ( pJc.showMessage )
                 System.out.println("-- Rewriting loops.");
             c.visit(new rewriters.UnrollLoopRewrite());
-            
+
             if ( pJc.showMessage )
                 System.out.println("-- Performing alt statement usage check.");
             c.visit(new rewriters.AltStatRewrite());
@@ -374,7 +374,7 @@ public class ProcessJc {
             if ( pJc.showMessage )
                 System.out.println("-- Collecting left-hand sides for par for code generation.");
             c.visit(new rewriters.ParFor());
-            
+
             // Terminate if we have any errors
             if ( PJBugManager.INSTANCE.getErrorCount() > 0 ) {
                 pJc.exit(1);
@@ -385,7 +385,7 @@ public class ProcessJc {
                 System.out.println("-- Rewriting calls to print() and println().");
                 c.visit(new IOCallsRewrite());
             }
-            
+
             // Run the code generator for the known (specified) target language
             if (pJc.target == Language.CPLUS || pJc.target == Language.JVM/*Settings.language==pJc.target*/ )
                 if (pJc.target == Language.JVM/*Settings.language == Language.JVM*/) {
@@ -504,7 +504,7 @@ public class ProcessJc {
             }
         }
     }
-    
+
     // This method must be used to get values from 'enum' types
     private void setEnumField(Field f, Object arg, Class<?> type) throws Exception {
         Method valueOf = f.getType().getMethod("getValueOf", type);
