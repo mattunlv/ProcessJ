@@ -153,9 +153,6 @@ public class CodeGenJava extends Visitor<Object> {
     /** Protocol names and tags currently switched on */
     private HashMap<String, String> protocolNameToProtocolTag = new HashMap<>();
 
-    /** Channel Arrays -- Dumb Hack, we shouldn't have this at all; but ok **/
-    private HashMap<String, String> localToFields2 = new LinkedHashMap<>();
-
     /** List of switch labels */
     private ArrayList<String> switchCases = new ArrayList<>();
 
@@ -427,7 +424,6 @@ public class CodeGenJava extends Visitor<Object> {
             if ( !localToFields.isEmpty() ) {
                 stProcTypeDecl.add("ltypes", localToFields.values());
                 stProcTypeDecl.add("lvars", localToFields.keySet());
-                stProcTypeDecl.add("lvals", localToFields2.values());
             }
             // Add the switch block for resumption (if any)
             if ( !switchCases.isEmpty() ) {
@@ -822,6 +818,7 @@ public class CodeGenJava extends Visitor<Object> {
             type = ((RecordTypeDecl) ld.type()).name().getname();
         if ( ld.type().isProtocolType() )
             type = PJProtocolCase.class.getSimpleName();
+
         // Update the type for record and protocol types
         String chanType = type; // TODO: is this needed?
 
@@ -847,9 +844,6 @@ public class CodeGenJava extends Visitor<Object> {
                 val = (String) expr.visit(this);
             }
         }
-
-        if(val != null)
-            localToFields2.put(newName, val);
 
         // Is it a barrier declaration? If so, we must generate code
         // that creates a barrier object
@@ -1118,10 +1112,24 @@ public class CodeGenJava extends Visitor<Object> {
         String name = (String) ae.target().visit(this);
         String index = (String) ae.index().visit(this);
 
-        stArrayAccessExpr.add("name", name);
-        stArrayAccessExpr.add("index", index);
+        final String potentialType = localToFields.get(name);
+        final String result;
 
-        return stArrayAccessExpr.render();
+        if((potentialType != null) && potentialType.equals("MultiArray")) {
+
+            result = "(" + "(PJOne2OneChannel) " + name + ".get(" + String.valueOf(index) + "))";
+
+        } else {
+
+            stArrayAccessExpr.add("name", name);
+            stArrayAccessExpr.add("index", index);
+
+            result = stArrayAccessExpr.render();
+
+        }
+
+        return result;
+
     }
 
     @SuppressWarnings("unchecked")
@@ -1151,8 +1159,9 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(at, "Visiting an ArrayType (" + at.typeName() + ")");
 
         String type = (String) at.baseType().visit(this);
+
         if ( at.baseType().isChannelType() || at.baseType().isChannelEndType() )
-            type = type.substring(0, type.indexOf("<")) + "<Object>";
+            return "MultiArray";
         else if ( at.baseType().isRecordType() )
             type = ((RecordTypeDecl) at.baseType()).name().getname();
         else if ( at.baseType().isProtocolType() )
@@ -2320,38 +2329,45 @@ public class CodeGenJava extends Visitor<Object> {
     private Object createNewArray(String lhs, NewArray na) {
         Log.log(na.line + ": Creating a New Array");
 
-        ST stNewArray = stGroup.getInstanceOf("NewArray");
-        String[] dims = (String[]) na.dimsExpr().visit(this);
-        String type = (String) na.baseType().visit(this);
+        ST stNewArray = null;
 
-        // This is done so that we can instantiate arrays of channel types
-        // whose types are generic
-        if ( na.baseType().isChannelType() || na.baseType().isChannelEndType() )
-            type = type.substring(0, type.indexOf("<")) + "<Object>";
+        if (na.baseType().isChannelType() || na.baseType().isChannelEndType() ) {
 
-        ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
-        if ( na.init()!=null ) {
-            ArrayList<String> inits = new ArrayList<>();
-            Sequence<Expression> seq = (Sequence<Expression>) na.init().elements();
-            for (Expression e : seq) {
-                if ( e instanceof ArrayLiteral )
-                    isArrayLiteral = true;
-                inits.add((String) e.visit(this));
-            }
-            stNewArrayLiteral.add("dim", String.join("", Collections.nCopies(((ArrayType) na.type).getDepth(), "[]")));
-            stNewArrayLiteral.add("vals", inits);
+            stNewArray = stGroup.getInstanceOf("NewMultiArray");
+            String[] dims = (String[]) na.dimsExpr().visit(this);
+
+            stNewArray.add("name", lhs);
+            stNewArray.add("dims", dims);
+
+        } else {
+
+            stNewArray = stGroup.getInstanceOf("NewArray");
+            String[] dims = (String[]) na.dimsExpr().visit(this);
+            String type = (String) na.baseType().visit(this);
+
+            ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
+            if ( na.init()!=null ) {
+                ArrayList<String> inits = new ArrayList<>();
+                Sequence<Expression> seq = (Sequence<Expression>) na.init().elements();
+                for (Expression e : seq) {
+                    if ( e instanceof ArrayLiteral )
+                        isArrayLiteral = true;
+                    inits.add((String) e.visit(this));
+                }
+                stNewArrayLiteral.add("dim", String.join("", Collections.nCopies(((ArrayType) na.type).getDepth(), "[]")));
+                stNewArrayLiteral.add("vals", inits);
+
+            } else stNewArrayLiteral.add("dims", dims);
+
+
+            stNewArray.add("name", lhs);
+            stNewArray.add("type", type);
+            stNewArray.add("init", stNewArrayLiteral.render());
+
+            // Reset value for array literal expression
+            isArrayLiteral = false;
+
         }
-        else
-            stNewArrayLiteral.add("dims", dims);
-
-        //createChannelArrayInitializer(lhs, dims, type);
-
-        stNewArray.add("name", lhs);
-        stNewArray.add("type", type);
-        stNewArray.add("init", stNewArrayLiteral.render());
-
-        // Reset value for array literal expression
-        isArrayLiteral = false;
 
         return stNewArray.render();
     }

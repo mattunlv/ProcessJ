@@ -74,12 +74,12 @@ public static void main(<types,vars:{t,v | <t> <v>}; separator=", ">) {
 // 7.) main: the entry point of the program.
 // 8.) switchBlock: switch statement to jump through blocks to resume points.
 // 9.) syncBody: the body (content) of synchronized method that runs/starts a process.
-ProcClass(name, types, vars, ltypes, lvars, lvals, methods, main, switchBlock, syncBody) ::= <<
+ProcClass(name, types, vars, ltypes, lvars, methods, main, switchBlock, syncBody) ::= <<
 public static class <name> extends PJProcess {
     <! -------- Instance variables for formal parameters -------- !>
     <if(vars)><types,vars:{t,v | protected <t> <v>}; separator=";\n">;<\n><endif>
     <! -------- Instance variables for local parameters -------- !>
-    <if(lvars)><ltypes,lvars,lvals:{t,v,l | protected <t> <v> = <l>}; separator=";\n">;<\n><endif>
+    <if(lvars)><ltypes,lvars:{t,v | protected <t> <v>}; separator=";\n">;<\n><endif>
     <! -------- Instance methods -------- !>
     <if(methods)><methods; separator="\n"><\n><endif>
     <! -------- Default Constructor -------- !>
@@ -312,6 +312,12 @@ PrimitiveLiteral(value, type) ::= "<value><if(type)><type><endif>"
 NewArray(name, type, init, chanInit) ::= <<
 <if(name)><name> = <endif>new <type><init><if(name)>;<endif>
 >>
+
+//========================================================================================
+//
+// 1.) name:
+// 2.) dims:
+NewMultiArray(name, dims) ::= "new MultiArray(<dims>);"
 
 //========================================================================================
 // 1.) dims:
