@@ -1104,31 +1104,71 @@ public class CodeGenJava extends Visitor<Object> {
         return stVar.render();
     }
 
+    private String typeOf(ArrayAccessExpr arrayAccessExpr) {
+
+        while(arrayAccessExpr.target() instanceof ArrayAccessExpr)
+            arrayAccessExpr = (ArrayAccessExpr) arrayAccessExpr.target();
+
+        // Retrieve the name
+        final String name = (String) arrayAccessExpr.target().visit(this);
+
+        // Return the type
+        return localToFields.get(name);
+
+    }
+
+    private String buildIndexList(final StringBuilder builder, ArrayAccessExpr arrayAccessExpr) {
+
+        final String index = (String) arrayAccessExpr.index().visit(this);
+
+        if(arrayAccessExpr.target() instanceof ArrayAccessExpr)
+            return buildIndexList(builder
+                                  .append(index)
+                                  .append(","),
+                           (ArrayAccessExpr) arrayAccessExpr.target());
+
+        else {
+
+
+            return builder.append(index).toString();
+
+        }
+
+    }
+
+    private String createMultiArrayAccess(ArrayAccessExpr arrayAccessExpr) {
+
+        final ArrayAccessExpr original = arrayAccessExpr;
+
+        while(arrayAccessExpr.target() instanceof ArrayAccessExpr)
+            arrayAccessExpr = (ArrayAccessExpr) arrayAccessExpr.target();
+
+        // Retrieve the name
+        final String name = (String) arrayAccessExpr.target().visit(this);
+
+        return "(" + "(PJOne2OneChannel) " + name + ".get(" + buildIndexList(new StringBuilder(), original) + "))";
+
+    }
+
+
     @Override
     public Object visitArrayAccessExpr(ArrayAccessExpr ae) {
         Log.log(ae, "Visiting an ArrayAccessExpr");
 
-        ST stArrayAccessExpr = stGroup.getInstanceOf("ArrayAccessExpr");
-        String name = (String) ae.target().visit(this);
-        String index = (String) ae.index().visit(this);
+        if(typeOf(ae).equals("MultiArray")) return createMultiArrayAccess(ae);
 
-        final String potentialType = localToFields.get(name);
-        final String result;
+        else {
 
-        if((potentialType != null) && potentialType.equals("MultiArray")) {
-
-            result = "(" + "(PJOne2OneChannel) " + name + ".get(" + String.valueOf(index) + "))";
-
-        } else {
+            ST stArrayAccessExpr = stGroup.getInstanceOf("ArrayAccessExpr");
+            final String name  = (String) ae.target().visit(this);
+            final String index = (String) ae.index().visit(this);
 
             stArrayAccessExpr.add("name", name);
             stArrayAccessExpr.add("index", index);
 
-            result = stArrayAccessExpr.render();
+            return stArrayAccessExpr.render();
 
         }
-
-        return result;
 
     }
 
@@ -1160,7 +1200,7 @@ public class CodeGenJava extends Visitor<Object> {
 
         String type = (String) at.baseType().visit(this);
 
-        if ( at.baseType().isChannelType() || at.baseType().isChannelEndType() )
+        if ( at.getActualBaseType().isChannelType() || at.getActualBaseType().isChannelEndType() )
             return "MultiArray";
         else if ( at.baseType().isRecordType() )
             type = ((RecordTypeDecl) at.baseType()).name().getname();
@@ -2336,8 +2376,20 @@ public class CodeGenJava extends Visitor<Object> {
             stNewArray = stGroup.getInstanceOf("NewMultiArray");
             String[] dims = (String[]) na.dimsExpr().visit(this);
 
+            if(dims.length > 0) {
+
+                final StringBuilder builder = new StringBuilder();
+
+                builder.append(dims[0]);
+
+                for(int index = 1; index < dims.length; index++)
+                    builder.append(',').append(dims[1]);
+
+                stNewArray.add("dims", builder.toString());
+
+            }
+
             stNewArray.add("name", lhs);
-            stNewArray.add("dims", dims);
 
         } else {
 
