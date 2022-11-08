@@ -96,7 +96,8 @@ public class ArrayType extends Type {
         int baseDepth = depth;
         if (!actualBaseType.isArrayType())
             baseDepth = actualDepth;
-        return typeName().equals(at.typeName()) && baseDepth == at.depth;
+
+        return typeName().equals(at.typeName()) /*&& baseDepth == at.depth*/;
     }
 
     @Override

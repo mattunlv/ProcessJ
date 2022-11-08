@@ -1110,11 +1110,16 @@ public class CodeGenJava extends Visitor<Object> {
         while(arrayAccessExpr.target() instanceof ArrayAccessExpr)
             arrayAccessExpr = (ArrayAccessExpr) arrayAccessExpr.target();
 
-        // Retrieve the name
-        final String name = (String) arrayAccessExpr.target().visit(this);
+        final Expression expression = arrayAccessExpr.target();
+        final String     typeName;
+
+        if(expression instanceof NameExpr)
+            typeName = paramToFields.get((String) arrayAccessExpr.target().visit(this));
+
+        else typeName = (String) arrayAccessExpr.target().visit(this);
 
         // Return the type
-        return localToFields.get(name);
+        return typeName;
 
     }
 
@@ -1208,7 +1213,7 @@ public class CodeGenJava extends Visitor<Object> {
 
         String type = (String) at.baseType().visit(this);
 
-        if ( at.getActualBaseType().isChannelType() || at.getActualBaseType().isChannelEndType() )
+        if (at.getActualBaseType().isChannelType() || at.getActualBaseType().isChannelEndType())
             return "MultiArray";
         else if ( at.baseType().isRecordType() )
             type = ((RecordTypeDecl) at.baseType()).name().getname();

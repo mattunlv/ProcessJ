@@ -11,11 +11,9 @@ void foo(chan<int>.read in) {
 
 }
 
-void main(string args[]) {
+void bar(chan<int>[][] channels) {
      int n = 10;
      int s = 5;
-     chan<int>[][]  channels  = new chan<int>[n][s];
-
      for(int i=0; i<n; i++) {
           par for(int j = 0; j < s; j++) {
 
@@ -25,5 +23,15 @@ void main(string args[]) {
           }
 
      }
+
+}
+
+void main(string args[]) {
+
+     int n = 10;
+     int s = 5;
+     chan<int>[][] channels  = new chan<int>[n][s];
+
+     bar(channels);
 
 }
