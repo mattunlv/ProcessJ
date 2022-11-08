@@ -416,10 +416,11 @@ source ::=
 // TODO: should userdefined types have a supe class TypeDecl ??
 
 //- Sequence[Type :> AST] :> AST
-type_declarations_opt ::=
-          type_declarations:ts {: RESULT = ts; :}
-        | /* epsilon */        {: RESULT = new Sequence<Type>(); :}
-        ;
+type_declarations_opt
+::=
+    type_declarations:ts {: RESULT = ts                     ;:}
+|   /* epsilon */        {: RESULT = new Sequence<Type>()   ;:}
+;
 
 //- Sequence[Type :> AST] :> AST
 type_declarations ::=
@@ -429,12 +430,12 @@ type_declarations ::=
 
 //- Sequence[Type :> AST] :> AST // Error.packageName
 type_declaration ::= 
-          procedure_type_declaration:p     {: p.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = new Sequence<Type>(p); :}
-        | record_type_declaration:r        {: r.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = new Sequence<Type>(r); :}
-        | protocol_type_declaration:p      {: p.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = new Sequence<Type>(p); :}
-        | constant_declaration:c           {: c.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = c; :}       
-        | EXTERN extern_type:e IDENTIFIER:n  {: e.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = new Sequence<Type>(new NamedType(new Name(n), new ExternType(e))); :}
-        ;
+    procedure_type_declaration:p       {: p.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = new Sequence<Type>(p); :}
+|   record_type_declaration:r          {: r.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = new Sequence<Type>(r); :}
+|   protocol_type_declaration:p        {: p.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = new Sequence<Type>(p); :}
+|   constant_declaration:c             {: c.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = c; :}       
+|   EXTERN extern_type:e IDENTIFIER:n  {: e.myPackage = PJBugManager.INSTANCE.getPackageName(); RESULT = new Sequence<Type>(new NamedType(new Name(n), new ExternType(e))); :}
+;
 
 // Name :> AST
 extern_type ::= 
@@ -584,42 +585,53 @@ record_body_opt ::=
 // **************************************************
 
 //- RecordTypeDecl :> Type :> AST
-record_type_declaration ::= 
-          modifiers_opt:m RECORD IDENTIFIER:id extends_opt:e annotations_opt:a record_body:r 
-        {: RESULT = new RecordTypeDecl(m, new Name(id), e, a, r); :}
-        ;
+record_type_declaration
+::= 
+    modifiers_opt:m RECORD IDENTIFIER:id extends_opt:e annotations_opt:a record_body:r 
+                    {: RESULT = new RecordTypeDecl(m, new Name(id), e, a, r)  ;:}
+;
 
 //- Sequence[RecordMember :> AST] :> AST
-record_body ::= 
-          LBRACE record_member_declarations:r RBRACE {: RESULT = r;:}
-        | LBRACE /* empty */ RBRACE   {: RESULT = new Sequence<RecordMember>(); :}
-        ;
+record_body
+::= 
+    LBRACE record_member_declarations:r RBRACE                      {: RESULT = r                             ;:}
+|   LBRACE /* empty */ RBRACE                                       {: RESULT = new Sequence<RecordMember>()  ;:}
+;
 
 //- Sequence[RecordMember :> AST] :> AST
-record_member_declarations ::=
-          record_member_declarations:lst record_member_declaration:e {: RESULT = lst.merge(e); :}
-        | record_member_declaration:e                                {: RESULT = e; :}
-        ;
+record_member_declarations
+::=
+    record_member_declarations:lst record_member_declaration:e      {: RESULT = lst.merge(e)                 ;:}
+|   record_member_declaration:e                                     {: RESULT = e                            ;:}
+;
 
 // RecordMember :> AST
-record_member_declaration ::= 
-          type:t record_member_declarators:r SEMICOLON   {: Sequence s = new Sequence<RecordMember>();
-                                                       for (Name n : (Sequence<Name>)r)
-                                                             s.append(new RecordMember(t, n));
-                                                           RESULT = s;
-                                                         :}
-        ;
+record_member_declaration
+::= 
+    type:t record_member_declarators:r SEMICOLON {:
+
+    Sequence s = new Sequence<RecordMember>();
+    
+    for (Name n : (Sequence<Name>)r)
+      s.append(new RecordMember(t, n));
+
+    RESULT = s;
+
+  :}
+;
 
 //- Sequence[Name :> AST] :> AST
-record_member_declarators ::= 
-          record_member_declarators:lst COMMA record_member_declarator:e  {: RESULT = lst.append(e); :}
-        | record_member_declarator:e                                      {: RESULT = new Sequence<Name>(e); :}
-        ;
+record_member_declarators
+::= 
+    record_member_declarators:lst COMMA record_member_declarator:e  {: RESULT = lst.append(e)               ;:}
+|   record_member_declarator:e                                      {: RESULT = new Sequence<Name>(e)       ;:}
+;
 
 //- Name :> AST
-record_member_declarator ::=
-          variable_declarator_identifier:v {: RESULT = v; :}
-        ;
+record_member_declarator
+::=
+    variable_declarator_identifier:v                                {: RESULT = v                           ;:}
+;
 
 // **************************************************
 // 3.0 Types

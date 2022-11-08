@@ -1,5 +1,5 @@
 /*!
- * ProcessJRuntim::Scheduler declaration.
+ * ProcessJRuntime::Scheduler declaration.
  *
  * \author Alexander C. Thomason
  * \author Carlos L. Cuenca
@@ -12,15 +12,13 @@
 
 namespace ProcessJRuntime { class pj_scheduler; }
 
-    class ProcessJRuntime::pj_scheduler
-    {
+    class ProcessJRuntime::pj_scheduler {
 
     public:
+
         pj_inactive_pool ip;
 
-        pj_scheduler()
-        : cpu(0), cpus(std::thread::hardware_concurrency())
-        {
+        pj_scheduler(): cpu(0), cpus(std::thread::hardware_concurrency()) {
 
         }
 

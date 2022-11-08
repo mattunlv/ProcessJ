@@ -1,9 +1,9 @@
 import std.*;
 
 
-public record message {
+public record Message {
 	
-	chan<message>.write out;
+	chan<Message> a;
 
 }
 

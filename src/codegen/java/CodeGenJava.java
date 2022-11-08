@@ -76,6 +76,8 @@ import ast.UnaryPostExpr;
 import ast.UnaryPreExpr;
 import ast.Var;
 import ast.WhileStat;
+import ast.ExternType;
+import ast.ErrorType;
 import codegen.Helper;
 import codegen.Tag;
 import processj.runtime.*;
@@ -973,19 +975,22 @@ public class CodeGenJava extends Visitor<Object> {
         // Channel class type
         String chantype = "";
         switch (ct.shared()) {
-        case ChannelType.NOT_SHARED:
-            chantype = PJOne2OneChannel.class.getSimpleName();
-            break;
-        case ChannelType.SHARED_READ:
-            chantype = PJOne2ManyChannel.class.getSimpleName();
-            break;
-        case ChannelType.SHARED_WRITE:
-            chantype = PJMany2OneChannel.class.getSimpleName();
-            break;
-        case ChannelType.SHARED_READ_WRITE:
-            chantype = PJMany2ManyChannel.class.getSimpleName();
-            break;
+
+            case ChannelType.NOT_SHARED:
+                chantype = PJOne2OneChannel.class.getSimpleName();
+                break;
+            case ChannelType.SHARED_READ:
+                chantype = PJOne2ManyChannel.class.getSimpleName();
+                break;
+            case ChannelType.SHARED_WRITE:
+                chantype = PJMany2OneChannel.class.getSimpleName();
+                break;
+            case ChannelType.SHARED_READ_WRITE:
+                chantype = PJMany2ManyChannel.class.getSimpleName();
+                break;
+
         }
+
         // Resolve parameterized type for channel, e.g. chan<T> where
         // 'T' is the type to be resolved
         String type = getChannelType(ct.baseType());
@@ -2241,16 +2246,19 @@ public class CodeGenJava extends Visitor<Object> {
      *          The type parameter delimited by angle brackets.
      */
     private String getChannelType(Type t) {
+
         String baseType = null;
-        if ( t.isRecordType() ) {
+
+        if (t instanceof RecordTypeDecl) {
             baseType = ((RecordTypeDecl) t).name().getname();
         } else if ( t.isProtocolType() ) {
             baseType = PJProtocolCase.class.getSimpleName();
         } else if ( t.isPrimitiveType() ) {
-            // This is needed because we can only have wrapper class
             baseType = Helper.getWrapperType(t);
         } else if ( t.isArrayType() ) {
             baseType = (String) t.visit(this);
+        } else if(t instanceof NamedType) {
+            baseType = ((NamedType) t).name().toString();
         }
 
         return baseType;
