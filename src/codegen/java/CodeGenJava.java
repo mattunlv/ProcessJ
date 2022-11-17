@@ -776,15 +776,14 @@ public class CodeGenJava extends Visitor<Object> {
     @Override
     public Object visitParamDecl(ParamDecl pd) {
         Log.log(pd, "Visiting a ParamDecl (" + pd.type().typeName() + " " + pd.paramName().getname() + ")");
-
+        
+        
         // Grab the type and name of a variable declaration
         String name = (String) pd.paramName().visit(this);
         String type = (String) pd.type().visit(this);
 
         // Silly fix for channel types
-        if ( pd.type().isChannelType() || pd.type().isChannelEndType() )
-            type = PJChannel.class.getSimpleName() + type.substring(type.indexOf("<"), type.length());
-        else if ( pd.type() instanceof RecordTypeDecl )
+        if ( pd.type() instanceof RecordTypeDecl )
             type = ((RecordTypeDecl) pd.type()).name().getname();
         else if ( pd.type() instanceof ProtocolTypeDecl )
             type = ((ProtocolTypeDecl) pd.type()).name().getname();
@@ -902,9 +901,6 @@ public class CodeGenJava extends Visitor<Object> {
         if ( paramToVarNames.containsKey(na.getname()) )
             name = paramToVarNames.get(na.getname());
 
-//        if (paramsForAnon.containsKey(na.getname()))
-//            name = paramsForAnon.get(na.getname());
-
         if ( name==null )
             name = na.getname();
 
@@ -993,9 +989,9 @@ public class CodeGenJava extends Visitor<Object> {
 
         // Resolve parameterized type for channel, e.g. chan<T> where
         // 'T' is the type to be resolved
-        String type = getChannelType(ct.baseType());
+        //String type = getChannelType(ct.baseType());
 
-        return String.format("%s<%s>", chantype, type);
+        return String.format("%s", chantype);
     }
 
     @Override
@@ -1024,9 +1020,9 @@ public class CodeGenJava extends Visitor<Object> {
         }
         // Resolve parameterized type for channels, e.g. chan<T> where
         // 'T' is the type to be resolved
-        String type = getChannelType(ct.baseType());
+        //String type = getChannelType(ct.baseType());
 
-        return String.format("%s<%s>", chanType, type);
+        return String.format("%s", chanType);
     }
 
     @Override
@@ -1110,83 +1106,19 @@ public class CodeGenJava extends Visitor<Object> {
         return stVar.render();
     }
 
-    private String typeOf(ArrayAccessExpr arrayAccessExpr) {
-
-        while(arrayAccessExpr.target() instanceof ArrayAccessExpr)
-            arrayAccessExpr = (ArrayAccessExpr) arrayAccessExpr.target();
-
-        final Expression expression = arrayAccessExpr.target();
-        final String     typeName;
-
-        if(expression instanceof NameExpr)
-            typeName = paramToFields.get((String) arrayAccessExpr.target().visit(this));
-
-        else typeName = (String) arrayAccessExpr.target().visit(this);
-
-        // Return the type
-        return typeName;
-
-    }
-
-    private String buildIndexList(final StringBuilder builder, ArrayAccessExpr arrayAccessExpr) {
-
-        final List<String> expressions = new ArrayList<>();
-
-        expressions.add((String) arrayAccessExpr.index().visit(this));
-
-        while(arrayAccessExpr.target() instanceof ArrayAccessExpr) {
-
-            arrayAccessExpr = (ArrayAccessExpr) arrayAccessExpr.target();
-
-            expressions.add((String) arrayAccessExpr.index().visit(this));
-
-        }
-
-        for(int index = expressions.size() - 1; index >= 0; index--) {
-
-            builder.append(expressions.get(index));
-
-            if(index > 0) builder.append(",");
-
-        }
-
-        return builder.toString();
-
-    }
-
-    private String createMultiArrayAccess(ArrayAccessExpr arrayAccessExpr) {
-
-        final ArrayAccessExpr original = arrayAccessExpr;
-
-        while(arrayAccessExpr.target() instanceof ArrayAccessExpr)
-            arrayAccessExpr = (ArrayAccessExpr) arrayAccessExpr.target();
-
-        // Retrieve the name
-        final String name = (String) arrayAccessExpr.target().visit(this);
-
-        return "(" + "(PJOne2OneChannel) " + name + ".get(" + buildIndexList(new StringBuilder(), original) + "))";
-
-    }
-
-
     @Override
     public Object visitArrayAccessExpr(ArrayAccessExpr ae) {
-        Log.log(ae, "Visiting an ArrayAccessExpr");
+        Log.log( "Visiting an ArrayAccessExpr");
 
-        if(typeOf(ae).equals("MultiArray")) return createMultiArrayAccess(ae);
+        ST stArrayAccessExpr = stGroup.getInstanceOf("ArrayAccessExpr");
 
-        else {
+        final String name  = (String) ae.target().visit(this);
+        final String index = (String) ae.index().visit(this);
 
-            ST stArrayAccessExpr = stGroup.getInstanceOf("ArrayAccessExpr");
-            final String name  = (String) ae.target().visit(this);
-            final String index = (String) ae.index().visit(this);
+        stArrayAccessExpr.add("name", name);
+        stArrayAccessExpr.add("index", index);
 
-            stArrayAccessExpr.add("name", name);
-            stArrayAccessExpr.add("index", index);
-
-            return stArrayAccessExpr.render();
-
-        }
+        return String.format("%s[%s]", name, index);
 
     }
 
@@ -1216,17 +1148,14 @@ public class CodeGenJava extends Visitor<Object> {
     public Object visitArrayType(ArrayType at) {
         Log.log(at, "Visiting an ArrayType (" + at.typeName() + ")");
 
+
         String type = (String) at.baseType().visit(this);
 
-        if (at.getActualBaseType().isChannelType() || at.getActualBaseType().isChannelEndType())
-            return "MultiArray";
-        else if ( at.baseType().isRecordType() )
+        if ( at.baseType().isRecordType() )
             type = ((RecordTypeDecl) at.baseType()).name().getname();
-        else if ( at.baseType().isProtocolType() )
-            type = PJProtocolCase.class.getSimpleName();
-        String stArrayType = String.format("%s[]", type);
 
-        return stArrayType;
+        return String.format("%s[]", type);
+
     }
 
     @Override
@@ -2391,56 +2320,30 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(na.line + ": Creating a New Array");
 
         ST stNewArray = null;
+        stNewArray = stGroup.getInstanceOf("NewArray");
+        String[] dims = (String[]) na.dimsExpr().visit(this);
+        String type = (String) na.baseType().visit(this);
 
-        if (na.baseType().isChannelType() || na.baseType().isChannelEndType() ) {
-
-            stNewArray = stGroup.getInstanceOf("NewMultiArray");
-            String[] dims = (String[]) na.dimsExpr().visit(this);
-
-            if(dims.length > 0) {
-
-                final StringBuilder builder = new StringBuilder();
-
-                builder.append(dims[0]);
-
-                for(int index = 1; index < dims.length; index++)
-                    builder.append(',').append(dims[1]);
-
-                stNewArray.add("dims", builder.toString());
-
+        ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
+        if ( na.init()!=null ) {
+            ArrayList<String> inits = new ArrayList<>();
+            Sequence<Expression> seq = (Sequence<Expression>) na.init().elements();
+            for (Expression e : seq) {
+                if ( e instanceof ArrayLiteral )
+                    isArrayLiteral = true;
+                inits.add((String) e.visit(this));
             }
+            stNewArrayLiteral.add("dim", String.join("", Collections.nCopies(((ArrayType) na.type).getDepth(), "[]")));
+            stNewArrayLiteral.add("vals", inits);
 
-            stNewArray.add("name", lhs);
+        } else stNewArrayLiteral.add("dims", dims);
 
-        } else {
+        stNewArray.add("name", lhs);
+        stNewArray.add("type", type);
+        stNewArray.add("init", stNewArrayLiteral.render());
 
-            stNewArray = stGroup.getInstanceOf("NewArray");
-            String[] dims = (String[]) na.dimsExpr().visit(this);
-            String type = (String) na.baseType().visit(this);
-
-            ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
-            if ( na.init()!=null ) {
-                ArrayList<String> inits = new ArrayList<>();
-                Sequence<Expression> seq = (Sequence<Expression>) na.init().elements();
-                for (Expression e : seq) {
-                    if ( e instanceof ArrayLiteral )
-                        isArrayLiteral = true;
-                    inits.add((String) e.visit(this));
-                }
-                stNewArrayLiteral.add("dim", String.join("", Collections.nCopies(((ArrayType) na.type).getDepth(), "[]")));
-                stNewArrayLiteral.add("vals", inits);
-
-            } else stNewArrayLiteral.add("dims", dims);
-
-
-            stNewArray.add("name", lhs);
-            stNewArray.add("type", type);
-            stNewArray.add("init", stNewArrayLiteral.render());
-
-            // Reset value for array literal expression
-            isArrayLiteral = false;
-
-        }
+        // Reset value for array literal expression
+        isArrayLiteral = false;
 
         return stNewArray.render();
     }

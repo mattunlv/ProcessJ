@@ -30,8 +30,14 @@ void main(string args[]) {
 
      int n = 10;
      int s = 5;
-     chan<int>[][] channels  = new chan<int>[n][s];
+     chan<int>[][] channels = new chan<int>[n][s];
 
-     bar(channels);
+     chan<int>.read[][] read_channels = new chan<int>.read[n][s];
+
+     for(int index = 0; index < n; index++)
+          for(int jindex = 0; jindex < s; jindex++)
+               read_channels[index][jindex] = channels[index][jindex].read;
+
+     //bar(channels);
 
 }

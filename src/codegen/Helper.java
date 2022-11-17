@@ -8,10 +8,7 @@ import java.io.Writer;
 
 import ast.ProcTypeDecl;
 import ast.Type;
-import processj.runtime.PJBarrier;
-import processj.runtime.PJChannel;
-import processj.runtime.PJRecord;
-import processj.runtime.PJTimer;
+import processj.runtime.*;
 import utilities.Assert;
 import utilities.Settings;
 
@@ -134,6 +131,8 @@ public class Helper {
             typeName = PJTimer.class;
         else if (type.isBarrierType())
             typeName = PJBarrier.class;
+        else if (type.isProtocolType())
+            typeName = PJProtocolCase.class;
 
         return typeName;
     }
