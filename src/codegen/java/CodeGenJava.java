@@ -1332,7 +1332,7 @@ public class CodeGenJava extends Visitor<Object> {
         // Target procedure
         ProcTypeDecl pd = in.targetProc;
 
-        
+
 
         // Name of invoked procedure
         String pdName = pd.name().getname();
@@ -2156,12 +2156,15 @@ public class CodeGenJava extends Visitor<Object> {
         ST stReturnStat = stGroup.getInstanceOf("ReturnStat");
         String expr = null;
 
-        if ( rs.expr()!=null )
+        if(rs.expr() != null) {
+
             expr = (String) rs.expr().visit(this);
 
-        // This removes the extra ";" for invocation calls
-        expr = expr.replace(DELIMITER, "");
-        stReturnStat.add("expr", expr);
+            // This removes the extra ";" for invocation calls
+            expr = expr.replace(DELIMITER, "");
+            stReturnStat.add("expr", expr);
+
+        }
 
         return stReturnStat.render();
     }
