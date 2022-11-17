@@ -397,7 +397,7 @@ public class CodeGenJava extends Visitor<Object> {
                 // Do we have any access modifier? If so, add them
                 if ( modifiers!=null && modifiers.length>0 )
                     stProcTypeDecl.add("modifier", modifiers);
-                stProcTypeDecl.add("syncBody", body);
+                stProcTypeDecl.add("body", body);
             }
 
             // Create an entry point for the ProcessJ program, which is just
@@ -776,7 +776,7 @@ public class CodeGenJava extends Visitor<Object> {
     @Override
     public Object visitParamDecl(ParamDecl pd) {
         Log.log(pd, "Visiting a ParamDecl (" + pd.type().typeName() + " " + pd.paramName().getname() + ")");
-        
+
         
         // Grab the type and name of a variable declaration
         String name = (String) pd.paramName().visit(this);
@@ -1331,9 +1331,12 @@ public class CodeGenJava extends Visitor<Object> {
         ST stInvocation = null;
         // Target procedure
         ProcTypeDecl pd = in.targetProc;
+
+        
+
         // Name of invoked procedure
         String pdName = pd.name().getname();
-        // Check local procedures, if none is found then the procedure must
+        // Check local procedures, if none is found then the procedure must? 
         // come from a different file and maybe package
         if ( currentCompilation.fileName.equals(pd.myCompilation.fileName) ) {
             String name = pdName + hashSignature(pd);
