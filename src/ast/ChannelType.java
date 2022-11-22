@@ -53,9 +53,6 @@ public class ChannelType extends Type {
 
         switch (this.shared) {
 
-            case ChannelType.NOT_SHARED:
-                chantype = PJOne2OneChannel.class.getSimpleName();
-                break;
             case ChannelType.SHARED_READ:
                 chantype = PJOne2ManyChannel.class.getSimpleName();
                 break;
@@ -64,6 +61,9 @@ public class ChannelType extends Type {
                 break;
             case ChannelType.SHARED_READ_WRITE:
                 chantype = PJMany2ManyChannel.class.getSimpleName();
+                break;
+            default:
+                chantype = PJOne2OneChannel.class.getSimpleName();
                 break;
 
         }

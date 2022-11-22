@@ -3,14 +3,14 @@ package utilities;
 import ast.AST;
 
 public class Log {
-    public static boolean doLog = true;
+    public static boolean doLog = false;
 
     public static void startLogging() {
         doLog = true;
     }
 
     public static void stopLogging() {
-        doLog = true;
+        doLog = false;
     }
 
     private Log() {

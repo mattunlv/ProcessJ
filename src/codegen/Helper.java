@@ -102,61 +102,8 @@ public class Helper {
         if (pd == null)
             return false;
 
-        return pd.yields || (pd.annotations().isDefined("yield") &&
+        return pd.yields || ((pd.annotations() != null) && pd.annotations().isDefined("yield") &&
                Boolean.valueOf(pd.annotations().get("yield")));
-    }
-
-    /**
-     * Returns the wrapper class for the given class type.
-     *
-     * @param type
-     *          A wrapper class type or the class itself.
-     * @return The type instances represented by a class.
-     */
-    private static Class<?> getWrapperClass(Type type) {
-        type = Assert.nonNull(type, "The parameter type cannot be null.");
-        Class<?> typeName = null;
-
-        if (type.isIntegerType())
-            typeName = Integer.class;
-        else if (type.isByteType())
-            typeName = Byte.class;
-        else if (type.isLongType())
-            typeName = Long.class;
-        else if (type.isDoubleType())
-            typeName = Double.class;
-        else if (type.isFloatType())
-            typeName = Float.class;
-        else if (type.isBooleanType())
-            typeName = Boolean.class;
-        else if (type.isCharType())
-            typeName = Character.class;
-        else if (type.isShortType())
-            typeName = Short.class;
-        else if (type.isRecordType())
-            typeName = PJRecord.class;
-        else if (type.isChannelType() || type.isChannelEndType())
-            typeName = PJChannel.class;
-        else if (type.isTimerType())
-            typeName = PJTimer.class;
-        else if (type.isBarrierType())
-            typeName = PJBarrier.class;
-        else if (type.isProtocolType())
-            typeName = PJProtocolCase.class;
-
-        return typeName;
-    }
-
-    /**
-     * Returns a string representing a primitive wrapper class or
-     * the class itself.
-     *
-     * @param type
-     *          A primitive class type or the class itself.
-     * @return A String representation of class type.
-     */
-    public static String getWrapperType(Type type) {
-        return getWrapperClass(type).getSimpleName();
     }
 
     /**

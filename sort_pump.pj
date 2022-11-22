@@ -1,0 +1,93 @@
+import std.*;
+
+const int MAX 			= 16	;
+const int END_MARKER 	= 255	;
+
+void cell(chan<int>.read inChan, chan<int>.write out) {
+	
+	while(true) {
+
+		int largest;
+
+		largest = inChan.read();
+
+		while(largest != END_MARKER) {
+
+			int next;
+
+			next = inChan.read();
+
+			if(largest >= next)
+				out.write(next);
+
+			else {
+
+				out.write(largest);
+
+				largest = next;
+
+			}
+
+		}
+
+		out.write(END_MARKER);
+
+	}
+
+}
+
+void sort_pump(chan<int>.read in, chan<int>.write out) {
+	
+	chan<int>[] c = new chan<int>[MAX - 2];
+
+	par {
+
+		cell(in, c[0].write);
+
+
+		par for(int index = 1; index < MAX - 2; index++)
+			cell(c[index - 1].read, c[index].write);
+			
+		cell(c[13].read, out);
+
+	}
+
+}
+
+void foo(chan<int>.read in) {
+	
+	while(true) {
+
+		int x;
+
+		x = in.read();
+
+		println(x + ", ");
+
+	}
+
+}
+
+void main(string[] arguments) {
+	
+	int[] stream = new int[3];
+
+	stream[1] = 8;
+	stream[2] = 99;
+	stream[3] = 42;
+
+	chan<int> channel, output;
+
+	par for(int index = 0; index < stream.size; index++) {
+
+		int input = stream[index];
+
+		channel.write(input);
+
+		sort_pump(channel.read, output.write);
+
+		foo(channel.read);
+
+	}
+
+}

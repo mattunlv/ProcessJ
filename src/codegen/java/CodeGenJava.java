@@ -446,30 +446,19 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(is, "Visiting a IfStat");
 
         ST stIfStat = stGroup.getInstanceOf("IfStat");
-        // Sequence of statements enclosed in a block-stmt
+
         String[] thenStats = null;
         String[] thenParts = null;
         String condExpr = null;
-        // We either have an if-statement _or_ a loop construct that
-        // has been re-written as an if-statement
-        if ( is.expr()!=null )
+
+        if(is.expr() != null)
             condExpr = (String) is.expr().visit(this);
-        if ( is.thenpart()!=null ) {
-            if ( is.thenpart() instanceof Block )
-                thenStats = (String[]) is.thenpart().visit(this);
-            else {
-                String stat = (String) is.thenpart().visit(this);
-                thenStats = new String[] { stat };
-            }
-        }
-        if ( is.elsepart()!=null ) {
-            if ( is.elsepart() instanceof Block )
-                thenParts = (String[]) is.elsepart().visit(this);
-            else {
-                String stat = (String) is.elsepart().visit(this);
-                thenParts = new String[] { stat };
-            }
-        }
+
+        if (is.thenpart() != null)
+            thenStats = new String[] { (String) is.thenpart().visit(this) };
+
+        if(is.elsepart()!=null)
+            thenParts = new String[] { (String) is.elsepart().visit(this) };
 
         stIfStat.add("expr", condExpr);
         stIfStat.add("thenPart", thenStats);
@@ -580,8 +569,17 @@ public class CodeGenJava extends Visitor<Object> {
 
         final StringBuilder builder = new StringBuilder();
 
-        for(final Statement statement: block.stats())
-            builder.append((String) block.stats().visit(this) + "\n");
+        for(final Object statement: block.stats()) {
+
+            final Object result = ((Statement) statement).visit(this);
+
+            if(result instanceof String[])
+                for(int index = 0; index < ((String[]) result).length; index++)
+                    builder.append(((String[]) result)[index] + "\n");
+
+            else builder.append((String) result).append("\n");
+
+        }
 
         return builder.toString();
 
@@ -686,9 +684,16 @@ public class CodeGenJava extends Visitor<Object> {
         if(initializer != null) {
 
             result += " = " + (String) constantDeclaration.getInitializerExpression().visit(this) + ";";
-        
-            if(initializer instanceof NewArray)
-                result += "\n" + initializeArray(name, ((NewArray) initializer));
+
+            if(initializer instanceof NewArray) {
+
+
+                final NewArray newArray = (NewArray) initializer;
+                final String[] dims     = (String[]) newArray.dimsExpr().visit(this);
+
+                result += "\n" + initializeArray(name, newArray.baseType().getJavaWrapper(), dims, 0, 'a');
+
+            }
 
         } else result += ";";
 
@@ -727,9 +732,16 @@ public class CodeGenJava extends Visitor<Object> {
         else if(initializer != null) {
 
             result += " = " + (String) localDeclaration.getInitializerExpression().visit(this) + ";";
-                
-            if(initializer instanceof NewArray)
-                result += "\n" + initializeArray(name, ((NewArray) initializer));
+
+            if(initializer instanceof NewArray) {
+
+
+                final NewArray newArray = (NewArray) initializer;
+                final String[] dims     = (String[]) newArray.dimsExpr().visit(this);
+
+                result += "\n" + initializeArray(newName, newArray.baseType().getJavaWrapper(), dims, 0, 'a');
+
+            }
 
         } else result += ";";
 
@@ -740,7 +752,7 @@ public class CodeGenJava extends Visitor<Object> {
     @Override
     public Object visitNewArray(final NewArray newArray) {
 
-        final Type base = newArray.baseType();
+        final String base = newArray.baseType().getJavaWrapper();
 
         String result = "new " + base;
 
@@ -1027,15 +1039,15 @@ public class CodeGenJava extends Visitor<Object> {
             }
             // Visit all declarations that appear in the procedure
             String[] body = null;
-            if ( pd.body()!=null ) body = (String[]) pd.body().visit(this);
+            if(pd.body() != null) body = new String[] { (String) pd.body().visit(this) };
             // Retrieve the modifier(s) attached to the invoked procedure such
             // as private, public, protected, etc.
             String[] modifiers = (String[]) pd.modifiers().visit(this);
             // Grab the return type of the invoked procedure
-            String procType = (String) pd.returnType().getJavaWrapper();
+            String procType = (pd.returnType() != null) ? (String) pd.returnType().getJavaWrapper() : "void";
             // The procedure's annotation determines if we have a yielding procedure
             // or a Java method (a non-yielding procedure)
-            boolean doesProcYield = Helper.doesProcYield(pd);
+            boolean doesProcYield = Helper.doesProcYield(pd) | true;
             // Set the template to the correct instance value and then initialize
             // its attributes
             if ( doesProcYield ) {
@@ -2047,76 +2059,32 @@ public class CodeGenJava extends Visitor<Object> {
 
     int index = 0;
 
-    private String ranchSauce(final String name, final String type, final String[] dims, final String access, int depth, int index, char init, final String linit) {
+    private String initializeArray(final String name, final String type, final String[] dims, int index, char init) {
 
-        if(depth == 0) {
+        String result = "";
 
-            String result = (name != null) ? name + " = " : "";
+        if(index < dims.length) {
 
-            result += "new " + type;
+            final String        newName     = name + "[" + init + "]";
+            final StringBuilder builder     = new StringBuilder(type);
 
-            if(type.equals("Integer"))
-                result += "(0);";
-            else result += "();";
+            for(int tindex = index + 1; tindex < dims.length; tindex++)
+                builder.append("[" + dims[tindex] + "]");
 
-            return result ;
+            if((index + 1) == dims.length)
+                if(type.equals("Integer"))
+                    builder.append("(0)");
+                else builder.append("()");
+            
+            result =  "for(int " + init + " = 0; " + init + " < (" + dims[index] + "); " + init + "++) {\n";
+            result += "\t" + newName + " = new " + builder.toString() + ";";
+            result += "\t" + initializeArray(newName, type, dims, ++index, ++init);
+            result += "\n}"; 
 
         }
 
-        final ST        newArray    = stGroup.getInstanceOf("NewArray2");
-        final String    newName     = (access != null) ? name + "[" + access + "]" : name;
+        return result;
 
-        final StringBuilder builder = new StringBuilder(type);
-
-        for(int tindex = index; tindex < dims.length; tindex++)
-            builder.append("[" + dims[tindex] + "]");
-        
-        newArray.add("name", newName);
-        newArray.add("type", builder.toString());
-        newArray.add("expression", dims[index]);
-        newArray.add("iterator", String.valueOf(init));
-        newArray.add("statement", ranchSauce(newName, type, dims, String.valueOf(init), --depth, ++index, ++init, null));
-
-        return newArray.render();
-
-    }
-
-    @SuppressWarnings("unchecked")
-    private Object initializeArray(String lhs, NewArray na) {
-        Log.log(na.line + ": Creating a New Array");
-
-        final ST          stNewArray  = stGroup.getInstanceOf("NewArray2");
-
-        final String[]    dims        = (String[])  na.dimsExpr().visit(this);
-        final String      type        = (String)    na.baseType().getJavaWrapper();
-
-        ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
-
-        if(na.init() != null) {
-
-            final ArrayList<String>       inits   = new ArrayList<>()                             ;
-            final Sequence<Expression>    seq     = (Sequence<Expression>) na.init().elements()   ;
-            
-            for (Expression e : seq) {
-                if ( e instanceof ArrayLiteral )
-                    isArrayLiteral = true;
-                inits.add((String) e.visit(this));
-            }
-            
-            stNewArrayLiteral.add("dim", String.join("", Collections.nCopies(((ArrayType) na.type).getDepth(), "[]")));
-            stNewArrayLiteral.add("vals", inits);
-
-        } else stNewArrayLiteral.add("dims", dims);
-
-        if(lhs != null)
-            stNewArray.add("name", lhs);
-
-        stNewArray.add("type", type);
-
-        // Reset value for array literal expression
-        isArrayLiteral = false;
-
-        return ranchSauce(lhs, type, dims, null, dims.length, 0, 'a', stNewArrayLiteral.render());
     }
 
     private String createArrayList(String type, int dims) {

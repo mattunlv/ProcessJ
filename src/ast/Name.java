@@ -62,7 +62,7 @@ public class Name extends AST {
 
     public String getAlias(Tag type) {
 
-        if(this.alias != null && !this.alias.isEmpty())
+        if(this.alias != null && this.alias.isEmpty())
             this.alias = Helper.makeVariableName(this.id, type);
 
         return this.alias;
