@@ -657,11 +657,11 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitReturnStat(ReturnStat rs) {
+    public Object visitReturnStat(final ReturnStat returnStatement) {
         
-        Log.log(rs, "Visiting a ReturnStat");
+        Log.log(returnStatement, "Visiting a ReturnStat");
 
-        return "return" + ((rs.expr() != null) ? " " + rs.expr().visit(this) : "") + ";";
+        return "return" + ((returnStatement.expr() != null) ? " " + returnStatement.expr().visit(this) : "") + ";";
 
     }
 
@@ -1972,33 +1972,6 @@ public class CodeGenJava extends Visitor<Object> {
     // *************************************************************************
     // ** HELPER METHODS
 
-    /**
-     * Returns the parameterized type of a Channel object.
-     *
-     * @param t
-     *          The specified primitive type or user-defined type.
-     * @return
-     *          The type parameter delimited by angle brackets.
-     */
-    private String getChannelType(Type t) {
-
-        String baseType = null;
-
-        if (t instanceof RecordTypeDecl) {
-            baseType = ((RecordTypeDecl) t).name().getname();
-        } else if ( t.isProtocolType() ) {
-            baseType = PJProtocolCase.class.getSimpleName();
-        } else if ( t.isPrimitiveType() ) {
-            baseType = Helper.getWrapperType(t);
-        } else if ( t.isArrayType() ) {
-            baseType = (String) t.visit(this);
-        } else if(t instanceof NamedType) {
-            baseType = ((NamedType) t).name().toString();
-        }
-
-        return baseType;
-    }
-
     // This is used for newly-created processes
     private void resetGlobals() {
         parDecID = 0;
@@ -2047,80 +2020,7 @@ public class CodeGenJava extends Visitor<Object> {
                 new Block(new Sequence(st))); // Body
     }
 
-    private Object createChannelArrayInitializer(String lhs, String[] dims, String type) {
-        Log.log("Creating a New Channel Array");
-
-//        final int size = ((ArrayType) na.type).getDepth();
-        ArrayList<ST> forStmts = new ArrayList<>();
-        for (int i = 0; i < dims.length; ++i) {
-            Tuple<?> tuple = createLocalDeclForLoop(dims[i]);
-            ForStat as = new ForStat(new Token(0, "0", 0, 0, 0), (Sequence<Statement>) tuple.get(0),
-                    (BinaryExpr) tuple.get(1), (Sequence<ExprStat>) tuple.get(2), null, null, false);
-            //
-            ST stForStat = stGroup.getInstanceOf("ForStat");
-            ArrayList<String> init = null; // Initialization part
-            ArrayList<String> incr = null; // Step counter
-            String expr = null; // Conditional expression
-            if ( as.init()!=null ) {
-                init = new ArrayList<>();
-                for (Statement st : as.init())
-                    init.add(((String) st.visit(this)).replace(DELIMITER, ""));
-                // Collect all local variables that pertain to the replicated alt
-                for (String str : init)
-                    indexSetOfAltCase.add(str.substring(0, str.indexOf("=")).trim());
-            }
-            if ( as.expr()!=null )
-                expr = (String) as.expr().visit(this);
-            if ( as.incr()!=null ) {
-                incr = new ArrayList<>();
-                for (Statement st : as.incr())
-                    incr.add(((String) st.visit(this)).replace(DELIMITER, ""));
-            }
-            stForStat.add("init", init);
-            stForStat.add("expr", expr);
-            stForStat.add("incr", incr);
-            forStmts.add(stForStat);
-        }
-//        ForStat forStmt = forStmts.get(0);
-//        for (int i = 1; i < forStmts.size(); ++i) {
-//            forStmt.children[4] = forStmts.get(i);
-//            forStmt = forStmts.get(i);
-//        }
-//        String str = (String) forStmts.get(0).visit(this);
-        ST stChannelDecl = stGroup.getInstanceOf("ChannelDecl");
-        stChannelDecl.add("type", type);
-        ST stForStmt = forStmts.get(forStmts.size() - 1);
-        stForStmt.add("stats", lhs + " = " + stChannelDecl.render());
-        stForStmt = forStmts.get(0);
-        for (int i = 1; i < forStmts.size(); ++i) {
-            stForStmt.add("stats", forStmts.get(i));
-            stForStmt = forStmts.get(i);
-        }
-
-        return null;
-    }
-
-
     int index = 0;
-
-    private Tuple<?> createLocalDeclForLoop(String dims) {
-        final String localDeclName = Helper.makeVariableName("tmp__", Tag.LOCAL_NAME);
-        Name n = new Name(localDeclName);
-        NameExpr ne = new NameExpr(n);
-        PrimitiveLiteral pl = new PrimitiveLiteral(new Token(0, "0", 0, 0, 0), 4 /* kind */);
-        LocalDecl ld = new LocalDecl(
-                new PrimitiveType(PrimitiveType.IntKind),
-                new Var(n, null),
-                false /* not constant */);
-        ld.visit(this);
-        BinaryExpr be = new BinaryExpr(ne, new NameExpr(new Name(dims)), BinaryExpr.LT);
-        ExprStat es = new ExprStat(new UnaryPreExpr(ne, UnaryPreExpr.PLUSPLUS));
-        Sequence<Statement> init = new Sequence<>();
-        init.append(new ExprStat((Expression) new Assignment(ne, pl, Assignment.EQ)));
-        Sequence<ExprStat> incr = new Sequence<>();
-        incr.append(es);
-        return new Tuple(init, be, incr);
-    }
 
     private String ranchSauce(final String name, final String type, final String[] dims, final String access, int depth, int index, char init, final String linit) {
 
@@ -2282,4 +2182,5 @@ public class CodeGenJava extends Visitor<Object> {
         String signature = pd.signature();
         return String.valueOf(signature.hashCode()).replace('-', '$');
     }
+
 }
