@@ -16,7 +16,9 @@ public class ArrayLiteral extends Literal {
 
     // TODO
     public String toString() {
-        return "{.,.,.,.,.}";
+
+        return "{ }";
+
     }
 
     public <S extends Object> S visit(Visitor<S> v) {

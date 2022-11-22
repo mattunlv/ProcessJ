@@ -637,6 +637,16 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
+    public Object visitBreakStat(final BreakStat breakStatement) {
+
+        Log.log(breakStatement, "Visiting a BreakStat");
+
+        return ((breakStatement.target() != null) ?
+            (String) breakStatement.target().visit(this) + " " : "") + "break;";
+
+    }
+
+    @Override
     public Object visitContinueStat(final ContinueStat continueStatement) {
 
         Log.log(continueStatement, "Visiting a ContinueStat");
@@ -672,6 +682,7 @@ public class CodeGenJava extends Visitor<Object> {
         final String initializer    = (String) constantDeclaration.getInitializerExpression().visit(this)   ;
 
         return type + " " + name + ((initializer != null) ? " = " + initializer : "") + ";";
+
     }
 
     @Override
@@ -731,6 +742,18 @@ public class CodeGenJava extends Visitor<Object> {
 
     }
     
+    @Override
+    public Object visitCastExpr(final CastExpr castExpression) {
+
+        Log.log(castExpression, "Visiting a CastExpr");
+
+        final String type         = (String) castExpression.type().getJavaWrapper();
+        final String expression   = (String) castExpression.expr().visit(this);
+
+        return "(" + ((!type.isEmpty()) ? "(" + type + ") " : "") + "(" + expression + "))";
+        
+    }
+
     @Override
     public Object visitNameExpr(final NameExpr nameExpression) {
 
@@ -793,30 +816,32 @@ public class CodeGenJava extends Visitor<Object> {
 
     }
 
-    /// --------------------------------------------------------------------------------------------
-    /// End Refactored
-
-    @SuppressWarnings("unchecked")
     @Override
-    public Object visitArrayLiteral(ArrayLiteral al) {
-        Log.log(al, "Visiting an ArrayLiteral");
+    public Object visitArrayLiteral(final ArrayLiteral arrayLiteral) {
 
-        // Is the array initialize at compile time? If so, create a list
-        // of values separated by commas and enclosed between braces --
-        // the syntax for array literals in ProcessJ is different to Java's
-        if ( al.elements().size()>1 || isArrayLiteral ) {
-            // The following extends naturally to two-dimensional, and
-            // even higher-dimensional arrays -- but they are not used
-            // very often in practice
-            String[] vals = (String[]) al.elements().visit(this);
-            return Arrays.asList(vals)
-                    .toString()
-                    .replace("[", " { ")
-                    .replace("]", " } ");
+        Log.log(arrayLiteral, "Visiting an ArrayLiteral");
+
+        final StringBuilder builder = new StringBuilder("{ ");
+
+        int current = 0;
+
+        for(final Object expression: arrayLiteral.elements()) {
+
+            builder.append(((Expression) expression).visit(this));
+
+            if(current < (arrayLiteral.elements().size() - 1))
+                builder.append(", ");
+
         }
 
-        return al.elements().visit(this);
+        builder.append(" }");
+
+        return builder.toString();
+
     }
+
+    /// --------------------------------------------------------------------------------------------
+    /// End Refactored
 
     @Override
     public Object visitRecordTypeDecl(RecordTypeDecl rt) {
@@ -1080,10 +1105,6 @@ public class CodeGenJava extends Visitor<Object> {
 
     }
 
-
-
-
-
     @Override
     @SuppressWarnings("rawtypes")
     public Object visitSequence(Sequence se) {
@@ -1112,17 +1133,7 @@ public class CodeGenJava extends Visitor<Object> {
         return seqs.toArray(new String[0]);
     }
 
-    @Override
-    public Object visitBreakStat(BreakStat bs) {
-        Log.log(bs, "Visiting a BreakStat");
 
-        ST stBreakStat = stGroup.getInstanceOf("BreakStat");
-        // No parse-tree for 'break'
-        if ( bs.target()!=null )
-            stBreakStat.add("name", bs.target().visit(this));
-
-        return stBreakStat.render();
-    }
 
     @Override
     public Object visitSwitchLabel(SwitchLabel sl) {
@@ -1197,20 +1208,6 @@ public class CodeGenJava extends Visitor<Object> {
         return stSwitchStat.render();
     }
 
-    @Override
-    public Object visitCastExpr(CastExpr ce) {
-        Log.log(ce, "Visiting a CastExpr");
-
-        ST stCastExpr = stGroup.getInstanceOf("CastExpr");
-        // This result in (TYPE)(EXPR)
-        String type = (String) ce.type().getJavaWrapper();
-        String expr = (String) ce.expr().visit(this);
-
-        stCastExpr.add("type", type);
-        stCastExpr.add("expr", expr);
-
-        return stCastExpr.render();
-    }
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
