@@ -657,6 +657,15 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
+    public Object visitReturnStat(ReturnStat rs) {
+        
+        Log.log(rs, "Visiting a ReturnStat");
+
+        return "return" + ((rs.expr() != null) ? " " + rs.expr().visit(this) : "") + ";";
+
+    }
+
+    @Override
     public Object visitParamDecl(final ParamDecl parameterDeclaration) {
 
         Log.log(parameterDeclaration, "Visiting a ParamDecl (" + parameterDeclaration.type().typeName() + " " + parameterDeclaration.paramName().getname() + ")");
@@ -837,6 +846,20 @@ public class CodeGenJava extends Visitor<Object> {
         builder.append(" }");
 
         return builder.toString();
+
+    }
+
+    @Override
+    public Object visitRecordMember(final RecordMember recordMember) {
+        
+        Log.log(recordMember, "Visiting a RecordMember (" + recordMember.type() + " " + recordMember.name().getname() + ")");
+
+        String name = recordMember.name().getname();
+        String type = (String) recordMember.type().getJavaWrapper();
+
+        recordMemberToField.put(name, type);
+
+        return null;
 
     }
 
@@ -1133,8 +1156,6 @@ public class CodeGenJava extends Visitor<Object> {
         return seqs.toArray(new String[0]);
     }
 
-
-
     @Override
     public Object visitSwitchLabel(SwitchLabel sl) {
         Log.log(sl, "Visiting a SwitchLabel");
@@ -1207,7 +1228,6 @@ public class CodeGenJava extends Visitor<Object> {
 
         return stSwitchStat.render();
     }
-
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -1308,8 +1328,6 @@ public class CodeGenJava extends Visitor<Object> {
         return stImport.render();
     }
 
-
-
     @Override
     public Object visitProtocolCase(ProtocolCase pc) {
         Log.log(pc, "Visiting a ProtocolCase (" + pc.name().getname() + ")");
@@ -1378,27 +1396,6 @@ public class CodeGenJava extends Visitor<Object> {
         stProtocolLiteral.add("vals", members.values());
 
         return stProtocolLiteral.render();
-    }
-
-    @Override
-    public Object visitRecordMember(RecordMember rm) {
-        Log.log(rm, "Visiting a RecordMember (" + rm.type() + " " + rm.name().getname() + ")");
-
-        String name = rm.name().getname();
-        String type = (String) rm.type().getJavaWrapper();
-
-        // Check if the type is a record or protocol type
-        if ( rm.type().isRecordType() )
-            type = ((RecordTypeDecl) rm.type()).name().getname();
-        else if ( rm.type().isProtocolType() )
-            type = PJProtocolCase.class.getSimpleName();
-
-        // Add this field to the collection of record members for reference
-        recordMemberToField.put(name, type);
-
-        // Ignored the value returned by this visitor as the types and
-        // variables are _always_ resolved elsewhere
-        return null;
     }
 
     @Override
@@ -1624,11 +1621,11 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitAltCase(AltCase ac) {
+
         Log.log(ac, "Visiting an AltCase");
 
         ST stAltCase = stGroup.getInstanceOf("AltCase");
         Statement stat = ac.guard().guard();
-//        String guard = (String) stat.visit(this);
         String guard = stat instanceof TimeoutStat? null : (String) stat.visit(this);
         String[] stats = (String[]) ac.stat().visit(this);
         // <--
@@ -1939,9 +1936,11 @@ public class CodeGenJava extends Visitor<Object> {
         objectGuardID = currObjectGuard;
 
         return stAltStat.render();
+
     }
 
     private Object createAltForStat(AltStat as) {
+
         Log.log(as.line + ": Creating a ForStat for a replicated Alt");
 
         ST stForStat = stGroup.getInstanceOf("ForStat");
@@ -1967,26 +1966,7 @@ public class CodeGenJava extends Visitor<Object> {
         stForStat.add("expr", expr);
         stForStat.add("incr", incr);
         return stForStat;
-    }
 
-    @Override
-    public Object visitReturnStat(ReturnStat rs) {
-        Log.log(rs, "Visiting a ReturnStat");
-
-        ST stReturnStat = stGroup.getInstanceOf("ReturnStat");
-        String expr = null;
-
-        if(rs.expr() != null) {
-
-            expr = (String) rs.expr().visit(this);
-
-            // This removes the extra ";" for invocation calls
-            expr = expr.replace(DELIMITER, "");
-            stReturnStat.add("expr", expr);
-
-        }
-
-        return stReturnStat.render();
     }
 
     // *************************************************************************
