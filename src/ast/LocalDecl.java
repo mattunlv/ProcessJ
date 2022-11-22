@@ -26,6 +26,24 @@ public class LocalDecl extends Statement implements VarDecl {
         return constant;
     }
 
+    public Type getType() {
+
+        return this.type;
+
+    }
+
+    public Name getName() {
+
+        return this.name;
+
+    }
+
+    public Expression getInitializerExpression() {
+
+        return this.initializer;
+
+    }
+
     public Type type() {
         return (Type) children[0];
     }
