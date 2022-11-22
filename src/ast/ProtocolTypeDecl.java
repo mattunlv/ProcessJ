@@ -1,6 +1,8 @@
 package ast;
 
 import utilities.Visitor;
+import utilities.Log;
+import processj.runtime.PJProtocolCase;
 
 public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
 
@@ -33,6 +35,15 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
 
     public Sequence<ProtocolCase> body() {
         return (Sequence<ProtocolCase>) children[4];
+    }
+
+    @Override
+    public String getJavaWrapper() {
+
+        Log.log(this, "Visiting a ProtocolType (" + name().getname() + ")");
+
+        return PJProtocolCase.class.getSimpleName();
+
     }
 
     // *************************************************************************
