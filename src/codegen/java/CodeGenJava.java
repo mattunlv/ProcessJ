@@ -168,9 +168,6 @@ public class CodeGenJava extends Visitor<Object> {
     /** Identifier for par-block declaration */
     private int parDecID = 0;
 
-    /** Identifier for local variable declaration */
-    private int localDecID = 0;
-
     /** Jump label used when procedures yield */
     private int jumpLabel = 0;
 
@@ -464,7 +461,7 @@ public class CodeGenJava extends Visitor<Object> {
 
         // Save the previous par-block
         String prevParBlock = currentParBlock;
-        currentParBlock = Helper.makeVariableName(Tag.PAR_BLOCK_NAME.toString(), ++parDecID, Tag.LOCAL_NAME);
+        currentParBlock = Helper.makeVariableName(Tag.PAR_BLOCK_NAME.toString(), Tag.LOCAL_NAME);
 
         // Increment the jump label and add it to the switch-stmt list
         stForStat.add("jump", ++jumpLabel);
@@ -660,7 +657,7 @@ public class CodeGenJava extends Visitor<Object> {
 
         // Create a tag for this parameter and then add it to the collection
         // of parameters for reference
-        String newName = Helper.makeVariableName(name, ++varDecID, Tag.PARAM_NAME);
+        String newName = Helper.makeVariableName(name, Tag.PARAM_NAME);
         paramToFields.put(newName, type);
         paramToVarNames.put(name, newName);
 
@@ -671,25 +668,14 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitLocalDecl(LocalDecl localDeclaration) {
-
         Log.log(localDeclaration, "Visting a LocalDecl (" + localDeclaration.type().typeName() + " " + localDeclaration.var().name().getname() + ")");
 
-        // We could have the following targets:
-        //   1.) T x;                                         // A declaration
-        //   2.) T x = 4;                                     // A simple declaration
-        //   3.) T x = in.read();                             // A single channel read
-        //   4.) T x = a.read() + b.read() + ... + z.read();  // Multiple channel reads
-        //   5.) T x = read();                                // A Java method that returns a value
-        //   6.) T x = a + b;                                 // A binary expression
-        //   7.) T x = a = b ...;                             // A complex assignment statement
+        String      name        = localDeclaration.getName().toString()         ;
+        String      type        = localDeclaration.type().getJavaWrapper()      ;
+        Expression  initializer = localDeclaration.var().init()                 ;
 
-
-        String name = localDeclaration.getName().toString()         ;
-        String type = localDeclaration.type().getJavaWrapper()      ;
-        String val  = null                                          ;
-
-        // Create a tag for this local declaration
-        String newName = Helper.makeVariableName(name, ++localDecID, Tag.LOCAL_NAME);
+        // Generated code name
+        final String newName = localDeclaration.getName().getAlias(Tag.LOCAL_NAME);
 
         if(inParFor) {
 
@@ -701,56 +687,20 @@ public class CodeGenJava extends Visitor<Object> {
         localToFields.put(newName, type);
         paramToVarNames.put(name, newName);
 
-        // This variable coulocalDeclaration be initialized, e.g. through an assignment operator
-        Expression expr = localDeclaration.var().init();
-        // Visit the expressions associated with this variable
-        if ( expr!=null ) {
-            if ( localDeclaration.type().isPrimitiveType() )
-                val = (String) expr.visit(this);
-            else if ( localDeclaration.type().isRecordType() || localDeclaration.type().isProtocolType() )
-                val = (String) expr.visit(this);
-            else if ( localDeclaration.type().isArrayType() ) {
-                val = (String) expr.visit(this);
-            }
-        }
+        String val = "";
 
-        // Is it a barrier declaration? If so, we must generate code
-        // that creates a barrier object
-        if ( localDeclaration.type().isBarrierType() && expr==null ) {
-            ST stBarrierDecl = stGroup.getInstanceOf("BarrierDecl");
-            val = stBarrierDecl.render();
-        }
-        // Is it a simple declaration for a channel type? If so, and since
-        // channels cannot be created using the operator 'new', we generate
-        // code to create a channel object
-        if ( localDeclaration.type().isChannelType() && expr==null ) {
-            ST stChannelDecl = stGroup.getInstanceOf("ChannelDecl");
-            stChannelDecl.add("type", type);
-            val = stChannelDecl.render();
-        }
+        if(initializer != null)
+            val = (String) initializer.visit(this);
 
-        // After making this local declaration a fielocalDeclaration of the procedure
-        // in which it was declared, we return iff this local variable
-        // is not initialized
-        if ( expr==null ) {
-            if ( !localDeclaration.type().isBarrierType() && (localDeclaration.type().isPrimitiveType() ||
-                localDeclaration.type().isArrayType() ||    // Can be an uninitialized array declaration
-                localDeclaration.type().isRecordType() ||   // Can be a record or protocol declaration
-                localDeclaration.type().isProtocolType()) ) // The 'null' value is used to removed empty
-                return null;                  // sequences in the generated code
-        }
+        // Barrier Declaration
+        else if(localDeclaration.type().isBarrierType())
+            val = "new PJBarrier()";
 
-        // If we reach this section of code, then we have a variable
-        // declaration with some initial value
-        /// TODO: What for?
-        //if ( val!=null )
-            //val = val.replace(DELIMITER, "");
+        else if(localDeclaration.type().isChannelType())
+            val = "new " + type + "()";
 
-        ST stVar = stGroup.getInstanceOf("Var");
-        stVar.add("name", newName);
-        stVar.add("val", val);
+        return type + " " + newName + ((!val.isEmpty()) ? " = " + val : "") + ";";
 
-        return stVar.render();
     }
 
     @Override
@@ -975,7 +925,7 @@ public class CodeGenJava extends Visitor<Object> {
             if ( doesProcYield ) {
                 // This procedure yields! Grab the instance of a yielding procedure
                 // from the string template in order to define a new class
-                procName = Helper.makeVariableName(currentProcName + hashSignature(pd), 0, Tag.PROCEDURE_NAME);
+                procName = Helper.makeVariableName(currentProcName + hashSignature(pd), Tag.PROCEDURE_NAME);
                 stProcTypeDecl = stGroup.getInstanceOf("ProcClass");
                 stProcTypeDecl.add("name", procName);
                 // Add the statements that appear in the body of the procedure
@@ -983,7 +933,7 @@ public class CodeGenJava extends Visitor<Object> {
             } else {
                 // Otherwise, grab the instance of a non-yielding procedure to
                 // define a new static Java method
-                procName = Helper.makeVariableName(currentProcName + hashSignature(pd), 0, Tag.METHOD_NAME);
+                procName = Helper.makeVariableName(currentProcName + hashSignature(pd), Tag.METHOD_NAME);
                 stProcTypeDecl = stGroup.getInstanceOf("Method");
                 stProcTypeDecl.add("name", procName);
                 stProcTypeDecl.add("type", procType);
@@ -1361,9 +1311,9 @@ public class CodeGenJava extends Visitor<Object> {
         if ( currentCompilation.fileName.equals(pd.myCompilation.fileName) ) {
             String name = pdName + hashSignature(pd);
             if ( Helper.doesProcYield(pd) )
-                name = Helper.makeVariableName(name, 0, Tag.PROCEDURE_NAME);
+                name = Helper.makeVariableName(name, Tag.PROCEDURE_NAME);
             else
-                name = Helper.makeVariableName(name, 0, Tag.METHOD_NAME);
+                name = Helper.makeVariableName(name, Tag.METHOD_NAME);
             pdName = pd.myCompilation.fileNoExtension() + "." + name;
         } else if ( pd.isNative ) {
             // Make the package visible on import by using the qualified
@@ -1613,7 +1563,7 @@ public class CodeGenJava extends Visitor<Object> {
         // Save previous barrier expressions
         ArrayList<String> prevBarrier = barriers;
         // Create a name for this new par-block
-        currentParBlock = Helper.makeVariableName(Tag.PAR_BLOCK_NAME.toString(), ++parDecID, Tag.LOCAL_NAME);
+        currentParBlock = Helper.makeVariableName(Tag.PAR_BLOCK_NAME.toString(), Tag.LOCAL_NAME);
         // Since this is a new par-block, we need to create a variable
         // inside the process in which this par-block was declared
         stParBlock.add("name", currentParBlock);
@@ -1927,7 +1877,7 @@ public class CodeGenJava extends Visitor<Object> {
                     new Var(n, null),
                     false /* not constant */).visit(this);
             // Create a tag for this local alt declaration
-            String newName = Helper.makeVariableName("alt", ++localDecID, Tag.LOCAL_NAME);
+            String newName = Helper.makeVariableName("alt", Tag.LOCAL_NAME);
             localToFields.put(newName, "PJAlt");
             paramToVarNames.put(newName, newName);
             // -->
@@ -2041,7 +1991,7 @@ public class CodeGenJava extends Visitor<Object> {
                 new Var(n, null),
                 false /* not constant */).visit(this);
         // Create a tag for this local alt declaration
-        String newName = Helper.makeVariableName("alt", ++localDecID, Tag.LOCAL_NAME);
+        String newName = Helper.makeVariableName("alt", Tag.LOCAL_NAME);
         localToFields.put(newName, "PJAlt");
         paramToVarNames.put(newName, newName);
         // -->
@@ -2152,8 +2102,9 @@ public class CodeGenJava extends Visitor<Object> {
     private void resetGlobals() {
         parDecID = 0;
         varDecID = 0;
-        localDecID = 0;
         jumpLabel = 0;
+
+        Helper.ResetGlobals();
 
         localToFields.clear();
         switchCases.clear();
@@ -2252,7 +2203,7 @@ public class CodeGenJava extends Visitor<Object> {
     int index = 0;
 
     private Tuple<?> createLocalDeclForLoop(String dims) {
-        final String localDeclName = Helper.makeVariableName("tmp__", index++, Tag.LOCAL_NAME);
+        final String localDeclName = Helper.makeVariableName("tmp__", Tag.LOCAL_NAME);
         Name n = new Name(localDeclName);
         NameExpr ne = new NameExpr(n);
         PrimitiveLiteral pl = new PrimitiveLiteral(new Token(0, "0", 0, 0, 0), 4 /* kind */);

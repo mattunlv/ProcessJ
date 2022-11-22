@@ -1,6 +1,8 @@
 package ast;
 
 import utilities.Visitor;
+import codegen.Helper;
+import codegen.Tag;
 
 public class Name extends AST {
 
@@ -12,6 +14,8 @@ public class Name extends AST {
     public DefineTopLevelDecl resolvedPackageAccess = null;
     // the package hierarchy caused to be loaded because of the packageAccess
     public Compilation c = null;
+
+    public String alias = "";
 
     // a string with "."s that determines the package / in which this name was declared (if any) -- only useful for invocations for now.
     public String packagePrefix;
@@ -54,6 +58,15 @@ public class Name extends AST {
 
     public String getname() {
         return toString(); //this.id;  // TODO: changed back to full name
+    }
+
+    public String getAlias(Tag type) {
+
+        if(this.alias != null && !this.alias.isEmpty())
+            this.alias = Helper.makeVariableName(this.id, type);
+
+        return this.alias;
+
     }
 
     public String simplename() {
