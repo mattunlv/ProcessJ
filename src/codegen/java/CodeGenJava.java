@@ -303,66 +303,8 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitBinaryExpr(BinaryExpr be) {
-        Log.log(be, "Visiting a BinaryExpr");
-
-        ST stBinaryExpr = stGroup.getInstanceOf("BinaryExpr");
-        String op = be.opString();
-        String lhs = (String) be.left().visit(this);
-        lhs = lhs.replace(DELIMITER, "");
-        lhs = be.left().hasParens ? "(" + lhs + ")" : lhs;
-        String rhs = (String) be.right().visit(this);
-        rhs = be.right().hasParens ? "(" + rhs + ")" : rhs;
-        rhs = rhs.replace(DELIMITER, "");
-
-        // <--
-        // Silly rewrite for comparing two strings in ProcessJ using the
-        // equals(Xxx) method from Java
-        if ( "==".equals(op) && (be.left() instanceof NameExpr && be.right() instanceof NameExpr) &&
-            ((((NameExpr) be.left()).myDecl instanceof LocalDecl) &&
-            ((NameExpr) be.right()).myDecl instanceof LocalDecl) ) {
-            LocalDecl ld1 = (LocalDecl) ((NameExpr) be.left()).myDecl;
-            LocalDecl ld2 = (LocalDecl) ((NameExpr) be.right()).myDecl;
-            if ( ld1.type().isStringType() && ld2.type().isStringType() ) {
-               stBinaryExpr = stGroup.getInstanceOf("StringCompare");
-               stBinaryExpr.add("str1", lhs);
-               stBinaryExpr.add("str2", rhs);
-               return stBinaryExpr.render();
-            }
-        }
-        // A rewrite for the 'instanceof' operator in Java happens when the token OP
-        // in a binary expression represents the token 'is'. Thus, to render the correct
-        // code, we look for the name of the left-hand side operand, which is a record
-        // or protocol variable, and then use  the NameType of the right-hand side operand
-        // as the type to check  if the left-hand side operand is indeed an instanceof
-        // the right hand side operand
-        if ( "instanceof".equals(op) && localToFields.containsKey(lhs) ) {
-            String namedType = localToFields.get(lhs);
-            Object o = topLvlDecls.get(namedType);
-            if ( o instanceof RecordTypeDecl ) {
-                stBinaryExpr = stGroup.getInstanceOf("RecordExtend");
-                stBinaryExpr.add("name", lhs);
-                stBinaryExpr.add("type", String.format("I_%s", rhs));
-                return stBinaryExpr.render();
-            }
-            if ( namedType.equals(PJProtocolCase.class.getSimpleName()) ) {
-                stBinaryExpr = stGroup.getInstanceOf("RecordExtend");
-                stBinaryExpr.add("name", lhs);
-                stBinaryExpr.add("type", currentProtocol);
-                return stBinaryExpr.render();
-            }
-        }
-        // -->
-
-        stBinaryExpr.add("lhs", lhs);
-        stBinaryExpr.add("rhs", rhs);
-        stBinaryExpr.add("op", op);
-
-        return stBinaryExpr.render();
-    }
-
-    @Override
     public Object visitWhileStat(WhileStat ws) {
+
         Log.log(ws, "Visiting a WhileStat");
 
         ST stWhileStat = stGroup.getInstanceOf("WhileStat");
@@ -384,10 +326,12 @@ public class CodeGenJava extends Visitor<Object> {
         stWhileStat.add("body", stats);
 
         return stWhileStat.render();
+
     }
 
     @Override
     public Object visitDoStat(DoStat ds) {
+
         Log.log(ds, "Visiting a DoStat");
 
         ST stDoStat = stGroup.getInstanceOf("DoStat");
@@ -409,10 +353,12 @@ public class CodeGenJava extends Visitor<Object> {
         stDoStat.add("body", stats);
 
         return stDoStat.render();
+
     }
 
     @Override
     public Object visitForStat(ForStat fs) {
+
         Log.log(fs, "Visiting a ForStat");
 
         ST stForStat = stGroup.getInstanceOf("ParForStat");
@@ -519,6 +465,7 @@ public class CodeGenJava extends Visitor<Object> {
         currentParBlock = prevParBlock;
 
         return stForStat.render();
+
     }
 
     @Override
@@ -558,6 +505,69 @@ public class CodeGenJava extends Visitor<Object> {
         return stIfStat.render();
     }
 
+
+    @Override
+    public Object visitBinaryExpr(BinaryExpr be) {
+        Log.log(be, "Visiting a BinaryExpr");
+
+        ST stBinaryExpr = stGroup.getInstanceOf("BinaryExpr");
+        String op = be.opString();
+        String lhs = (String) be.left().visit(this);
+        lhs = lhs.replace(DELIMITER, "");
+        lhs = be.left().hasParens ? "(" + lhs + ")" : lhs;
+        String rhs = (String) be.right().visit(this);
+        rhs = be.right().hasParens ? "(" + rhs + ")" : rhs;
+        rhs = rhs.replace(DELIMITER, "");
+
+        // <--
+        // Silly rewrite for comparing two strings in ProcessJ using the
+        // equals(Xxx) method from Java
+        if ( "==".equals(op) && (be.left() instanceof NameExpr && be.right() instanceof NameExpr) &&
+            ((((NameExpr) be.left()).myDecl instanceof LocalDecl) &&
+            ((NameExpr) be.right()).myDecl instanceof LocalDecl) ) {
+            LocalDecl ld1 = (LocalDecl) ((NameExpr) be.left()).myDecl;
+            LocalDecl ld2 = (LocalDecl) ((NameExpr) be.right()).myDecl;
+            if ( ld1.type().isStringType() && ld2.type().isStringType() ) {
+               stBinaryExpr = stGroup.getInstanceOf("StringCompare");
+               stBinaryExpr.add("str1", lhs);
+               stBinaryExpr.add("str2", rhs);
+               return stBinaryExpr.render();
+            }
+        }
+        // A rewrite for the 'instanceof' operator in Java happens when the token OP
+        // in a binary expression represents the token 'is'. Thus, to render the correct
+        // code, we look for the name of the left-hand side operand, which is a record
+        // or protocol variable, and then use  the NameType of the right-hand side operand
+        // as the type to check  if the left-hand side operand is indeed an instanceof
+        // the right hand side operand
+        if ( "instanceof".equals(op) && localToFields.containsKey(lhs) ) {
+            String namedType = localToFields.get(lhs);
+            Object o = topLvlDecls.get(namedType);
+            if ( o instanceof RecordTypeDecl ) {
+                stBinaryExpr = stGroup.getInstanceOf("RecordExtend");
+                stBinaryExpr.add("name", lhs);
+                stBinaryExpr.add("type", String.format("I_%s", rhs));
+                return stBinaryExpr.render();
+            }
+            if ( namedType.equals(PJProtocolCase.class.getSimpleName()) ) {
+                stBinaryExpr = stGroup.getInstanceOf("RecordExtend");
+                stBinaryExpr.add("name", lhs);
+                stBinaryExpr.add("type", currentProtocol);
+                return stBinaryExpr.render();
+            }
+        }
+        // -->
+
+        stBinaryExpr.add("lhs", lhs);
+        stBinaryExpr.add("rhs", rhs);
+        stBinaryExpr.add("op", op);
+
+        return stBinaryExpr.render();
+    }
+
+    /// ------------------------------------------------------------------------------------------------
+    /// Refactored
+
     @Override
     public Object visitAssignment(final Assignment assignment) {
 
@@ -581,6 +591,15 @@ public class CodeGenJava extends Visitor<Object> {
             rhs = (String) assignment.right().visit(this);
 
         return lhs + (((op != null) && (!op.isEmpty()) ? " " + op + " " + rhs : "")) + ";";
+
+    }
+
+    @Override
+    public Object visitExprStat(final ExprStat expressionStatement) {
+
+        Log.log(expressionStatement, "Visiting an ExprStat");
+
+        return expressionStatement.expr().visit(this);
 
     }
 
@@ -658,13 +677,6 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitExprStat(final ExprStat es) {
-        Log.log(es, "Visiting an ExprStat");
-
-        return es.expr().visit(this);
-    }
-
-    @Override
     public Object visitTernary(final Ternary ternary) {
 
         Log.log(ternary, "Visiting a Ternary");
@@ -739,15 +751,17 @@ public class CodeGenJava extends Visitor<Object> {
 
     }
 
-
     @Override
-    public Object visitPrimitiveLiteral(PrimitiveLiteral primitiveLiteral) {
+    public Object visitPrimitiveLiteral(final PrimitiveLiteral primitiveLiteral) {
 
         Log.log(primitiveLiteral, "Visiting a Primitive Literal (" + primitiveLiteral.getText() + ")");
 
         return primitiveLiteral.getText() + ((primitiveLiteral.isSuffixed()) ? primitiveLiteral.suffix() : "");
 
     }
+
+    /// --------------------------------------------------------------------------------------------
+    /// End Refactored
 
     @Override
     public Object visitRecordTypeDecl(RecordTypeDecl rt) {
