@@ -522,36 +522,6 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitTernary(Ternary te) {
-        Log.log(te, "Visiting a Ternary");
-
-        ST stTernary = stGroup.getInstanceOf("Ternary");
-        String expr = (String) te.expr().visit(this);
-        String trueBranch = (String) te.trueBranch().visit(this);
-        String falseBranch = (String) te.falseBranch().visit(this);
-        stTernary.add("expr", expr);
-        stTernary.add("trueBranch", trueBranch);
-        stTernary.add("falseBranch", falseBranch);
-
-        return stTernary.render();
-    }
-
-    @Override
-    public Object visitContinueStat(ContinueStat cs) {
-        Log.log(cs, "Visiting a ContinueStat");
-
-        ST stContinueStat = stGroup.getInstanceOf("ContinueStat");
-        String name = null;
-        // If target isn't null, we have a label to jump to
-        if ( cs.target()!=null ) {
-            name = (String) cs.target().visit(this);
-            stContinueStat.add("name", name);
-        }
-
-        return stContinueStat.render();
-    }
-
-    @Override
     public Object visitIfStat(IfStat is) {
         Log.log(is, "Visiting a IfStat");
 
@@ -589,93 +559,78 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitAssignment(Assignment as) {
+    public Object visitAssignment(final Assignment assignment) {
 
-        Log.log(as, "Visiting an Assignment");
+        Log.log(assignment, "Visiting an Assignment");
 
-        ST     stVar= stGroup.getInstanceOf("Var");
-
-        String op   = as.opString();
+        String op   = assignment.opString();
+        String type = "";
         String lhs  = "";
-        String rhs  = null;
-        String type = null;
+        String rhs  = "";
 
-        if(as.left() != null) {
+        if(assignment.right() instanceof NewArray)
+            return createNewArray(lhs, ((NewArray) assignment.right()));
 
-            lhs = (String) as.left().visit(this);
+        else if(assignment.right() instanceof ChannelReadExpr)
+            return createChannelReadExpr(lhs, type, op, ((ChannelReadExpr) assignment.right()));
 
-            if(as.left().type != null) {
+        if(assignment.left() != null)
+            lhs = assignment.left().type.getJavaWrapper();
 
-                if (as.left().type.isRecordType())
-                    type = ((RecordTypeDecl) as.left().type).name().getname();
+        else if(assignment.right() != null)
+            rhs = (String) assignment.right().visit(this);
 
-                else if(as.left().type.isProtocolType())
-                    type = PJProtocolCase.class.getSimpleName();
-
-                else
-                    type = (String) as.left().type.visit(this);
-
-            }
-
-        }
-
-        if(as.right() instanceof NewArray)
-            return createNewArray(lhs, ((NewArray) as.right()));
-
-        else if(as.right() instanceof ChannelReadExpr )
-            return createChannelReadExpr(lhs, type, op, ((ChannelReadExpr) as.right()));
-
-        else if(as.right() != null) {
-
-            rhs = (String) as.right().visit(this);
-            rhs = rhs.replace(DELIMITER, "");
-
-        }
-
-        stVar.add("name",   lhs);
-        stVar.add("val",    rhs);
-        stVar.add("op",     op);
-
-        return stVar.render();
+        return lhs + (((op != null) && (!op.isEmpty()) ? " " + op + " " + rhs : "")) + ";";
 
     }
 
     @Override
-    public Object visitParamDecl(ParamDecl pd) {
-        Log.log(pd, "Visiting a ParamDecl (" + pd.type().typeName() + " " + pd.paramName().getname() + ")");
+    public Object visitContinueStat(final ContinueStat continueStatement) {
 
-        
-        // Grab the type and name of a variable declaration
-        String name = (String) pd.paramName().visit(this);
-        String type = (String) pd.type().visit(this);
+        Log.log(continueStatement, "Visiting a ContinueStat");
 
-        // Silly fix for channel types
-        if ( pd.type() instanceof RecordTypeDecl )
-            type = ((RecordTypeDecl) pd.type()).name().getname();
-        else if ( pd.type() instanceof ProtocolTypeDecl )
-            type = ((ProtocolTypeDecl) pd.type()).name().getname();
+        return "continue" + ((continueStatement.target() != null) ?
+            " " + continueStatement.target().visit(this) : "") + ";";
 
-        // Create a tag for this parameter and then add it to the collection
-        // of parameters for reference
-        String newName = Helper.makeVariableName(name, Tag.PARAM_NAME);
+    }
+
+    @Override
+    public Object visitParamDecl(final ParamDecl parameterDeclaration) {
+
+        Log.log(parameterDeclaration, "Visiting a ParamDecl (" + parameterDeclaration.type().typeName() + " " + parameterDeclaration.paramName().getname() + ")");
+
+        final String name     = parameterDeclaration.paramName().getname()                  ;
+        final String newName  = parameterDeclaration.paramName().getAlias(Tag.PARAM_NAME)   ;
+        final String type     = parameterDeclaration.type().getJavaWrapper()                ;
+
         paramToFields.put(newName, type);
         paramToVarNames.put(name, newName);
 
-        // Ignored the value returned by this visitor as the types and
-        // variables are _always_ resolved elsewhere
         return null;
+
     }
 
     @Override
-    public Object visitLocalDecl(LocalDecl localDeclaration) {
+    public Object visitConstantDecl(final ConstantDecl constantDeclaration) {
+
+        Log.log(constantDeclaration, "Visting ConstantDecl (" + constantDeclaration.type().typeName() + " " + constantDeclaration.var().name().getname() + ")");
+
+        final String type           = constantDeclaration.getType().getJavaWrapper()                        ;
+        final String name           = constantDeclaration.getName().getname()                               ;
+        final String initializer    = (String) constantDeclaration.getInitializerExpression().visit(this)   ;
+
+        return type + " " + name + ((initializer != null) ? " = " + initializer : "") + ";";
+    }
+
+    @Override
+    public Object visitLocalDecl(final LocalDecl localDeclaration) {
+
         Log.log(localDeclaration, "Visting a LocalDecl (" + localDeclaration.type().typeName() + " " + localDeclaration.var().name().getname() + ")");
 
-        String      name        = localDeclaration.getName().toString()         ;
-        String      type        = localDeclaration.type().getJavaWrapper()      ;
-        Expression  initializer = localDeclaration.var().init()                 ;
-
-        // Generated code name
-        final String newName = localDeclaration.getName().getAlias(Tag.LOCAL_NAME);
+        final String        name           = localDeclaration.getName().toString()                 ;
+        final String        type           = localDeclaration.type().getJavaWrapper()              ;
+        final Expression    initializer    = localDeclaration.var().init()                         ;
+        final String        newName        = localDeclaration.getName().getAlias(Tag.LOCAL_NAME)   ;
 
         if(inParFor) {
 
@@ -692,7 +647,6 @@ public class CodeGenJava extends Visitor<Object> {
         if(initializer != null)
             val = (String) initializer.visit(this);
 
-        // Barrier Declaration
         else if(localDeclaration.type().isBarrierType())
             val = "new PJBarrier()";
 
@@ -704,39 +658,49 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitExprStat(ExprStat es) {
+    public Object visitExprStat(final ExprStat es) {
         Log.log(es, "Visiting an ExprStat");
 
         return es.expr().visit(this);
     }
 
     @Override
-    public Object visitName(Name na) {
-        Log.log(na, "Visiting a Name (" + na.getname() + ")");
+    public Object visitTernary(final Ternary ternary) {
 
-        String name = null;
+        Log.log(ternary, "Visiting a Ternary");
 
-        if ( paramToVarNames.containsKey(na.getname()) )
-            name = paramToVarNames.get(na.getname());
+        final String expression   = (String) ternary.expr().visit(this);
+        final String trueBranch   = (String) ternary.trueBranch().visit(this);
+        final String falseBranch  = (String) ternary.falseBranch().visit(this);
 
-        if ( name==null )
-            name = na.getname();
+        return "(" + expression + ") ? " + trueBranch + " : " + falseBranch;
 
-        return name;
     }
 
     @Override
-    public Object visitNameExpr(NameExpr ne) {
-        Log.log(ne, "Visiting a NameExpr (" + ne.name().getname() + ")");
+    public Object visitNewArray(final NewArray newArray) {
 
-        return ne.name().visit(this);
+        Log.log(newArray, "Visiting a NewArray");
+
+        return createNewArray(null, newArray);
+
+    }
+    
+    @Override
+    public Object visitNameExpr(final NameExpr nameExpression) {
+
+        Log.log(nameExpression, "Visiting a NameExpr (" + nameExpression.name().getname() + ")");
+
+        return nameExpression.name().getname();
+
     }
 
     @Override
-    public Object visitNewArray(NewArray ne) {
-        Log.log(ne, "Visiting a NewArray");
+    public Object visitChannelEndExpr(final ChannelEndExpr channelEndExpression) {
+        
+        Log.log(channelEndExpression, "Visiting a ChannelEndExpr (" + (channelEndExpression.isRead() ? "read" : "write") + ")");
 
-        return createNewArray(null, ne);
+        return channelEndExpression.channel().visit(this);
 
     }
 
@@ -775,12 +739,22 @@ public class CodeGenJava extends Visitor<Object> {
 
     }
 
+
+    @Override
+    public Object visitPrimitiveLiteral(PrimitiveLiteral primitiveLiteral) {
+
+        Log.log(primitiveLiteral, "Visiting a Primitive Literal (" + primitiveLiteral.getText() + ")");
+
+        return primitiveLiteral.getText() + ((primitiveLiteral.isSuffixed()) ? primitiveLiteral.suffix() : "");
+
+    }
+
     @Override
     public Object visitRecordTypeDecl(RecordTypeDecl rt) {
         Log.log(rt, "Visiting a RecordTypeDecl (" + rt.name().getname() + ")");
 
         ST stRecordType = stGroup.getInstanceOf("RecordType");
-        String recName = (String) rt.name().visit(this);
+        String recName = (String) rt.name().getname();
         ArrayList<String> modifiers = new ArrayList<>();
 
         for (Modifier m : rt.modifiers())
@@ -818,7 +792,7 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd.name().getname() + ")");
 
         ST stProtocolClass = stGroup.getInstanceOf("ProtocolClass");
-        String name = (String) pd.name().visit(this);
+        String name = (String) pd.name().getAlias(Tag.PROTOCOL_NAME);
         ArrayList<String> modifiers = new ArrayList<>();
         ArrayList<String> body = new ArrayList<>();
 
@@ -860,7 +834,7 @@ public class CodeGenJava extends Visitor<Object> {
         if ( !switchCases.isEmpty() )
             switchCases = new ArrayList<>();
         // Name of the invoked procedure
-        currentProcName = (String) pd.name().visit(this);
+        currentProcName = (String) pd.name().getAlias(Tag.PROCEDURE_NAME);
         // Procedures are static classes which belong to the same package and
         // class. To avoid having classes with the same name, we generate a
         // new name for the currently executing procedure
@@ -916,7 +890,7 @@ public class CodeGenJava extends Visitor<Object> {
             // as private, public, protected, etc.
             String[] modifiers = (String[]) pd.modifiers().visit(this);
             // Grab the return type of the invoked procedure
-            String procType = (String) pd.returnType().visit(this);
+            String procType = (String) pd.returnType().getJavaWrapper();
             // The procedure's annotation determines if we have a yielding procedure
             // or a Java method (a non-yielding procedure)
             boolean doesProcYield = Helper.doesProcYield(pd);
@@ -988,28 +962,6 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitPrimitiveLiteral(PrimitiveLiteral li) {
-        Log.log(li, "Visiting a Primitive Literal (" + li.getText() + ")");
-
-        ST stPrimitiveLiteral = stGroup.getInstanceOf("PrimitiveLiteral");
-        if ( li.isSuffixed() )
-            stPrimitiveLiteral.add("type", li.suffix());
-        stPrimitiveLiteral.add("value", li.getText());
-
-        return stPrimitiveLiteral.render();
-    }
-
-
-    @Override
-    public Object visitChannelEndExpr(ChannelEndExpr ce) {
-        Log.log(ce, "Visiting a ChannelEndExpr (" + (ce.isRead() ? "read" : "write") + ")");
-
-        String channel = (String) ce.channel().visit(this);
-
-        return channel;
-    }
-
-    @Override
     public Object visitChannelWriteStat(ChannelWriteStat cw) {
         Log.log(cw, "Visiting a ChannelWriteStat");
 
@@ -1064,30 +1016,6 @@ public class CodeGenJava extends Visitor<Object> {
         }
 
         return stChannelReadExpr.render();
-    }
-
-    @Override
-    public Object visitVar(Var va) {
-        Log.log(va, "Visiting a Var (" + va.name().getname() + ")");
-
-        ST stVar = stGroup.getInstanceOf("Var");
-        // Returned values for name and expression (if any)
-        String name = (String) va.name().visit(this);
-        String exprStr = null;
-        // This variable could be initialized, e.g. through an assignment
-        // operator
-        Expression expr = va.init();
-        // Visit the expressions associated with this variable
-        if ( expr!=null ) {
-            // This is safe for when our target is not too complicated, e.g.
-            // initializing variables with primitives or string literals
-            exprStr = (String) expr.visit(this);
-            stVar.add("val", exprStr);
-        }
-
-        stVar.add("name", name);
-
-        return stVar.render();
     }
 
     @Override
@@ -1267,7 +1195,7 @@ public class CodeGenJava extends Visitor<Object> {
 
         ST stCastExpr = stGroup.getInstanceOf("CastExpr");
         // This result in (TYPE)(EXPR)
-        String type = (String) ce.type().visit(this);
+        String type = (String) ce.type().getJavaWrapper();
         String expr = (String) ce.expr().visit(this);
 
         stCastExpr.add("type", type);
@@ -1285,7 +1213,7 @@ public class CodeGenJava extends Visitor<Object> {
         if ( in.ignore ) {
             Log.log(in, "Visiting a " + in.procedureName().getname());
             ST stIgnore = stGroup.getInstanceOf("InvocationIgnore");
-            stIgnore.add("name", in.procedureName().visit(this));
+            stIgnore.add("name", in.procedureName().getAlias(Tag.PROCEDURE_NAME));
             stIgnore.add("var", in.params().visit(this));
             return stIgnore.render();
         }
@@ -1384,7 +1312,7 @@ public class CodeGenJava extends Visitor<Object> {
         ST stProtocolType = stGroup.getInstanceOf("ProtocolType");
         // Since we are keeping the name of a tag as is, this (in theory)
         // shouldn't cause any name collision
-        String protocName = (String) pc.name().visit(this);
+        String protocName = (String) pc.name().getname();
         // This shouldn't create name collision problems even if we
         // use the same visitor for protocols and records
         recordMemberToField.clear();
@@ -1409,7 +1337,7 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(pl, "Visiting a ProtocolLiteral (" + pl.name().getname() + ")");
 
         ST stProtocolLiteral = stGroup.getInstanceOf("ProtocolLiteral");
-        String type = (String) pl.name().visit(this);
+        String type = (String) pl.name().getname();
         String tag = (String) pl.tag().visit(this);
 
         // This map is used to determine the order in which values are
@@ -1452,7 +1380,7 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(rm, "Visiting a RecordMember (" + rm.type() + " " + rm.name().getname() + ")");
 
         String name = rm.name().getname();
-        String type = (String) rm.type().visit(this);
+        String type = (String) rm.type().getJavaWrapper();
 
         // Check if the type is a record or protocol type
         if ( rm.type().isRecordType() )
@@ -1473,7 +1401,7 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(rl, "Visiting a RecordLiteral (" + rl.name().getname() + ")");
 
         ST stRecordListeral = stGroup.getInstanceOf("RecordLiteral");
-        String type = (String) rl.name().visit(this);
+        String type = (String) rl.name().getname();
 
         // This map is used to determine the order in which values
         // are passed to the constructor of the class associated
@@ -1519,7 +1447,7 @@ public class CodeGenJava extends Visitor<Object> {
         } else if ( ra.record().type.isProtocolType() ) {
             stAccessor = stGroup.getInstanceOf("ProtocolAccess");
             ProtocolTypeDecl pt = (ProtocolTypeDecl) ra.record().type;
-            String protocName = (String) pt.name().visit(this); // Wrapper class
+            String protocName = (String) pt.name().getname(); // Wrapper class
             String name = (String) ra.record().visit(this); // Reference to inner class type
             String field = ra.field().getname(); // Field in inner class
 
@@ -1711,18 +1639,6 @@ public class CodeGenJava extends Visitor<Object> {
 
         return stAltCase.render();
     }
-
-    @Override
-    public Object visitConstantDecl(ConstantDecl cd) {
-        Log.log(cd, "Visting ConstantDecl (" + cd.type().typeName() + " " + cd.var().name().getname() + ")");
-
-        ST stConstantDecl = stGroup.getInstanceOf("ConstantDecl");
-        stConstantDecl.add("type", cd.type().visit(this));
-        stConstantDecl.add("var", cd.var().visit(this));
-
-        return stConstantDecl.render();
-    }
-
 
     /** List of replicated alt loops */
     ArrayList<ST> arrayOfReplicatedAltLoop = new ArrayList<>();
@@ -2262,7 +2178,7 @@ public class CodeGenJava extends Visitor<Object> {
         final ST          stNewArray  = stGroup.getInstanceOf("NewArray2");
 
         final String[]    dims        = (String[])  na.dimsExpr().visit(this);
-        final String      type        = (String)    na.baseType().visit(this);
+        final String      type        = (String)    na.baseType().getJavaWrapper();
 
         ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
 
