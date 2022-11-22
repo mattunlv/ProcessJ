@@ -1,6 +1,7 @@
 package ast;
 
 import utilities.Visitor;
+import utilities.Log;
 import processj.runtime.PJBarrier;
 import processj.runtime.PJTimer;
 
@@ -116,7 +117,10 @@ public class PrimitiveType extends Type {
         }
     }
 
+    @Override
     public String getJavaWrapper() {
+        
+        Log.log(this, "Visiting a Primitive Type (" + typeName() + ")");
 
         switch(this.kind) {
 

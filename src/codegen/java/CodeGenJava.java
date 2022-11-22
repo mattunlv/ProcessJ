@@ -306,145 +306,6 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitProcTypeDecl(ProcTypeDecl pd) {
-        Log.log(pd, "Visiting a ProcTypeDecl (" + pd.name().getname() + ")");
-
-        ST stProcTypeDecl = null;
-        // Save previous procedure state
-        String prevProcName = currentProcName;
-        // Save previous jump labels
-        ArrayList<String> prevLabels = switchCases;
-        if ( !switchCases.isEmpty() )
-            switchCases = new ArrayList<>();
-        // Name of the invoked procedure
-        currentProcName = (String) pd.name().visit(this);
-        // Procedures are static classes which belong to the same package and
-        // class. To avoid having classes with the same name, we generate a
-        // new name for the currently executing procedure
-        String procName = null;
-        // For non-invocations, that is, for anything other than a procedure
-        // that yields, we need to extends the PJProcess class anonymously
-        if ( "Anonymous".equals(currentProcName) ) {
-            // Preserve current jump label for resumption
-            int prevJumpLabel = jumpLabel;
-            jumpLabel = 0;
-            // Create an instance for such anonymous procedure
-            stProcTypeDecl = stGroup.getInstanceOf("AnonymousProcess2");
-            // Statements that appear in the procedure being executed
-            String[] body = (String[]) pd.body().visit(this);
-            stProcTypeDecl.add("parBlock", currentParBlock);
-            stProcTypeDecl.add("syncBody", body);
-            stProcTypeDecl.add("isPar", inParFor);
-            // Add the barrier this procedure should resign from
-            if ( !barriers.isEmpty() )
-                stProcTypeDecl.add("barrier", barriers);
-            // Add the switch block for yield and resumption
-            if ( !switchCases.isEmpty() ) {
-                ST stSwitchBlock = stGroup.getInstanceOf("SwitchBlock");
-                stSwitchBlock.add("jumps", switchCases);
-                stProcTypeDecl.add("switchBlock", stSwitchBlock.render());
-            }
-            // The list of local variables defined in the body of a procedure
-            // becomes the instance fields of the class
-            if ( !localsForAnonymousProcess.isEmpty() ) {
-                stProcTypeDecl.add("ltypes", localsForAnonymousProcess.values());
-                stProcTypeDecl.add("lvars", localsForAnonymousProcess.keySet());
-            }
-            // Restore jump label so it knows where to resume from
-            jumpLabel = prevJumpLabel;
-        } else {
-            // Restore global variables for a new PJProcess class
-            resetGlobals();
-            // Formal parameters that must be passed to the procedure
-            Sequence<ParamDecl> formals = pd.formalParams();
-            // Do we have any parameters?
-            if ( formals!=null && formals.size()>0 ) {
-                // Iterate through and visit every parameter declaration.
-                // Retrieve the name and type of each parameter specified in
-                // a list of comma-separated arguments. Note that we ignored
-                // the value returned by this visitor
-                for (int i=0; i<formals.size(); ++i)
-                    formals.child(i).visit(this);
-            }
-            // Visit all declarations that appear in the procedure
-            String[] body = null;
-            if ( pd.body()!=null ) body = (String[]) pd.body().visit(this);
-            // Retrieve the modifier(s) attached to the invoked procedure such
-            // as private, public, protected, etc.
-            String[] modifiers = (String[]) pd.modifiers().visit(this);
-            // Grab the return type of the invoked procedure
-            String procType = (String) pd.returnType().visit(this);
-            // The procedure's annotation determines if we have a yielding procedure
-            // or a Java method (a non-yielding procedure)
-            boolean doesProcYield = Helper.doesProcYield(pd);
-            // Set the template to the correct instance value and then initialize
-            // its attributes
-            if ( doesProcYield ) {
-                // This procedure yields! Grab the instance of a yielding procedure
-                // from the string template in order to define a new class
-                procName = Helper.makeVariableName(currentProcName + hashSignature(pd), 0, Tag.PROCEDURE_NAME);
-                stProcTypeDecl = stGroup.getInstanceOf("ProcClass");
-                stProcTypeDecl.add("name", procName);
-                // Add the statements that appear in the body of the procedure
-                stProcTypeDecl.add("syncBody", body);
-            } else {
-                // Otherwise, grab the instance of a non-yielding procedure to
-                // define a new static Java method
-                procName = Helper.makeVariableName(currentProcName + hashSignature(pd), 0, Tag.METHOD_NAME);
-                stProcTypeDecl = stGroup.getInstanceOf("Method");
-                stProcTypeDecl.add("name", procName);
-                stProcTypeDecl.add("type", procType);
-                // Do we have any access modifier? If so, add them
-                if ( modifiers!=null && modifiers.length>0 )
-                    stProcTypeDecl.add("modifier", modifiers);
-                stProcTypeDecl.add("body", body);
-            }
-
-            // Create an entry point for the ProcessJ program, which is just
-            // a Java main method that is called by the JVM
-            if ( "main".equals(currentProcName) && pd.signature().equals(Tag.MAIN_NAME.toString()) ) {
-                // Create an instance of a Java main method template
-                ST stMain = stGroup.getInstanceOf("Main");
-                stMain.add("class", currentCompilation.fileNoExtension());
-                stMain.add("name", procName);
-                // Pass the list of command line arguments to this main method
-                if ( !paramToFields.isEmpty() ) {
-                    stMain.add("types", paramToFields.values());
-                    stMain.add("vars", paramToFields.keySet());
-                }
-                // Add the entry point of the program
-                stProcTypeDecl.add("main", stMain.render());
-            }
-            // The list of command-line arguments should be passed to the constructor
-            // of the static class that the main method belongs or be passed to the
-            // static method
-            if ( !paramToFields.isEmpty() ) {
-                stProcTypeDecl.add("types", paramToFields.values());
-                stProcTypeDecl.add("vars", paramToFields.keySet());
-            }
-            // The list of local variables defined in the body of a procedure
-            // becomes the instance fields of the class
-            if ( !localToFields.isEmpty() ) {
-                stProcTypeDecl.add("ltypes", localToFields.values());
-                stProcTypeDecl.add("lvars", localToFields.keySet());
-            }
-            // Add the switch block for resumption (if any)
-            if ( !switchCases.isEmpty() ) {
-                ST stSwitchBlock = stGroup.getInstanceOf("SwitchBlock");
-                stSwitchBlock.add("jumps", switchCases);
-                stProcTypeDecl.add("switchBlock", stSwitchBlock.render());
-            }
-        }
-
-        // Restore and reset previous values
-        currentProcName = prevProcName;
-        // Restore previous jump labels
-        switchCases = prevLabels;
-
-        return stProcTypeDecl.render();
-    }
-
-    @Override
     public Object visitBinaryExpr(BinaryExpr be) {
         Log.log(be, "Visiting a BinaryExpr");
 
@@ -927,20 +788,6 @@ public class CodeGenJava extends Visitor<Object> {
         return ne.name().visit(this);
     }
 
-    // This visit method is no longer needed. All NamedType are
-    // resolved by the ResolveNamedType visitor.
-    @Override
-    public Object visitNamedType(NamedType nt) {
-        Log.log(nt, "Visiting a NamedType (" + nt.name().getname() + ")");
-
-        String type = nt.name().getname();
-        // Is this a protocol? Change the type to enable multiple inheritance
-        if ( nt.type()!=null && nt.type().isProtocolType() )
-            type = PJProtocolCase.class.getSimpleName();
-
-        return type;
-    }
-
     @Override
     public Object visitNewArray(NewArray ne) {
         Log.log(ne, "Visiting a NewArray");
@@ -951,11 +798,249 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitPrimitiveType(final PrimitiveType primitiveType) {
-        
-        Log.log(primitiveType, "Visiting a Primitive Type (" + primitiveType.typeName() + ")");
 
         return primitiveType.getJavaWrapper();
 
+    }
+
+    @Override
+    public Object visitChannelType(final ChannelType channelType) {
+
+        return channelType.getJavaWrapper();
+
+    }
+
+    @Override
+    public Object visitChannelEndType(final ChannelEndType channelEndType) {
+
+        return channelEndType.getJavaWrapper();
+        
+    }
+
+    @Override
+    public Object visitNamedType(final NamedType namedType) {
+
+        return namedType.getJavaWrapper();
+
+    }
+
+    @Override
+    public Object visitArrayType(final ArrayType arrayType) {
+
+        return arrayType.getJavaWrapper();
+
+    }
+
+    @Override
+    public Object visitRecordTypeDecl(RecordTypeDecl rt) {
+        Log.log(rt, "Visiting a RecordTypeDecl (" + rt.name().getname() + ")");
+
+        ST stRecordType = stGroup.getInstanceOf("RecordType");
+        String recName = (String) rt.name().visit(this);
+        ArrayList<String> modifiers = new ArrayList<>();
+
+        for (Modifier m : rt.modifiers())
+            modifiers.add((String) m.visit(this));
+
+        // Remove fields from previous record
+        recordMemberToField.clear();
+
+        // The scope in which all members appeared in a record
+        for (RecordMember rm : rt.body())
+            rm.visit(this);
+
+        // The list of fields which should be passed to the constructor
+        // of the static class that the record belongs to
+        if ( !recordMemberToField.isEmpty() ) {
+            stRecordType.add("types", recordMemberToField.values());
+            stRecordType.add("vars", recordMemberToField.keySet());
+        }
+
+        ArrayList<String> extend = new ArrayList<>();
+        extend.add(recName);
+        if ( rt.extend().size()>0 )
+            for (Name n : rt.extend())
+                extend.add(n.getname());
+
+        stRecordType.add("extend", extend);
+        stRecordType.add("name", recName);
+        stRecordType.add("modifiers", modifiers);
+
+        return stRecordType.render();
+    }
+
+    @Override
+    public Object visitProtocolTypeDecl(ProtocolTypeDecl pd) {
+        Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd.name().getname() + ")");
+
+        ST stProtocolClass = stGroup.getInstanceOf("ProtocolClass");
+        String name = (String) pd.name().visit(this);
+        ArrayList<String> modifiers = new ArrayList<>();
+        ArrayList<String> body = new ArrayList<>();
+
+        for (Modifier m : pd.modifiers())
+            modifiers.add((String) m.visit(this));
+
+        currentProtocol = name;
+        // We use tags to associate parent and child protocols
+        if ( pd.extend().size()>0 ) {
+            for (Name n : pd.extend()) {
+                ProtocolTypeDecl ptd = (ProtocolTypeDecl) topLvlDecls.get(n.getname());
+                for (ProtocolCase pc : ptd.body())
+                    protocolNameToProtocolTag.put(String.format("%s.%s", pd.name().getname(),
+                            pc.name().getname()), ptd.name().getname());
+            }
+        }
+
+        // The scope in which all protocol members appear
+        if ( pd.body()!=null )
+            for (ProtocolCase pc : pd.body())
+                body.add((String) pc.visit(this));
+
+        stProtocolClass.add("name", name);
+        stProtocolClass.add("modifiers", modifiers);
+        stProtocolClass.add("body", body);
+
+        return stProtocolClass.render();
+    }
+
+    @Override
+    public Object visitProcTypeDecl(ProcTypeDecl pd) {
+        Log.log(pd, "Visiting a ProcTypeDecl (" + pd.name().getname() + ")");
+
+        ST stProcTypeDecl = null;
+        // Save previous procedure state
+        String prevProcName = currentProcName;
+        // Save previous jump labels
+        ArrayList<String> prevLabels = switchCases;
+        if ( !switchCases.isEmpty() )
+            switchCases = new ArrayList<>();
+        // Name of the invoked procedure
+        currentProcName = (String) pd.name().visit(this);
+        // Procedures are static classes which belong to the same package and
+        // class. To avoid having classes with the same name, we generate a
+        // new name for the currently executing procedure
+        String procName = null;
+        // For non-invocations, that is, for anything other than a procedure
+        // that yields, we need to extends the PJProcess class anonymously
+        if ( "Anonymous".equals(currentProcName) ) {
+            // Preserve current jump label for resumption
+            int prevJumpLabel = jumpLabel;
+            jumpLabel = 0;
+            // Create an instance for such anonymous procedure
+            stProcTypeDecl = stGroup.getInstanceOf("AnonymousProcess2");
+            // Statements that appear in the procedure being executed
+            String[] body = (String[]) pd.body().visit(this);
+            stProcTypeDecl.add("parBlock", currentParBlock);
+            stProcTypeDecl.add("syncBody", body);
+            stProcTypeDecl.add("isPar", inParFor);
+            // Add the barrier this procedure should resign from
+            if ( !barriers.isEmpty() )
+                stProcTypeDecl.add("barrier", barriers);
+            // Add the switch block for yield and resumption
+            if ( !switchCases.isEmpty() ) {
+                ST stSwitchBlock = stGroup.getInstanceOf("SwitchBlock");
+                stSwitchBlock.add("jumps", switchCases);
+                stProcTypeDecl.add("switchBlock", stSwitchBlock.render());
+            }
+            // The list of local variables defined in the body of a procedure
+            // becomes the instance fields of the class
+            if ( !localsForAnonymousProcess.isEmpty() ) {
+                stProcTypeDecl.add("ltypes", localsForAnonymousProcess.values());
+                stProcTypeDecl.add("lvars", localsForAnonymousProcess.keySet());
+            }
+            // Restore jump label so it knows where to resume from
+            jumpLabel = prevJumpLabel;
+        } else {
+            // Restore global variables for a new PJProcess class
+            resetGlobals();
+            // Formal parameters that must be passed to the procedure
+            Sequence<ParamDecl> formals = pd.formalParams();
+            // Do we have any parameters?
+            if ( formals!=null && formals.size()>0 ) {
+                // Iterate through and visit every parameter declaration.
+                // Retrieve the name and type of each parameter specified in
+                // a list of comma-separated arguments. Note that we ignored
+                // the value returned by this visitor
+                for (int i=0; i<formals.size(); ++i)
+                    formals.child(i).visit(this);
+            }
+            // Visit all declarations that appear in the procedure
+            String[] body = null;
+            if ( pd.body()!=null ) body = (String[]) pd.body().visit(this);
+            // Retrieve the modifier(s) attached to the invoked procedure such
+            // as private, public, protected, etc.
+            String[] modifiers = (String[]) pd.modifiers().visit(this);
+            // Grab the return type of the invoked procedure
+            String procType = (String) pd.returnType().visit(this);
+            // The procedure's annotation determines if we have a yielding procedure
+            // or a Java method (a non-yielding procedure)
+            boolean doesProcYield = Helper.doesProcYield(pd);
+            // Set the template to the correct instance value and then initialize
+            // its attributes
+            if ( doesProcYield ) {
+                // This procedure yields! Grab the instance of a yielding procedure
+                // from the string template in order to define a new class
+                procName = Helper.makeVariableName(currentProcName + hashSignature(pd), 0, Tag.PROCEDURE_NAME);
+                stProcTypeDecl = stGroup.getInstanceOf("ProcClass");
+                stProcTypeDecl.add("name", procName);
+                // Add the statements that appear in the body of the procedure
+                stProcTypeDecl.add("syncBody", body);
+            } else {
+                // Otherwise, grab the instance of a non-yielding procedure to
+                // define a new static Java method
+                procName = Helper.makeVariableName(currentProcName + hashSignature(pd), 0, Tag.METHOD_NAME);
+                stProcTypeDecl = stGroup.getInstanceOf("Method");
+                stProcTypeDecl.add("name", procName);
+                stProcTypeDecl.add("type", procType);
+                // Do we have any access modifier? If so, add them
+                if ( modifiers!=null && modifiers.length>0 )
+                    stProcTypeDecl.add("modifier", modifiers);
+                stProcTypeDecl.add("body", body);
+            }
+
+            // Create an entry point for the ProcessJ program, which is just
+            // a Java main method that is called by the JVM
+            if ( "main".equals(currentProcName) && pd.signature().equals(Tag.MAIN_NAME.toString()) ) {
+                // Create an instance of a Java main method template
+                ST stMain = stGroup.getInstanceOf("Main");
+                stMain.add("class", currentCompilation.fileNoExtension());
+                stMain.add("name", procName);
+                // Pass the list of command line arguments to this main method
+                if ( !paramToFields.isEmpty() ) {
+                    stMain.add("types", paramToFields.values());
+                    stMain.add("vars", paramToFields.keySet());
+                }
+                // Add the entry point of the program
+                stProcTypeDecl.add("main", stMain.render());
+            }
+            // The list of command-line arguments should be passed to the constructor
+            // of the static class that the main method belongs or be passed to the
+            // static method
+            if ( !paramToFields.isEmpty() ) {
+                stProcTypeDecl.add("types", paramToFields.values());
+                stProcTypeDecl.add("vars", paramToFields.keySet());
+            }
+            // The list of local variables defined in the body of a procedure
+            // becomes the instance fields of the class
+            if ( !localToFields.isEmpty() ) {
+                stProcTypeDecl.add("ltypes", localToFields.values());
+                stProcTypeDecl.add("lvars", localToFields.keySet());
+            }
+            // Add the switch block for resumption (if any)
+            if ( !switchCases.isEmpty() ) {
+                ST stSwitchBlock = stGroup.getInstanceOf("SwitchBlock");
+                stSwitchBlock.add("jumps", switchCases);
+                stProcTypeDecl.add("switchBlock", stSwitchBlock.render());
+            }
+        }
+
+        // Restore and reset previous values
+        currentProcName = prevProcName;
+        // Restore previous jump labels
+        switchCases = prevLabels;
+
+        return stProcTypeDecl.render();
     }
 
     @Override
@@ -970,14 +1055,6 @@ public class CodeGenJava extends Visitor<Object> {
         return stPrimitiveLiteral.render();
     }
 
-    @Override
-    public Object visitChannelType(ChannelType channelType) {
-
-        Log.log(channelType, "Visiting a ChannelType (" + channelType + ")");
-
-        return channelType.getJavaWrapper();
-
-    }
 
     @Override
     public Object visitChannelEndExpr(ChannelEndExpr ce) {
@@ -986,28 +1063,6 @@ public class CodeGenJava extends Visitor<Object> {
         String channel = (String) ce.channel().visit(this);
 
         return channel;
-    }
-
-    @Override
-    public Object visitChannelEndType(ChannelEndType ct) {
-        Log.log(ct, "Visiting a ChannelEndType (" + ct.typeName() + ")");
-
-        // Channel class type
-        String chanType = PJOne2OneChannel.class.getSimpleName();
-        // Is it a shared channel?
-        if ( ct.isShared() ) {
-            if ( ct.isRead() ) // One-2-Many channel
-                chanType = PJOne2ManyChannel.class.getSimpleName();
-            else if ( ct.isWrite() ) // Many-2-One channel
-                chanType = PJMany2OneChannel.class.getSimpleName();
-            else // Many-2-Many channel
-                chanType = PJMany2ManyChannel.class.getSimpleName();
-        }
-        // Resolve parameterized type for channels, e.g. chan<T> where
-        // 'T' is the type to be resolved
-        //String type = getChannelType(ct.baseType());
-
-        return String.format("%s", chanType);
     }
 
     @Override
@@ -1127,19 +1182,6 @@ public class CodeGenJava extends Visitor<Object> {
         }
 
         return al.elements().visit(this);
-    }
-
-    @Override
-    public Object visitArrayType(ArrayType at) {
-        Log.log(at, "Visiting an ArrayType (" + at.typeName() + ")");
-
-        String type = (String) at.baseType().visit(this);
-
-        if (at.baseType().isRecordType())
-            type = ((RecordTypeDecl) at.baseType()).name().getname();
-
-        return String.format("%s[]", type);
-
     }
 
     @Override
@@ -1389,40 +1431,7 @@ public class CodeGenJava extends Visitor<Object> {
         return stImport.render();
     }
 
-    @Override
-    public Object visitProtocolTypeDecl(ProtocolTypeDecl pd) {
-        Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd.name().getname() + ")");
 
-        ST stProtocolClass = stGroup.getInstanceOf("ProtocolClass");
-        String name = (String) pd.name().visit(this);
-        ArrayList<String> modifiers = new ArrayList<>();
-        ArrayList<String> body = new ArrayList<>();
-
-        for (Modifier m : pd.modifiers())
-            modifiers.add((String) m.visit(this));
-
-        currentProtocol = name;
-        // We use tags to associate parent and child protocols
-        if ( pd.extend().size()>0 ) {
-            for (Name n : pd.extend()) {
-                ProtocolTypeDecl ptd = (ProtocolTypeDecl) topLvlDecls.get(n.getname());
-                for (ProtocolCase pc : ptd.body())
-                    protocolNameToProtocolTag.put(String.format("%s.%s", pd.name().getname(),
-                            pc.name().getname()), ptd.name().getname());
-            }
-        }
-
-        // The scope in which all protocol members appear
-        if ( pd.body()!=null )
-            for (ProtocolCase pc : pd.body())
-                body.add((String) pc.visit(this));
-
-        stProtocolClass.add("name", name);
-        stProtocolClass.add("modifiers", modifiers);
-        stProtocolClass.add("body", body);
-
-        return stProtocolClass.render();
-    }
 
     @Override
     public Object visitProtocolCase(ProtocolCase pc) {
@@ -1492,44 +1501,6 @@ public class CodeGenJava extends Visitor<Object> {
         stProtocolLiteral.add("vals", members.values());
 
         return stProtocolLiteral.render();
-    }
-
-    @Override
-    public Object visitRecordTypeDecl(RecordTypeDecl rt) {
-        Log.log(rt, "Visiting a RecordTypeDecl (" + rt.name().getname() + ")");
-
-        ST stRecordType = stGroup.getInstanceOf("RecordType");
-        String recName = (String) rt.name().visit(this);
-        ArrayList<String> modifiers = new ArrayList<>();
-
-        for (Modifier m : rt.modifiers())
-            modifiers.add((String) m.visit(this));
-
-        // Remove fields from previous record
-        recordMemberToField.clear();
-
-        // The scope in which all members appeared in a record
-        for (RecordMember rm : rt.body())
-            rm.visit(this);
-
-        // The list of fields which should be passed to the constructor
-        // of the static class that the record belongs to
-        if ( !recordMemberToField.isEmpty() ) {
-            stRecordType.add("types", recordMemberToField.values());
-            stRecordType.add("vars", recordMemberToField.keySet());
-        }
-
-        ArrayList<String> extend = new ArrayList<>();
-        extend.add(recName);
-        if ( rt.extend().size()>0 )
-            for (Name n : rt.extend())
-                extend.add(n.getname());
-
-        stRecordType.add("extend", extend);
-        stRecordType.add("name", recName);
-        stRecordType.add("modifiers", modifiers);
-
-        return stRecordType.render();
     }
 
     @Override
