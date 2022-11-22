@@ -1,6 +1,8 @@
 package ast;
 
 import utilities.Visitor;
+import processj.runtime.PJBarrier;
+import processj.runtime.PJTimer;
 
 public class PrimitiveType extends Type {
 
@@ -112,6 +114,28 @@ public class PrimitiveType extends Type {
         default:
             return "UNKNOWN TYPE";
         }
+    }
+
+    public String getJavaWrapper() {
+
+        switch(this.kind) {
+
+            case BooleanKind: return Boolean.class.getSimpleName();
+            case CharKind: return Character.class.getSimpleName();
+            case ByteKind: return Byte.class.getSimpleName();
+            case ShortKind: return Short.class.getSimpleName();
+            case IntKind: return Integer.class.getSimpleName();
+            case LongKind: return Long.class.getSimpleName();
+            case FloatKind: return Float.class.getSimpleName();
+            case DoubleKind: return Double.class.getSimpleName();
+            case StringKind: return String.class.getSimpleName();
+            case VoidKind: return Void.class.getSimpleName();
+            case BarrierKind: return PJBarrier.class.getSimpleName();
+            case TimerKind: return PJTimer.class.getSimpleName();
+            default:return "";
+
+        }
+
     }
 
     // *************************************************************************
