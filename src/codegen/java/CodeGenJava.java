@@ -303,33 +303,6 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitWhileStat(WhileStat ws) {
-
-        Log.log(ws, "Visiting a WhileStat");
-
-        ST stWhileStat = stGroup.getInstanceOf("WhileStat");
-        String[] stats = null;
-        String expr = null;
-
-        if ( ws.expr()!=null )
-            expr = ((String) ws.expr().visit(this));
-        if ( ws.stat()!=null ) {
-            Object o = ws.stat().visit(this);
-            if ( o instanceof String ) {
-                stats = new String[] { (String) o };
-            } else {
-                stats = (String[]) o;
-            }
-        }
-
-        stWhileStat.add("expr", expr);
-        stWhileStat.add("body", stats);
-
-        return stWhileStat.render();
-
-    }
-
-    @Override
     public Object visitDoStat(DoStat ds) {
 
         Log.log(ds, "Visiting a DoStat");
@@ -505,7 +478,6 @@ public class CodeGenJava extends Visitor<Object> {
         return stIfStat.render();
     }
 
-
     @Override
     public Object visitBinaryExpr(BinaryExpr be) {
         Log.log(be, "Visiting a BinaryExpr");
@@ -565,8 +537,69 @@ public class CodeGenJava extends Visitor<Object> {
         return stBinaryExpr.render();
     }
 
+
+    @Override
+    public Object visitChannelReadExpr(ChannelReadExpr cr) {
+        Log.log(cr, "Visiting a ChannelReadExpr");
+
+        ST stChannelReadExpr = stGroup.getInstanceOf("ChannelReadExpr");
+        // 'c.read()' is a channel-end expression, where 'c' is the reading
+        // end of the channel
+        Expression chanExpr = cr.channel();
+        // 'c' is the name of the channel
+        String chanEndName = (String) chanExpr.visit(this);
+        stChannelReadExpr.add("chanName", chanEndName);
+        // One for the 'label' and one for the 'read' operation
+        int countLabel = 2;
+        // Add the switch block for resumption
+        for (int label = 0; label<countLabel; ++label) {
+            // Increment jump label and it to the switch-stmt list
+            stChannelReadExpr.add("resume" + label, ++jumpLabel);
+            switchCases.add(renderSwitchCase(jumpLabel));
+        }
+
+        return stChannelReadExpr.render();
+    }
+
     /// ------------------------------------------------------------------------------------------------
     /// Refactored
+
+    @Override
+    public Object visitModifier(final Modifier modifier) {
+
+        Log.log(modifier, "Visiting a Modifier (" + modifier + ")");
+
+        return modifier.toString();
+
+    }
+
+    @Override
+    public Object visitBlock(final Block block) {
+
+        Log.log(block, "Visiting a Block");
+
+        final StringBuilder builder = new StringBuilder();
+
+        for(final Statement statement: block.stats())
+            builder.append((String) block.stats().visit(this) + "\n");
+
+        return builder.toString();
+
+    }
+
+    @Override
+    public Object visitWhileStat(final WhileStat whileStatement) {
+
+        Log.log(whileStatement, "Visiting a WhileStat");
+
+        final String  expression  = (whileStatement.expr() != null) ?
+            (String) whileStatement.expr().visit(this) : "";
+        final String  statements  = (whileStatement.stat() != null) ?
+            (String) whileStatement.stat().visit(this) : "";
+
+        return "while(" + expression + ") {\n\n" + statements + "\n}\n\n";
+
+    }
 
     @Override
     public Object visitAssignment(final Assignment assignment) {
@@ -762,6 +795,28 @@ public class CodeGenJava extends Visitor<Object> {
 
     /// --------------------------------------------------------------------------------------------
     /// End Refactored
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Object visitArrayLiteral(ArrayLiteral al) {
+        Log.log(al, "Visiting an ArrayLiteral");
+
+        // Is the array initialize at compile time? If so, create a list
+        // of values separated by commas and enclosed between braces --
+        // the syntax for array literals in ProcessJ is different to Java's
+        if ( al.elements().size()>1 || isArrayLiteral ) {
+            // The following extends naturally to two-dimensional, and
+            // even higher-dimensional arrays -- but they are not used
+            // very often in practice
+            String[] vals = (String[]) al.elements().visit(this);
+            return Arrays.asList(vals)
+                    .toString()
+                    .replace("[", " { ")
+                    .replace("]", " } ");
+        }
+
+        return al.elements().visit(this);
+    }
 
     @Override
     public Object visitRecordTypeDecl(RecordTypeDecl rt) {
@@ -1010,29 +1065,6 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitChannelReadExpr(ChannelReadExpr cr) {
-        Log.log(cr, "Visiting a ChannelReadExpr");
-
-        ST stChannelReadExpr = stGroup.getInstanceOf("ChannelReadExpr");
-        // 'c.read()' is a channel-end expression, where 'c' is the reading
-        // end of the channel
-        Expression chanExpr = cr.channel();
-        // 'c' is the name of the channel
-        String chanEndName = (String) chanExpr.visit(this);
-        stChannelReadExpr.add("chanName", chanEndName);
-        // One for the 'label' and one for the 'read' operation
-        int countLabel = 2;
-        // Add the switch block for resumption
-        for (int label = 0; label<countLabel; ++label) {
-            // Increment jump label and it to the switch-stmt list
-            stChannelReadExpr.add("resume" + label, ++jumpLabel);
-            switchCases.add(renderSwitchCase(jumpLabel));
-        }
-
-        return stChannelReadExpr.render();
-    }
-
-    @Override
     public Object visitArrayAccessExpr(ArrayAccessExpr ae) {
         Log.log( "Visiting an ArrayAccessExpr");
 
@@ -1048,47 +1080,9 @@ public class CodeGenJava extends Visitor<Object> {
 
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object visitArrayLiteral(ArrayLiteral al) {
-        Log.log(al, "Visiting an ArrayLiteral");
 
-        // Is the array initialize at compile time? If so, create a list
-        // of values separated by commas and enclosed between braces --
-        // the syntax for array literals in ProcessJ is different to Java's
-        if ( al.elements().size()>1 || isArrayLiteral ) {
-            // The following extends naturally to two-dimensional, and
-            // even higher-dimensional arrays -- but they are not used
-            // very often in practice
-            String[] vals = (String[]) al.elements().visit(this);
-            return Arrays.asList(vals)
-                    .toString()
-                    .replace("[", " { ")
-                    .replace("]", " } ");
-        }
 
-        return al.elements().visit(this);
-    }
 
-    @Override
-    public Object visitModifier(Modifier mo) {
-        Log.log(mo, "Visiting a Modifier (" + mo + ")");
-
-        // Type of modifiers: public, protected, private, etc.
-        return mo.toString();
-    }
-
-    @Override
-    public Object visitBlock(Block bl) {
-        Log.log(bl, "Visiting a Block");
-
-        // The scope in which declarations appear, starting with their
-        // own initializers and including any further declarations like
-        // invocations or sequence of statements
-        String[] stats = (String[]) bl.stats().visit(this);
-
-        return stats;
-    }
 
     @Override
     @SuppressWarnings("rawtypes")
