@@ -1,6 +1,10 @@
 package ast;
 
 import utilities.Visitor;
+import processj.runtime.PJOne2OneChannel    ;
+import processj.runtime.PJOne2ManyChannel   ;
+import processj.runtime.PJMany2OneChannel   ;
+import processj.runtime.PJMany2ManyChannel  ;
 
 public class ChannelEndType extends Type {
 
@@ -60,6 +64,32 @@ public class ChannelEndType extends Type {
         return true;
     }
 
+
+    public String getJavaWrapper() {
+
+        String chantype = "";
+
+        // Channel class type
+        String chanType = PJOne2OneChannel.class.getSimpleName();
+
+        // Is it a shared channel?
+        if (isShared()) {
+
+            if (isRead()) // One-2-Many channel
+
+                chanType = PJOne2ManyChannel.class.getSimpleName();
+
+            else if (isWrite()) // Many-2-One channel
+                chanType = PJMany2OneChannel.class.getSimpleName();
+
+            else // Many-2-Many channel
+                chanType = PJMany2ManyChannel.class.getSimpleName();
+
+        }
+        
+        return chantype;
+
+    }
 
     public <S extends Object> S visit(Visitor<S> v) {
         return v.visitChannelEndType(this);

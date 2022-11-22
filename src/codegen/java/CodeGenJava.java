@@ -810,6 +810,7 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitLocalDecl(LocalDecl ld) {
+
         Log.log(ld, "Visting a LocalDecl (" + ld.type().typeName() + " " + ld.var().name().getname() + ")");
 
         // We could have the following targets:
@@ -820,7 +821,9 @@ public class CodeGenJava extends Visitor<Object> {
         //   5.) T x = read();                                // A Java method that returns a value
         //   6.) T x = a + b;                                 // A binary expression
         //   7.) T x = a = b ...;                             // A complex assignment statement
-        String name = ld.var().name().getname();
+
+
+        String name = ld.getName().toString();
         String type = (String) ld.type().visit(this);
         String val = null;
 
@@ -947,11 +950,11 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitPrimitiveType(PrimitiveType py) {
+    public Object visitPrimitiveType(final PrimitiveType primitiveType) {
         
-        Log.log(py, "Visiting a Primitive Type (" + py.typeName() + ")");
+        Log.log(primitiveType, "Visiting a Primitive Type (" + primitiveType.typeName() + ")");
 
-        return py.getJavaWrapper();
+        return primitiveType.getJavaWrapper();
 
     }
 
@@ -968,33 +971,12 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitChannelType(ChannelType ct) {
-        Log.log(ct, "Visiting a ChannelType (" + ct + ")");
+    public Object visitChannelType(ChannelType channelType) {
 
-        // Channel class type
-        String chantype = "";
-        switch (ct.shared()) {
+        Log.log(channelType, "Visiting a ChannelType (" + channelType + ")");
 
-            case ChannelType.NOT_SHARED:
-                chantype = PJOne2OneChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_READ:
-                chantype = PJOne2ManyChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_WRITE:
-                chantype = PJMany2OneChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_READ_WRITE:
-                chantype = PJMany2ManyChannel.class.getSimpleName();
-                break;
+        return channelType.getJavaWrapper();
 
-        }
-
-        // Resolve parameterized type for channel, e.g. chan<T> where
-        // 'T' is the type to be resolved
-        //String type = getChannelType(ct.baseType());
-
-        return String.format("%s", chantype);
     }
 
     @Override
@@ -1151,10 +1133,9 @@ public class CodeGenJava extends Visitor<Object> {
     public Object visitArrayType(ArrayType at) {
         Log.log(at, "Visiting an ArrayType (" + at.typeName() + ")");
 
-
         String type = (String) at.baseType().visit(this);
 
-        if ( at.baseType().isRecordType() )
+        if (at.baseType().isRecordType())
             type = ((RecordTypeDecl) at.baseType()).name().getname();
 
         return String.format("%s[]", type);
