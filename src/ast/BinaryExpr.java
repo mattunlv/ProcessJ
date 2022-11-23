@@ -61,13 +61,13 @@ public class BinaryExpr extends Expression {
 
 
             switch(kind) {
-                case ANDAND: return new Boolean(lval && rval);
-                case OROR:   return new Boolean(lval || rval);
-                case XOR:    return new Boolean(lval ^ rval);
-                case AND:    return new Boolean(lval & rval);
-                case OR:     return new Boolean(lval | rval);
-                case EQEQ:   return new Boolean(lval == rval);
-                case NOTEQ:  return new Boolean(lval != rval);
+                case ANDAND: return (lval && rval);
+                case OROR:   return (lval || rval);
+                case XOR:    return (lval ^ rval);
+                case AND:    return (lval & rval);
+                case OR:     return (lval | rval);
+                case EQEQ:   return (lval == rval);
+                case NOTEQ:  return (lval != rval);
             }
         }
 
@@ -83,10 +83,10 @@ public class BinaryExpr extends Expression {
                     return new BigDecimal(lval.toBigInteger().divide(rval.toBigInteger()));
                 new BigDecimal(lval.doubleValue()/rval.doubleValue());
 
-            case LT: return new Boolean(lval.compareTo(rval) == -1);
-            case GT: return new Boolean(lval.compareTo(rval) == 1);
-            case LTEQ: return new Boolean(lval.compareTo(rval) != 1);
-            case GTEQ: return new Boolean(lval.compareTo(rval) != -1);
+            case LT: return (lval.compareTo(rval) == -1);
+            case GT: return (lval.compareTo(rval) == 1);
+            case LTEQ: return (lval.compareTo(rval) != 1);
+            case GTEQ: return (lval.compareTo(rval) != -1);
             case MOD:
             case LSHIFT:
             case RSHIFT:
@@ -106,8 +106,8 @@ public class BinaryExpr extends Expression {
                     case XOR:    return new BigDecimal(Integer.toString(lint ^ rint));
                 }
 
-            case EQEQ:  return new Boolean(lval.equals(rval));
-            case NOTEQ: return new Boolean(!lval.equals(rval));
+            case EQEQ:  return (lval.equals(rval));
+            case NOTEQ: return (!lval.equals(rval));
         }
         return null;
     }

@@ -30,6 +30,12 @@ public abstract class Type extends AST {
     public abstract boolean typeEquivalent(Type other);
 
     public abstract boolean typeAssignmentCompatible(Type other);
+
+    public String getJavaWrapper() {
+
+        return "Object";
+
+    }
     
     /*
      * NOTE: the general implementation of all these should be to return 'false'.

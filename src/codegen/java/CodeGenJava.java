@@ -1110,13 +1110,8 @@ public class CodeGenJava extends Visitor<Object> {
     public Object visitArrayAccessExpr(ArrayAccessExpr ae) {
         Log.log( "Visiting an ArrayAccessExpr");
 
-        ST stArrayAccessExpr = stGroup.getInstanceOf("ArrayAccessExpr");
-
         final String name  = (String) ae.target().visit(this);
         final String index = (String) ae.index().visit(this);
-
-        stArrayAccessExpr.add("name", name);
-        stArrayAccessExpr.add("index", index);
 
         return String.format("%s[%s]", name, index);
 
@@ -2319,6 +2314,34 @@ public class CodeGenJava extends Visitor<Object> {
         Sequence<ExprStat> incr = new Sequence<>();
         incr.append(es);
         return new Tuple(init, be, incr);
+    }
+
+    private String initializeArray(final String name, final String type, final String[] dims, int index, char init) {
+
+        String result = "";
+
+        if(index < dims.length) {
+
+            final String        newName     = name + "[" + init + "]";
+            final StringBuilder builder     = new StringBuilder(type);
+
+            for(int tindex = index + 1; tindex < dims.length; tindex++)
+                builder.append("[" + dims[tindex] + "]");
+
+            if((index + 1) == dims.length)
+                if(type.equals("Integer"))
+                    builder.append("(0)");
+                else builder.append("()");
+
+            result =  "for(int " + init + " = 0; " + init + " < (" + dims[index] + "); " + init + "++) {\n";
+            result += "\t" + newName + " = new " + builder.toString() + ";";
+            result += "\t" + initializeArray(newName, type, dims, ++index, ++init);
+            result += "\n}";
+
+        }
+
+        return result;
+
     }
 
     @SuppressWarnings("unchecked")
