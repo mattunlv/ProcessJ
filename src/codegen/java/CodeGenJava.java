@@ -732,54 +732,45 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitAssignment(Assignment as) {
-
         Log.log(as, "Visiting an Assignment");
 
-        ST     stVar= stGroup.getInstanceOf("Var");
+        ST stVar = stGroup.getInstanceOf("Var");
 
-        String op   = as.opString();
-        String lhs  = "";
-        String rhs  = null;
+        String op = as.opString();
+        String lhs = null;
+        String rhs = null;
         String type = null;
 
-        if(as.left() != null) {
-
+        if ( as.left()!=null ) {// Not a protocol or record
             lhs = (String) as.left().visit(this);
-
-            if(as.left().type != null) {
-
-                if (as.left().type.isRecordType())
+            // Unfortunately, a declaration of for an array of channel reads must be
+            // of the form 'PJOne2OneChannel<?>[]...' due to the way inheritance is
+            // done in Java. Thus we need need to cast - unnecessarily - the returned
+            // value of a channel read expression
+            if ( as.left().type!=null ) {
+                if ( as.left().type.isRecordType() )
                     type = ((RecordTypeDecl) as.left().type).name().getname();
-
-                else if(as.left().type.isProtocolType())
+                else if ( as.left().type.isProtocolType() )
                     type = PJProtocolCase.class.getSimpleName();
-
                 else
                     type = (String) as.left().type.visit(this);
-
             }
-
         }
 
-        if(as.right() instanceof NewArray)
+        if ( as.right() instanceof NewArray )
             return createNewArray(lhs, ((NewArray) as.right()));
-
-        else if(as.right() instanceof ChannelReadExpr )
+        else if ( as.right() instanceof ChannelReadExpr )
             return createChannelReadExpr(lhs, type, op, ((ChannelReadExpr) as.right()));
-
-        else if(as.right() != null) {
-
+        else if ( as.right()!=null ) {
             rhs = (String) as.right().visit(this);
             rhs = rhs.replace(DELIMITER, "");
-
         }
 
-        stVar.add("name",   lhs);
-        stVar.add("val",    rhs);
-        stVar.add("op",     op);
+        stVar.add("name", lhs);
+        stVar.add("val", rhs);
+        stVar.add("op", op);
 
         return stVar.render();
-
     }
 
     @Override
@@ -884,9 +875,8 @@ public class CodeGenJava extends Visitor<Object> {
 
         // If we reach this section of code, then we have a variable
         // declaration with some initial value
-        /// TODO: What for?
-        //if ( val!=null )
-            //val = val.replace(DELIMITER, "");
+        if ( val!=null )
+            val = val.replace(DELIMITER, "");
 
         ST stVar = stGroup.getInstanceOf("Var");
         stVar.add("name", newName);
@@ -943,16 +933,23 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(ne, "Visiting a NewArray");
 
         return createNewArray(null, ne);
-
     }
 
     @Override
     public Object visitPrimitiveType(PrimitiveType py) {
-        
         Log.log(py, "Visiting a Primitive Type (" + py.typeName() + ")");
 
-        return py.getJavaWrapper();
+        // ProcessJ primitive types that do not translate directly
+        // to Java primitive types
+        String typeStr = py.typeName();
+        if ( py.isStringType() )
+            typeStr = "String";
+        else if ( py.isTimerType() )
+            typeStr = PJTimer.class.getSimpleName();
+        else if ( py.isBarrierType() )
+            typeStr = PJBarrier.class.getSimpleName();
 
+        return typeStr;
     }
 
     @Override
@@ -2324,76 +2321,37 @@ public class CodeGenJava extends Visitor<Object> {
         return new Tuple(init, be, incr);
     }
 
-    private String ranchSauce(final String name, final String type, final String[] dims, final String access, int depth, int index, char init, final String linit) {
-
-        if(depth == 0) {
-
-            String result = (name != null) ? name + " = " : "";
-
-            result += "new " + type;
-
-            if(type.equals("Integer"))
-                result += "(0);";
-            else result += "();";
-
-            return result ;
-
-        }
-
-        final ST        newArray    = stGroup.getInstanceOf("NewArray2");
-        final String    newName     = (access != null) ? name + "[" + access + "]" : name;
-
-        final StringBuilder builder = new StringBuilder(type);
-
-        for(int tindex = index; tindex < dims.length; tindex++)
-            builder.append("[" + dims[tindex] + "]");
-        
-        newArray.add("name", newName);
-        newArray.add("type", builder.toString());
-        newArray.add("expression", dims[index]);
-        newArray.add("iterator", String.valueOf(init));
-        newArray.add("statement", ranchSauce(newName, type, dims, String.valueOf(init), --depth, ++index, ++init, null));
-
-        return newArray.render();
-
-    }
-
     @SuppressWarnings("unchecked")
     private Object createNewArray(String lhs, NewArray na) {
         Log.log(na.line + ": Creating a New Array");
 
-        final ST          stNewArray  = stGroup.getInstanceOf("NewArray2");
-
-        final String[]    dims        = (String[])  na.dimsExpr().visit(this);
-        final String      type        = (String)    na.baseType().visit(this);
+        ST stNewArray = null;
+        stNewArray = stGroup.getInstanceOf("NewArray");
+        String[] dims = (String[]) na.dimsExpr().visit(this);
+        String type = (String) na.baseType().visit(this);
 
         ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
-
-        if(na.init() != null) {
-
-            final ArrayList<String>       inits   = new ArrayList<>()                             ;
-            final Sequence<Expression>    seq     = (Sequence<Expression>) na.init().elements()   ;
-            
+        if ( na.init()!=null ) {
+            ArrayList<String> inits = new ArrayList<>();
+            Sequence<Expression> seq = (Sequence<Expression>) na.init().elements();
             for (Expression e : seq) {
                 if ( e instanceof ArrayLiteral )
                     isArrayLiteral = true;
                 inits.add((String) e.visit(this));
             }
-            
             stNewArrayLiteral.add("dim", String.join("", Collections.nCopies(((ArrayType) na.type).getDepth(), "[]")));
             stNewArrayLiteral.add("vals", inits);
 
         } else stNewArrayLiteral.add("dims", dims);
 
-        if(lhs != null)
-            stNewArray.add("name", lhs);
-
+        stNewArray.add("name", lhs);
         stNewArray.add("type", type);
+        stNewArray.add("init", stNewArrayLiteral.render());
 
         // Reset value for array literal expression
         isArrayLiteral = false;
 
-        return ranchSauce(lhs, type, dims, null, dims.length, 0, 'a', stNewArrayLiteral.render());
+        return stNewArray.render();
     }
 
     private String createArrayList(String type, int dims) {

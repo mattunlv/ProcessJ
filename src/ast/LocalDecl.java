@@ -4,19 +4,10 @@ import utilities.Visitor;
 
 public class LocalDecl extends Statement implements VarDecl {
 
-    private boolean     constant        ;
-    private Type        type            ;
-    private Name        name            ;
-    private Expression  initializer     ;
+    private boolean constant;
 
     public LocalDecl(Type type, Var var, boolean constant) {
         super(type);
-
-        this.type           = type                              ;
-        this.name           = (Name)        var.children[0]     ;
-        this.initializer    = (Expression)  var.children[1]     ;
-
-
         nchildren = 2;
         this.constant = constant;
         children = new AST[] { type, var };
