@@ -1,8 +1,6 @@
 package ast;
 
 import utilities.Visitor;
-import processj.runtime.PJProtocolCase;
-import utilities.Log;
 
 public class NamedType extends Type implements DefineTopLevelDecl {
 
@@ -54,20 +52,6 @@ public class NamedType extends Type implements DefineTopLevelDecl {
 
     public <S extends Object> S visit(Visitor<S> v) {
         return v.visitNamedType(this);
-    }
-
-    @Override
-    public String getJavaWrapper() {
-
-        Log.log(this, "Visiting a NamedType (" + name().getname() + ")");
-
-        String type = name().getname();
-
-        if((actualType != null) && actualType.isProtocolType())
-            type = PJProtocolCase.class.getSimpleName();
-
-        return type;
-
     }
 
     // ********************

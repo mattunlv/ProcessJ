@@ -1,7 +1,6 @@
 package ast;
 
 import utilities.Visitor;
-import utilities.Log;
 
 public class ArrayType extends Type {
 
@@ -53,15 +52,6 @@ public class ArrayType extends Type {
 
     public String toString() {
         return "(ArrayType: " + typeName() + ")";
-    }
-
-    @Override
-    public String getJavaWrapper() {
-
-        Log.log(this, "Visiting an ArrayType (" + typeName() + ")");
-
-        return baseType().getJavaWrapper() + "[]";
-
     }
 
     public String typeName() {

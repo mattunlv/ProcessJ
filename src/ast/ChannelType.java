@@ -1,7 +1,6 @@
 package ast;
 
 import utilities.Visitor;
-import utilities.Log;
 import processj.runtime.PJOne2OneChannel    ;
 import processj.runtime.PJOne2ManyChannel   ;
 import processj.runtime.PJMany2OneChannel   ;
@@ -45,9 +44,7 @@ public class ChannelType extends Type {
         return "chan<" + baseType() + ">";
     }
 
-    @Override
     public String getJavaWrapper() {
-        Log.log(this, "Visiting a ChannelType (" + this + ")");
 
         String chantype = "";
 

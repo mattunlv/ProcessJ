@@ -58,13 +58,6 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
         return b;
     }
 
-    @Override
-    public String getJavaWrapper() {
-
-        return name().getname();
-
-    }
-
     // *************************************************************************
     // ** Visitor Related Methods
 
