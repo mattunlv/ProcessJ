@@ -670,9 +670,9 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitLocalDecl(LocalDecl localDeclaration) {
+    public Object visitLocalDecl(LocalDecl ld) {
 
-        Log.log(localDeclaration, "Visting a LocalDecl (" + localDeclaration.type().typeName() + " " + localDeclaration.var().name().getname() + ")");
+        Log.log(ld, "Visting a LocalDecl (" + ld.type().typeName() + " " + ld.var().name().getname() + ")");
 
         // We could have the following targets:
         //   1.) T x;                                         // A declaration
@@ -684,59 +684,65 @@ public class CodeGenJava extends Visitor<Object> {
         //   7.) T x = a = b ...;                             // A complex assignment statement
 
 
-        String name = localDeclaration.getName().toString()         ;
-        String type = localDeclaration.type().getJavaWrapper()      ;
-        String val  = null                                          ;
+        String name = ld.getName().toString();
+        String type = (String) ld.type().visit(this);
+        String val = null;
+
+        // Is it a protocol or a record type?
+        if ( ld.type().isRecordType() )
+            type = ((RecordTypeDecl) ld.type()).name().getname();
+        if ( ld.type().isProtocolType() )
+            type = PJProtocolCase.class.getSimpleName();
+
+        // Update the type for record and protocol types
+        String chanType = type; // TODO: is this needed?
 
         // Create a tag for this local declaration
         String newName = Helper.makeVariableName(name, ++localDecID, Tag.LOCAL_NAME);
-
-        if(inParFor) {
-
+        if ( inParFor ) {
             localsForAnonymousProcess.put(newName, type);
             paramsForAnonymousProcess.put(name, newName);
-
         }
 
         localToFields.put(newName, type);
         paramToVarNames.put(name, newName);
 
-        // This variable coulocalDeclaration be initialized, e.g. through an assignment operator
-        Expression expr = localDeclaration.var().init();
+        // This variable could be initialized, e.g. through an assignment operator
+        Expression expr = ld.var().init();
         // Visit the expressions associated with this variable
         if ( expr!=null ) {
-            if ( localDeclaration.type().isPrimitiveType() )
+            if ( ld.type().isPrimitiveType() )
                 val = (String) expr.visit(this);
-            else if ( localDeclaration.type().isRecordType() || localDeclaration.type().isProtocolType() )
+            else if ( ld.type().isRecordType() || ld.type().isProtocolType() )
                 val = (String) expr.visit(this);
-            else if ( localDeclaration.type().isArrayType() ) {
+            else if ( ld.type().isArrayType() ) {
                 val = (String) expr.visit(this);
             }
         }
 
         // Is it a barrier declaration? If so, we must generate code
         // that creates a barrier object
-        if ( localDeclaration.type().isBarrierType() && expr==null ) {
+        if ( ld.type().isBarrierType() && expr==null ) {
             ST stBarrierDecl = stGroup.getInstanceOf("BarrierDecl");
             val = stBarrierDecl.render();
         }
         // Is it a simple declaration for a channel type? If so, and since
         // channels cannot be created using the operator 'new', we generate
         // code to create a channel object
-        if ( localDeclaration.type().isChannelType() && expr==null ) {
+        if ( ld.type().isChannelType() && expr==null ) {
             ST stChannelDecl = stGroup.getInstanceOf("ChannelDecl");
-            stChannelDecl.add("type", type);
+            stChannelDecl.add("type", chanType);
             val = stChannelDecl.render();
         }
 
-        // After making this local declaration a fielocalDeclaration of the procedure
+        // After making this local declaration a field of the procedure
         // in which it was declared, we return iff this local variable
         // is not initialized
         if ( expr==null ) {
-            if ( !localDeclaration.type().isBarrierType() && (localDeclaration.type().isPrimitiveType() ||
-                localDeclaration.type().isArrayType() ||    // Can be an uninitialized array declaration
-                localDeclaration.type().isRecordType() ||   // Can be a record or protocol declaration
-                localDeclaration.type().isProtocolType()) ) // The 'null' value is used to removed empty
+            if ( !ld.type().isBarrierType() && (ld.type().isPrimitiveType() ||
+                ld.type().isArrayType() ||    // Could be an uninitialized array declaration
+                ld.type().isRecordType() ||   // Could be a record or protocol declaration
+                ld.type().isProtocolType()) ) // The 'null' value is used to removed empty
                 return null;                  // sequences in the generated code
         }
 
