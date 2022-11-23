@@ -72,23 +72,24 @@ public class ChannelEndType extends Type {
 
         String chantype = "";
 
-        switch (this.shared) {
+        // Channel class type
+        String chanType = PJOne2OneChannel.class.getSimpleName();
 
-            case ChannelType.NOT_SHARED:
-                chantype = PJOne2OneChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_READ:
-                chantype = PJOne2ManyChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_WRITE:
-                chantype = PJMany2OneChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_READ_WRITE:
-                chantype = PJMany2ManyChannel.class.getSimpleName();
-                break;
+        // Is it a shared channel?
+        if (isShared()) {
+
+            if (isRead()) // One-2-Many channel
+
+                chanType = PJOne2ManyChannel.class.getSimpleName();
+
+            else if (isWrite()) // Many-2-One channel
+                chanType = PJMany2OneChannel.class.getSimpleName();
+
+            else // Many-2-Many channel
+                chanType = PJMany2ManyChannel.class.getSimpleName();
 
         }
-
+        
         return chantype;
 
     }

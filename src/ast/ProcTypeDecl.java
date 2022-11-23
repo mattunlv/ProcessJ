@@ -53,7 +53,7 @@ public class ProcTypeDecl extends Type implements DefineTopLevelDecl {
         String s = "(";
         for (ParamDecl pd : formalParams())
             s = s + pd.type().signature();
-        s = s + ")" + ((returnType() != null) ? returnType().signature() : "");
+        s = s + ")" + returnType().signature();
         return s;
     }
 

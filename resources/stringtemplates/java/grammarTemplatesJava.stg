@@ -313,6 +313,14 @@ NewArray(name, type, init) ::= <<
 <if(name)><name> = <endif>new <type><init><if(name)>;<endif>
 >>
 
+NewArray2(name, type, expression, init, iterator, statement)
+::= <<
+<if(name)><name> = <endif>new <type><if(init)><init><endif>;
+for(int <iterator> = 0; <iterator> \< (<expression>); <iterator>++) {
+    <statement>
+}
+>>
+
 //========================================================================================
 //
 // 1.) name:
