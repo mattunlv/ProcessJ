@@ -606,15 +606,24 @@ public class CodeGenJava extends Visitor<Object> {
 
         Log.log(assignment, "Visiting an Assignment");
 
-        final String operator   = assignment.opString();
-        final String type       = (assignment.left()  != null) ? (String) assignment.left().type.getJavaWrapper()    : "";
-        final String left       = (assignment.left()  != null) ? (String) assignment.left().visit(this)              : "";
-        final String right      = (assignment.right() != null) ? (String) assignment.right().visit(this)             : "";
-        
-        if(assignment.right() instanceof ChannelReadExpr)
-            return createChannelReadExpr(left, type, operator, ((ChannelReadExpr) assignment.right()));
+        String op   = assignment.opString();
+        String type = "";
+        String lhs  = "";
+        String rhs  = "";
 
-        return type + " " + left + " " + operator + " " + right + ";";
+        if(assignment.right() instanceof NewArray)
+            return createNewArray(lhs, ((NewArray) assignment.right()));
+
+        else if(assignment.right() instanceof ChannelReadExpr)
+            return createChannelReadExpr(lhs, type, op, ((ChannelReadExpr) assignment.right()));
+
+        if(assignment.left() != null)
+            lhs = assignment.left().type.getJavaWrapper();
+
+        else if(assignment.right() != null)
+            rhs = (String) assignment.right().visit(this);
+
+        return lhs + (((op != null) && (!op.isEmpty()) ? " " + op + " " + rhs : "")) + ";";
 
     }
 
@@ -677,22 +686,11 @@ public class CodeGenJava extends Visitor<Object> {
 
         Log.log(constantDeclaration, "Visting ConstantDecl (" + constantDeclaration.type().typeName() + " " + constantDeclaration.var().name().getname() + ")");
 
-        final String        name            = constantDeclaration.getName().getname()           ;
-        final String        type            = constantDeclaration.getType().getJavaWrapper()    ;
-        final Expression    initializer     = constantDeclaration.getInitializerExpression()    ;
+        final String type           = constantDeclaration.getType().getJavaWrapper()                        ;
+        final String name           = constantDeclaration.getName().getname()                               ;
+        final String initializer    = (String) constantDeclaration.getInitializerExpression().visit(this)   ;
 
-        String result = type + " " + name;
-
-        if(initializer != null) {
-
-            result += " = " + (String) constantDeclaration.getInitializerExpression().visit(this) + ";";
-        
-            if(initializer instanceof NewArray)
-                result += "\n" + initializeArray(name, ((NewArray) initializer));
-
-        } else result += ";";
-
-        return result;
+        return type + " " + name + ((initializer != null) ? " = " + initializer : "") + ";";
 
     }
 
@@ -716,50 +714,18 @@ public class CodeGenJava extends Visitor<Object> {
         localToFields.put(newName, type);
         paramToVarNames.put(name, newName);
 
-        String result = type + " " + newName;
+        String val = "";
 
-        if(localDeclaration.type().isBarrierType())
-            result += " = new PJBarrier();";
+        if(initializer != null)
+            val = (String) initializer.visit(this);
+
+        else if(localDeclaration.type().isBarrierType())
+            val = "new PJBarrier()";
 
         else if(localDeclaration.type().isChannelType())
-            result += " = new " + type + "();";
+            val = "new " + type + "()";
 
-        else if(initializer != null) {
-
-            result += " = " + (String) localDeclaration.getInitializerExpression().visit(this) + ";";
-                
-            if(initializer instanceof NewArray)
-                result += "\n" + initializeArray(name, ((NewArray) initializer));
-
-        } else result += ";";
-
-        return result;
-
-    }
-
-    @Override
-    public Object visitNewArray(final NewArray newArray) {
-
-        final Type base = newArray.baseType();
-
-        String result = "new " + base;
-
-        if(newArray.init() == null) {
-
-            final StringBuilder builder = new StringBuilder();
-
-            for(final Object expression: newArray.dimsExpr())
-                builder.append("[").append(((Expression) expression).visit(this)).append("]");
-
-            result += builder.toString();
-
-        } else {
-
-            result += (String) newArray.init().visit(this);
-
-        }
-
-        return result;
+        return type + " " + newName + ((!val.isEmpty()) ? " = " + val : "") + ";";
 
     }
 
@@ -773,6 +739,15 @@ public class CodeGenJava extends Visitor<Object> {
         final String falseBranch  = (String) ternary.falseBranch().visit(this);
 
         return "(" + expression + ") ? " + trueBranch + " : " + falseBranch;
+
+    }
+
+    @Override
+    public Object visitNewArray(final NewArray newArray) {
+
+        Log.log(newArray, "Visiting a NewArray");
+
+        return createNewArray(null, newArray);
 
     }
     
@@ -2082,7 +2057,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @SuppressWarnings("unchecked")
-    private Object initializeArray(String lhs, NewArray na) {
+    private Object createNewArray(String lhs, NewArray na) {
         Log.log(na.line + ": Creating a New Array");
 
         final ST          stNewArray  = stGroup.getInstanceOf("NewArray2");
