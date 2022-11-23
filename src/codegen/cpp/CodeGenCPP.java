@@ -296,7 +296,7 @@ public class CodeGenCPP extends Visitor<Object> {
             stProcTypeDecl.add("parent", getParentString());
             insideAnonymousProcess = true;
             // Generate a name
-            procName = Helper.makeVariableName(currentProcName + Integer.toString(procCount++) + signature(pd), Tag.PROCEDURE_NAME);
+            procName = Helper.makeVariableName(currentProcName + Integer.toString(procCount++) + signature(pd), 0, Tag.PROCEDURE_NAME);
             Log.log(pd, "Generated Proc Name " + procName);
             Log.log(pd, "My previous Proc is " + prevProcName);
             anonProcStack.push(procName);
@@ -380,7 +380,7 @@ public class CodeGenCPP extends Visitor<Object> {
             if (doYield) {
                 // This procedure yields! Grab the instance of a yielding procedure
                 // from the string template in order to define a new class.
-                procName = Helper.makeVariableName(currentProcName + Integer.toString(procCount) + signature(pd), Tag.PROCEDURE_NAME);
+                procName = Helper.makeVariableName(currentProcName + Integer.toString(procCount) + signature(pd), 0, Tag.PROCEDURE_NAME);
                 generatedProcNames.put(currentProcName, procName);
                 procCount++;
                 Log.log("Stored " + currentProcName + "'s helper name as " + generatedProcNames.get(currentProcName) + ".");
@@ -394,7 +394,7 @@ public class CodeGenCPP extends Visitor<Object> {
             } else {
                 // Otherwise, grab the instance of a non-yielding procedure instead
                 // to define a new static Java method.
-                procName = Helper.makeVariableName(currentProcName + Integer.toString(procCount) + signature(pd), Tag.METHOD_NAME);
+                procName = Helper.makeVariableName(currentProcName + Integer.toString(procCount) + signature(pd), 0, Tag.METHOD_NAME);
                 generatedProcNames.put(currentProcName, procName);
                 procCount++;
                 Log.log("Stored " + currentProcName + "'s helper name as " + generatedProcNames.get(currentProcName) + ".");
@@ -765,7 +765,7 @@ public class CodeGenCPP extends Visitor<Object> {
 
         // Create a tag for this parameter and then add it to the collection
         // of parameters for reference.
-        String newName = Helper.makeVariableName(name, Tag.PARAM_NAME);
+        String newName = Helper.makeVariableName(name, ++varDecId, Tag.PARAM_NAME);
         formalParams.put(newName, type);
         paramDeclNames.put(name, newName);
 
@@ -792,7 +792,7 @@ public class CodeGenCPP extends Visitor<Object> {
         String chanType = type;
 
         // Create a tag for this local declaration
-        String newName = Helper.makeVariableName(name, Tag.LOCAL_NAME);
+        String newName = Helper.makeVariableName(name, ++localDecId, Tag.LOCAL_NAME);
 
         // If it needs to be a pointer, make it so
         if(!(ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isProtocolType()) && (ld.type().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.type().isPrimitiveType() || ld.type().isArrayType()))) {
@@ -927,7 +927,7 @@ public class CodeGenCPP extends Visitor<Object> {
         //     type = PJChannel.class.getSimpleName() + type.substring(type.indexOf("<"), type.length());
 
         // Create a tag for this local channel expression parameter.
-        String newName = Helper.makeVariableName(name, Tag.LOCAL_NAME);
+        String newName = Helper.makeVariableName(name, ++localDecId, Tag.LOCAL_NAME);
 
         // This variable could be initialized, e.g., through an assignment operator.
         Expression expr = ld.var().init();
@@ -1625,9 +1625,9 @@ public class CodeGenCPP extends Visitor<Object> {
         if (currentCompilation.fileName.equals(pd.myCompilation.fileName)) {
             String name = pdName + signature(pd);
             if (Helper.doesProcYield(pd)) {
-                name = Helper.makeVariableName(name, Tag.PROCEDURE_NAME);
+                name = Helper.makeVariableName(name, 0, Tag.PROCEDURE_NAME);
             } else if (generatedProcNames.get(pdName) == null) {
-                name = Helper.makeVariableName(name, Tag.METHOD_NAME);
+                name = Helper.makeVariableName(name, 0, Tag.METHOD_NAME);
                 // pdName = pd.myCompilation.fileNoExtension() + "." + name;
             }
             if(pdGenName == null) {
@@ -2145,7 +2145,7 @@ public class CodeGenCPP extends Visitor<Object> {
             Log.log(pb, "barrierList empty");
         }
         // Create a name for this new par-block.
-        currentParBlock = Helper.makeVariableName(Tag.PAR_BLOCK_NAME.toString(), Tag.LOCAL_NAME);
+        currentParBlock = Helper.makeVariableName(Tag.PAR_BLOCK_NAME.toString(), ++parDecId, Tag.LOCAL_NAME);
         // Since this is a new par-block, we need to create a variable inside
         // the process in which this par-block was declared.
         stParBlock.add("name", currentParBlock);
@@ -2426,7 +2426,7 @@ public class CodeGenCPP extends Visitor<Object> {
                 false /* not constant */).visit(this);
 
         // Create a tag for this local alt declaration.
-        String newName = Helper.makeVariableName("alt", Tag.LOCAL_NAME);
+        String newName = Helper.makeVariableName("alt", ++localDecId, Tag.LOCAL_NAME);
         localParams.put(newName, "ProcessJRuntime::Alternation*");
         // localInits.put(newName, "new ProcessJRuntime::Alternation(" + cases.size() + ", this)");
         // localDeletes.put(newName, "delete " + newName + ";");

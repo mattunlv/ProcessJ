@@ -21,14 +21,6 @@ import utilities.Settings;
  */
 public class Helper {
 
-    private static int uniqueIdentifier = 0;
-
-    public static void ResetGlobals() {
-
-        uniqueIdentifier = 0;
-
-    }
-
     /**
      * Changes the name of a procedure, method, protocol, record, channel
      * or local variable so that the JVM can separate common names which
@@ -59,7 +51,7 @@ public class Helper {
      *            variable, protocol, record, or channel.
      * @return A symbolic encoded name that represents an identifier/variable.
      */
-    public static String makeVariableName(final String name, Tag type) {
+    public static String makeVariableName(final String name, int X, Tag type) {
         String varName = "";
 
         switch (type) {
@@ -72,10 +64,10 @@ public class Helper {
             varName = Tag.METHOD_NAME + name;
             break;
         case PARAM_NAME:
-            varName = Tag.PARAM_NAME + name + uniqueIdentifier++;
+            varName = Tag.PARAM_NAME + name + X;
             break;
         case LOCAL_NAME:
-            varName = Tag.LOCAL_NAME + name + uniqueIdentifier++;
+            varName = Tag.LOCAL_NAME + name + X;
             break;
         case PROTOCOL_NAME:
             varName = Tag.PROTOCOL_NAME + name;
@@ -86,8 +78,6 @@ public class Helper {
 
         return varName;
     }
-
-
 
     /**
      * Returns true if a procedure is capable of yielding or false
