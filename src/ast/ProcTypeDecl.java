@@ -10,19 +10,11 @@ public class ProcTypeDecl extends Type implements DefineTopLevelDecl {
     public String nativeFunction; // Name of the native function, e.g. fabs
     public boolean yields = false;
 
-    /// ---------------
-    /// Private Members
-
-    private final Annotations annotations;
-
     public ProcTypeDecl(Sequence<Modifier> modifiers, Type returnType, Name name, Sequence<ParamDecl> formals,
             Sequence<Name> implement, Annotations annotations, Block body) {
         super(name);
-
-        this.annotations = (annotations != null) ? annotations : new Annotations();
-
         nchildren = 7;
-        children = new AST[] { modifiers, returnType, name, formals, implement, this.annotations, body };
+        children = new AST[] { modifiers, returnType, name, formals, implement, annotations, body };
     }
 
     public Sequence<Modifier> modifiers() {

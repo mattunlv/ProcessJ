@@ -11,12 +11,6 @@ public class Annotation extends AST {
         this.value = value;
     }
 
-    public boolean doesYield() {
-
-        return false;
-
-    }
-
     public String getName() {
         return name;
     }

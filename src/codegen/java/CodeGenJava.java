@@ -612,7 +612,7 @@ public class CodeGenJava extends Visitor<Object> {
         if(assignment.right() instanceof ChannelReadExpr)
             return createChannelReadExpr(left, type, operator, ((ChannelReadExpr) assignment.right()));
 
-        return left + " " + operator + " " + right + ";";
+        return type + " " + left + " " + operator + " " + right + ";";
 
     }
 
@@ -651,6 +651,22 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(returnStatement, "Visiting a ReturnStat");
 
         return "return" + ((returnStatement.expr() != null) ? " " + returnStatement.expr().visit(this) : "") + ";";
+
+    }
+
+    @Override
+    public Object visitParamDecl(final ParamDecl parameterDeclaration) {
+
+        Log.log(parameterDeclaration, "Visiting a ParamDecl (" + parameterDeclaration.type().typeName() + " " + parameterDeclaration.paramName().getname() + ")");
+
+        final String name     = parameterDeclaration.paramName().getname()                  ;
+        final String newName  = parameterDeclaration.paramName().getAlias(Tag.PARAM_NAME)   ;
+        final String type     = parameterDeclaration.type().getJavaWrapper()                ;
+
+        paramToFields.put(newName, type);
+        paramToVarNames.put(name, newName);
+
+        return null;
 
     }
 
@@ -962,199 +978,141 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitProcTypeDecl(ProcTypeDecl pd) {
-
         Log.log(pd, "Visiting a ProcTypeDecl (" + pd.name().getname() + ")");
 
         ST stProcTypeDecl = null;
-
         // Save previous procedure state
         String prevProcName = currentProcName;
-
         // Save previous jump labels
         ArrayList<String> prevLabels = switchCases;
-
-        if(!switchCases.isEmpty())
+        if ( !switchCases.isEmpty() )
             switchCases = new ArrayList<>();
-
         // Name of the invoked procedure
         currentProcName = (String) pd.name().getAlias(Tag.PROCEDURE_NAME);
-
         // Procedures are static classes which belong to the same package and
         // class. To avoid having classes with the same name, we generate a
         // new name for the currently executing procedure
         String procName = null;
-
         // For non-invocations, that is, for anything other than a procedure
         // that yields, we need to extends the PJProcess class anonymously
-        if(currentProcName.equals("Anonymous")) {
-
+        if ( "Anonymous".equals(currentProcName) ) {
             // Preserve current jump label for resumption
             int prevJumpLabel = jumpLabel;
-
             jumpLabel = 0;
-
             // Create an instance for such anonymous procedure
             stProcTypeDecl = stGroup.getInstanceOf("AnonymousProcess2");
-
             // Statements that appear in the procedure being executed
             String[] body = (String[]) pd.body().visit(this);
-
             stProcTypeDecl.add("parBlock", currentParBlock);
             stProcTypeDecl.add("syncBody", body);
             stProcTypeDecl.add("isPar", inParFor);
-
             // Add the barrier this procedure should resign from
-            if(!barriers.isEmpty())
+            if ( !barriers.isEmpty() )
                 stProcTypeDecl.add("barrier", barriers);
-
             // Add the switch block for yield and resumption
-            if (!switchCases.isEmpty()) {
-
+            if ( !switchCases.isEmpty() ) {
                 ST stSwitchBlock = stGroup.getInstanceOf("SwitchBlock");
                 stSwitchBlock.add("jumps", switchCases);
                 stProcTypeDecl.add("switchBlock", stSwitchBlock.render());
-
             }
-
             // The list of local variables defined in the body of a procedure
             // becomes the instance fields of the class
-            if (!localsForAnonymousProcess.isEmpty()) {
-
+            if ( !localsForAnonymousProcess.isEmpty() ) {
                 stProcTypeDecl.add("ltypes", localsForAnonymousProcess.values());
                 stProcTypeDecl.add("lvars", localsForAnonymousProcess.keySet());
-
             }
-
             // Restore jump label so it knows where to resume from
             jumpLabel = prevJumpLabel;
-
         } else {
-
             // Restore global variables for a new PJProcess class
             resetGlobals();
-
-            // Visit the modifiers
-            String[] modifiers = (String[]) pd.modifiers().visit(this);
-
-            // Visit the return type
-            String procType = (pd.returnType() != null) ? (String) pd.returnType().getJavaWrapper() : "void";
-
-            /// Visit the Formal Parameters passed to this process
+            // Formal parameters that must be passed to the procedure
             Sequence<ParamDecl> formals = pd.formalParams();
-
-            for (int index = 0; (formals != null) && (index < formals.size()); index++) {
-
-                final ParamDecl parameterDeclaration = (ParamDecl) formals.child(index);
-                
-                Log.log(parameterDeclaration, "Visiting a ParamDecl (" + parameterDeclaration.type().typeName() + " " + parameterDeclaration.paramName().getname() + ")");
-
-                final String name     = parameterDeclaration.paramName().getname()                  ;
-                final String newName  = parameterDeclaration.paramName().getAlias(Tag.PARAM_NAME)   ;
-                final String type     = parameterDeclaration.type().getJavaWrapper()                ;
-
-                paramToFields.put(newName, type);
-                paramToVarNames.put(name, newName);
-
+            // Do we have any parameters?
+            if ( formals!=null && formals.size()>0 ) {
+                // Iterate through and visit every parameter declaration.
+                // Retrieve the name and type of each parameter specified in
+                // a list of comma-separated arguments. Note that we ignored
+                // the value returned by this visitor
+                for (int i=0; i<formals.size(); ++i)
+                    formals.child(i).visit(this);
             }
-
-            // Visit the process body
+            // Visit all declarations that appear in the procedure
             String[] body = null;
-
             if(pd.body() != null) body = new String[] { (String) pd.body().visit(this) };
-
+            // Retrieve the modifier(s) attached to the invoked procedure such
+            // as private, public, protected, etc.
+            String[] modifiers = (String[]) pd.modifiers().visit(this);
+            // Grab the return type of the invoked procedure
+            String procType = (pd.returnType() != null) ? (String) pd.returnType().getJavaWrapper() : "void";
             // The procedure's annotation determines if we have a yielding procedure
             // or a Java method (a non-yielding procedure)
-            boolean doesProcYield = Helper.doesProcYield(pd);
-
+            boolean doesProcYield = Helper.doesProcYield(pd) | true;
             // Set the template to the correct instance value and then initialize
             // its attributes
-            if(doesProcYield) {
-
+            if ( doesProcYield ) {
+                // This procedure yields! Grab the instance of a yielding procedure
+                // from the string template in order to define a new class
                 procName = Helper.makeVariableName(currentProcName + hashSignature(pd), Tag.PROCEDURE_NAME);
-
                 stProcTypeDecl = stGroup.getInstanceOf("ProcClass");
                 stProcTypeDecl.add("name", procName);
-
                 // Add the statements that appear in the body of the procedure
                 stProcTypeDecl.add("syncBody", body);
-
             } else {
-
                 // Otherwise, grab the instance of a non-yielding procedure to
                 // define a new static Java method
                 procName = Helper.makeVariableName(currentProcName + hashSignature(pd), Tag.METHOD_NAME);
-
                 stProcTypeDecl = stGroup.getInstanceOf("Method");
-
-                // Do we have any access modifier? If so, add them
-                if(modifiers != null && modifiers.length > 0 )
-                    stProcTypeDecl.add("modifier", modifiers);
-
-                stProcTypeDecl.add("type", procType);
                 stProcTypeDecl.add("name", procName);
+                stProcTypeDecl.add("type", procType);
+                // Do we have any access modifier? If so, add them
+                if ( modifiers!=null && modifiers.length>0 )
+                    stProcTypeDecl.add("modifier", modifiers);
                 stProcTypeDecl.add("body", body);
-
             }
 
             // Create an entry point for the ProcessJ program, which is just
             // a Java main method that is called by the JVM
-            if(currentProcName.equals("main") && pd.signature().equals(Tag.MAIN_NAME.toString())) {
-
+            if ( "main".equals(currentProcName) && pd.signature().equals(Tag.MAIN_NAME.toString()) ) {
                 // Create an instance of a Java main method template
                 ST stMain = stGroup.getInstanceOf("Main");
-
                 stMain.add("class", currentCompilation.fileNoExtension());
                 stMain.add("name", procName);
-
                 // Pass the list of command line arguments to this main method
-                if(!paramToFields.isEmpty()) {
-
+                if ( !paramToFields.isEmpty() ) {
                     stMain.add("types", paramToFields.values());
                     stMain.add("vars", paramToFields.keySet());
-
                 }
-
                 // Add the entry point of the program
                 stProcTypeDecl.add("main", stMain.render());
-
             }
-
             // The list of command-line arguments should be passed to the constructor
             // of the static class that the main method belongs or be passed to the
             // static method
-            if(!paramToFields.isEmpty()) {
-
+            if ( !paramToFields.isEmpty() ) {
                 stProcTypeDecl.add("types", paramToFields.values());
                 stProcTypeDecl.add("vars", paramToFields.keySet());
-
             }
-
             // The list of local variables defined in the body of a procedure
             // becomes the instance fields of the class
-            if (!localToFields.isEmpty()) {
-
+            if ( !localToFields.isEmpty() ) {
                 stProcTypeDecl.add("ltypes", localToFields.values());
                 stProcTypeDecl.add("lvars", localToFields.keySet());
             }
             // Add the switch block for resumption (if any)
-            if (!switchCases.isEmpty()) {
-
+            if ( !switchCases.isEmpty() ) {
                 ST stSwitchBlock = stGroup.getInstanceOf("SwitchBlock");
                 stSwitchBlock.add("jumps", switchCases);
                 stProcTypeDecl.add("switchBlock", stSwitchBlock.render());
-
             }
-
         }
 
         // Restore and reset previous values
         currentProcName = prevProcName;
-
         // Restore previous jump labels
         switchCases = prevLabels;
 
         return stProcTypeDecl.render();
-
     }
 
     @Override
