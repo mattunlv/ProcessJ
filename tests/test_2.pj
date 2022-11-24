@@ -35,15 +35,15 @@ public record writingChannel{
     chan<int>.write out;
 }
 
-void foo(writingChannel out){
-    if(out == null){
-        println("Null");
-    }
-    else{
-        println("Not null");
-    }
-    println("Dude");
-}
+//void foo(writingChannel out){
+//    if(out == null){
+//        println("Null");
+//    }
+//    else{
+//        println("Not null");
+//    }
+//    println("Dude");
+//}
 
 void baz(Message message) {
      
@@ -55,7 +55,9 @@ void main(string args[]) {
 
      int n = 10;
      int s = 5;
+     int x = 20;
      chan<int>[][] channels = new chan<int>[n][s];
+     chan<int>[][][][] leChannels = new chan<int>[n][s][x][x];
 
      chan<int>.read[][] read_channels = new chan<int>.read[n][s];
 
