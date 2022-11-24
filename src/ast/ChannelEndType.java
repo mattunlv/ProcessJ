@@ -2,6 +2,12 @@ package ast;
 
 import utilities.Visitor;
 
+import processj.runtime.PJOne2OneChannel;
+import processj.runtime.PJOne2ManyChannel;
+import processj.runtime.PJMany2OneChannel;
+import processj.runtime.PJMany2ManyChannel;
+
+
 public class ChannelEndType extends Type {
 
     public static final int SHARED = 0;
@@ -9,6 +15,7 @@ public class ChannelEndType extends Type {
 
     public static final int READ_END = 0;
     public static final int WRITE_END = 1;
+
     public static final int byteSizeC = 4; // 32-bit pointer.
 
     private int shared;
@@ -65,6 +72,27 @@ public class ChannelEndType extends Type {
         return v.visitChannelEndType(this);
     }
     
+    @Override
+    public String getJavaWrapper() {
+
+        // Channel class type
+        String chantype = "";
+
+        if (isShared()) {
+
+            if(isRead())
+                chantype = PJOne2ManyChannel.class.getSimpleName();
+            else if(isWrite())
+                chantype = PJMany2OneChannel.class.getSimpleName();
+            else
+                chantype = PJMany2ManyChannel.class.getSimpleName();
+
+        } else chantype = PJOne2OneChannel.class.getSimpleName();
+
+        return chantype;
+
+    }
+
     // α =T β ⇔ Channel?(α) ∧ Channel?(β) ∧ α = β ∧ (m1 = m2)
     @Override
     public boolean typeEqual(Type t) {

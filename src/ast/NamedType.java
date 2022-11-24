@@ -46,6 +46,13 @@ public class NamedType extends Type implements DefineTopLevelDecl {
         return typeName();
     }
 
+    @Override
+    public String getJavaWrapper() {
+
+        return name().toString();
+
+    }
+
     public String signature() {
         return "L" + name().getname() + ";";
     }
