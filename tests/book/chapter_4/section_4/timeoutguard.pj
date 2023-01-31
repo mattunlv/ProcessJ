@@ -1,0 +1,19 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 4
+ * Section 4
+ * Page 109
+ */
+
+import std.io;
+
+public void main(string[] args) {
+
+    timer tim;
+    long when = tim.read();
+
+    when += 200;
+
+    tim.timeout(when);
+    println("Finished");
+}

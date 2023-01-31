@@ -1,0 +1,19 @@
+import std.*;
+
+void main(string args[]) {
+     int n = 10;
+     chan<int>.read[]  readEnds  = new chan<int>.read[n];
+     chan<int>.write[] writeEnds = new chan<int>.write[n];
+
+     for(int i=0; i<n; i++) {
+     	 chan<int> c;
+	 readEnds[i] = c.read;
+	 writeEnds[i] = c.write;
+     }
+     int v;
+     par {
+       v = readEnds[0].read();
+       writeEnds[0].write(79);
+     }
+     println(v);
+}

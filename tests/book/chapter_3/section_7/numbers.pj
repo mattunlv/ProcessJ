@@ -1,0 +1,96 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 3
+ * Section 7.3
+ * Page 84
+ */
+
+import std.*;
+
+public void id(chan<int>.read in, chan<int>.write out) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+        out.write(x);
+
+    }
+
+}
+
+public void succ(chan<int>.read in, chan<int>.write out) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+        out.write(x + 1);
+    }
+
+}
+
+
+public void delta(chan<int>.read in, chan<int>.write outl, chan<int>.write out2) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+
+        par {
+
+            outl.write(x);
+            out2.write(x);
+
+        }
+
+    }
+
+}
+
+public void prefix(const int n, chan<int>.read in, chan<int>.write out) {
+
+    out.write (n);
+    id(in, out);
+
+}
+
+public void numbers(chan<int>.write out) {
+
+    chan<int> a, b, c;
+
+    par {
+
+        delta(a.read, out, b.write);
+        succ(b.read, c.write);
+        prefix(0, c.read, a.write);
+
+    }
+
+}
+
+public void print_next(chan<int>.read in) {
+
+    while(true) {
+
+        int result = in.read();
+
+        println("[Numbers]: Received " + result);
+
+    }
+
+}
+
+public void main(string[] args) {
+
+    chan<int> a;
+
+    par {
+
+        numbers(a.write);
+        print_next(a.read);
+
+    }
+
+}

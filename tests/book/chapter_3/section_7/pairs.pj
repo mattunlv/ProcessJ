@@ -1,0 +1,150 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 3
+ * Section 7.3
+ * Page 85
+ */
+
+import std.*;
+
+public void id(chan<int>.read in, chan<int>.write out) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+        out.write(x);
+
+    }
+
+}
+
+public void succ(chan<int>.read in, chan<int>.write out) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+        out.write(x + 1);
+    }
+
+}
+
+public void prefix(const int n, chan<int>.read in, chan<int>.write out) {
+
+    out.write (n);
+    id(in, out);
+
+}
+
+public void delta(chan<int>.read in, chan<int>.write outl, chan<int>.write out2) {
+
+    while (true) {
+
+        int x;
+        x = in.read();
+
+        par {
+
+            outl.write(x);
+            out2.write(x);
+
+        }
+
+    }
+
+}
+
+public void tail(chan<int>.read in, chan<int>.write out) {
+
+    int x;
+
+    x = in.read();
+    id(in, out);
+
+}
+
+public void plus(chan<int>.read in1, chan<int>.read in2, chan<int>.write out) {
+
+    while (true) {
+
+        int x1, x2;
+
+        par {
+
+            x1 = in1.read();
+            x2 = in2.read();
+
+        }
+
+        out.write(x1 + x2);
+
+    }
+
+}
+
+public void numbers(chan<int>.write out) {
+
+    chan<int> a, b, c;
+
+    par {
+
+        delta(a.read, out, b.write);
+        succ(b.read, c.write);
+        prefix(0, c.read, a.write);
+
+    }
+
+}
+
+public void pairs(chan<int>.read in, chan<int>.write out) {
+
+    chan<int> a, b, c;
+
+    par {
+
+        delta(in, a.write, c.write);
+        tail(a.read, b.write);
+        plus(c.read, b.read, out);
+
+    }
+
+}
+
+public void number_stream(chan<int>.write out, int count) {
+
+    for(int number = 1; number <= count; number++) {
+
+        println("Writing: " + number);
+        out.write(number);
+
+    }
+
+}
+
+public void print_next(chan<int>.read in, int iterations) {
+
+    for(int iteration = 0; iteration < iterations; iteration++) {
+
+        int result = in.read();
+
+        println("Received: " + result);
+    
+    }
+    
+
+}
+
+public void main(string[] args) {
+
+    chan<int> a, b;
+
+    par {
+
+        numbers(a.write);
+        pairs(a.read, b.write);
+        print_next(b.read, 10);
+
+    }
+
+}

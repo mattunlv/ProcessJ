@@ -1,0 +1,38 @@
+/**
+ * ProcessJ Book Code
+ * Chapter 1
+ * Section 2.2
+ * Page 15
+ */
+
+import std.*;
+
+
+void P0(chan<int>.write out) {
+
+    out.write(42);
+
+}
+
+void P1(chan<int>.read in) {
+
+    int v;
+
+    v = in.read();
+
+    println("Received: " + v);
+
+}
+
+public void main(string[] args) {
+
+    chan<int> c;
+
+    par {
+
+        P0(c.write);
+        P1(c.read);
+
+    }
+
+}
