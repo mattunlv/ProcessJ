@@ -1,8 +1,6 @@
 package ast;
 
 import utilities.Visitor;
-import processj.runtime.PJBarrier;
-import processj.runtime.PJTimer;
 
 public class PrimitiveType extends Type {
 
@@ -65,32 +63,6 @@ public class PrimitiveType extends Type {
         default:
             return -1;
         }
-    }
-
-    @Override
-    public String getJavaWrapper() {
-
-        String type = "Object";
-
-        switch(kind) {
-
-            case BooleanKind:   type = "boolean"; /*Boolean.class.getSimpleName();*/   break   ;
-            case CharKind:      type = "char"; /*Character.class.getSimpleName();*/ break   ;
-            case ByteKind:      type = "byte"; /*Byte.class.getSimpleName();*/      break   ;
-            case ShortKind:     type = "short"; /*Short.class.getSimpleName();*/      break   ;
-            case IntKind:       type = "int"; /*Integer.class.getSimpleName();*/    break   ;
-            case LongKind:      type = "long"; /*Long.class.getSimpleName();*/       break   ;
-            case FloatKind:     type = "float";/*Float.class.getSimpleName();*/      break   ;
-            case DoubleKind:    type = "double";/*Double.class.getSimpleName();*/     break   ;
-            case StringKind:    type = "String";/*String.class.getSimpleName();*/     break   ;
-            case BarrierKind:   type = PJBarrier.class.getSimpleName();  break   ;
-            case TimerKind:     type = PJTimer.class.getSimpleName();    break   ;
-            case VoidKind:      type = "Void"                                   ;
-
-        }
-
-        return type;
-
     }
 
     public static int ceiling(PrimitiveType p1, PrimitiveType p2) {

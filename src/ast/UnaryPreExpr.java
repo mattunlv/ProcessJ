@@ -44,7 +44,7 @@ public class UnaryPreExpr extends Expression {
     public Object constantValue() {
         Object o = expr().constantValue();
         if (o instanceof Boolean)
-            return !((Boolean) o).booleanValue();
+            return new Boolean(!((Boolean) o).booleanValue());
 
         BigDecimal val = (BigDecimal) o;
         switch (kind) {

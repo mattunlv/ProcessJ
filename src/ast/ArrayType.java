@@ -32,20 +32,6 @@ public class ArrayType extends Type {
         return actualDepth;
     }
 
-    @Override
-    public String getJavaWrapper() {
-
-        final StringBuilder builder = new StringBuilder();
-        final String type = actualBaseType.getJavaWrapper();
-
-        builder.append(type);
-
-        for(int index = 0; index < actualDepth; index++)
-            builder.append("[]");
-
-        return builder.toString();
-
-    }
 
     public Type baseType() {
         return (Type) children[0];
@@ -110,8 +96,7 @@ public class ArrayType extends Type {
         int baseDepth = depth;
         if (!actualBaseType.isArrayType())
             baseDepth = actualDepth;
-
-        return typeName().equals(at.typeName()) /*&& baseDepth == at.depth*/;
+        return typeName().equals(at.typeName()) && baseDepth == at.depth;
     }
 
     @Override

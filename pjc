@@ -83,15 +83,8 @@ if [ ! -d "$workingdir" ] ; then
     esac
 fi
 
-if [ -d "$workingdir" ]
-then
-
-    ## clean working directory
-    rm -i -rf $workingdir/*.class > /dev/null
-    rm -i -rf $workingdir/*.java > /dev/null
-    rm -i -rf $workingdir/*.jar > /dev/null
-
-fi
+## clean working directory
+rm -i -rf $workingdir/* > /dev/null
 
 ############################################################################
 
@@ -180,13 +173,7 @@ fi
 pushd $workingdir > /dev/null
 
 ## clean manifest file
-if [ -d "META-INF" ]
-then
-
-  rm -r META-INF
-
-fi
-
+rm -rf META-INF
 ## create dir for manifest file
 mkdir META-INF
 

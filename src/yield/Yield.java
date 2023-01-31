@@ -80,8 +80,8 @@ import utilities.Visitor;
 public class Yield extends Visitor<Boolean> {
 
     protected boolean debug;
-    private static final Boolean TRUE = true;
-    private static final Boolean FALSE = false;
+    private static final Boolean TRUE = new Boolean(true);
+    private static final Boolean FALSE = new Boolean(false);
 
     public Yield() {
         Log.logHeader("***********************");
@@ -123,7 +123,7 @@ public class Yield extends Visitor<Boolean> {
                 b = b || bb;
             }
         }
-        return b;
+        return new Boolean(b);
     }
 
     public Boolean visitArrayType(ArrayType at) {
@@ -133,12 +133,12 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitAssignment(Assignment as) {
         Log.log("visiting an Assignment");
-        return as.left().visit(this) || as.right().visit(this);
+        return new Boolean(as.left().visit(this) || as.right().visit(this));
     }
 
     public Boolean visitBinaryExpr(BinaryExpr be) {
         Log.log("visiting a BinaryExpr");
-        return be.left().visit(this) || be.right().visit(this);
+        return new Boolean(be.left().visit(this) || be.right().visit(this));
     }
 
     public Boolean visitBlock(Block bl) {
@@ -151,7 +151,7 @@ public class Yield extends Visitor<Boolean> {
                 b = b || bb;
             }
         }
-        return b;
+        return new Boolean(b);
     }
 
     public Boolean visitBreakStat(BreakStat bs) {
@@ -214,7 +214,7 @@ public class Yield extends Visitor<Boolean> {
         Log.log("visiting a DoStat");
         boolean b1 = ds.expr().visit(this);
         boolean b2 = ds.stat().visit(this);
-        return b1 || b2;
+        return new Boolean(b1 || b2);
     }
 
     public Boolean visitErrorType(ErrorType et) {
@@ -251,7 +251,7 @@ public class Yield extends Visitor<Boolean> {
             boolean bb = fs.stats().visit(this);
             b = b || bb;
         }
-        return b;
+        return new Boolean(b);
     }
 
     public Boolean visitGuard(Guard gu) {
@@ -266,7 +266,7 @@ public class Yield extends Visitor<Boolean> {
             boolean bb = is.elsepart().visit(this);
             b = b || bb;
         }
-        return b;
+        return new Boolean(b);
     }
 
     public Boolean visitImplicitImport(ImplicitImport ii) {
@@ -315,7 +315,7 @@ public class Yield extends Visitor<Boolean> {
         b = ne.dimsExpr().visit(this);
         if (ne.init() != null)
             b = b || ne.init().visit(this);
-        return b;
+        return new Boolean(b);
     }
 
     public Boolean visitNewMobile(NewMobile nm) {
@@ -327,7 +327,7 @@ public class Yield extends Visitor<Boolean> {
         Log.log("visiting a ParamDecl");
         // If a formal parameter is a channel-end type, a barrier, or a timer,
         // then the procedure must yield
-        return pd.type().isChannelEndType() || pd.type().isBarrierType() || pd.type().isTimerType();
+        return new Boolean(pd.type().isChannelEndType() || pd.type().isBarrierType() || pd.type().isTimerType());
     }
 
     public Boolean visitParBlock(ParBlock pb) {
@@ -427,7 +427,7 @@ public class Yield extends Visitor<Boolean> {
                 b = b || bb;
             }
         }
-        return b;
+        return new Boolean(b);
     }
 
     public Boolean visitSkipStat(SkipStat ss) {
@@ -467,7 +467,7 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitTernary(Ternary te) {
         Log.log("visiting a Ternary");
-        return te.expr().visit(this) || te.trueBranch().visit(this) || te.falseBranch().visit(this);
+        return new Boolean(te.expr().visit(this) || te.trueBranch().visit(this) || te.falseBranch().visit(this));
     }
 
     public Boolean visitTimeoutStat(TimeoutStat ts) {
@@ -495,6 +495,6 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitWhileStat(WhileStat ws) {
         Log.log("visiting a WhileStat");
-        return ws.expr().visit(this) || (ws.stat() == null ? false : ws.stat().visit(this));
+        return new Boolean(ws.expr().visit(this) || (ws.stat() == null ? false : ws.stat().visit(this)));
     }
 }

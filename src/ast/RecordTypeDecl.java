@@ -35,13 +35,6 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
         return (Sequence<RecordMember>) children[4];
     }
 
-    @Override
-    public String getJavaWrapper() {
-
-        return name().getname();
-
-    }
-
     // *************************************************************************
     // ** Misc. Methods
 

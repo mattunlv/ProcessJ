@@ -70,7 +70,7 @@ public class Reachability extends Visitor<Boolean> {
         thenBranch = is.thenpart().visit(this);
         if (is.elsepart() != null)
             elseBranch = is.elsepart().visit(this);
-        return thenBranch || elseBranch;
+        return new Boolean(thenBranch || elseBranch);
     }
 
     // DONE
@@ -92,7 +92,7 @@ public class Reachability extends Visitor<Boolean> {
                     .build());
             ws.foreverLoop = true;
             loopConstruct = oldLoopConstruct;
-            return false;
+            return new Boolean(false);
         }
 
         if (ws.expr() != null && ws.expr().isConstant()
@@ -103,13 +103,13 @@ public class Reachability extends Visitor<Boolean> {
                     .addError(VisitorMessageNumber.REACHABILITY_810)
                     .build());
             loopConstruct = oldLoopConstruct;
-            return true;
+            return new Boolean(true);
         }
 
         loopConstruct = oldLoopConstruct;
         if (ws.hasReturn && !b)
-            return false;
-        return true;
+            return new Boolean(false);
+        return new Boolean(true);
     }
 
     // DONE
@@ -130,16 +130,16 @@ public class Reachability extends Visitor<Boolean> {
                     .addAST(ds)
                     .addError(VisitorMessageNumber.REACHABILITY_809)
                     .build());
-            return false;
+            return new Boolean(false);
         }
         loopConstruct = oldLoopConstruct;
-        return true;
+        return new Boolean(true);
     }
 
     public Boolean visitAltStat(AltStat as) {
         Log.log(as, "Visiting a alt statement.");
         super.visitAltStat(as);
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
@@ -165,7 +165,7 @@ public class Reachability extends Visitor<Boolean> {
         }
         if (!b)
             canFinish = b;
-        return canFinish;
+        return new Boolean(canFinish);
     }
 
     // DONE
@@ -183,7 +183,7 @@ public class Reachability extends Visitor<Boolean> {
                     .addError(VisitorMessageNumber.REACHABILITY_804)
                     .build());
             loopConstruct = oldLoopConstruct;
-            return true;
+            return new Boolean(true);
         }
 
         boolean b = true;
@@ -202,10 +202,10 @@ public class Reachability extends Visitor<Boolean> {
                     .build());
             fs.foreverLoop = true;
             loopConstruct = oldLoopConstruct;
-            return false;
+            return new Boolean(false);
         }
         loopConstruct = oldLoopConstruct;
-        return true;
+        return new Boolean(true);
     }
 
     // AltStat
@@ -227,23 +227,23 @@ public class Reachability extends Visitor<Boolean> {
                     .addAST(bs)
                     .addError(VisitorMessageNumber.REACHABILITY_806)
                     .build());
-            return true; // this break doesn't matter cause it can't be here anyways!
+            return new Boolean(true); // this break doesn't matter cause it can't be here anyways!
         }
         if (loopConstruct != null && !insideSwitch)
             loopConstruct.hasBreak = true;
-        return false;
+        return new Boolean(false);
     }
 
     // DONE
     public Boolean visitChannelWriteStat(ChannelWriteStat cws) {
         Log.log(cws, "Visiting a channel-write-statement.");
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
     public Boolean visitClaimStat(ClaimStat cs) {
         Log.log(cs, "Visiting a claim-statement.");
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
@@ -261,17 +261,17 @@ public class Reachability extends Visitor<Boolean> {
                     .addAST(cs)
                     .addError(VisitorMessageNumber.REACHABILITY_812)
                     .build());
-            return true; // this continue doesn't matter cause it can't be here anyways!
+            return new Boolean(true); // this continue doesn't matter cause it can't be here anyways!
         }
         if (loopConstruct != null)
             loopConstruct.hasContinue = true;
-        return false;
+        return new Boolean(false);
     }
 
     // DONE
     public Boolean visitLocalDecl(LocalDecl ld) {
         Log.log(ld, "Visiting a local-decl-statement.");
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
@@ -288,7 +288,7 @@ public class Reachability extends Visitor<Boolean> {
         inParBlock = true;
         pb.stats().visit(this);
         inParBlock = oldInParBlock;
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
@@ -302,25 +302,25 @@ public class Reachability extends Visitor<Boolean> {
                     .build());
         if (loopConstruct != null)
             loopConstruct.hasReturn = true;
-        return false;
+        return new Boolean(false);
     }
 
     // DONE
     public Boolean visitSkipStat(SkipStat ss) {
         Log.log(ss, "Visiting a skip-statement.");
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
     public Boolean visitStopStat(StopStat ss) {
         Log.log(ss, "Visiting a stop-statement.");
-        return false;
+        return new Boolean(false);
     }
 
     // DONE
     public Boolean visitSuspendStat(SuspendStat ss) {
         Log.log(ss, "Visiting a suspend-statement.");
-        return true;
+        return new Boolean(true);
     }
 
     public Boolean visitSwitchGroup(SwitchGroup sg) {
@@ -337,24 +337,24 @@ public class Reachability extends Visitor<Boolean> {
         // TODO finish this!
         insideSwitch = oldInsideSwitch;
         switchConstruct = oldSwitchConstruct;
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
     public Boolean visitSyncStat(SyncStat ss) {
         Log.log(ss, "Visiting a while-statement.");
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
     public Boolean visitTimeoutStat(TimeoutStat ts) {
         Log.log(ts, "Visiting a timeout-statement.");
-        return true;
+        return new Boolean(true);
     }
 
     // DONE
     public Boolean visitExprStat(ExprStat es) {
         Log.log(es, "Visiting an expr-statement.");
-        return true;
+        return new Boolean(true);
     }
 }

@@ -39,7 +39,7 @@ public class PrimitiveLiteral extends Literal {
         nchildren = 0;
 
         if (kind == CharKind)
-            text = String.valueOf(parseChar(text));
+            text = new Integer(parseChar(text)).toString();
         else if (kind == IntKind || kind == ShortKind || kind == ByteKind) {
             try {
                 text = (Integer.decode(text)).toString();
@@ -87,7 +87,7 @@ public class PrimitiveLiteral extends Literal {
         if (kind == StringKind || kind == NullKind)
             return text;
         else if (kind == BooleanKind) {
-            return text.equals("true");
+            return new Boolean(text.equals("true"));
         } else
             return new BigDecimal(text);
     }

@@ -47,7 +47,7 @@ public class TypeChecker extends Visitor<Type> {
 
     public Type resolve(Type t) {
         Log.log("  > Resolve: " + t);
-
+        
         // Error types do not resolve to anything by themselves.
         if (t.isErrorType())
             return t;

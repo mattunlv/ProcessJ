@@ -14,6 +14,8 @@ public class PJAlt {
     /** Process declaring the 'alt' */
     private PJProcess process;
     
+    private List<AltGuard> dynamicAlts;
+    
     public static final String SKIP = "skip";
     
     public PJAlt(PJProcess p) {
@@ -37,6 +39,14 @@ public class PJAlt {
                 return true;
         
         return false;
+    }
+    
+    public void setDynamicAlts(List<AltGuard> dynamicAlts) {
+        this.dynamicAlts = dynamicAlts;
+    }
+    
+    public AltGuard getDynamicAlts(int index) {
+        return dynamicAlts.get(index);
     }
     
     @SuppressWarnings("rawtypes")

@@ -176,6 +176,7 @@ public enum VisitorMessageNumber implements MessageNumber {
     SEMATIC_CHECKS_900(900, ErrorSeverity.ERROR, MessageType.PRINT_CONTINUE),
     SEMATIC_CHECKS_901(901, ErrorSeverity.ERROR, MessageType.PRINT_CONTINUE),
     SEMATIC_CHECKS_902(902, ErrorSeverity.ERROR, MessageType.PRINT_CONTINUE),
+    SEMATIC_CHECKS_903(903, ErrorSeverity.ERROR, MessageType.PRINT_CONTINUE),
     
     // --------------------------------------------------
     // REWRITERS (1000-1020)

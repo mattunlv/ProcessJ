@@ -21,7 +21,7 @@ public class CastRewrite extends Visitor<AST> {
         else
             chanBaseType = ((ChannelType)cs.channel().type).baseType();
         Type exprType = cs.expr().type;
-        if (!exprType.typeEqual(chanBaseType)) {
+        if (exprType != null && !exprType.typeEqual(chanBaseType)) {
             // replace the expression in the channel writer by a new cast expression,
             // that is:    write ( <expr> ) becomes
             //             write ( (...) <expr> )

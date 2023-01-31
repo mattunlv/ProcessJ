@@ -1,10 +1,6 @@
 package ast;
 
 import utilities.Visitor;
-import processj.runtime.PJOne2OneChannel;
-import processj.runtime.PJOne2ManyChannel;
-import processj.runtime.PJMany2OneChannel;
-import processj.runtime.PJMany2ManyChannel;
 
 public class ChannelType extends Type {
     // These are the different values the field `shared' can take.
@@ -56,32 +52,6 @@ public class ChannelType extends Type {
     public int byteSizeC() {
         // TODO.
         return 4;
-    }
-
-    @Override
-    public String getJavaWrapper() {
-
-        // Channel class type
-        String chantype = "";
-        switch (shared) {
-
-            case ChannelType.NOT_SHARED:
-                chantype = PJOne2OneChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_READ:
-                chantype = PJOne2ManyChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_WRITE:
-                chantype = PJMany2OneChannel.class.getSimpleName();
-                break;
-            case ChannelType.SHARED_READ_WRITE:
-                chantype = PJMany2ManyChannel.class.getSimpleName();
-                break;
-
-        }
-
-        return chantype;
-
     }
 
     // *************************************************************************

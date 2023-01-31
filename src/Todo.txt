@@ -1,0 +1,5 @@
+
+
+
+For a constant declaration - only LITERALS can appear on the right hand side.
+
