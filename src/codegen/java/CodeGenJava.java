@@ -474,9 +474,9 @@ public class CodeGenJava extends Visitor<Object> {
         // in a binary expression represents the token 'is'. Thus, to render the correct
         // code, we look for the name of the left-hand side operand, which is a record
         // or protocol variable, and then use the NameType of the right-hand side
-        // operand
-        // as the type to check if the left-hand side operand is indeed an instanceof
-        // the right hand side operand
+        // operand as the type to check if the left-hand side operand is indeed an
+        // instanceof the right hand side operand
+        // TODO: there should be a check for this??
         if ("instanceof".equals(op) && localToFields.containsKey(lhs)) {
             String namedType = localToFields.get(lhs);
             Object o = topLvlDecls.get(namedType);
@@ -740,7 +740,7 @@ public class CodeGenJava extends Visitor<Object> {
         String rhs = null;
         String type = null;
 
-        if (as.left() != null) {// Not a protocol or record
+        if (as.left() != null) { // Not a protocol or record
             lhs = (String) as.left().visit(this);
             // Unfortunately, a declaration of for an array of channel reads must be
             // of the form 'PJOne2OneChannel<?>[]...' due to the way inheritance is
@@ -816,6 +816,7 @@ public class CodeGenJava extends Visitor<Object> {
         String name = ld.var().name().getname();
         String type = (String) ld.type().visit(this);
         String val = null;
+        boolean isConstant = ld.isConst();
 
         // Is it a protocol or a record type?
         if (ld.type().isRecordType())
@@ -889,9 +890,21 @@ public class CodeGenJava extends Visitor<Object> {
 
         ST stVar = stGroup.getInstanceOf("Var");
         stVar.add("name", newName);
-        stVar.add("val", val);
+        // Lame fixed for variables that are constants.
+        if (!isConstant) {
+        	stVar.add("val", val);
+        	return stVar.render();
+        } else {
+        	if (inParFor) {
+                localsForAnonymousProcess.remove(newName);
+                localsForAnonymousProcess.put(newName + " = " + val, type);
+            }
+        	localToFields.remove(newName);
+        	localToFields.put(newName + " = " + val, "final " + type);
+        }
 
-        return stVar.render();
+//        return stVar.render();
+        return null;
     }
 
     @Override
@@ -1153,7 +1166,7 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(at, "Visiting an ArrayType (" + at.typeName() + ")");
 
         String type = (String) at.baseType().visit(this);
-        System.out.println(">>>> " + type);
+//        System.out.println(">>>> " + type);
         if (at.baseType().isChannelType() || at.baseType().isChannelEndType())
             type = type.substring(0, type.indexOf("<"));// + "<?>";
         else if (at.baseType().isRecordType())
@@ -1829,21 +1842,33 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     /** List of replicated alt loops */
-    ArrayList<ST> arrayOfReplicatedAltLoop = new ArrayList<>();
-    ArrayList<String> indexSetOfAltCase = new ArrayList<>();
-    ArrayList<String> listOfReplicatedAltLocals = new ArrayList<>();
-    ArrayList<String> listOfReplicatedAltCases = new ArrayList<>();
-    ArrayList<String> listOfReplicatedObjectGuards = new ArrayList<>();
-    ArrayList<String> listOfReplicatedAltLoops = new ArrayList<>();
+    ArrayList<ST> arrayOfReplicatedAltLoop;
+    ArrayList<String> indexSetOfAltCase;
+    ArrayList<String> listOfReplicatedAltLocals;
+    ArrayList<String> listOfReplicatedAltCases;
+    ArrayList<String> listOfReplicatedObjectGuards;
+    ArrayList<String> listOfReplicatedAltLoops;
 
-    int indexForAltStat = 1;
-    int readyID = 0;
-    int booleanGuardID = 0;
-    int objectGuardID = 0;
+    int indexForAltStat;
+    int readyID;
+    int booleanGuardID;
+    int objectGuardID;
 
     @Override
     public Object visitAltStat(AltStat as) {
         Log.log(as, "Visiting an AltStat");
+        
+        arrayOfReplicatedAltLoop = new ArrayList<>();
+        indexSetOfAltCase = new ArrayList<>();
+        listOfReplicatedAltLocals = new ArrayList<>();
+        listOfReplicatedAltCases = new ArrayList<>();
+        listOfReplicatedObjectGuards = new ArrayList<>();
+        listOfReplicatedAltLoops = new ArrayList<>();
+        
+        indexForAltStat = 1;
+        readyID = 0;
+        booleanGuardID = 0;
+        objectGuardID = 0;
 
         // For dynamic or replicated alts we use 'AltGuard' objects, which contain
         // the indices of an n-array, where 'n' represents the number of loops to
@@ -1937,6 +1962,7 @@ public class CodeGenJava extends Visitor<Object> {
                             stRepAltIndexSet.add("size", arrayOfReplicatedAltLoop.size());
                             stRepAltIndexSet.add("indexSet", indexSetOfAltCase);
                             stRepAltIndexSet.add("altCase", altCaseIndex);
+                            stRepAltIndexSet.add("varID", indexForAltStat);
 
                             forStat.add("stats", stRepAltIndexSet.render());
                             forStat.add("stats", stRepAltObjectGuard.render());

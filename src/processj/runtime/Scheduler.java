@@ -72,16 +72,16 @@ public class Scheduler extends Thread {
 
             // System.out.println("rq=" + rq.size() + " inactivePool=" +
             // inactivePool.getCount() + " timerqueue=" + tq.size());
-            if (inactivePool.getCount() == rq.size() && rq.size() > 0 && tq.size() == 0) {
-                System.err.println("No processes ready to run. System is deadlocked");
-                tq.kill();
-
-                // System.err.println("[Scheduler] Total Context Switches: " + contextSwitches);
-                // System.err.println("[Scheduler] Max RunQueue Size: " + maxrqsize);
-
-                logExecutionTime();
-                System.exit(1);
-            }
+//            if (inactivePool.getCount() == rq.size() && rq.size() > 0 && tq.size() == 0) {
+//                System.err.println("No processes ready to run. System is deadlocked");
+//                tq.kill();
+//
+//                // System.err.println("[Scheduler] Total Context Switches: " + contextSwitches);
+//                // System.err.println("[Scheduler] Max RunQueue Size: " + maxrqsize);
+//
+//                logExecutionTime();
+//                System.exit(1);
+//            }
         }
 
         tq.kill();

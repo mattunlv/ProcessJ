@@ -879,11 +879,11 @@ List\<Object> repAltObjectGuards = new ArrayList\<>();
 // 1.) size:
 // 2.) indexSet:
 // 3.) altCase:
-RepAltIndexSet(size, indexSet, altCase) ::= <<
-AltGuard repAltGuard = new AltGuard(<size>);
-repAltGuard.addIndex(<indexSet; separator=", ">);
-repAltGuard.addAltCaseNumber(<altCase>);
-dynamicAltGuards.add(repAltGuard); // add altCaseIndex
+RepAltIndexSet(size, indexSet, altCase, varID) ::= <<
+AltGuard repAltGuard<varID> = new AltGuard(<size>);
+repAltGuard<varID>.addIndex(<indexSet; separator=", ">);
+repAltGuard<varID>.addAltCaseNumber(<altCase>);
+dynamicAltGuards.add(repAltGuard<varID>); // add altCaseIndex
 >>
 
 //
