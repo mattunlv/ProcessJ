@@ -12,12 +12,13 @@
         <property name="jflexJar" location="resources/jars/JFlex.jar"/>
         <property name="stringtemplatejar" location="resources/jars/ST-4.0.7.jar"/>
         <property name="asmjar" location="resources/jars/asm-all-5.2.jar"/>
-	    <property name="guava" location="resources/jars/guava-30.1.1-jre.jar"/>
-	
-	<!-- =================================================================== -->
-	<!-- classpath to use within project                                     -->
-	<!-- =================================================================== -->
-        <property name="classpath" value="${cupJar}:${cupRuntimeJar}:${jflexJar}:${stringtemplatejar}:${asmjar}:${guava}:."/>
+        <property name="guava" location="resources/jars/guava-30.1.1-jre.jar"/>
+        <property name="cdkJar" location="resources/jars/cdk-2.8.jar"/>
+        
+        <!-- =================================================================== -->
+        <!-- classpath to use within project                                     -->
+        <!-- =================================================================== -->
+        <property name="classpath" value="${cupJar}:${cupRuntimeJar}:${jflexJar}:${stringtemplatejar}:${asmjar}:${guava}:${cdkJar}:."/>
         <description>
                 Build File for ProcessJ Compiler Project
         </description>
@@ -70,9 +71,9 @@
             </delete>
         </target>
 
-	<!-- =================================================================== -->
-	<!-- Clean targets                                                       -->
-	<!-- =================================================================== -->
+        <!-- =================================================================== -->
+        <!-- Clean targets                                                       -->
+        <!-- =================================================================== -->
         <target name="clean">
                 <delete dir="${build}" />
                 <delete file="${src}/parser/parser.java"/>
@@ -83,9 +84,9 @@
             </delete>
         </target>
 
-	<!-- =================================================================== -->
-	<!-- Compiles the source directory                                       -->
-	<!-- =================================================================== -->
+        <!-- =================================================================== -->
+        <!-- Compiles the source directory                                       -->
+        <!-- =================================================================== -->
         <target name="run">
                 <java classpath="${classpath}:${build}" classname="ProcessJc">
                 <arg value="${arg0}"/>
