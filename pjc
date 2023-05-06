@@ -155,7 +155,7 @@ fi
 ## execute the Instrumenter
 pushd $workingdir >/dev/null
 
-O=`java -classpath $installdir/bin/:$installdir/resources/jars/asm-all-5.2.jar/:. instrument/Instrumenter .`
+O=`java -classpath $installdir/bin/:$installdir/resources/jars/asm-all-5.2.jar/:$installdir/resources/jars/cdk-2.8.jar/. instrument/Instrumenter .`
 popd > /dev/null
 
 ERRORS=`echo "${O}" | awk -v n=1 '{if(NR>n) print a[NR%n]; a[NR%n]=$0}'`

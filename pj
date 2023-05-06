@@ -63,4 +63,4 @@ if [ $# -eq 0 ] ; then
     exit 1
 fi
 
-java -cp $installdir/bin/:$installdir/lib/JVM:$@.jar $@
+java -cp $installdir/bin/:$installdir/lib/JVM:$installdir/resources/jars/cdk-2.8.jar:$@.jar $@
