@@ -1,0 +1,39 @@
+import std.*;
+
+public void main(string[] args) {
+    boolean chanA;
+    boolean chanB;
+    boolean chanC;
+    boolean chanD;
+    boolean chanE;
+    boolean chanF;
+    boolean chanG;
+    boolean chanH;
+
+    chanA = false;
+chanB = false;
+chanC = false;
+chanD = false;
+chanE = false;
+chanF = false;
+chanG = false;
+chanH = false;
+
+    int p0;
+    int p1;
+    int p2;
+    int p3;
+    int p4;
+    int p5;
+    int p6;
+    int p7;
+
+    p0 = 4;
+p1 = 4;
+p2 = 4;
+p3 = 4;
+p4 = 4;
+p5 = 4;
+p6 = 4;
+p7 = 4;
+}

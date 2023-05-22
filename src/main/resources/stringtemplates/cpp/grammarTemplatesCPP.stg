@@ -352,7 +352,7 @@ delete <if(parent)><parent><endif><name>;
 
 //========================================================================================
 // Defines an anonymous process which consist of a switch block that
-// contains jump labels for resumption and yield, a synchronized body
+// contains jump labels for resumption and org.processj.yield, a synchronized body
 // that runs all the statements declared inside the procedure, and a
 // 'par' block defined in a procedure. Note that the process's schedule()
 // method is excluded iff it is created inside a par-for. If this is
@@ -477,7 +477,7 @@ TimeoutStat(name, delay, resume0, procName) ::= <<
 this->sched->insert(<name>);
 this->set_not_ready();
 this->set_label(<resume0>);
-// yield();
+// org.processj.yield();
 return;
 
 <procName>L<resume0>:
@@ -499,7 +499,7 @@ TimeoutStatCase(name, delay) ::= <<
 ChanWriteStat(chanName, writeExpr, procName, resume0) ::= <<
 <chanName>->write(this, <writeExpr>);
 this->set_label(<resume0>);
-// yield();
+// org.processj.yield();
 return;
 
 <procName>L<resume0>:
@@ -514,7 +514,7 @@ ChannelReadExpr(chanName, lhs, op, procName, resume0, resume1, extendRv) ::= <<
 // i'm a channel read, and my procName is <procName>
 if (!<chanName>->is_ready_to_read(this)) {
     this->set_label(<resume0>);
-    // yield();
+    // org.processj.yield();
     return;
 }
 
@@ -530,7 +530,7 @@ if (!<chanName>->is_ready_to_read(this)) {
 <endif>
 
 <!this->set_label(<resume1>);!>
-<!// yield();!>
+<!// org.processj.yield();!>
 <!return;!>
 
 <procName>L<resume1>:<!-- remove 'line-feed' --!>
@@ -545,13 +545,13 @@ if (!<chanName>->is_ready_to_read(this)) {
 ChannelOne2Many(chanName, procName, lhs, op, resume0, resume1, resume2, extendRv) ::= <<
 // if (!<chanName>.claimRead(this)) {
 //     this.runLabel = <resume0>;
-//     yield();
+//     org.processj.yield();
 // }
 // label(<resume0>);
 
 // if (!<chanName>.isReadyToRead(this)) {
 //     this.runLabel = <resume1>;
-//     yield();
+//     org.processj.yield();
 // }
 
 // label(<resume1>);
@@ -568,12 +568,12 @@ ChannelOne2Many(chanName, procName, lhs, op, resume0, resume1, resume2, extendRv
 
 // <chanName>.unclaimRead();
 
-// yield();
+// org.processj.yield();
 
 if(!<chanName>->claim_read(this))
 {
     set_label(<resume0>);
-    // yield();
+    // org.processj.yield();
     return;
 }
 
@@ -581,7 +581,7 @@ if(!<chanName>->claim_read(this))
 if(!<chanName>->is_ready_to_read(this))
 {
     set_label(<resume1>);
-    // yield();
+    // org.processj.yield();
     return;
 }
 
@@ -598,7 +598,7 @@ if(!<chanName>->is_ready_to_read(this))
 set_label(<resume2>);
 
 <chanName>->unclaim_read();
-// yield();
+// org.processj.yield();
 return;
 <procName>L<resume2>:
 >>
@@ -612,14 +612,14 @@ return;
 ChannelMany2One(chanName, writeExpr, procName, resume0, resume1) ::= <<
 // if (!<chanName>.claimWrite(this)) {
 //     this.runLabel = <resume0>;
-//     yield();
+//     org.processj.yield();
 // }
 // label(<resume0>);
 
 // <chanName>.write(this, <writeExpr>);
 // this.runLabel = <resume1>;
 
-// yield();
+// org.processj.yield();
 // label(<resume1>);
 
 // <chanName>.unclaimWrite();<\n>
@@ -627,14 +627,14 @@ ChannelMany2One(chanName, writeExpr, procName, resume0, resume1) ::= <<
 if(!<chanName>->claim_write(this))
 {
     set_label(<resume0>);
-    // yield();
+    // org.processj.yield();
     return;
 }
 <procName>L<resume0>:
 
 <chanName>->write(this, <writeExpr>);
 set_label(<resume1>);
-// yield();
+// org.processj.yield();
 return;
 
 <procName>L<resume1>:
@@ -853,7 +853,7 @@ ProtocolAccess(protocName, tag, var, member) ::= <<
 SyncStat(barrier, resume0, procName) ::= <<
 <barrier>->sync(this);
 this->set_label(<resume0>);
-// yield();
+// org.processj.yield();
 return;
 <!label(<resume0>);!>
 <procName>L<resume0>:
@@ -923,7 +923,7 @@ ParForStat(init, expr, incr, stats, name, jump, barrier) ::= <<
 
 // this.setNotReady();
 // this.runLabel = <jump>;
-// this.yield();
+// this.org.processj.yield();
 // label(<jump>);
 !>
 
@@ -983,7 +983,7 @@ if (!alt_ready) {
 this->set_not_ready();
 <index> = <alt>->enable();
 this->set_label(<jump>);
-// yield();
+// org.processj.yield();
 return;
 
 <procName>L<jump>:

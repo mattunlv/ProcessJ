@@ -1,0 +1,11 @@
+import std.*;
+
+public record Car {
+    string model;
+    string make;
+}
+
+public void main(string[] args) {
+    Car car = new Car { model = "Lancer", make = "Mitsubishi" };
+    println("model: " + car.model);
+}

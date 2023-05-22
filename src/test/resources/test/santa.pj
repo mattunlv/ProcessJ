@@ -1,0 +1,339 @@
+import std.*;
+
+const int N_REINDEER = 3;//9;
+const int G_REINDEER = N_REINDEER;
+const int N_ELVES = 4;//10;
+const int G_ELVES = 3;
+const int HOLIDAY_TIME = 100000;
+const int WORKING_TIME = 200000;
+const int DELIVERY_TIME = 100000;
+const int CONSULTATION_TIME = 200000;
+
+protocol Reindeer_msg {
+    holiday: { int id; }
+    deer_ready: { int id; }
+    deliver: { int id; }
+    deer_done: { int id; }
+}
+
+protocol Elf_msg {
+    working: { int id; }
+    elf_ready: { int id; }
+    waiting: { int id; }
+    consult: { int id; }
+    elf_done: { int id; }
+}
+
+protocol Santa_msg {
+    reindeer_ready: { }
+    harness: { int id; }
+    mush_mush: { }
+    woah: { }
+    unharness: { int id; }
+    elves_ready: { }
+    greet: { int id; }
+    consulting: { }
+    santa_done: { }
+    goodbye: { int id; }
+}
+
+protocol Message extends Reindeer_msg, Elf_msg, Santa_msg;
+
+public void random_wait(long max_wait, long seed) {
+    timer t;
+    long wait;
+    initRandom(seed);
+    wait = longRandom();
+    wait = wait % 250;
+    t.timeout(wait);
+}
+
+public void display(chan<Message>.read in) {
+    Message msg;
+    while (true) {
+        msg = in.read();
+        switch (msg) {
+        case holiday:
+            println("                                   Reindeer-" + msg.id + ": on holiday ... wish you were here");
+            break;
+        case deer_ready:
+            println("                                   Reindeer-" + msg.id + ": back from holiday ... ready for work");
+            break;
+        case deliver:
+            println("                                   Reindeer-" + msg.id + ": delivering toys ... la-di-da-di-da-di-da");
+            break;
+        case deer_done:
+            println("                                   Reindeer-" + msg.id + ": all toys delivered ... want a holiday");
+            break;
+        case working:
+            println("                   Elf-" + msg.id + ": working");
+            break;
+        case elf_ready:
+            println("                   Elf-" + msg.id + ": need to consult Santa");
+            break;
+        case waiting:
+            println("                   Elf-" + msg.id + ": in the waiting room...");
+            break;
+        case consult:
+            println("                   Elf-" + msg.id + ": about these toys...??");
+            break;
+        case elf_done:
+            println("                   Elf-" + msg.id + ": OK ... we'll built it, bye...");
+            break;
+        case reindeer_ready:
+            println("Santa: Ho-ho-ho ... the reindeer are back!");
+            break;
+        case harness:
+            println("Santa: harnessing reindeer: " + msg.id);
+            break;
+        case mush_mush:
+            println("Santa: mush mush...");
+            break;
+        case woah:
+            println("Santa: woah... we're back home!");
+            break;
+        case unharness:
+            println("Santa: un-harnessing reindeer: " + msg.id);
+            break;
+        case elves_ready:
+            println("Santa: Ho-ho-ho... some elves are here!");
+            break;
+        case greet:
+            println("Santa: hello elf: " + msg.id);
+            break;
+        case consulting:
+            println("Santa: consulting with elves...");
+            break;
+        case santa_done:
+            println("Santa: OK, all done -- thanks!");
+            break;
+        case goodbye:
+            println("Santa: goodbye elf: " + msg.id);
+            break;
+        }
+    }
+}
+
+public void p_barrier_knock(const int n, chan<boolean>.read a,
+                            chan<boolean>.read b,
+                            chan<boolean>.write knock) {
+    while (true) {
+        for (int i = 0; i < n; i++) {
+            boolean any;
+            any = a.read();
+        }
+
+        knock.write(true);
+        for (int i = 0; i < n; i++) {
+            boolean any;
+            any = b.read();
+        }
+    }
+}
+
+public void p_barrier(const int n,
+                      chan<boolean>.read a,
+                      chan<boolean>.read b) {
+    while (true) {
+        for (int i = 0; i < n; i++) {
+            boolean any;
+            any = a.read();
+        }
+        for (int i = 0; i < n; i++) {
+            boolean any;
+            any = b.read();
+        }
+    }
+}
+
+public void syncronize(shared chan<boolean>.write a,
+                       shared chan<boolean>.write b) {
+    a.write(true);
+    b.write(true);
+}
+
+public void reindeer(const int id,
+                     const long seed,
+                     barrier just_reindeer,
+                     barrier santa_reindeer,
+                     shared chan<int>.write to_santa,
+                     shared chan<Reindeer_msg>.write report) {
+    long my_seed = seed;
+    long wait = HOLIDAY_TIME;
+    long t;
+    timer tim;
+
+    while (true) {
+        report.write(new Reindeer_msg { holiday: id = id });
+        random_wait(wait, my_seed);
+        report.write(new Reindeer_msg { deer_ready: id = id });
+        just_reindeer.sync();
+        to_santa.write(id);
+        santa_reindeer.sync();
+        report.write(new Reindeer_msg { deliver: id = id });
+        santa_reindeer.sync();
+        report.write(new Reindeer_msg { deer_done: id = id });
+        to_santa.write(id);
+    }
+}
+
+public void elf(const int id,
+                const long seed,
+                shared chan<boolean>.write elves_a,
+                shared chan<boolean>.write elves_b,
+                shared chan<boolean>.write santa_elves_a,
+                shared chan<boolean>.write santa_elves_b,
+                shared chan<int>.write to_santa,
+                shared chan<Elf_msg>.write report) {
+
+    long my_seed = seed;
+    long wait = WORKING_TIME;
+
+    while (true) {
+        report.write(new Elf_msg{ working: id = id });
+        random_wait(wait, my_seed);
+        report.write(new Elf_msg{ elf_ready: id = id });
+        syncronize(elves_a, elves_b);
+        to_santa.write(id);
+        syncronize(santa_elves_a, santa_elves_b);
+        report.write(new Elf_msg{ consult: id = id });
+        syncronize(santa_elves_a, santa_elves_b);
+        report.write(new Elf_msg{ elf_done: id = id });
+        to_santa.write(id);
+    }
+}
+
+public void santa(const long seed,
+                  chan<boolean>.read knock,
+                  chan<int>.read from_reindeer,
+                  chan<int>.read from_elf,
+                  barrier santa_reindeer,
+                  shared chan<boolean>.write santa_elves_a,
+                  shared chan<boolean>.write santa_elves_b,
+                  shared chan<Santa_msg>.write report) {
+
+    long my_seed = seed;
+    timer tim;
+    long t, wait;
+
+    while (true) {
+        int id;
+        boolean answer;
+        pri alt {
+            id = from_reindeer.read() : {
+                report.write(new Santa_msg{ reindeer_ready: });
+                report.write(new Santa_msg{ harness: id = id });
+                //println(">>>>>>>>>>>>> SENDING HARNESING MESSAGE: " + id + " i = " + 0);
+                for (int i = 0; i < G_REINDEER-1; i++) {
+                    id = from_reindeer.read();
+                    report.write(new Santa_msg{ harness: id = id });
+                    //println(">>>>>>>>>>>>> SENDING HARNESING MESSAGE: " + id + " i = " + i);
+
+                    //println(">>>>>>>>>>>>> i = " + i + " ... G_REINDEER = " + G_REINDEER);
+                }
+                report.write(new Santa_msg{ mush_mush: });
+                santa_reindeer.sync();
+                t = tim.read();
+                tim.timeout(100);
+                //random_wait(DELIVERY_TIME, my_seed);
+                report.write(new Santa_msg{woah: });
+                santa_reindeer.sync();
+                for (int i = 0; i < G_REINDEER; i++) {
+                    id = from_reindeer.read({ report.write(new Santa_msg{ unharness: id = id }); });
+                }
+            }
+            answer = knock.read() : {
+                report.write(new Santa_msg{ elves_ready: });
+                for (int i = 0; i < G_ELVES; i++) {
+                    id = from_elf.read();
+                    report.write( new Santa_msg{ greet: id = id });
+                }
+                syncronize(santa_elves_a, santa_elves_b);
+                report.write(new Santa_msg{ consulting: });
+                t = tim.read();
+                tim.timeout(100);
+                //random_wait(CONSULTATION_TIME, my_seed);
+                report.write(new Santa_msg{ santa_done: });
+                syncronize(santa_elves_a, santa_elves_b);
+                for (int i = 0; i < G_ELVES; i++) {
+                    id = from_elf.read({ report.write(new Santa_msg{ goodbye: id = id }); });
+                }
+            }
+        }
+    }
+}
+
+public void main(string[] args) {
+    timer tim;
+    long seed;
+    seed = tim.read();
+    seed = (seed >> 2) + 42;
+
+    barrier just_reindeer, santa_reindeer;
+
+    shared write chan<boolean> elves_a, elves_b;
+    chan<boolean> knock;
+    shared write chan<boolean> santa_elves_a, santa_elves_b;
+    shared write chan<int> reindeer_santa, elf_santa;
+    shared write chan<Message> report;
+
+    println("SANTA OUTPUT       ELF OUTPUT      REINDEER OUTPUT");
+    println("-----------------------------------------------------------------------------------");
+
+    par {
+        par enroll santa_reindeer {
+            santa(seed + (N_REINDEER + N_ELVES),
+                  knock.read, reindeer_santa.read,
+                  elf_santa.read, santa_reindeer,
+                  santa_elves_a.write, santa_elves_b.write,
+                  report.write);
+            par enroll just_reindeer, santa_reindeer {
+                reindeer(0, seed, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);
+                reindeer(1, seed + 1, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);
+                reindeer(2, seed + 2, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);
+                /*reindeer(3, seed + 3, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);
+                reindeer(4, seed + 4, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);
+                reindeer(5, seed + 5, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);
+                reindeer(6, seed + 6, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);
+                reindeer(7, seed + 7, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);
+                reindeer(8, seed + 8, just_reindeer, santa_reindeer,
+                    reindeer_santa.write, report.write);*/
+            }
+        }
+
+        par {
+            elf(0, N_REINDEER + seed, elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            elf(1, N_REINDEER + (seed + 1), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            elf(2, N_REINDEER + (seed + 2), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            elf(3, N_REINDEER + (seed + 3), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            /*elf(4, N_REINDEER + (seed + 4), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            elf(5, N_REINDEER + (seed + 5), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            elf(6, N_REINDEER + (seed + 6), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            elf(7, N_REINDEER + (seed + 7), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            elf(8, N_REINDEER + (seed + 8), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);
+            elf(9, N_REINDEER + (seed + 9), elves_a.write, elves_b.write, santa_elves_a.write,
+            santa_elves_b.write, elf_santa.write, report.write);*/
+        }
+
+        display(report.read);
+        p_barrier_knock(G_ELVES, elves_a.read, elves_b.read, knock.write);
+        p_barrier(G_ELVES + 1, santa_elves_a.read, santa_elves_b.read);
+    }
+}

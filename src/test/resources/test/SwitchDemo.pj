@@ -1,0 +1,24 @@
+import std.io;
+
+public void main(string args[]) {
+  int a = 4;
+  switch (a) {
+    case 1: break;
+    case 2: break;
+    case 4:
+      println("Hello!1");
+      println("Hello!2");
+      println("Hello!3");
+      int b = 5;
+      switch (b) {
+        case 1: break;
+        case 2: break;
+        case 5:
+          println("in case 5!");
+          break;
+      }
+      break;
+    case 5: break;
+    default: println("default case");  break;
+  }
+}

@@ -1,0 +1,24 @@
+//package tests;
+
+import std.*;
+
+//record R { int a; }
+
+public void foo1() {
+    println("foo1 from Matt.pj");
+}
+
+public void main (string args[]) {
+  chan<int> c,d;
+
+  int x;
+  par {
+    x = d.read() + c.read() + 3;
+    d.write(4);
+    c.write(7);
+  }
+
+  println(x);
+  foo1();
+
+}

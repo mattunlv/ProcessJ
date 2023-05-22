@@ -1,11 +1,11 @@
 COMPILER:=g++
 CPPFLAGS:=-Wall -Wextra -g -pedantic -pthread -std=c++17 -masm=intel#-fsanitize=address
 OBJFLAGS:=-c -fPIC
-TARGET:=cppruntime# Originally pj_runtime
+TARGET:=org.processj.cppruntime# Originally pj_runtime
 NAMESPACE:=ProcessJ
 ROOT:=src/$(TARGET)/
-#RUNTIMEFLAGS:=-L$(ROOT)lib -l$(TARGET)
-#java -cp .:bin:resources/jars/* ProcessJc -target CPLUS -include include tests/alttest.pj
+#RUNTIMEFLAGS:=-L$(ROOT)org.processj.lib -l$(TARGET)
+#java -cp .:bin:resources/jars/* org.processj.ProcessJc -target CPLUS -include include tests/alttest.pj
 # ----------
 # Extensions
 
@@ -26,11 +26,11 @@ ALLGCHCONST:=*$(PCHCONST)
 BIN_DIR:=$(ROOT)bin
 INCLUDE_DIR:=$(ROOT)include
 SOURCE_DIR:=$(ROOT)src
-LIB_DIR:=$(ROOT)lib
+LIB_DIR:=$(ROOT)org.processj.lib
 OBJ_DIR:=$(ROOT)obj
 RUNTIME_DIR:=runtime
 RUNTIME_TESTS_DIR:=runtimetest
-UTILITIES:=utilities
+UTILITIES:=org.processj.utilities
 SYSTEM_DIR:=system
 ASSERT_DIR:=assert
 
@@ -86,12 +86,12 @@ TARGET_TEST_SOURCES:=$(TARGET_RUNTIME_SOURCES) $(RUNTIME_TESTS_SOURCE_PATH)$(ALL
 
 #$(LIB_DIR)/$(TARGET)$(AAACONST):
 #	reset && clear
-#	@echo "Checking for lib directory."
-#	if [ ! -d "./$(ROOT)$(RUNTIME_DIR)/lib" ]; then mkdir -p $(ROOT)$(RUNTIME_DIR)/lib; fi
+#	@echo "Checking for org.processj.lib directory."
+#	if [ ! -d "./$(ROOT)$(RUNTIME_DIR)/org.processj.lib" ]; then mkdir -p $(ROOT)$(RUNTIME_DIR)/org.processj.lib; fi
 #	if [ ! -d "./$(ROOT)$(RUNTIME_DIR)/obj" ]; then mkdir -p $(ROOT)$(RUNTIME_DIR)/obj; fi
 #	@echo "Creating objects."
 #	$(COMPILER) $(CPPFLAGS) $(TARGET_RUNTIME_INCLUDES) $(OBJFLAGS) -o $(OBJECTPATH)$(TARGET)$(OBJCONST) $(TARGET_RUNTIME_SOURCES)
-#	@echo "Creating library."
+#	@echo "Creating org.processj.library."
 	#ar cvq $(OBJECTPATH)$(TARGET)$(OBJCONST) $(OBJECTPATH)$(TARGET)_utilities$(OBJCONST)
 	#ranlib $(OBJECTPATH)$(TARGET)$(OBJCONST)
 	#rm -f  $(OBJECTPATH)$(TARGET)_utilities$(OBJCONST)
@@ -108,8 +108,8 @@ objects:
 
 build:
 	reset && clear
-	@echo "Checking for lib directory."
-	if [ ! -d "./$(ROOT)$(RUNTIME_DIR)/lib" ]; then mkdir -p $(ROOT)$(RUNTIME_DIR)/lib; fi
+	@echo "Checking for org.processj.lib directory."
+	if [ ! -d "./$(ROOT)$(RUNTIME_DIR)/org.processj.lib" ]; then mkdir -p $(ROOT)$(RUNTIME_DIR)/org.processj.lib; fi
 	if [ ! -d "./$(ROOT)$(RUNTIME_DIR)/obj" ]; then mkdir -p $(ROOT)$(RUNTIME_DIR)/obj; fi
 	@echo "Creating objects."
 	$(COMPILER) $(CPPFLAGS) $(UTILITIES_INCLUDE_PATH) $(RUNTIME_INCLUDE_PATH) $(OBJFLAGS) -o $(OBJECTPATH)$(TARGET)$(OBJCONST) $(RUNTIME_SOURCE_PATH)$(ALLCPPCONST)

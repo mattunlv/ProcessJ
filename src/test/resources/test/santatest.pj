@@ -1,0 +1,25 @@
+import std.*;
+
+protocol Santa_msg {
+    reindeer_ready: { }
+    harness: { int id; }
+    mush_mush: { }
+    woah: { }
+    unharness: { int id; }
+    elves_ready: { }
+    greet: { int id; }
+    consulting: { }
+    santa_done: { }
+    goodbye: { int id; }
+}
+
+protocol Message extends Santa_msg;
+
+public void foo(chan<Santa_msg>.write out) {
+}
+
+public void main(string[] args) {
+    shared write chan<Message> report;
+
+    foo(report.write);
+}

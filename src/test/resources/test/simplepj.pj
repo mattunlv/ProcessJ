@@ -1,0 +1,17 @@
+import std.*;
+
+public proc void foo(chan<int>.write out) {
+    out.write(4);
+}
+
+public proc void bar(chan<int>.read in) {
+    int a = in.read();
+}
+
+public proc void main(string args[]) {
+    chan<int> c;
+    par {
+        foo(c.write);
+        bar(c.read);
+    }
+}

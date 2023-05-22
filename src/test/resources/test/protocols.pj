@@ -1,0 +1,14 @@
+import std.*;
+
+public protocol P {
+    request: { int number; double amount; }
+    reply: { boolean status; }
+}
+
+public protocol P1 extends P {
+    deny: { int code; }
+}
+
+public void main(string[] args) {
+    P1 p = new P1 { deny: code = 4 };
+}

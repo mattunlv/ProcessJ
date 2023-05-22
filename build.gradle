@@ -1,19 +1,162 @@
 plugins {
-    id 'java'
-}
 
-group = 'org.processj'
-version = '1.0-SNAPSHOT'
+    id 'java'
+    id 'org.jetbrains.intellij' version '1.13.0'
+
+}
 
 repositories {
+
     mavenCentral()
+
 }
 
+java {
+
+    toolchain {
+
+        languageVersion.set(JavaLanguageVersion.of(17))
+
+    }
+
+}
+
+group 'edu.unlv.cs'
+version '1.0.0'
+
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.9.1')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+}
+
+intellij {
+
+    version = '2022.3.2'
+    type    = 'IC'
+
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'src/main/java/'
+            destinationDirectory.file('out/bin')
+        }
+        compileClasspath = files(['lib/asm-all-5.2.jar',
+                                  'lib/ST-4.0.7.jar',
+                                  'lib/jflex-1.8.2.jar',
+                                  'lib/cup-11b.jar'])
+    }
+    test {
+        java {
+            srcDirs 'src/test/java/'
+            destinationDirectory.file('out/bin')
+        }
+        compileClasspath = files(['lib/asm-all-5.2.jar',
+                                  'lib/ST-4.0.7.jar',
+                                  'lib/jflex-1.8.2.jar',
+                                  'lib/cup-11b.jar',
+                                  'build/classes/java/main/',
+                                  'lib/opentest4j-1.2.0.jar',
+                                  'lib/junit-jupiter-5.8.1.jar',
+                                  'lib/junit-jupiter-api-5.8.1.jar',
+                                  'lib/junit-jupiter-engine-5.8.1.jar',
+                                  'lib/apiguardian-api-1.1.2.jar'])
+        runtimeClasspath = files([
+                'lib/opentest4j-1.2.0.jar',
+                'lib/junit-jupiter-5.8.1.jar',
+                'lib/junit-jupiter-api-5.8.1.jar',
+                'lib/junit-jupiter-engine-5.8.1.jar',
+                'lib/apiguardian-api-1.1.2.jar',
+                'lib/asm-all-5.2.jar',
+                'lib/ST-4.0.7.jar',
+                'lib/cup-11b.jar',
+        ])
+    }
+
+}
+
+tasks.register('lexer', JavaExec) {
+
+    main = '-jar'
+    args = ['lib/jflex-1.8.2.jar',
+            '-d', 'src/main/java/org/processj/scanner/',
+            'src/main/resources/flex/ProcessJ.flex']
+
+}
+
+tasks.register('parser', JavaExec) {
+
+    main = '-jar'
+    args = ['lib/cup-11b.jar',
+            '-parser', 'Parser',
+            '-progress',
+            '-package',
+            'src/main/java/org/processj/parser/',
+            '-destdir',
+            'src/main/java/org/processj/parser/',
+            'src/main/resources/cup/ProcessJ.cup']
+
+}
+
+tasks.register('compiler', JavaCompile) {
+
+    source                  = sourceSets.main.java.srcDirs
+    destinationDirectory    = sourceSets.main.java.destinationDirectory
+    classpath               = sourceSets.main.compileClasspath
+
+}
+
+tasks.register('artifact', Jar) {
+
+    manifest {
+
+        attributes( 'Implementation-Title': 'ProcessJ Compiler',
+                    'Implementation-Version': '1.0.0',
+                    'Main-Class': 'org.processj.org.processj.ProcessJc')
+
+    }
+
+    duplicatesStrategy DuplicatesStrategy.WARN
+
+    from sourceSets.main.java.destinationDirectory
+    dependsOn sourceSets.main.compileClasspath
+
+    from {
+        sourceSets.main.compileClasspath.findAll { it.name.endsWith('.jar') }.collect { zipTree(it) }
+    }
+
+}
+
+tasks.register('intTestJavadoc', Javadoc) {
+    source sourceSets.intTest.allJava
+    classpath = sourceSets.intTest.compileClasspath
+}
+
+compileJava {
+
+    source                  = sourceSets.main.java.srcDirs
+    destinationDirectory    = sourceSets.main.java.destinationDirectory
+    classpath               = sourceSets.main.compileClasspath
+
 }
 
 test {
+
+    classpath               = sourceSets.test.runtimeClasspath
+
+    //inputs.dir(tasks.compileJava.destinationDirectory)
     useJUnitPlatform()
+    maxHeapSize = '2G'
+
+    testLogging {
+
+        events "passed"
+
+    }
+
 }
+
+tasks.named("compileTestJava").configure { dependsOn("compileJava") }

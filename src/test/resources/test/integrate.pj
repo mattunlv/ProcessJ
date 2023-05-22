@@ -1,0 +1,84 @@
+import std.*;
+
+public void longegrate(chan<long>.read in,
+                           chan<long>.write out) {
+  long total = 0;
+  while (true) {
+    long x;
+    x = in.read();
+    total = total + x;
+    out.write(total);
+  }
+}
+
+public void delta(chan<long>.read in,
+                   chan<long>.write out1,
+                   chan<long>.write out2) {
+  while (true) {
+    long x;
+    x = in.read();
+    par {
+      out1.write(x);
+      out2.write(x);
+    }
+  }
+}
+
+public void plus(chan<long>.read in1,
+                      chan<long>.read in2,
+                      chan<long>.write out) {
+  while (true) {
+    long x1, x2, sum;
+    par {
+      x1 = in1.read();
+      x2 = in2.read();
+    }
+    sum = x1 + x2;
+    out.write(sum);
+  }
+}
+
+public void prefix(long initVal,
+                        chan<long>.read in,
+                        chan<long>.write out) {
+  out.write(initVal);
+  while (true) {
+    long x;
+    x = in.read();
+    out.write(x);
+  }
+}
+
+public void longegrateParallel(chan<long>.read in,
+                                   chan<long>.write out) {
+  chan<long> a,b,c;
+  par {
+    plus(in, c.read, a.write);
+    prefix(0, b.read, c.write);
+    delta(a.read, out, b.write);
+  }
+}
+
+public void consume(chan<long>.read in) {
+  while (true) {
+    long x;
+    x = in.read();
+    prlongln(x);
+  }
+}
+
+public void produce(chan<long>.write out) {
+  long x = 0;
+  while (true) {
+    out.write(x);
+    x++;
+  }
+}
+ void main(string args[]) {
+  chan<long> in, out;
+  par {
+    produce(in.write);
+    consume(out.read);
+    longegrate(in.read, out.write);
+  }
+}

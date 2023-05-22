@@ -1,0 +1,29 @@
+import std.*;
+
+const int NUMBER = 9;
+
+public void writer1(chan<int>.write out) {
+    out.write(42);
+}
+
+public void writer2(chan<int>.write out) {
+    out.write(43);
+}
+
+public void reader(chan<int>.read in1, chan<int>.read in2) {
+    int v;
+    alt {
+        v = in1.read() : { println("Got " + v + " from writer 1."); }
+        //v = in2.read() : { println("Got " + v + " from writer 2."); }
+        skip : { println("in skip"); }
+    }
+}
+
+public void main(string[] args) {
+    chan<int> c1, c2;
+    par {
+        writer1(c1.write);
+        //writer2(c2.write);
+        reader(c1.read, c2.read);
+    }
+}

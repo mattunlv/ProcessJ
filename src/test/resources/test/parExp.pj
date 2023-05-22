@@ -1,0 +1,16 @@
+import std.*;
+
+public void foo() {
+    // empty
+}
+
+public void bar() {
+    // empty
+}
+
+public void main(string args[]) {
+    par {
+        foo();
+        bar();
+    }
+}

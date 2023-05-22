@@ -1,0 +1,48 @@
+import std.io;
+
+public void prefix(long n, chan<long>.read in, chan<long>.write out) {
+  out.write(n);
+  long l = 0;
+  while (l < 1000000) { // l < 5
+    l = in.read();
+    out.write(l);
+  }
+}
+
+public void succ(chan<long>.read in, chan<long>.write out) {
+  long l = 0;
+  while (l < 999999) { // l < 4
+    l = in.read();
+    out.write(l+1);
+  }
+}
+
+public void delta(chan<long>.read in, chan<long>.write out1, chan<long>.write out2) {
+  long l = 0;
+  while (l < 1000000) {  // l < 5
+    l = in.read();
+    par {
+      out1.write(l);  // consume
+      if (l != 1000000)     // l != 5
+        out2.write(l);  // succ
+    }
+  }
+}
+
+public void consume(chan<long>.read in) {
+  long l = 0;
+  while (l < 1000000) { // l < 5
+    l = in.read();
+    println(l);
+  }
+}
+
+public void main(string args[]) {
+  chan<long> a,b,c,d;
+  par {
+    delta(d.read, a.write, b.write);
+    succ(b.read, c.write);
+    prefix(0, c.read, d.write);
+    consume(a.read);
+  }
+}

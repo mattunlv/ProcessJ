@@ -1,0 +1,13 @@
+import std.*;
+
+public void foo() { }
+
+public void bar() { }
+
+public void main(string[] args) {
+	par {
+		println("Print from Hello");
+		foo();
+		bar();
+	}
+}

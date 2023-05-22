@@ -23,7 +23,7 @@ usage see: CodeGeneratorJava.java
 Compilation(pathName, fileName, name, body, version, imports) ::= <<
 import java.util.*;
 import processj.runtime.*;
-import utilities.*;
+import org.processj.utilities.*;
 import java.lang.reflect.Array;  
 import java.util.Arrays;
 import java.util.Collections;
@@ -241,14 +241,14 @@ final PJPar <name> = new PJPar(<count>, <process>);
 <! Not to be scheduled again until 'data' is ready !>
 if (<name>.shouldYield()) {
     this.runLabel = <jump>;
-    this.yield();
+    this.org.processj.yield();
     this.label(<jump>);
 }<\n>
 >>
 
 //========================================================================================
 // Defines an anonymous process which consist of a switch block that
-// contains jump labels for resumption and yield, a synchronized body
+// contains jump labels for resumption and org.processj.yield, a synchronized body
 // that runs all the statements declared inside the procedure, and a
 // 'par' block defined in a procedure. Note that the process's schedule()
 // method is excluded iff it is created inside a par-for. If this is
@@ -362,7 +362,7 @@ try {
     <name>.start();
     this.setNotReady();
     this.runLabel = <resume0>;
-    this.yield();
+    this.org.processj.yield();
 } catch (InterruptedException e) {
     System.out.println("An Interrupted exception occurred for a timer!");
 }
@@ -392,7 +392,7 @@ BlockRV(block) ::= <<
 ChanWriteStat(chanName, writeExpr, resume0) ::= <<
 <chanName>.write(this, <writeExpr>);
 this.runLabel = <resume0>;
-this.yield();
+this.org.processj.yield();
 
 label(<resume0>);<!-- remove 'line-feed' --!>
 >>
@@ -405,7 +405,7 @@ label(<resume0>);<!-- remove 'line-feed' --!>
 ChannelReadExpr(chanName, lhs, type, op, resume0, resume1, extendRv) ::= <<
 if (!<chanName>.isReadyToRead(this)) {
     this.runLabel = <resume0>;
-    this.yield();
+    this.org.processj.yield();
 }
 
 label(<resume0>);
@@ -419,7 +419,7 @@ label(<resume0>);
 <endif>
 <endif>
 this.runLabel = <resume1>;
-this.yield();
+this.org.processj.yield();
 
 label(<resume1>);<!-- remove 'line-feed' --!>
 >>
@@ -433,13 +433,13 @@ label(<resume1>);<!-- remove 'line-feed' --!>
 ChannelOne2Many(chanName, lhs, op, resume0, resume1, resume2, extendRv) ::= <<
 if (!<chanName>.claimRead(this)) {
     this.runLabel = <resume0>;
-    this.yield();
+    this.org.processj.yield();
 }
 label(<resume0>);
 
 if (!<chanName>.isReadyToRead(this)) {
     this.runLabel = <resume1>;
-    this.yield();
+    this.org.processj.yield();
 }
 
 label(<resume1>);
@@ -456,7 +456,7 @@ this.runLabel = <resume2>;
 
 <chanName>.unclaimRead();
 
-this.yield();
+this.org.processj.yield();
 label(<resume2>);
 >>
 
@@ -469,14 +469,14 @@ label(<resume2>);
 ChannelMany2One(chanName, writeExpr, resume0, resume1) ::= <<
 if (!<chanName>.claimWrite(this)) {
     this.runLabel = <resume0>;
-    this.yield();
+    this.org.processj.yield();
 }
 label(<resume0>);
 
 <chanName>.write(this, <writeExpr>);
 this.runLabel = <resume1>;
 
-this.yield();
+this.org.processj.yield();
 label(<resume1>);
 
 <chanName>.unclaimWrite();<\n>
@@ -675,7 +675,7 @@ ProtocolAccess(protocName, tag, var, member) ::= <<
 SyncStat(barrier, resume0) ::= <<
 <barrier>.sync(this);
 this.runLabel = <resume0>;
-this.yield();
+this.org.processj.yield();
 label(<resume0>);
 >>
 
@@ -739,7 +739,7 @@ for (PJProcess p : processes)
 
 this.setNotReady();
 this.runLabel = <jump>;
-this.yield();
+this.org.processj.yield();
 label(<jump>);
 >>
 
@@ -783,7 +783,7 @@ if (!ready<readyID>) {
 this.setNotReady();
 <index> = <alt>.enable();
 this.runLabel = <jump>;
-this.yield();
+this.org.processj.yield();
 
 label(<jump>);
 int selected<readyID> = <alt>.disable(<index>);
@@ -847,7 +847,7 @@ if (!ready<readyID>) {
 this.setNotReady();
 <index> = <alt>.enable();
 this.runLabel = <jump>;
-this.yield();
+this.org.processj.yield();
 
 label(<jump>);
 int selected = <alt>.disable(<index>);

@@ -1,5 +1,5 @@
 <project name="ProcessJ" default="javac" basedir=".">
-        <property name="library.path" value="lib" />
+        <property name="org.processj.library.path" value="org.processj.lib" />
         <property name="debug" value="on" />
         <property name="optimize" value="off" />
         <property name="dist" value="dist" />
@@ -87,7 +87,7 @@
 	<!-- Compiles the source directory                                       -->
 	<!-- =================================================================== -->
         <target name="run">
-                <java classpath="${classpath}:${build}" classname="ProcessJc">
+                <java classpath="${classpath}:${build}" classname="org.processj.ProcessJc">
                 <arg value="${arg0}"/>
                 </java>
         </target>

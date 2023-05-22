@@ -1,0 +1,45 @@
+
+import std.io;
+
+public void fooI(int i) { println("i = " + i); }
+public void fooJ(int j) { println("j = " + j); }
+public void fooK(int k) { println("k = " + k); }
+
+public void main(string[] args) {
+    println("Hi from main!");
+
+    for (int i = 0, j = 0, k = 1; (i < 4) && (j < 10); i++, j = j + 3 + i, k = k + 2) {
+        par {
+            fooI(i);
+            fooJ(j);
+            fooK(k);
+        }
+    }
+
+    int i = 0;
+    for (;;) {
+        if (i < 5) {
+            println("i = " + i + " less that 5");
+        }
+        if (i == 5) break;
+        i++;
+    }
+
+    i = 0;
+    for (; i++ < 5;) {
+        println("i = " + i + " less that 5");
+    }
+
+    i = 0;
+    while (true) {
+        if (i == 6) break;
+        i++;
+    }
+
+    i = 0;
+    do {
+        println("Entering a 'do-while' loop");
+        println("The value of i is " + i);
+        //i++;
+    } while (i++ < 6);
+}

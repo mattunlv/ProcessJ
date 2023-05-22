@@ -1,0 +1,22 @@
+import std.*;
+
+public protocol P {
+    request : { int number; double amount; }
+    reply: { boolean status; }
+}
+
+public protocol X {
+    ack: { boolean yes; }
+}
+
+public proc void main(string args[]) {
+    P p = new P { reply: status = true };
+    switch (p) {
+    case request:
+        println("number: " + p.number + ", amount: " + p.amount);
+        break;
+    case reply:
+        println("status = " + p.status);
+        break;
+    }
+}

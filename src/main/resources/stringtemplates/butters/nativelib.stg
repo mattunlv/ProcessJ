@@ -1,7 +1,7 @@
 
 Info() ::= <<
 This file contains all required templates for generating a valid ProcessJ
-native library when using the Butters tool. Note that these templates
+native org.processj.library when using the Butters tool. Note that these templates
 and their attributes are __awlays__ rendered before the code generation
 phase.
 >>

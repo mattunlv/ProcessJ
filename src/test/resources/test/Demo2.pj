@@ -1,0 +1,42 @@
+import std.io;
+
+public void say() {
+    par {
+        println("from say");
+        println("say from");
+    }
+}
+
+public void ben() {
+    println("form ben");
+}
+
+public void yeah() {
+    par {
+        println("from yeah!");
+        println("yeah from!");
+    }
+
+    par {
+        say();
+        ben();
+    }
+}
+
+public void main(string args[]) {
+    par {
+        println("Hello");
+        println("World");
+        say();
+        ben();
+        yeah();
+        par {
+            println("inside second par");
+            println("par inside second");
+            par {
+                println("thrid par block");
+                println("par block thrid");
+            }
+        }
+    }
+}
