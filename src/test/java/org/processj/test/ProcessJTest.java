@@ -77,5 +77,6 @@ public class ProcessJTest {
             = "src/test/resources/code/test/ChannelWrite01.pj";
     protected final static String CODE_TEST_CHANNEL_WRITE_02
             = "src/test/resources/code/test/ChannelWrite02.pj";
-
+    protected final static String CODE_TEST_CHANNEL_WRITE_03
+            = "src/test/resources/code/test/ChannelWrite03.pj";
 }

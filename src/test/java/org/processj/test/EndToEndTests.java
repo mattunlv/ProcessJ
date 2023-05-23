@@ -314,4 +314,13 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void testCode_channelWrite03_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_WRITE_03};
+
+        ProcessJc.main(arguments);
+
+    }
+
 }
