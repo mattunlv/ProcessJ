@@ -140,4 +140,14 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void bookCodeChapter4Section2_for_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_4_2_FOR};
+
+        ProcessJc.main(arguments);
+
+    }
+
+
 }
