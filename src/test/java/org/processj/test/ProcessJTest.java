@@ -51,4 +51,15 @@ public class ProcessJTest {
             = "src/test/resources/code/book/chapter_4/section_4/watchdog.pj";
     protected final static String CODE_BOOK_4_5_PRI_ALT
             = "src/test/resources/code/book/chapter_4/section_5/pri_alt.pj";
+
+    /// ------------
+    /// General Code
+
+    protected final static String CODE_TEST_ALT_01
+            = "src/test/resources/code/test/AltTest01.pj";
+    protected final static String CODE_TEST_ARRAY_01
+            = "src/test/resources/code/test/ArrayTest01.pj";
+    protected final static String CODE_TEST_ARRAY_02
+            = "src/test/resources/code/test/ArrayTest02.pj";
+
 }

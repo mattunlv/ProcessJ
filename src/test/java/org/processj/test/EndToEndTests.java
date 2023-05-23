@@ -158,6 +158,88 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void bookCodeChapter4Section3_repetition_endToEnd() {
 
+        final String[] arguments = {CODE_BOOK_4_3_REPETITION};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void bookCodeChapter4Section4_alt_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_4_4_ALT};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void bookCodeChapter4Section4_mux_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_4_4_MUX};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void bookCodeChapter4Section4_timeoutGuard_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_4_4_TIMEOUT_GUARD};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void bookCodeChapter4Section4_watchdog_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_4_4_WATCHDOG};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void bookCodeChapter4Section5_priAlt_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_4_5_PRI_ALT};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    /// ---------
+    /// Test Code
+
+    @Test
+    public void testCode_altTest01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_ALT_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_arrayTest01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_ARRAY_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_arrayTest02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_ARRAY_02};
+
+        ProcessJc.main(arguments);
+
+    }
 
 }
