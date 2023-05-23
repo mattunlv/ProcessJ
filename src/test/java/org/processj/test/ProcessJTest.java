@@ -56,10 +56,16 @@ public class ProcessJTest {
     /// General Code
 
     protected final static String CODE_TEST_ALT_01
-            = "src/test/resources/code/test/AltTest01.pj";
+            = "src/test/resources/code/test/Alt01.pj";
     protected final static String CODE_TEST_ARRAY_01
-            = "src/test/resources/code/test/ArrayTest01.pj";
+            = "src/test/resources/code/test/Array01.pj";
     protected final static String CODE_TEST_ARRAY_02
-            = "src/test/resources/code/test/ArrayTest02.pj";
+            = "src/test/resources/code/test/Array02.pj";
+    protected final static String CODE_TEST_BARRIER_01
+            = "src/test/resources/code/test/Barrier01.pj";
+    protected final static String CODE_TEST_BARRIER_02
+            = "src/test/resources/code/test/Barrier02.pj";
+    protected final static String CODE_TEST_BINARY_EXPRESSION_01
+            = "src/test/resources/code/test/BinaryExpression01.pj";
 
 }

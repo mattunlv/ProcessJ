@@ -242,4 +242,31 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void testCode_barrier01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_BARRIER_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_barrier02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_BARRIER_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_binaryExpression01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_BINARY_EXPRESSION_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
 }

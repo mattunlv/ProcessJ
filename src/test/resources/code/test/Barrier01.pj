@@ -1,15 +1,15 @@
 import std.*;
 
-public proc void foo(barrier b) {
+public void foo(barrier b) {
     int a = 5;
     b.sync();
 }
 
-public proc void bar(barrier b) {
+public void bar(barrier b) {
     b.sync();
 }
 
-public proc void main(string args[]) {
+public void main(string args[]) {
     barrier b;
     par enroll b {
         foo(b);

@@ -15,8 +15,8 @@ public void bar(barrier b, chan<int>.write w) {
     w.write(5);
 }
 
-public void f(int i) [org.processj.yield=true] { println("f(" + i + ")"); }
-public void b(int i) [org.processj.yield=true] { println("b(" + i + ")"); }
+public void f(int i) [yield=true] { println("f(" + i + ")"); }
+public void b(int i) [yield=true] { println("b(" + i + ")"); }
 
 public void main(string args[]) {
     timer t;
