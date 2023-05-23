@@ -89,25 +89,26 @@ public class ArrayType extends Type {
     // α =T β ⇔ Array?(α) ∧ Array?(β) ∧ (t1 =T t2) ∧ ((I1 =I2) ∨ (I1 =⊥) ∨ (I2 =⊥))
     @Override
     public boolean typeEqual(Type t) {
-        if (!t.isArrayType())
-            return false;
-        ArrayType at = (ArrayType) t;
-        // Check based type for 2D array and beyond!
-        int baseDepth = depth;
-        if (!actualBaseType.isArrayType())
-            baseDepth = actualDepth;
-        return typeName().equals(at.typeName()) && baseDepth == at.depth;
+
+        return (t instanceof ArrayType)
+                && ((actualBaseType.isArrayType()) ? depth : actualDepth)
+                    == ((ArrayType) t).actualDepth // baseDepth == at.depth
+                && typeName().equals(t.typeName());
+
     }
 
     @Override
     public boolean typeEquivalent(Type t) {
+
         return typeEqual(t);
+
     }
 
     @Override
     public boolean typeAssignmentCompatible(Type t) {
-        if (!t.isArrayType())
-            return false;
+
         return typeEqual(t);
+
     }
+
 }

@@ -134,7 +134,7 @@ public void numbers_reset(chan<int>.write out,
     par {
 
         prefix(0, d.read, a.write);
-        replace(a.read, b.write, reset.read);
+        replace(a.read, reset, b.write);
         delta(b.read, out, c.write);
         succ (c.read, d.write);
 

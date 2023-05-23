@@ -1,5 +1,17 @@
 package org.processj.test;
 
+import javax.tools.ToolProvider;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.net.URI;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import java.util.List;
+
 public class ProcessJTest {
 
     /// --------------------------
@@ -159,4 +171,51 @@ public class ProcessJTest {
             = "src/test/resources/code/test/Switch01.pj";
     protected final static String CODE_TEST_TIMER_01
             = "src/test/resources/code/test/Timer01.pj";
+
+    /// ------------------------
+    /// Protected Static Methods
+
+    protected String stringOf(final String filePath) {
+
+        String result = "";
+
+        try {
+
+            result = (new FileInputStream(filePath)).toString();
+
+        } catch(final FileNotFoundException fileNotFoundException) {
+
+            System.out.println(fileNotFoundException.getMessage());
+
+        }
+
+        return result;
+
+    }
+
+    protected boolean compile(final String program) {
+
+        // Create the java file object
+        final Iterable<? extends JavaFileObject> compilationUnits = List.of(new SimpleJavaFileObject(
+                URI.create("string:///" + program.replace('.', '/') +
+                        JavaFileObject.Kind.SOURCE.extension), JavaFileObject.Kind.SOURCE) {
+
+            @Override
+            public CharSequence getCharContent(final boolean ignoreEncodingErrors) {
+
+                return program;
+
+            }
+
+        });
+
+        final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+
+        return ToolProvider.getSystemJavaCompiler().getTask(
+                null, null, diagnostics, null, null, compilationUnits).call();
+
+    }
+
+
+
 }

@@ -402,7 +402,7 @@ public class NameChecker<T extends Object> extends Visitor<T> {
                         .build());
             n.myDecl = (AST) o;
         }
-        // TODO: make sure we don't repreat names in the 'extend' part.
+        // TODO: make sure we don't repeat names in the 'extend' part.
         return null;
     }
 

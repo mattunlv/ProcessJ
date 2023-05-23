@@ -46,10 +46,11 @@ public class TypeChecker extends Visitor<Type> {
         Log.log("  > Resolve: " + t);
         
         // Error types do not resolve to anything by themselves.
-        if (t.isErrorType())
+        if(t.isErrorType())
             return t;
+
         // A named type must resolve to an actual type.
-        if (t.isNamedType()) {
+        if(t.isNamedType()) {
             Log.log("  > Resolving named type: " + ((NamedType) t).name().getname());
             NamedType nt = (NamedType) t;
             Type actualType = nt.type();
@@ -724,25 +725,19 @@ public class TypeChecker extends Visitor<Type> {
         // compiler.
         // - The symbol tables of any files imported by the top level file, but NOT what
         // they import.
-        while (st != null) {
+        while(st != null) {
             SymbolTable procs = (SymbolTable) st.getShallow(in.procedureName().getname());
-            if (procs != null)
-                for (Object pd : procs.entries.values().toArray()) {
+            if(procs != null) {
+                for(Object pd: procs.entries.values().toArray()) {
                     ProcTypeDecl ptd = (ProcTypeDecl) pd;
-                    // System.out.println("Handling Procedure : " + ptd.typeName() +
-                    // ptd.signature());
-                    // set the qualified name in pd such that we can get at it later.
-                    // System.out.println(ptd.formalParams().size() + " " + in.params().size());
-                    if (ptd.formalParams().size() == in.params().size()) {
-                        // TODO: this should store this somwhere
+                    if(ptd.formalParams().size() == in.params().size()) {
+                        // TODO: this should store this somewhere
                         boolean candidate = true;
                         Log.log(" checking if Assignment Compatible proc: " + ptd.typeName() + " ( " + ptd.signature()
                                 + " ) ");
                         for (int i = 0; i < in.params().size(); i++) {
-                            // System.out.println("Formal's type: " + ptd.formalParams().child(i).type());
-                            // System.out.println("Actual's type: " + in.params().child(i).type);
 
-                            candidate = candidate && (resolve(((ParamDecl) ptd.formalParams().child(i)).type()))
+                            candidate = candidate && resolve(ptd.formalParams().child(i).type())
                                     .typeAssignmentCompatible(resolve(in.params().child(i).type));
                         }
                         if (candidate) {
@@ -752,7 +747,9 @@ public class TypeChecker extends Visitor<Type> {
                         } else
                             ;// System.out.println("Candidate thrown away");
                     }
+
                 }
+            }
 
             if (firstTable)
                 st = st.getImportParent();
@@ -1416,13 +1413,14 @@ public class TypeChecker extends Visitor<Type> {
         Log.log(va.line + ": Visiting a var (" + va.name().getname() + ").");
 
         if (va.init() != null) {
+
             Type vType = resolve(va.myDecl.type());
             Type iType = resolve(va.init().visit(this));
 
-            if (vType.isErrorType() || iType.isErrorType())
+            if(vType.isErrorType() || iType.isErrorType())
                 return null;
 
-            if (!vType.typeAssignmentCompatible(iType))
+            if(!vType.typeAssignmentCompatible(iType))
                 Error.error(va, "Cannot assign value of type " + iType.typeName() + " to variable of type "
                         + vType.typeName() + ".", false, 3058);
         }

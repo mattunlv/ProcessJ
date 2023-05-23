@@ -122,7 +122,7 @@ public class SymbolTable implements DefineTopLevelDecl {
     }
 
     public String toString() {
-        String s = "SymbolTable: Name: " + name + "\n";
+        String s = "SymbolTable:" + name + "\n";
         if (parent != null)
             s = "\n" + parent.toString();
         return s + " -> " + entries.toString();

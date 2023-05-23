@@ -5,12 +5,16 @@ import org.processj.ProcessJc;
 
 public class EndToEndTests extends ProcessJTest {
 
+    private final String WorkingDirectory = "/Users/cuenca/workingpj/";
+
     @Test
     public void bookCodeChapter1Section2_synchronizedCommunication_endToEnd() {
 
         final String[] arguments = {CODE_BOOK_1_2_SYNCHRONIZED_COMMUNICATION};
 
         ProcessJc.main(arguments);
+
+        compile(stringOf(WorkingDirectory + "synchronized_communication.java"));
 
     }
 

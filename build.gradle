@@ -64,7 +64,8 @@ sourceSets {
                                   'lib/junit-jupiter-5.8.1.jar',
                                   'lib/junit-jupiter-api-5.8.1.jar',
                                   'lib/junit-jupiter-engine-5.8.1.jar',
-                                  'lib/apiguardian-api-1.1.2.jar'])
+                                  'lib/apiguardian-api-1.1.2.jar',
+                                  '/opt/homebrew/opt/openjdk@20/'])
         runtimeClasspath = files([
                 'lib/opentest4j-1.2.0.jar',
                 'lib/junit-jupiter-5.8.1.jar',
@@ -74,6 +75,7 @@ sourceSets {
                 'lib/asm-all-5.2.jar',
                 'lib/ST-4.0.7.jar',
                 'lib/cup-11b.jar',
+                '/opt/homebrew/opt/openjdk@20/'
         ])
     }
 

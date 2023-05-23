@@ -449,12 +449,17 @@ public class ProcessJc {
     }
 
     public ProcessJc(String[] args) {
+
         this.args = args;
+
         Settings.showColor = Boolean.valueOf(config.getProperty("color"));
+
         // Parse command-line arguments
         parseArgs();
+
         // Switch to turn color mode ON/OFF
         ANSIColorMode();
+
     }
 
     public void ANSIColorMode() {

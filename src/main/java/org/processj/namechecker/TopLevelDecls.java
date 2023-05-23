@@ -122,6 +122,7 @@ public class TopLevelDecls<T extends AST> extends Visitor<T> {
             SymbolTable st = new SymbolTable();
             if (Modifier.hasModifierSet(pd.modifiers(), Modifier.MOBILE))
                 st.isMobileProcedure = true;
+
             st.put(pd.signature(), pd);
             symtab.put(pd.name().getname(), st);
         } else {

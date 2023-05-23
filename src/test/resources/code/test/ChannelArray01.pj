@@ -6,9 +6,9 @@ void main(string args[]) {
      chan<int>.write[] writeEnds = new chan<int>.write[n];
 
      for(int i=0; i<n; i++) {
-     	 chan<int> c;
-	 readEnds[i] = c.read;
-	 writeEnds[i] = c.write;
+     	chan<int> c;
+	    readEnds[i] = c.read;
+	    writeEnds[i] = c.write;
      }
      int v;
      par {

@@ -85,8 +85,7 @@
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
 	B-- Setting absolute path, file and package name for 'pri_alt.pj'.
-	Zsrc/test/resources/code/book/chapter_4/section_4/mux.pj:137: No suitable procedure found.
-	OError number: 3037[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+	=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
 	b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:14
 	/ ### Token: 'true', line 14 [11:14] (kind: 59)
 	
@@ -127,6 +126,7 @@
 	
 	
 	(-- Rewriting channel arrays local decls
+	)** COMPILATION COMPLITED SUCCESSFULLY **
 
 H-- Setting absolute path, file and package name for 'one_bit_adder.pj'.
 
@@ -151,11 +151,16 @@ c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/s
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
 L-- Setting absolute path, file and package name for 'ChannelEndArray02.pj'.
-Ysrc/test/resources/code/book/chapter_4/section_4/mux.pj:71: No suitable procedure found.
+‰src/test/resources/code/book/chapter_4/section_4/mux.pj:59: Cannot assign value of type chan<int>[][] to variable of type chan<int>[][].
+£Error number: 3058src/test/resources/code/book/chapter_4/section_4/mux.pj:60: Cannot assign value of type chan<int>[][][][] to variable of type chan<int>[][][][].
+¥Error number: 3058src/test/resources/code/book/chapter_4/section_4/mux.pj:62: Cannot assign value of type chan<int>.read[][] to variable of type chan<int>.read[][].
+¹Error number: 3058src/test/resources/code/book/chapter_4/section_4/mux.pj:68: Cannot assign value of type chan<NamedType: Message>[][] to variable of type chan<NamedType: Message>[][].
+kError number: 3058src/test/resources/code/book/chapter_4/section_4/mux.pj:71: No suitable procedure found.
 :Error number: 3037-- Rewriting channel arrays local decls
 I-- Setting absolute path, file and package name for 'ChannelArray02.pj'.
-Ysrc/test/resources/code/book/chapter_4/section_4/mux.pj:35: No suitable procedure found.
-:Error number: 3037-- Rewriting channel arrays local decls
+‰src/test/resources/code/book/chapter_4/section_4/mux.pj:33: Cannot assign value of type chan<int>[][] to variable of type chan<int>[][].
+:Error number: 3058-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
 C-- Setting absolute path, file and package name for 'Record05.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
