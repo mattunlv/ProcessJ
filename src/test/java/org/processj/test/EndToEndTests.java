@@ -122,5 +122,22 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void bookCodeChapter3Section9_output_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_3_9_OUTPUT};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void bookCodeChapter4Section1_switch_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_4_1_SWITCH};
+
+        ProcessJc.main(arguments);
+
+    }
 
 }
