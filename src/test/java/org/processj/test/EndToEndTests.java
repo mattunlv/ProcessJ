@@ -149,5 +149,15 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void bookCodeChapter4Section2_while_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_4_2_WHILE};
+
+        ProcessJc.main(arguments);
+
+    }
+
+
 
 }
