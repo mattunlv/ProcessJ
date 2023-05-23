@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T03:04:51" hostname="Carloss-MacBook-Pro.local" time="0.103">
+<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T03:08:40" hostname="Carloss-MacBook-Pro.local" time="0.094">
   <properties/>
-  <testcase name="testCode_channelRead01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.103"/>
-  <system-out><![CDATA[-- Setting absolute path, file and package name for 'ChannelRead01.pj'.
+  <testcase name="testCode_Record03_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.094"/>
+  <system-out><![CDATA[-- Setting absolute path, file and package name for 'Record03.pj'.
 -- Rewriting channel arrays local decls
 ** COMPILATION COMPLITED SUCCESSFULLY **
 ]]></system-out>

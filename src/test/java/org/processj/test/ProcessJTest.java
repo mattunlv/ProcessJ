@@ -117,4 +117,10 @@ public class ProcessJTest {
             = "src/test/resources/code/test/Protocol01.pj";
     protected final static String CODE_TEST_PROTOCOL_02
             = "src/test/resources/code/test/Protocol02.pj";
+    protected final static String CODE_TEST_RECORD_01
+            = "src/test/resources/code/test/Record01.pj";
+    protected final static String CODE_TEST_RECORD_02
+            = "src/test/resources/code/test/Record02.pj";
+    protected final static String CODE_TEST_RECORD_03
+            = "src/test/resources/code/test/Record03.pj";
 }

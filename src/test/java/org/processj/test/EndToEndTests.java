@@ -494,4 +494,31 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void testCode_Record01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_RECORD_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_Record02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_RECORD_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_Record03_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_RECORD_03};
+
+        ProcessJc.main(arguments);
+
+    }
+
 }

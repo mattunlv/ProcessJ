@@ -9,7 +9,7 @@ public protocol X {
     ack: { boolean yes; }
 }
 
-public proc void main(string args[]) {
+public void main(string args[]) {
     P p = new P { reply: status = true };
     switch (p) {
     case request:

@@ -46,7 +46,7 @@ public protocol XX {
   yeah : { double d; }
 }
 
-public proc void writer(chan<L>.write out, barrier b1) {
+public void writer(chan<L>.write out, barrier b1) {
   K k = new K { z = 3, t = new T { a = 45 } };
   X x = new X { b = "Ben", p = 300, a = 20 };
   L l = new L { k = new K { z = 4, t = new T { a = 65 }}, str = "Benjamin" };
@@ -55,7 +55,7 @@ public proc void writer(chan<L>.write out, barrier b1) {
   out.write(l);
 }
 
-public proc void reader(chan<L>.read in, barrier b1) {
+public void reader(chan<L>.read in, barrier b1) {
   b1.sync();
   L value;
   value = in.read();
@@ -69,14 +69,14 @@ public proc void reader(chan<L>.read in, barrier b1) {
   println("The value is " + value.k.t.a);
 }
 
-public proc void readXX(chan<XX>.read in, barrier b2) {
+public void readXX(chan<XX>.read in, barrier b2) {
   b2.sync();
   XX value;
   value = in.read();
   println("Done reading xx!");
 }
 
-public proc void writeXX(chan<XX>.write out, barrier b2) {
+public void writeXX(chan<XX>.write out, barrier b2) {
   b2.sync();
   XX xx = new XX { accept : b = 35, code = 45 };
   switch (xx) {
@@ -85,10 +85,10 @@ public proc void writeXX(chan<XX>.write out, barrier b2) {
   out.write(xx);
 }
 
-public proc void foo(int x) {
+public void foo(int x) {
 }
 
-public proc void main(string args[]) {
+public void main(string args[]) {
   chan<L> c;
   chan<XX> x;
   int a = 2;
