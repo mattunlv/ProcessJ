@@ -113,5 +113,14 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void bookCodeChapter3Section8_eightBitAdder_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_3_8_EIGHT_BIT_ADDER};
+
+        ProcessJc.main(arguments);
+
+    }
+
 
 }

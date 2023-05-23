@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T01:48:44" hostname="Carloss-MacBook-Pro.local" time="0.111">
+<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T01:49:36" hostname="Carloss-MacBook-Pro.local" time="0.115">
   <properties/>
-  <testcase name="bookCodeChapter3Section8_fourBitAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.111"/>
-  <system-out><![CDATA[-- Setting absolute path, file and package name for 'four_bit_adder.pj'.
+  <testcase name="bookCodeChapter3Section8_eightBitAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.115"/>
+  <system-out><![CDATA[-- Setting absolute path, file and package name for 'eight_bit_adder.pj'.
 -- Rewriting channel arrays local decls
 ** COMPILATION COMPLITED SUCCESSFULLY **
 ]]></system-out>
