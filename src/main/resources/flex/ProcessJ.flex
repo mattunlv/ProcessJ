@@ -8,51 +8,61 @@ import org.processj.parser.*;
 
 %class Lexer
 %public
-%7bit
-%pack
-
-%cup
-
+%unicode
 %line
 %column
+%cup
 
 %{
-  public static String curLine = "";
-  public static int lineCount = 0;	
-  public static boolean debug = false;
-  public static int incrspaces = 0;
+    /// --------------------
+    /// Public Static Fields
 
-  public void addToLine(String s, int line) {
-    if (line != lineCount) 
-      curLine = s;
-    else
-      curLine = curLine + s;
-    lineCount = line;
-  }
+    public static boolean   Debug       = false ;
+    public static String    CurrentLine = ""    ;
+    public static int       LineCount   = 0     ;
+    public static int       Spaces      = 0     ;
 
-  public void addLineComment() {
-    String line = "Comment, line " + (yyline+1) + " [" + (yycolumn+1+incrspaces)  + ":" + (yycolumn+yylength()) + "]";
-    String str = yytext();
-    Token t = null;
-    if (str.startsWith("/*"))
-      t = new Token(Types.INSTANCE.MULTILINE_COMMENT, "Multi-line " + line, yyline+1, yycolumn+1, yycolumn + yylength());
-    else
-      t = new Token(Types.INSTANCE.SINGLELINE_COMMENT, "Single-line " + line, yyline+1, yycolumn+1, yycolumn + yylength());
-  }
+    /// --------------
+    /// Public Methods
 
-  public void countSpaces(int line) {
-    incrspaces = line;
-  }
+    public void addToLine(String string, int line) {
 
-  private java_cup.runtime.Symbol token(int kind) {
-    Token t;
-    addToLine(yytext(), yyline+1);
-    t = new Token(kind, yytext(), yyline+1, yycolumn+1, yycolumn + yylength());
-    if (debug)
-      System.out.println(t);
-    //System.out.println(">> " + new java_cup.runtime.Symbol(kind, t).value);
-    return new java_cup.runtime.Symbol(kind, t);
-  } 
+        CurrentLine = (line != LineCount) ? string : CurrentLine + string;
+
+        LineCount = line;
+
+    }
+
+    public void addLineComment() {
+
+        final String line = "Comment, line " + (yyline + 1) + " [" + (yycolumn + 1 + Spaces) + ":" + (yycolumn + yylength()) + "]";
+
+        final Token token = (yytext().startsWith("/*"))
+            ? new Token(Types.INSTANCE.MULTILINE_COMMENT,
+                "Multi-line " + line, yyline + 1, yycolumn + 1, yycolumn + yylength())
+            : new Token(Types.INSTANCE.SINGLELINE_COMMENT,
+                "Single-line " + line, yyline + 1, yycolumn + 1, yycolumn + yylength());
+
+    }
+
+    public void countSpaces(int line) {
+
+        Spaces = line;
+
+    }
+
+    private java_cup.runtime.Symbol token(int kind) {
+
+        this.addToLine(yytext(), yyline+1);
+
+        final Token token = new Token(kind, yytext(), yyline + 1, yycolumn + 1, yycolumn + yylength());
+
+        if(Debug) System.out.println(token);
+
+        return new java_cup.runtime.Symbol(kind, token);
+
+    }
+
 %}
 
 

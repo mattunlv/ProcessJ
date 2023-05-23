@@ -3194,13 +3194,13 @@ public class Parser extends java_cup.runtime.lr_parser {
 
   public void syntax_error(java_cup.runtime.Symbol current) {
     if(current.value == null) {
-      System.out.println("Unexpected end of file." + Lexer.curLine);
+      System.out.println("Unexpected end of file." + Lexer.CurrentLine);
       System.exit(1);
     }   
     else {
       Token t = (Token)current.value;
-      System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + Lexer.lineCount + ": Syntax error:\n\n" + Lexer.curLine);
-      for (int i=1; i<Lexer.curLine.length()+1-t.lexeme.length(); i++)
+      System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + Lexer.LineCount + ": Syntax error:\n\n" + Lexer.CurrentLine);
+      for (int i=1; i<Lexer.CurrentLine.length()+1-t.lexeme.length(); i++)
         System.out.print(" ");
       System.out.println("^");
       System.exit(1);
