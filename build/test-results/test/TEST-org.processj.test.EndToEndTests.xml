@@ -1,31 +1,157 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T01:45:59" hostname="Carloss-MacBook-Pro.local" time="0.116">
+<testsuite name="org.processj.test.EndToEndTests" tests="10" skipped="0" failures="0" errors="0" timestamp="2023-05-23T01:47:11" hostname="Carloss-MacBook-Pro.local" time="0.234">
   <properties/>
-  <testcase name="bookCodeChapter3Section7_squares_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.116"/>
-  <system-out><![CDATA[-- Setting absolute path, file and package name for 'squares.pj'.
+  <testcase name="bookCodeChapter3Section7_pairs_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.125"/>
+  <testcase name="bookCodeChapter3Section7_integrate_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.02"/>
+  <testcase name="bookCodeChapter3Section7_fibonacci_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.019"/>
+  <testcase name="bookCodeChapter3Section6_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.01"/>
+  <testcase name="bookCodeChapter3Section7_structuredExecution_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.01"/>
+  <testcase name="bookCodeChapter1Section2_synchronizedCommunication_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.007"/>
+  <testcase name="bookCodeChapter3Section5_timeInProcessJ_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.009"/>
+  <testcase name="bookCodeChapter3Section7_squares_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.011"/>
+  <testcase name="bookCodeChapter3Section7_numbers_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.009"/>
+  <testcase name="bookCodeChapter3Section7_fifo6_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008"/>
+  <system-out><![CDATA[-- Setting absolute path, file and package name for 'pairs.pj'.
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:12
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:12
  ### Token: 'true', line 12 [12:15] (kind: 59)
 
 
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:24
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:24
  ### Token: 'true', line 24 [12:15] (kind: 59)
 
 
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:35
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:42
+ ### Token: 'true', line 42 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:69
+ ### Token: 'true', line 69 [12:15] (kind: 59)
+
+
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'integrate.pj'.
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:12
+ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:24
+ ### Token: 'true', line 24 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:43
+ ### Token: 'true', line 43 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:82
+ ### Token: 'true', line 82 [11:14] (kind: 59)
+
+
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'fibonacci.pj'.
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:12
+ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:24
+ ### Token: 'true', line 24 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:36
+ ### Token: 'true', line 36 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:63
+ ### Token: 'true', line 63 [12:15] (kind: 59)
+
+
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'one_to_one_channels.pj'.
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'structured_execution.pj'.
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'synchronized_communication.pj'.
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'time_in_process_j.pj'.
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'squares.pj'.
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:12
+ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:24
+ ### Token: 'true', line 24 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:35
  ### Token: 'true', line 35 [12:15] (kind: 59)
 
 
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:54
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:54
  ### Token: 'true', line 54 [12:15] (kind: 59)
 
 
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:144
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:144
  ### Token: 'true', line 144 [11:14] (kind: 59)
+
+
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'numbers.pj'.
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:12
+ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:24
+ ### Token: 'true', line 24 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:36
+ ### Token: 'true', line 36 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:75
+ ### Token: 'true', line 75 [11:14] (kind: 59)
+
+
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'fifo6.pj'.
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:12
+ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/pairs.pj:52
+ ### Token: 'true', line 52 [11:14] (kind: 59)
 
 
 -- Rewriting channel arrays local decls

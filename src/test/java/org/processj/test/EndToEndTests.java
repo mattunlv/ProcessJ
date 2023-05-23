@@ -86,6 +86,13 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void bookCodeChapter3Section7_structuredExecution_endToEnd() {
 
+        final String[] arguments = {CODE_BOOK_3_7_STRUCTURED_EXECUTION};
+
+        ProcessJc.main(arguments);
+
+    }
 
 }
