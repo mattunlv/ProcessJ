@@ -4,11 +4,42 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+/**
+ * <p>Collection of tests that check ProcessJ transpilation and subsequent generated java output compilation.
+ * Each of these tests check soundness against the Syntax & Java Syntax Test Oracles as outlined in the
+ * specification.</p>
+ * @author Carlos L. Cuenca
+ * @version 1.0.0
+ * @see ProcessJTest
+ * @since 0.1.0
+ */
 public class EndToEndTests extends ProcessJTest {
 
+    /// ---------------------
+    /// Private Static Fields
+
+    /**
+     * <p>The directory within the local system where the ProcessJ compiler writes the generated Java output.</p>
+     * @since 0.1.0
+     */
     private final static String WorkingDirectory   = "/Users/cuenca/workingpj/";
+
+    /**
+     * <p>The directory within the local system of the target test ProcessJ source input to specify to the compiler.</p>
+     * @since 0.1.0
+     */
     private final static String InputDirectory     = "src/test/resources/code/";
 
+    /// ------
+    /// Before
+
+    /**
+     * <p>Initializes the local test environment. Updates the {@link SourceInput#InputPath} &
+     * {@link SourceInput#OutputPath} static fields to specify the proper location of the ProcessJ test input source
+     * files to the ProcessJ compiler in addition to specifying the proper location of the generated Java source files.
+     * </p>
+     * @since 0.1.0
+     */
     @BeforeAll
     public static void initializeDirectories() {
 
@@ -18,71 +49,74 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    /// ---------------
+    /// Book Code Tests
+
     @Test
-    public void bookCodeChapter1Section2_synchronizedCommunication_endToEnd() {
+    public void testCode_chapter1Section2SynchronizedCommunication_endToEnd() {
 
         Assertions.assertTrue(BookSynchronizedCommunication.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section5_timeInProcessJ_endToEnd() {
+    public void testCode_chapter3Section5TimeInProcessJ_endToEnd() {
 
         Assertions.assertTrue(BookTimeInProcessJ.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section6_oneToOneChannels_endToEnd() {
+    public void testCode_chapter3Section6OneToOneChannels_endToEnd() {
 
         Assertions.assertTrue(BookOneToOneChannels.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section7_fibonacci_endToEnd() {
+    public void testCode_chapter3Section7Fibonacci_endToEnd() {
 
         Assertions.assertTrue(BookFibonacci.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section7_fifo6_endToEnd() {
+    public void testCode_chapter3Section7Fifo6_endToEnd() {
 
         Assertions.assertTrue(BookFifo6.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section7_integrate_endToEnd() {
+    public void testCode_chapter3Section7Integrate_endToEnd() {
 
         Assertions.assertTrue(BookIntegrate.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section7_numbers_endToEnd() {
+    public void testCode_chapter3Section7Numbers_endToEnd() {
 
         Assertions.assertTrue(BookNumbers.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section7_pairs_endToEnd() {
+    public void testCode_chapter3Section7Pairs_endToEnd() {
 
         Assertions.assertTrue(BookPairs.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section7_squares_endToEnd() {
+    public void testCode_chapter3Section7Squares_endToEnd() {
 
         Assertions.assertTrue(BookSquares.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section7_structuredExecution_endToEnd() {
+    public void testCode_chapter3Section7StructuredExecution_endToEnd() {
 
         Assertions.assertTrue(BookStructuredExecution.successfulJavaCompile());
 
@@ -90,7 +124,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void bookCodeChapter3Section8_oneBitAdder_endToEnd() {
+    public void testCode_chapter3Section8OneBitAdder_endToEnd() {
 
         Assertions.assertTrue(BookOneBitAdder.successfulJavaCompile());
 
@@ -98,84 +132,84 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void bookCodeChapter3Section8_fourBitAdder_endToEnd() {
+    public void testCode_chapter3Section8FourBitAdder_endToEnd() {
 
         Assertions.assertTrue(BookFourBitAdder.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section8_eightBitAdder_endToEnd() {
+    public void testCode_chapter3Section8EightBitAdder_endToEnd() {
 
         Assertions.assertTrue(BookEightBitAdder.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter3Section9_output_endToEnd() {
+    public void testCode_chapter3Section9Output_endToEnd() {
 
         Assertions.assertTrue(BookOutput.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section1_switch_endToEnd() {
+    public void testCode_chapter4Section1Switch_endToEnd() {
 
         Assertions.assertTrue(BookSwitch.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section2_for_endToEnd() {
+    public void testCode_chapter4Section2For_endToEnd() {
 
         Assertions.assertTrue(BookFor.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section2_while_endToEnd() {
+    public void testCode_chapter4Section2While_endToEnd() {
 
         Assertions.assertTrue(BookWhile.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section3_repetition_endToEnd() {
+    public void testCode_chapter4Section3Repetition_endToEnd() {
 
         Assertions.assertTrue(BookRepetition.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section4_alt_endToEnd() {
+    public void testCode_chapter4Section4Alt_endToEnd() {
 
         Assertions.assertTrue(BookAlt.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section4_mux_endToEnd() {
+    public void testCode_chapter4Section4Mux_endToEnd() {
 
         Assertions.assertTrue(BookMux.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section4_timeoutGuard_endToEnd() {
+    public void testCode_chapter4Section4TimeoutGuard_endToEnd() {
 
         Assertions.assertTrue(BookTimeoutGuard.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section4_watchdog_endToEnd() {
+    public void testCode_chapter4Section4Watchdog_endToEnd() {
 
         Assertions.assertTrue(BookWatchdog.successfulJavaCompile());
 
     }
 
     @Test
-    public void bookCodeChapter4Section5_priAlt_endToEnd() {
+    public void testCode_chapter4Section5PriAlt_endToEnd() {
 
         Assertions.assertTrue(BookPriAlt.successfulJavaCompile());
 

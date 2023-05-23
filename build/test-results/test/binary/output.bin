@@ -1,213 +1,654 @@
->-- Setting absolute path, file and package name for 'mux.pj'.
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:15
-/ ### Token: 'true', line 15 [11:14] (kind: 59)
-
-
+@-- Setting absolute path, file and package name for 'while.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
->/Users/cuenca/workingpj/mux..java (No such file or directory)
-B-- Setting absolute path, file and package name for 'Santa03.pj'.
+@/Users/cuenca/workingpj/while..java (No such file or directory)
+D-- Setting absolute path, file and package name for 'integrate.pj'.
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+/ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:24
+/ ### Token: 'true', line 24 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:43
+/ ### Token: 'true', line 43 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:82
+/ ### Token: 'true', line 82 [11:14] (kind: 59)
+
+
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-B/Users/cuenca/workingpj/Santa03..java (No such file or directory)
-A-- Setting absolute path, file and package name for 'output.pj'.
+D/Users/cuenca/workingpj/integrate..java (No such file or directory)
+B-- Setting absolute path, file and package name for 'Santa03.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-A/Users/cuenca/workingpj/output..java (No such file or directory)
-B-- Setting absolute path, file and package name for 'Santa02.pj'.
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:53
-/ ### Token: 'true', line 53 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:120
-0 ### Token: 'true', line 120 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:137
-0 ### Token: 'true', line 137 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:166
-0 ### Token: 'true', line 166 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:192
-0 ### Token: 'true', line 192 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:219
-0 ### Token: 'true', line 219 [12:15] (kind: 59)
-
-
+B/Users/cuenca/workingpj/Santa03..java (No such file or directory)
+A-- Setting absolute path, file and package name for 'output.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-B/Users/cuenca/workingpj/Santa02..java (No such file or directory)
-G-- Setting absolute path, file and package name for 'timeoutguard.pj'.
+A/Users/cuenca/workingpj/output..java (No such file or directory)
+B-- Setting absolute path, file and package name for 'Santa02.pj'.
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:53
+/ ### Token: 'true', line 53 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:120
+0 ### Token: 'true', line 120 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:137
+0 ### Token: 'true', line 137 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:166
+0 ### Token: 'true', line 166 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:192
+0 ### Token: 'true', line 192 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:219
+0 ### Token: 'true', line 219 [12:15] (kind: 59)
+
+
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-G/Users/cuenca/workingpj/timeoutguard..java (No such file or directory)
-B-- Setting absolute path, file and package name for 'Santa01.pj'.
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:53
-/ ### Token: 'true', line 53 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:120
-0 ### Token: 'true', line 120 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:137
-0 ### Token: 'true', line 137 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:166
-0 ### Token: 'true', line 166 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:192
-0 ### Token: 'true', line 192 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:219
-0 ### Token: 'true', line 219 [12:15] (kind: 59)
-
-
+B/Users/cuenca/workingpj/Santa02..java (No such file or directory)
+U-- Setting absolute path, file and package name for 'synchronized_communication.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-B/Users/cuenca/workingpj/Santa01..java (No such file or directory)
-B-- Setting absolute path, file and package name for 'pri_alt.pj'.
+U/Users/cuenca/workingpj/synchronized_communication..java (No such file or directory)
+D-- Setting absolute path, file and package name for 'fibonacci.pj'.
 =[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:14
-/ ### Token: 'true', line 14 [11:14] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:40
-/ ### Token: 'true', line 40 [12:15] (kind: 59)
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+/ ### Token: 'true', line 12 [12:15] (kind: 59)
 
 
 =[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:58
-/ ### Token: 'true', line 58 [12:15] (kind: 59)
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:24
+/ ### Token: 'true', line 24 [12:15] (kind: 59)
 
 
 =[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:69
-/ ### Token: 'true', line 69 [12:15] (kind: 59)
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:36
+/ ### Token: 'true', line 36 [12:15] (kind: 59)
 
 
 =[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:94
-/ ### Token: 'true', line 94 [12:15] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:117
-0 ### Token: 'true', line 117 [11:14] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:147
-0 ### Token: 'true', line 147 [11:14] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:162
-0 ### Token: 'true', line 162 [12:15] (kind: 59)
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:63
+/ ### Token: 'true', line 63 [12:15] (kind: 59)
 
 
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-B/Users/cuenca/workingpj/pri_alt..java (No such file or directory)
-	H-- Setting absolute path, file and package name for 'one_bit_adder.pj'.
-	=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-	c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:113
-	0 ### Token: 'true', line 113 [11:14] (kind: 59)
-	
-	
+D/Users/cuenca/workingpj/fibonacci..java (No such file or directory)
+	A-- Setting absolute path, file and package name for 'switch.pj'.
 	(-- Rewriting channel arrays local decls
 	)** COMPILATION COMPLITED SUCCESSFULLY **
-	H/Users/cuenca/workingpj/one_bit_adder..java (No such file or directory)
+	A/Users/cuenca/workingpj/switch..java (No such file or directory)
 
-C-- Setting absolute path, file and package name for 'Enroll01.pj'.
+B-- Setting absolute path, file and package name for 'Santa01.pj'.
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:53
+
+/ ### Token: 'true', line 53 [12:15] (kind: 59)
+
+
+
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:120
+
+0 ### Token: 'true', line 120 [12:15] (kind: 59)
+
+
+
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:137
+
+0 ### Token: 'true', line 137 [12:15] (kind: 59)
+
+
+
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:166
+
+0 ### Token: 'true', line 166 [12:15] (kind: 59)
+
+
+
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:192
+
+0 ### Token: 'true', line 192 [12:15] (kind: 59)
+
+
+
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:219
+
+0 ### Token: 'true', line 219 [12:15] (kind: 59)
+
+
+
+
 
 (-- Rewriting channel arrays local decls
 
 )** COMPILATION COMPLITED SUCCESSFULLY **
 
-C/Users/cuenca/workingpj/Enroll01..java (No such file or directory)
-E-- Setting absolute path, file and package name for 'Protocol03.pj'.
-A-- Setting absolute path, file and package name for 'switch.pj'.
+B/Users/cuenca/workingpj/Santa01..java (No such file or directory)
+N-- Setting absolute path, file and package name for 'one_to_one_channels.pj'.
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+N/Users/cuenca/workingpj/one_to_one_channels..java (No such file or directory)
+I-- Setting absolute path, file and package name for 'four_bit_adder.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-A/Users/cuenca/workingpj/switch..java (No such file or directory)
-L-- Setting absolute path, file and package name for 'ChannelEndArray02.pj'.
-‰src/test/resources/code/book/chapter_4/section_4/mux.pj:59: Cannot assign value of type chan<int>[][] to variable of type chan<int>[][].
-£Error number: 3058src/test/resources/code/book/chapter_4/section_4/mux.pj:60: Cannot assign value of type chan<int>[][][][] to variable of type chan<int>[][][][].
-¥Error number: 3058src/test/resources/code/book/chapter_4/section_4/mux.pj:62: Cannot assign value of type chan<int>.read[][] to variable of type chan<int>.read[][].
-¹Error number: 3058src/test/resources/code/book/chapter_4/section_4/mux.pj:68: Cannot assign value of type chan<NamedType: Message>[][] to variable of type chan<NamedType: Message>[][].
-kError number: 3058src/test/resources/code/book/chapter_4/section_4/mux.pj:71: No suitable procedure found.
-:Error number: 3037-- Rewriting channel arrays local decls
-I-- Setting absolute path, file and package name for 'ChannelArray02.pj'.
-‰src/test/resources/code/book/chapter_4/section_4/mux.pj:33: Cannot assign value of type chan<int>[][] to variable of type chan<int>[][].
-:Error number: 3058-- Rewriting channel arrays local decls
-)** COMPILATION COMPLITED SUCCESSFULLY **
-I/Users/cuenca/workingpj/ChannelArray02..java (No such file or directory)
-C-- Setting absolute path, file and package name for 'Record05.pj'.
+I/Users/cuenca/workingpj/four_bit_adder..java (No such file or directory)
+C-- Setting absolute path, file and package name for 'Enroll01.pj'.
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+C/Users/cuenca/workingpj/Enroll01..java (No such file or directory)
+E-- Setting absolute path, file and package name for 'Protocol03.pj'.
+L-- Setting absolute path, file and package name for 'time_in_process_j.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-C/Users/cuenca/workingpj/Record05..java (No such file or directory)
-E-- Setting absolute path, file and package name for 'Protocol02.pj'.
+L/Users/cuenca/workingpj/time_in_process_j..java (No such file or directory)
+@-- Setting absolute path, file and package name for 'fifo6.pj'.
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+/ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:52
+/ ### Token: 'true', line 52 [11:14] (kind: 59)
+
+
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-E/Users/cuenca/workingpj/Protocol02..java (No such file or directory)
-L-- Setting absolute path, file and package name for 'ChannelEndArray01.pj'.
-(-- Rewriting channel arrays local decls
-)** COMPILATION COMPLITED SUCCESSFULLY **
-L/Users/cuenca/workingpj/ChannelEndArray01..java (No such file or directory)
-C-- Setting absolute path, file and package name for 'Switch01.pj'.
-(-- Rewriting channel arrays local decls
+@/Users/cuenca/workingpj/fifo6..java (No such file or directory)
+L-- Setting absolute path, file and package name for 'ChannelEndArray02.pj'.
+‹src/test/resources/code/book/chapter_4/section_2/while.pj:59: Cannot assign value of type chan<int>[][] to variable of type chan<int>[][].
+¥Error number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:60: Cannot assign value of type chan<int>[][][][] to variable of type chan<int>[][][][].
+§Error number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:62: Cannot assign value of type chan<int>.read[][] to variable of type chan<int>.read[][].
+»Error number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:68: Cannot assign value of type chan<NamedType: Message>[][] to variable of type chan<NamedType: Message>[][].
+mError number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:71: No suitable procedure found.
+:Error number: 3037-- Rewriting channel arrays local decls
+I-- Setting absolute path, file and package name for 'ChannelArray02.pj'.
+‹src/test/resources/code/book/chapter_4/section_2/while.pj:33: Cannot assign value of type chan<int>[][] to variable of type chan<int>[][].
+:Error number: 3058-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-C/Users/cuenca/workingpj/Switch01..java (No such file or directory)
-I-- Setting absolute path, file and package name for 'ChannelArray01.pj'.
+I/Users/cuenca/workingpj/ChannelArray02..java (No such file or directory)
+C-- Setting absolute path, file and package name for 'Record05.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-I/Users/cuenca/workingpj/ChannelArray01..java (No such file or directory)
-C-- Setting absolute path, file and package name for 'Record04.pj'.
+C/Users/cuenca/workingpj/Record05..java (No such file or directory)
+E-- Setting absolute path, file and package name for 'Protocol02.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-C/Users/cuenca/workingpj/Record04..java (No such file or directory)
-E-- Setting absolute path, file and package name for 'Protocol01.pj'.
+E/Users/cuenca/workingpj/Protocol02..java (No such file or directory)
+E-- Setting absolute path, file and package name for 'repetition.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-E/Users/cuenca/workingpj/Protocol01..java (No such file or directory)
-@-- Setting absolute path, file and package name for 'Par03.pj'.
+E/Users/cuenca/workingpj/repetition..java (No such file or directory)
+L-- Setting absolute path, file and package name for 'ChannelEndArray01.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
-@/Users/cuenca/workingpj/Par03..java (No such file or directory)
-C-- Setting absolute path, file and package name for 'watchdog.pj'.
-,[1;31merror[405]: [0mSymbol 't' not found
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:15
-- ### Token: 't', line 15 [20:20] (kind: 115)
-
-
-Ysrc/test/resources/code/book/chapter_4/section_4/mux.pj:15: Unknown name expression 't'.
-Error number: 3029
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-b[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_4/mux.pj:17
-/ ### Token: 'true', line 17 [11:14] (kind: 59)
-
-
+L/Users/cuenca/workingpj/ChannelEndArray01..java (No such file or directory)
+C-- Setting absolute path, file and package name for 'Switch01.pj'.
 (-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+C/Users/cuenca/workingpj/Switch01..java (No such file or directory)
+B-- Setting absolute path, file and package name for 'squares.pj'.
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+/ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:24
+/ ### Token: 'true', line 24 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:35
+/ ### Token: 'true', line 35 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:54
+/ ### Token: 'true', line 54 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:144
+0 ### Token: 'true', line 144 [11:14] (kind: 59)
+
+
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+B/Users/cuenca/workingpj/squares..java (No such file or directory)
+I-- Setting absolute path, file and package name for 'ChannelArray01.pj'.
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+I/Users/cuenca/workingpj/ChannelArray01..java (No such file or directory)
+C-- Setting absolute path, file and package name for 'Record04.pj'.
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+C/Users/cuenca/workingpj/Record04..java (No such file or directory)
+E-- Setting absolute path, file and package name for 'Protocol01.pj'.
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+E/Users/cuenca/workingpj/Protocol01..java (No such file or directory)
+H-- Setting absolute path, file and package name for 'one_bit_adder.pj'.
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:113
+0 ### Token: 'true', line 113 [11:14] (kind: 59)
+
+
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+H/Users/cuenca/workingpj/one_bit_adder..java (No such file or directory)
+@-- Setting absolute path, file and package name for 'Par03.pj'.
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+@/Users/cuenca/workingpj/Par03..java (No such file or directory)
+B-- Setting absolute path, file and package name for 'numbers.pj'.
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+/ ### Token: 'true', line 12 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:24
+/ ### Token: 'true', line 24 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:36
+/ ### Token: 'true', line 36 [12:15] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:75
+/ ### Token: 'true', line 75 [11:14] (kind: 59)
+
+
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+B/Users/cuenca/workingpj/numbers..java (No such file or directory)
+D-- Setting absolute path, file and package name for 'Integrate.pj'.
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:6
+. ### Token: 'true', line 6 [10:13] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:17
+/ ### Token: 'true', line 17 [10:13] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:30
+/ ### Token: 'true', line 30 [10:13] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:45
+/ ### Token: 'true', line 45 [10:13] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:63
+/ ### Token: 'true', line 63 [10:13] (kind: 59)
+
+
+=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:72
+/ ### Token: 'true', line 72 [10:13] (kind: 59)
+
+
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+D/Users/cuenca/workingpj/Integrate..java (No such file or directory)
+ H-- Setting absolute path, file and package name for 'ChannelRead02.pj'.
+ (-- Rewriting channel arrays local decls
+ )** COMPILATION COMPLITED SUCCESSFULLY **
+ H/Users/cuenca/workingpj/ChannelRead02..java (No such file or directory)
+!C-- Setting absolute path, file and package name for 'Record03.pj'.
+!(-- Rewriting channel arrays local decls
+!)** COMPILATION COMPLITED SUCCESSFULLY **
+!C/Users/cuenca/workingpj/Record03..java (No such file or directory)
+"@-- Setting absolute path, file and package name for 'Par02.pj'.
+"(-- Rewriting channel arrays local decls
+")** COMPILATION COMPLITED SUCCESSFULLY **
+"@/Users/cuenca/workingpj/Par02..java (No such file or directory)
+#B-- Setting absolute path, file and package name for 'pri_alt.pj'.
+#=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+#d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:14
+#/ ### Token: 'true', line 14 [11:14] (kind: 59)
+#
+#
+#=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+#d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:40
+#/ ### Token: 'true', line 40 [12:15] (kind: 59)
+#
+#
+#=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+#d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:58
+#/ ### Token: 'true', line 58 [12:15] (kind: 59)
+#
+#
+#=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+#d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:69
+#/ ### Token: 'true', line 69 [12:15] (kind: 59)
+#
+#
+#=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+#d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:94
+#/ ### Token: 'true', line 94 [12:15] (kind: 59)
+#
+#
+#=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+#e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:117
+#0 ### Token: 'true', line 117 [11:14] (kind: 59)
+#
+#
+#=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+#e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:147
+#0 ### Token: 'true', line 147 [11:14] (kind: 59)
+#
+#
+#=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+#e[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:162
+#0 ### Token: 'true', line 162 [12:15] (kind: 59)
+#
+#
+#(-- Rewriting channel arrays local decls
+#)** COMPILATION COMPLITED SUCCESSFULLY **
+#B/Users/cuenca/workingpj/pri_alt..java (No such file or directory)
+$H-- Setting absolute path, file and package name for 'ChannelRead01.pj'.
+$(-- Rewriting channel arrays local decls
+$)** COMPILATION COMPLITED SUCCESSFULLY **
+$H/Users/cuenca/workingpj/ChannelRead01..java (No such file or directory)
+%C-- Setting absolute path, file and package name for 'Record02.pj'.
+%(-- Rewriting channel arrays local decls
+%)** COMPILATION COMPLITED SUCCESSFULLY **
+%C/Users/cuenca/workingpj/Record02..java (No such file or directory)
+&@-- Setting absolute path, file and package name for 'Par01.pj'.
+&(-- Rewriting channel arrays local decls
+&)** COMPILATION COMPLITED SUCCESSFULLY **
+&@/Users/cuenca/workingpj/Par01..java (No such file or directory)
+'>-- Setting absolute path, file and package name for 'alt.pj'.
+'=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+'d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:24
+'/ ### Token: 'true', line 24 [11:14] (kind: 59)
+'
+'
+'(-- Rewriting channel arrays local decls
+')** COMPILATION COMPLITED SUCCESSFULLY **
+'>/Users/cuenca/workingpj/alt..java (No such file or directory)
+(D-- Setting absolute path, file and package name for 'Fibonacci.pj'.
+((-- Rewriting channel arrays local decls
+()** COMPILATION COMPLITED SUCCESSFULLY **
+(D/Users/cuenca/workingpj/Fibonacci..java (No such file or directory)
+)?-- Setting absolute path, file and package name for 'If01.pj'.
+)(-- Rewriting channel arrays local decls
+))** COMPILATION COMPLITED SUCCESSFULLY **
+)?/Users/cuenca/workingpj/If01..java (No such file or directory)
+*C-- Setting absolute path, file and package name for 'Record01.pj'.
+*(-- Rewriting channel arrays local decls
+*)** COMPILATION COMPLITED SUCCESSFULLY **
+*C/Users/cuenca/workingpj/Record01..java (No such file or directory)
++E-- Setting absolute path, file and package name for 'ByteCode01.pj'.
++=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
++c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:5
++. ### Token: 'true', line 5 [12:15] (kind: 59)
++
++
++(-- Rewriting channel arrays local decls
++)** COMPILATION COMPLITED SUCCESSFULLY **
++E/Users/cuenca/workingpj/ByteCode01..java (No such file or directory)
+,@-- Setting absolute path, file and package name for 'Alt01.pj'.
+,(-- Rewriting channel arrays local decls
+,)** COMPILATION COMPLITED SUCCESSFULLY **
+,@/Users/cuenca/workingpj/Alt01..java (No such file or directory)
+-B-- Setting absolute path, file and package name for 'Timer01.pj'.
+-(-- Rewriting channel arrays local decls
+-)** COMPILATION COMPLITED SUCCESSFULLY **
+-B/Users/cuenca/workingpj/Timer01..java (No such file or directory)
+.J-- Setting absolute path, file and package name for 'eight_bit_adder.pj'.
+.(-- Rewriting channel arrays local decls
+.)** COMPILATION COMPLITED SUCCESSFULLY **
+.J/Users/cuenca/workingpj/eight_bit_adder..java (No such file or directory)
+/>-- Setting absolute path, file and package name for 'for.pj'.
+/(-- Rewriting channel arrays local decls
+/)** COMPILATION COMPLITED SUCCESSFULLY **
+/>/Users/cuenca/workingpj/for..java (No such file or directory)
+0N-- Setting absolute path, file and package name for 'SharedChannelRead01.pj'.
+0=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+0c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:4
+0. ### Token: 'true', line 4 [10:13] (kind: 59)
+0
+0
+0=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+0d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+0/ ### Token: 'true', line 12 [10:13] (kind: 59)
+0
+0
+0(-- Rewriting channel arrays local decls
+1D-- Setting absolute path, file and package name for 'Barrier02.pj'.
+1(-- Rewriting channel arrays local decls
+1)** COMPILATION COMPLITED SUCCESSFULLY **
+1D/Users/cuenca/workingpj/Barrier02..java (No such file or directory)
+2@-- Setting absolute path, file and package name for 'For01.pj'.
+2(-- Rewriting channel arrays local decls
+2)** COMPILATION COMPLITED SUCCESSFULLY **
+2@/Users/cuenca/workingpj/For01..java (No such file or directory)
+3@-- Setting absolute path, file and package name for 'pairs.pj'.
+3=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+3d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+3/ ### Token: 'true', line 12 [12:15] (kind: 59)
+3
+3
+3=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+3d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:24
+3/ ### Token: 'true', line 24 [12:15] (kind: 59)
+3
+3
+3=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+3d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:42
+3/ ### Token: 'true', line 42 [12:15] (kind: 59)
+3
+3
+3=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+3d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:69
+3/ ### Token: 'true', line 69 [12:15] (kind: 59)
+3
+3
+3(-- Rewriting channel arrays local decls
+3)** COMPILATION COMPLITED SUCCESSFULLY **
+3@/Users/cuenca/workingpj/pairs..java (No such file or directory)
+4D-- Setting absolute path, file and package name for 'Barrier01.pj'.
+4(-- Rewriting channel arrays local decls
+4)** COMPILATION COMPLITED SUCCESSFULLY **
+4D/Users/cuenca/workingpj/Barrier01..java (No such file or directory)
+5C-- Setting absolute path, file and package name for 'SortPump.pj'.
+5=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+5c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:8
+5- ### Token: 'true', line 8 [8:11] (kind: 59)
+5
+5
+5=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+5d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:59
+5. ### Token: 'true', line 59 [8:11] (kind: 59)
+5
+5
+5(-- Rewriting channel arrays local decls
+5)** COMPILATION COMPLITED SUCCESSFULLY **
+5C/Users/cuenca/workingpj/SortPump..java (No such file or directory)
+6C-- Setting absolute path, file and package name for 'PriAlt01.pj'.
+6(-- Rewriting channel arrays local decls
+6)** COMPILATION COMPLITED SUCCESSFULLY **
+6C/Users/cuenca/workingpj/PriAlt01..java (No such file or directory)
+7I-- Setting absolute path, file and package name for 'ChannelWrite04.pj'.
+7(-- Rewriting channel arrays local decls
+7)** COMPILATION COMPLITED SUCCESSFULLY **
+7I/Users/cuenca/workingpj/ChannelWrite04..java (No such file or directory)
+8I-- Setting absolute path, file and package name for 'ChannelWrite03.pj'.
+8(-- Rewriting channel arrays local decls
+8)** COMPILATION COMPLITED SUCCESSFULLY **
+8I/Users/cuenca/workingpj/ChannelWrite03..java (No such file or directory)
+9B-- Setting absolute path, file and package name for 'Array02.pj'.
+9(-- Rewriting channel arrays local decls
+9)** COMPILATION COMPLITED SUCCESSFULLY **
+9B/Users/cuenca/workingpj/Array02..java (No such file or directory)
+:J-- Setting absolute path, file and package name for 'SharedChannel01.pj'.
+:=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+:c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:4
+:. ### Token: 'true', line 4 [10:13] (kind: 59)
+:
+:
+:=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+:d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+:/ ### Token: 'true', line 12 [10:13] (kind: 59)
+:
+:
+:(-- Rewriting channel arrays local decls
+;G-- Setting absolute path, file and package name for 'Mandelbrot04.pj'.
+;src/test/resources/code/book/chapter_4/section_2/while.pj:26: Cannot assign value of type int[][] to variable of type int[][].
+;mError number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:42: No suitable procedure found.
+;:Error number: 3037-- Rewriting channel arrays local decls
+<O-- Setting absolute path, file and package name for 'SharedChannelWrite01.pj'.
+<=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+<c[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:4
+<. ### Token: 'true', line 4 [10:13] (kind: 59)
+<
+<
+<=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+<d[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:12
+</ ### Token: 'true', line 12 [10:13] (kind: 59)
+<
+<
+<(-- Rewriting channel arrays local decls
+<)** COMPILATION COMPLITED SUCCESSFULLY **
+<O/Users/cuenca/workingpj/SharedChannelWrite01..java (No such file or directory)
+=O-- Setting absolute path, file and package name for 'structured_execution.pj'.
+=(-- Rewriting channel arrays local decls
+=)** COMPILATION COMPLITED SUCCESSFULLY **
+=O/Users/cuenca/workingpj/structured_execution..java (No such file or directory)
+>I-- Setting absolute path, file and package name for 'ChannelWrite02.pj'.
+>(-- Rewriting channel arrays local decls
+>)** COMPILATION COMPLITED SUCCESSFULLY **
+>I/Users/cuenca/workingpj/ChannelWrite02..java (No such file or directory)
+?B-- Setting absolute path, file and package name for 'Array01.pj'.
+?~src/test/resources/code/book/chapter_4/section_2/while.pj:9: Cannot assign value of type int[][] to variable of type int[][].
+?•Error number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:11: Cannot assign value of type int[][][] to variable of type int[][][].
+?•Error number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:24: Cannot assign value of type int[][][] to variable of type int[][][].
+?:Error number: 3058-- Rewriting channel arrays local decls
+?)** COMPILATION COMPLITED SUCCESSFULLY **
+?B/Users/cuenca/workingpj/Array01..java (No such file or directory)
+@G-- Setting absolute path, file and package name for 'Mandelbrot03.pj'.
+@src/test/resources/code/book/chapter_4/section_2/while.pj:26: Cannot assign value of type int[][] to variable of type int[][].
+@mError number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:42: No suitable procedure found.
+@:Error number: 3037-- Rewriting channel arrays local decls
+AM-- Setting absolute path, file and package name for 'LocalDeclaration01.pj'.
+A=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+Ac[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:5
+A. ### Token: 'true', line 5 [12:15] (kind: 59)
+A
+A
+A(-- Rewriting channel arrays local decls
+A)** COMPILATION COMPLITED SUCCESSFULLY **
+AM/Users/cuenca/workingpj/LocalDeclaration01..java (No such file or directory)
+B>-- Setting absolute path, file and package name for 'mux.pj'.
+B=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+Bd[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:15
+B/ ### Token: 'true', line 15 [11:14] (kind: 59)
+B
+B
+B(-- Rewriting channel arrays local decls
+B)** COMPILATION COMPLITED SUCCESSFULLY **
+B>/Users/cuenca/workingpj/mux..java (No such file or directory)
+CI-- Setting absolute path, file and package name for 'ChannelWrite01.pj'.
+C(-- Rewriting channel arrays local decls
+C)** COMPILATION COMPLITED SUCCESSFULLY **
+CI/Users/cuenca/workingpj/ChannelWrite01..java (No such file or directory)
+DD-- Setting absolute path, file and package name for 'FullAdder.pj'.
+D(-- Rewriting channel arrays local decls
+D)** COMPILATION COMPLITED SUCCESSFULLY **
+DD/Users/cuenca/workingpj/FullAdder..java (No such file or directory)
+EG-- Setting absolute path, file and package name for 'Mandelbrot02.pj'.
+Esrc/test/resources/code/book/chapter_4/section_2/while.pj:25: Cannot assign value of type int[][] to variable of type int[][].
+EmError number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:41: No suitable procedure found.
+E:Error number: 3037-- Rewriting channel arrays local decls
+FM-- Setting absolute path, file and package name for 'BinaryExpression02.pj'.
+F(-- Rewriting channel arrays local decls
+F)** COMPILATION COMPLITED SUCCESSFULLY **
+FM/Users/cuenca/workingpj/BinaryExpression02..java (No such file or directory)
+GG-- Setting absolute path, file and package name for 'Mandelbrot01.pj'.
+Gsrc/test/resources/code/book/chapter_4/section_2/while.pj:25: Cannot assign value of type int[][] to variable of type int[][].
+GmError number: 3058src/test/resources/code/book/chapter_4/section_2/while.pj:41: No suitable procedure found.
+G:Error number: 3037-- Rewriting channel arrays local decls
+HM-- Setting absolute path, file and package name for 'BinaryExpression01.pj'.
+H(-- Rewriting channel arrays local decls
+H)** COMPILATION COMPLITED SUCCESSFULLY **
+HM/Users/cuenca/workingpj/BinaryExpression01..java (No such file or directory)
+IG-- Setting absolute path, file and package name for 'timeoutguard.pj'.
+I(-- Rewriting channel arrays local decls
+I)** COMPILATION COMPLITED SUCCESSFULLY **
+IG/Users/cuenca/workingpj/timeoutguard..java (No such file or directory)
+J@-- Setting absolute path, file and package name for 'Silly.pj'.
+J(-- Rewriting channel arrays local decls
+J)** COMPILATION COMPLITED SUCCESSFULLY **
+J@/Users/cuenca/workingpj/Silly..java (No such file or directory)
+K@-- Setting absolute path, file and package name for 'Hello.pj'.
+K(-- Rewriting channel arrays local decls
+K)** COMPILATION COMPLITED SUCCESSFULLY **
+K@/Users/cuenca/workingpj/Hello..java (No such file or directory)
+LC-- Setting absolute path, file and package name for 'watchdog.pj'.
+L,[1;31merror[405]: [0mSymbol 't' not found
+Ld[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:15
+L- ### Token: 't', line 15 [20:20] (kind: 115)
+L
+L
+L[src/test/resources/code/book/chapter_4/section_2/while.pj:15: Unknown name expression 't'.
+LError number: 3029
+L=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
+Ld[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_4/section_2/while.pj:17
+L/ ### Token: 'true', line 17 [11:14] (kind: 59)
+L
+L
+L(-- Rewriting channel arrays local decls

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T21:10:13" hostname="Carloss-MacBook-Pro.local" time="0.438">
+<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T21:23:10" hostname="Carloss-MacBook-Pro.local" time="0.437">
   <properties/>
-  <testcase name="testCode_alt01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.438"/>
-  <system-out><![CDATA[-- Setting absolute path, file and package name for 'Alt01.pj'.
+  <testcase name="bookCodeChapter3Section6_oneToOneChannels_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.437"/>
+  <system-out><![CDATA[-- Setting absolute path, file and package name for 'one_to_one_channels.pj'.
 -- Rewriting channel arrays local decls
 ** COMPILATION COMPLITED SUCCESSFULLY **
-/Users/cuenca/workingpj/Alt01..java (No such file or directory)
+/Users/cuenca/workingpj/one_to_one_channels..java (No such file or directory)
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
