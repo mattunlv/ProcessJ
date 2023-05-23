@@ -59,5 +59,14 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void bookCodeChapter3Section7_numbers_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_3_7_NUMBERS};
+
+        ProcessJc.main(arguments);
+
+    }
+
 
 }
