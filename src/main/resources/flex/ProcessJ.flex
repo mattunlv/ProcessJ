@@ -35,7 +35,8 @@ import org.processj.parser.*;
 
     public void addLineComment() {
 
-        final String line = "Comment, line " + (yyline + 1) + " [" + (yycolumn + 1 + Spaces) + ":" + (yycolumn + yylength()) + "]";
+        final String line = "Comment, line "
+            + (yyline + 1) + " [" + (yycolumn + 1 + Spaces) + ":" + (yycolumn + yylength()) + "]";
 
         final Token token = (yytext().startsWith("/*"))
             ? new Token(Types.INSTANCE.MULTILINE_COMMENT,
@@ -65,252 +66,306 @@ import org.processj.parser.*;
 
 %}
 
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Character Class Definition                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
 
-/* Main Character Classes */
-LineTerminator = \r|\n|\r\n
-InputCharacter = [^\r\n]
+LineTerminator          = \r|\n|\r\n
+InputCharacter          = [^\r\n]
+WhiteSpace              = {LineTerminator} | [ \t\f]
 
-WhiteSpace = {LineTerminator} | [ \t\f]
-//tab        = [\t]
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Comment Definition                                                                                              **/
+/** --------------------------------------------------------------------------------------------------------------- **/
 
+Comment                 = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment} | {EndOfFileComment}
 
-/* Comments */
-Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment} | {EndOfFileComment}
+TraditionalComment      = "/*" [^*] {CommentContent} \*+ "/"
+UnterminatedComment     = "/*" [^*] {CommentContent} \** "/"?
+EndOfLineComment        = "//" {InputCharacter}* {LineTerminator}
+DocumentationComment    = "/**" {CommentContent} \*+ "/"
+EndOfFileComment        = "//" {InputCharacter}*
+CommentContent          = ( [^*] | \*+[^*/] )*
 
-TraditionalComment = "/*" [^*] {CommentContent} \*+ "/"
-UnterminatedComment = "/*" [^*] {CommentContent} \** "/"?
-EndOfLineComment = "//" {InputCharacter}* {LineTerminator}
-DocumentationComment = "/**" {CommentContent} \*+ "/"
-EndOfFileComment = "//" {InputCharacter}* 
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Identifier Defintion                                                                                            **/
+/** --------------------------------------------------------------------------------------------------------------- **/
 
-CommentContent = ( [^*] | \*+[^*/] )*
+// TODO: Check [a-zA-Z$_] | ~[\u0000-\u007F]\uD800-\uDBFF] | [\uD800-\uDBFF] [\uDC00-\uDFFF]
+Identifier              = [:jletter:][:jletterdigit:]*
 
-/* Identifiers */
-Identifier = [:jletter:][:jletterdigit:]*
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Integral Literal Definition                                                                                     **/
+/** --------------------------------------------------------------------------------------------------------------- **/
 
-/* Integer Literals */
-DecIntegerLiteral = 0 | [1-9][0-9]*
-DecLongLiteral    = {DecIntegerLiteral} [lL]
- 
-HexIntegerLiteral = 0 [xX] 0* {HexDigit} {1,8}
-HexLongLiteral    = 0 [xX] 0* {HexDigit} {1,16} [lL]
-HexDigit          = [0-9a-fA-F]
- 
-OctIntegerLiteral = 0+ [1-3]? {OctDigit} {1,15}
-OctLongLiteral    = 0+ 1? {OctDigit} {1,21} [lL]
-OctDigit          = [0-7]      
+// TODO: Add underscores to decimal, hex, & octal digits
+// TODO: Check specification, these should end with a digit and not an underscore
+DecIntegerLiteral       = 0 | [1-9][0-9]*
+DecLongLiteral          = {DecIntegerLiteral} [lL]
 
-/* Floating Point Literals */
-FloatLiteral  = ({FLit1}|{FLit2}|{FLit3}|{FLit4}) [fF]
-DoubleLiteral = {FLit1}|{FLit2}|{FLit3}|{FLit4} 
- 
-FLit1 = [0-9]+ \. [0-9]* {Exponent}?
-FLit2 = \. [0-9]+ {Exponent}?
-FLit3 = [0-9]+ {Exponent}
-FLit4 = [0-9]+ {Exponent}?
- 
-Exponent = [eE] [+\-]? [0-9]+       
- 
-/* String Literals */
-StringCharacter = [^\r\n\"\\]
-SingleCharacter = [^\r\n\'\\]
-StringEscape  =   \\([btnfr\"\'\\]|[0-3]?{OctDigit}?{OctDigit}|u{HexDigit}{HexDigit}{HexDigit}{HexDigit}) 
+HexIntegerLiteral       = 0 [xX] 0* {HexDigit} {1,8}
+HexLongLiteral          = 0 [xX] 0* {HexDigit} {1,16} [lL]
+HexDigit                = [0-9a-fA-F]
+
+OctIntegerLiteral       = 0+ [1-3]? {OctDigit} {1,15}
+OctLongLiteral          = 0+ 1? {OctDigit} {1,21} [lL]
+OctDigit                = [0-7]
+
+BinaryIntegerLiteral    = 0 [bB] 0* {BinaryDigit} {1, 32}
+BinaryLongLiteral       = 0 [bB] 0* {BinaryDigit} {1, 64} [lL]
+BinaryDigit             = [01]
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Floating Point Literal Definition                                                                               **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+// TODO: Hexadecimal Floating-Point Literals?
+FloatLiteral            = ({FLit1}|{FLit2}|{FLit3}|{FLit4}) [fF]
+DoubleLiteral           = ({FLit1}|{FLit2}|{FLit3}|{FLit4}) [dD]
+
+FLit1                   = [0-9]+ \. [0-9]* {Exponent}?
+FLit2                   = \. [0-9]+ {Exponent}?
+FLit3                   = [0-9]+ {Exponent}
+FLit4                   = [0-9]+ {Exponent}?
+
+Exponent                = [eE] [+\-]? [0-9]+
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** String Literal Defintion                                                                                        **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+StringCharacter         = [^\r\n\"\\]
+SingleCharacter         = [^\r\n\'\\]
+StringEscape            = \\([btnfr\"\'\\]|[0-3]?{OctDigit}?{OctDigit}|u{HexDigit}{HexDigit}{HexDigit}{HexDigit})
 
 %%
 
-  /* Atomic Types */
-  "boolean"   { return token(sym.BOOLEAN); } 
-  "byte"      { return token(sym.BYTE); }
-  "short"     { return token(sym.SHORT); }
-  "int"       { return token(sym.INT); }
-  "long"      { return token(sym.LONG); }
-  "float"     { return token(sym.FLOAT); }
-  "double"    { return token(sym.DOUBLE); }
-  "char"      { return token(sym.CHAR); }
-  "string"    { return token(sym.STRING); }
-  "void"      { return token(sym.VOID); }
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Modifiers                                                                                                   **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Channel related keywords */
-  "chan"      { return token(sym.CHAN); }
-  "read"      { return token(sym.READ); }
-  "write"     { return token(sym.WRITE); }
-  "shared"    { return token(sym.SHARED); }
-  "claim"     { return token(sym.CLAIM); }
+    "mobile"    { return token(sym.MOBILE)                                                                           ;}
+    "native"    { return token(sym.NATIVE)                                                                           ;}
+    "public"    { return token(sym.PUBLIC)                                                                           ;}
+    "private"   { return token(sym.PRIVATE)                                                                          ;}
+    "protected" { return token(sym.PROTECTED)                                                                        ;}
+    "const"     { return token(sym.CONST)                                                                            ;}
+    "extern"    { return token(sym.EXTERN)                                                                           ;}
 
-  /* Barrier related keywords */
-  "barrier"   { return token(sym.BARRIER); }
-  "sync"      { return token(sym.SYNC); }
-  "enroll"    { return token(sym.ENROLL); }
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Keywords                                                                                                    **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Timer related keywords */
-  "timer"     { return token(sym.TIMER); }
-  "timeout"   { return token(sym.TIMEOUT); }
+    "break"      { return token(sym.BREAK)                                                                           ;}
+    "case"       { return token(sym.CASE)                                                                            ;}
+    "continue"   { return token(sym.CONTINUE)                                                                        ;}
+    "do"         { return token(sym.DO)                                                                              ;}
+    "default"    { return token(sym.DEFAULT)                                                                         ;}
+    "else"       { return token(sym.ELSE)                                                                            ;}
+    "extends"    { return token(sym.EXTENDS)                                                                         ;}
+    "for"        { return token(sym.FOR)                                                                             ;}
+    "if"         { return token(sym.IF)                                                                              ;}
+    "implements" { return token(sym.IMPLEMENTS)                                                                      ;}
+    "import"     { return token(sym.IMPORT)                                                                          ;}
+    "is"         { return token(sym.IS)                                                                              ;}
+    "new"        { return token(sym.NEW)                                                                             ;}
+    "package"    { return token(sym.PACKAGE)                                                                         ;}
+    "return"     { return token(sym.RETURN)                                                                          ;}
+    "switch"     { return token(sym.SWITCH)                                                                          ;}
+    "while"      { return token(sym.WHILE)                                                                           ;}
+    "#pragma"    { return token(sym.PRAGMA)                                                                          ;}
 
-  /* Silly keywords */
-  "skip"      { return token(sym.SKIP); }
-  "stop"      { return token(sym.STOP); }
-  "is"        { return token(sym.IS); } /* instanceof */
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Process Keywords                                                                                            **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Control flow related keywords */
-  "if"        { return token(sym.IF); }
-  "else"      { return token(sym.ELSE); }
-  "for"       { return token(sym.FOR); }
-  "while"     { return token(sym.WHILE); }
-  "switch"    { return token(sym.SWITCH); }
-  "case"      { return token(sym.CASE); }
-  "do"        { return token(sym.DO); }
-  "default"   { return token(sym.DEFAULT); }
-  "break"     { return token(sym.BREAK); }
-  "continue"  { return token(sym.CONTINUE); }
-  "return"    { return token(sym.RETURN); }
+    "alt"       { return token(sym.ALT)                                                                              ;}
+    "chan"      { return token(sym.CHAN)                                                                             ;}
+    "claim"     { return token(sym.CLAIM)                                                                            ;}
+    "enroll"    { return token(sym.ENROLL)                                                                           ;}
+    "fork"      { return token(sym.FORK)                                                                             ;}
+    "par"       { return token(sym.PAR)                                                                              ;}
+    "pri"       { return token(sym.PRI)                                                                              ;}
+    "proc"      { return token(sym.PROC)                                                                             ;}
+    "protocol"  { return token(sym.PROTOCOL)                                                                         ;}
+    "read"      { return token(sym.READ)                                                                             ;}
+    "record"    { return token(sym.RECORD)                                                                           ;}
+    "resume"    { return token(sym.RESUME)                                                                           ;}
+    "seq"       { return token(sym.SEQ)                                                                              ;}
+    "shared"    { return token(sym.SHARED)                                                                           ;}
+    "skip"      { return token(sym.SKIP)                                                                             ;}
+    "stop"      { return token(sym.STOP)                                                                             ;}
+    "sync"      { return token(sym.SYNC)                                                                             ;}
+    "suspend"   { return token(sym.SUSPEND)                                                                          ;}
+    "timeout"   { return token(sym.TIMEOUT)                                                                          ;}
+    "with"      { return token(sym.WITH)                                                                             ;}
+    "write"     { return token(sym.WRITE)                                                                            ;}
 
-  /* Other process oriented programming related keywords */
-  "seq"       { return token(sym.SEQ); }
-  "par"       { return token(sym.PAR); }
-  "pri"       { return token(sym.PRI); }
-  "alt"       { return token(sym.ALT); }
-  "fork"      { return token(sym.FORK); }
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /* Separators                                                                                                   **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Other non process oriented programming related keywords */
-  "new"       { return token(sym.NEW); }  
+    "("         { return token(sym.LPAREN)                                                                           ;}
+    ")"         { return token(sym.RPAREN)                                                                           ;}
+    "["         { return token(sym.LBRACK)                                                                           ;}
+    "]"         { return token(sym.RBRACK)                                                                           ;}
+    "{"         { return token(sym.LBRACE)                                                                           ;}
+    "}"         { return token(sym.RBRACE)                                                                           ;}
+    ";"         { return token(sym.SEMICOLON)                                                                        ;}
+    ","         { return token(sym.COMMA)                                                                            ;}
+    "."         { return token(sym.DOT)                                                                              ;}
+    "?"         { return token(sym.QUEST)                                                                            ;}
+    ":"         { return token(sym.COLON)                                                                            ;}
+    "::"        { return token(sym.COLONCOLON)                                                                       ;}
 
-  /* Mobile processes related keywords */
-  "resume"    { return token(sym.RESUME); }
-  "suspend"   { return token(sym.SUSPEND); }
-  "with"      { return token(sym.WITH); }
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Unary Operators                                                                                             **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Top level element related keywords */
-  "proc"      { return token(sym.PROC); }
-  "protocol"  { return token(sym.PROTOCOL); }
-  "record"    { return token(sym.RECORD); }
-  "extends"   { return token(sym.EXTENDS); }
-  "implements" { return token(sym.IMPLEMENTS); }
+    "!"         { return token(sym.NOT)                                                                              ;}
+    "~"         { return token(sym.COMP)                                                                             ;}
+    "++"        { return token(sym.PLUSPLUS)                                                                         ;}
+    "--"        { return token(sym.MINUSMINUS)                                                                       ;}
 
-  /* Package related keywords */
-  "package"   { return token(sym.PACKAGE); }
-  "import"    { return token(sym.IMPORT); }
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Binary Operators                                                                                            **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Modifiers */
-  "mobile"    { return token(sym.MOBILE); }
-  "native"    { return token(sym.NATIVE); } 
-  "public"    { return token(sym.PUBLIC); }
-  "private"   { return token(sym.PRIVATE); }
-  "protected" { return token(sym.PROTECTED); }
-  "const"     { return token(sym.CONST); }
-  "extern"    { return token(sym.EXTERN); }
+    "&"         { return token(sym.AND)                                                                              ;}
+    "^"         { return token(sym.XOR)                                                                              ;}
+    "|"         { return token(sym.OR)                                                                               ;}
+    "<<"        { return token(sym.LSHIFT)                                                                           ;}
+    ">>"        { return token(sym.RSHIFT)                                                                           ;}
+    ">>>"       { return token(sym.RRSHIFT)                                                                          ;}
 
-  /* Boolean Literals */
-  "true"      { return token(sym.BOOLEAN_LITERAL); } 
-  "false"     { return token(sym.BOOLEAN_LITERAL); } 
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Logical Operators                                                                                           **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* null Literal */
-  "null"      { return token(sym.NULL_LITERAL); }
+    "&&"        { return token(sym.ANDAND)                                                                           ;}
+    "||"        { return token(sym.OROR)                                                                             ;}
+    "=="        { return token(sym.EQEQ)                                                                             ;}
+    "!="        { return token(sym.NOTEQ)                                                                            ;}
 
-  /* Other stuff */
-  "#pragma"    { return token(sym.PRAGMA); }
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Relational Operators                                                                                        **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Parentheses */
-  "("         { return token(sym.LPAREN); } 
-  ")"         { return token(sym.RPAREN); }  
-  "{"         { return token(sym.LBRACE); }  
-  "}"         { return token(sym.RBRACE); }  
-  "["         { return token(sym.LBRACK); }
-  "]"         { return token(sym.RBRACK); }
+    ">"         { return token(sym.GT)                                                                               ;}
+    "<"         { return token(sym.LT)                                                                               ;}
+    "<="        { return token(sym.LTEQ)                                                                             ;}
+    ">="        { return token(sym.GTEQ)                                                                             ;}
 
-  /* Separators */
-  ";"         { return token(sym.SEMICOLON); }  
-  ","         { return token(sym.COMMA); }  
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Arithmetic Operators                                                                                        **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Assignment Operators */
-  "="         { return token(sym.EQ); }  
-  "*="        { return token(sym.MULTEQ); } 
-  "/="        { return token(sym.DIVEQ); } 
-  "%="        { return token(sym.MODEQ); } 
-  "+="        { return token(sym.PLUSEQ); } 
-  "-="        { return token(sym.MINUSEQ); } 
-  "<<="       { return token(sym.LSHIFTEQ); } 
-  ">>="       { return token(sym.RSHIFTEQ); } 
-  ">>>="      { return token(sym.RRSHIFTEQ); } 
-  "&="        { return token(sym.ANDEQ); } 
-  "^="        { return token(sym.XOREQ); } 
-  "|="        { return token(sym.OREQ); }  
+    "+"         { return token(sym.PLUS)                                                                             ;}
+    "-"         { return token(sym.MINUS)                                                                            ;}
+    "*"         { return token(sym.MULT)                                                                             ;}
+    "/"         { return token(sym.DIV)                                                                              ;}
+    "%"         { return token(sym.MOD)                                                                              ;}
+    "="         { return token(sym.EQ)                                                                               ;}
 
-  /* Relational Operators */
-  ">"         { return token(sym.GT); }
-  "<"         { return token(sym.LT); } 
-  "=="        { return token(sym.EQEQ); } 
-  "<="        { return token(sym.LTEQ); } 
-  ">="        { return token(sym.GTEQ); } 
-  "!="        { return token(sym.NOTEQ); } 
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Compound Assignment Operator                                                                                **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Binary Operators (Some Unary: +, -) */
+    "&="        { return token(sym.ANDEQ)                                                                            ;}
+    "^="        { return token(sym.XOREQ)                                                                            ;}
+    "|="        { return token(sym.OREQ)                                                                             ;}
+    "<<="       { return token(sym.LSHIFTEQ)                                                                         ;}
+    ">>="       { return token(sym.RSHIFTEQ)                                                                         ;}
+    ">>>="      { return token(sym.RRSHIFTEQ)                                                                        ;}
+    "+="        { return token(sym.PLUSEQ)                                                                           ;}
+    "-="        { return token(sym.MINUSEQ)                                                                          ;}
+    "*="        { return token(sym.MULTEQ)                                                                           ;}
+    "/="        { return token(sym.DIVEQ)                                                                            ;}
+    "%="        { return token(sym.MODEQ)                                                                            ;}
 
-  "<<"        { return token(sym.LSHIFT); } 
-  ">>"        { return token(sym.RSHIFT); } 
-  ">>>"       { return token(sym.RRSHIFT); } 
-  "&&"        { return token(sym.ANDAND); } 
-  "||"        { return token(sym.OROR); } 
-  "+"         { return token(sym.PLUS); } 
-  "-"         { return token(sym.MINUS); } 
-  "*"         { return token(sym.MULT); } 
-  "/"         { return token(sym.DIV); } 
-  "&"         { return token(sym.AND); } 
-  "|"         { return token(sym.OR); } 
-  "^"         { return token(sym.XOR); } 
-  "%"         { return token(sym.MOD); } 
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Types                                                                                                       **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Unary Operators */
-  "!"         { return token(sym.NOT); } 
-  "~"         { return token(sym.COMP); } 
-  "++"        { return token(sym.PLUSPLUS); } 
-  "--"        { return token(sym.MINUSMINUS); } 
+    "boolean"   { return token(sym.BOOLEAN)                                                                          ;}
+    "byte"      { return token(sym.BYTE)                                                                             ;}
+    "char"      { return token(sym.CHAR)                                                                             ;}
+    "double"    { return token(sym.DOUBLE)                                                                           ;}
+    "float"     { return token(sym.FLOAT)                                                                            ;}
+    "int"       { return token(sym.INT)                                                                              ;}
+    "long"      { return token(sym.LONG)                                                                             ;}
+    "short"     { return token(sym.SHORT)                                                                            ;}
+    "string"    { return token(sym.STRING)                                                                           ;}
+    "void"      { return token(sym.VOID)                                                                             ;}
+    "barrier"   { return token(sym.BARRIER)                                                                          ;}
+    "timer"     { return token(sym.TIMER)                                                                            ;}
 
-  /* Other stuff */
-  "?"         { return token(sym.QUEST); }
-  "::"        { return token(sym.COLONCOLON); }
-  ":"         { return token(sym.COLON); }
-  "."         { return token(sym.DOT); }  
-  
-  /* Numeric literals */
-  {DecIntegerLiteral}            { return token(sym.INTEGER_LITERAL); }
-  {DecLongLiteral}               { return token(sym.LONG_LITERAL); }  
- 
-  {HexIntegerLiteral}            { return token(sym.INTEGER_LITERAL); }
-  {HexLongLiteral}               { return token(sym.LONG_LITERAL); }
- 
-  {OctIntegerLiteral}            { return token(sym.INTEGER_LITERAL); }
-  {OctLongLiteral}               { return token(sym.LONG_LITERAL); }
- 
-  {FloatLiteral}                 { return token(sym.FLOAT_LITERAL); }
-  {DoubleLiteral}                { return token(sym.DOUBLE_LITERAL); }
-  {DoubleLiteral}[dD]            { return token(sym.DOUBLE_LITERAL); } 
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Boolean Literals                                                                                            **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* String Literals */
+    "true"      { return token(sym.BOOLEAN_LITERAL)                                                                  ;}
+    "false"     { return token(sym.BOOLEAN_LITERAL)                                                                  ;}
 
-  \"({StringCharacter})*\"       { return token(sym.STRING_LITERAL); }
-  \"({StringCharacter})*{LineTerminator}
-                               { throw new RuntimeException("Unterminated string at end-of-line \""+yytext()+"\" at line "+(yyline+1)+", column "+(yycolumn+1)); }
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Null Literal                                                                                                **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Character Literal */
-  \'{SingleCharacter}\'          { return token(sym.CHARACTER_LITERAL); }
-  \'{StringEscape}\'             { return token(sym.CHARACTER_LITERAL); }
-  \'{SingleCharacter}?{LineTerminator} 
-                                 { throw new RuntimeException("Unterminated character at end-of-line \""+yytext()+"\" at line "+(yyline+1)+", column "+(yycolumn+1)); }
-  \'{StringEscape}?{LineTerminator} 
-                                 { throw new RuntimeException("Unterminated character at end-of-line \""+yytext()+"\" at line "+(yyline+1)+", column "+(yycolumn+1)); }   
+    "null"      { return token(sym.NULL_LITERAL)                                                                     ;}
 
-  /* Comments */
-  {Comment}                      { addToLine(yytext(), yyline+1); addLineComment(); }
-  {UnterminatedComment}	         { throw new RuntimeException("Unterminated comment at EOF at line "+(yyline+1)+", column "+(yycolumn+1)); }
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Numeric Literals                                                                                            **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
 
-  /* Whitespace */
-  {WhiteSpace}                 { addToLine(yytext(), yyline+1); countSpaces(yycolumn+1);
-	//if (yytext().equals("\t")) yycolumn += 6; System.out.println(":::'" + yytext()+"'"); 
-	}
-//  {tab}                          { addToLine("    ", yyline+1);  yycolumn += 5; }
+    {DecIntegerLiteral}            { return token(sym.INTEGER_LITERAL)                                               ;}
+    {DecLongLiteral}               { return token(sym.LONG_LITERAL)                                                  ;}
 
-  /* Identifiers */ 
-  {Identifier}                   { return token(sym.IDENTIFIER); } 
+    {HexIntegerLiteral}            { return token(sym.INTEGER_LITERAL)                                               ;}
+    {HexLongLiteral}               { return token(sym.LONG_LITERAL)                                                  ;}
 
-  /* error fallback */
-  .|\n                           { throw new RuntimeException("Illegal character \""+yytext()+"\" at line "+(yyline+1)+", column "+(yycolumn+1)); }
+    {OctIntegerLiteral}            { return token(sym.INTEGER_LITERAL)                                               ;}
+    {OctLongLiteral}               { return token(sym.LONG_LITERAL)                                                  ;}
+
+    {FloatLiteral}                 { return token(sym.FLOAT_LITERAL)                                                 ;}
+    {DoubleLiteral}                { return token(sym.DOUBLE_LITERAL)                                                ;}
+
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Character Literals                                                                                          **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
+
+    \'{SingleCharacter}\'          { return token(sym.CHARACTER_LITERAL)                                             ;}
+    \'{StringEscape}\'             { return token(sym.CHARACTER_LITERAL)                                             ;}
+
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** String Literals                                                                                             **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
+
+    \"({StringCharacter})*\"       { return token(sym.STRING_LITERAL)                                                ;}
+
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Identifier                                                                                                  **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
+
+    {Identifier}                   { return token(sym.IDENTIFIER)                                                    ;}
+
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Comments                                                                                                    **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
+
+    {Comment}                      { addToLine(yytext(), yyline+1); addLineComment()                                 ;}
+
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Whitespace                                                                                                  **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
+
+    {WhiteSpace}                   { addToLine(yytext(), yyline+1)                                                   ;}
+
+    /** ----------------------------------------------------------------------------------------------------------- **/
+    /** Error Fallback                                                                                              **/
+    /** ----------------------------------------------------------------------------------------------------------- **/
+
+    {UnterminatedComment}                   { throw new RuntimeException("Unterminated comment at EOF at line "+(yyline+1)+", column "+(yycolumn+1))                            ;}
+    \"({StringCharacter})*{LineTerminator}  { throw new RuntimeException("Unterminated string at end-of-line \""+yytext()+"\" at line "+(yyline+1)+", column "+(yycolumn+1))    ;}
+    \'{SingleCharacter}?{LineTerminator}    { throw new RuntimeException("Unterminated character at end-of-line \""+yytext()+"\" at line "+(yyline+1)+", column "+(yycolumn+1)) ;}
+    \'{StringEscape}?{LineTerminator}       { throw new RuntimeException("Unterminated character at end-of-line \""+yytext()+"\" at line "+(yyline+1)+", column "+(yycolumn+1)) ;}
+    [^]                                     { throw new RuntimeException("Illegal character \""+yytext()+"\" at line "+(yyline+1)+", column "+(yycolumn+1))                     ;}
