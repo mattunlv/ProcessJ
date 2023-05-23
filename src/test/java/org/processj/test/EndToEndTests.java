@@ -297,6 +297,15 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
+    public void testCode_channelRead01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_READ_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
     public void testCode_channelWrite01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_CHANNEL_WRITE_01};
@@ -426,6 +435,60 @@ public class EndToEndTests extends ProcessJTest {
     public void testCode_mandelbrot04_endToEnd() {
 
         final String[] arguments = {CODE_TEST_MANDELBROT_04};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_par01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_PAR_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_par02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_PAR_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_par03_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_PAR_03};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_PriAlt01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_PRI_ALT_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_Protocol01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_PROTOCOL_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_Protocol02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_PROTOCOL_02};
 
         ProcessJc.main(arguments);
 

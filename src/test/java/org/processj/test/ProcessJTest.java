@@ -73,6 +73,8 @@ public class ProcessJTest {
             = "src/test/resources/code/test/ChannelArray01.pj";
     protected final static String CODE_TEST_CHANNEL_ARRAY_02
             = "src/test/resources/code/test/ChannelArray02.pj";
+    protected final static String CODE_TEST_CHANNEL_READ_01
+            = "src/test/resources/code/test/ChannelRead01.pj";
     protected final static String CODE_TEST_CHANNEL_WRITE_01
             = "src/test/resources/code/test/ChannelWrite01.pj";
     protected final static String CODE_TEST_CHANNEL_WRITE_02
@@ -103,4 +105,16 @@ public class ProcessJTest {
             = "src/test/resources/code/test/Mandelbrot03.pj";
     protected final static String CODE_TEST_MANDELBROT_04
             = "src/test/resources/code/test/Mandelbrot04.pj";
+    protected final static String CODE_TEST_PAR_01
+            = "src/test/resources/code/test/Par01.pj";
+    protected final static String CODE_TEST_PAR_02
+            = "src/test/resources/code/test/Par02.pj";
+    protected final static String CODE_TEST_PAR_03
+            = "src/test/resources/code/test/Par03.pj";
+    protected final static String CODE_TEST_PRI_ALT_01
+            = "src/test/resources/code/test/PriAlt01.pj";
+    protected final static String CODE_TEST_PROTOCOL_01
+            = "src/test/resources/code/test/Protocol01.pj";
+    protected final static String CODE_TEST_PROTOCOL_02
+            = "src/test/resources/code/test/Protocol02.pj";
 }
