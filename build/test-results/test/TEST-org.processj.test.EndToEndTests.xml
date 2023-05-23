@@ -1,26 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T01:44:47" hostname="Carloss-MacBook-Pro.local" time="0.114">
+<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T01:45:59" hostname="Carloss-MacBook-Pro.local" time="0.116">
   <properties/>
-  <testcase name="bookCodeChapter3Section7_numbers_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.114"/>
-  <system-out><![CDATA[-- Setting absolute path, file and package name for 'numbers.pj'.
+  <testcase name="bookCodeChapter3Section7_squares_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.116"/>
+  <system-out><![CDATA[-- Setting absolute path, file and package name for 'squares.pj'.
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/numbers.pj:12
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:12
  ### Token: 'true', line 12 [12:15] (kind: 59)
 
 
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/numbers.pj:24
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:24
  ### Token: 'true', line 24 [12:15] (kind: 59)
 
 
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/numbers.pj:36
- ### Token: 'true', line 36 [12:15] (kind: 59)
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:35
+ ### Token: 'true', line 35 [12:15] (kind: 59)
 
 
 ?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
-[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/numbers.pj:75
- ### Token: 'true', line 75 [11:14] (kind: 59)
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:54
+ ### Token: 'true', line 54 [12:15] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/book/chapter_3/section_7/squares.pj:144
+ ### Token: 'true', line 144 [11:14] (kind: 59)
 
 
 -- Rewriting channel arrays local decls
