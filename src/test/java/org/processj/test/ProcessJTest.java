@@ -1,221 +1,163 @@
 package org.processj.test;
 
-import javax.tools.ToolProvider;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.net.URI;
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import java.util.List;
-
 public class ProcessJTest {
 
     /// --------------------------
     /// Protected Static Constants
 
-    protected final static String CODE_BOOK_1_2_SYNCHRONIZED_COMMUNICATION
-            = "src/test/resources/code/book/chapter_1/section_2/synchronized_communication.pj";
-    protected final static String CODE_BOOK_3_5_TIME_IN_PROCESS_J
-            = "src/test/resources/code/book/chapter_3/section_5/time_in_process_j.pj";
-    protected final static String CODE_BOOK_3_6_ONE_TO_ONE_CHANNELS
-            = "src/test/resources/code/book/chapter_3/section_6/one_to_one_channels.pj";
-    protected final static String CODE_BOOK_3_7_FIBONACCI
-            = "src/test/resources/code/book/chapter_3/section_7/fibonacci.pj";
-    protected final static String CODE_BOOK_3_7_FIFO6
-            = "src/test/resources/code/book/chapter_3/section_7/fifo6.pj";
-    protected final static String CODE_BOOK_3_7_INTEGRATE
-            = "src/test/resources/code/book/chapter_3/section_7/integrate.pj";
-    protected final static String CODE_BOOK_3_7_NUMBERS
-            = "src/test/resources/code/book/chapter_3/section_7/numbers.pj";
-    protected final static String CODE_BOOK_3_7_PAIRS
-            = "src/test/resources/code/book/chapter_3/section_7/pairs.pj";
-    protected final static String CODE_BOOK_3_7_SQUARES
-            = "src/test/resources/code/book/chapter_3/section_7/squares.pj";
-    protected final static String CODE_BOOK_3_7_STRUCTURED_EXECUTION
-            = "src/test/resources/code/book/chapter_3/section_7/structured_execution.pj";
-    protected final static String CODE_BOOK_3_8_EIGHT_BIT_ADDER
-            = "src/test/resources/code/book/chapter_3/section_8/eight_bit_adder.pj";
-    protected final static String CODE_BOOK_3_8_FOUR_BIT_ADDER
-            = "src/test/resources/code/book/chapter_3/section_8/four_bit_adder.pj";
-    protected final static String CODE_BOOK_3_8_ONE_BIT_ADDER
-            = "src/test/resources/code/book/chapter_3/section_8/one_bit_adder.pj";
-    protected final static String CODE_BOOK_3_9_OUTPUT
-            = "src/test/resources/code/book/chapter_3/section_9/output.pj";
-    protected final static String CODE_BOOK_4_1_SWITCH
-            = "src/test/resources/code/book/chapter_4/section_1/switch.pj";
-    protected final static String CODE_BOOK_4_2_FOR
-            = "src/test/resources/code/book/chapter_4/section_2/for.pj";
-    protected final static String CODE_BOOK_4_2_WHILE
-            = "src/test/resources/code/book/chapter_4/section_2/while.pj";
-    protected final static String CODE_BOOK_4_3_REPETITION
-            = "src/test/resources/code/book/chapter_4/section_3/repetition.pj";
-    protected final static String CODE_BOOK_4_4_ALT
-            = "src/test/resources/code/book/chapter_4/section_4/alt.pj";
-    protected final static String CODE_BOOK_4_4_MUX
-            = "src/test/resources/code/book/chapter_4/section_4/mux.pj";
-    protected final static String CODE_BOOK_4_4_TIMEOUT_GUARD
-            = "src/test/resources/code/book/chapter_4/section_4/timeoutguard.pj";
-    protected final static String CODE_BOOK_4_4_WATCHDOG
-            = "src/test/resources/code/book/chapter_4/section_4/watchdog.pj";
-    protected final static String CODE_BOOK_4_5_PRI_ALT
-            = "src/test/resources/code/book/chapter_4/section_5/pri_alt.pj";
+    protected final static SourceInput BookSynchronizedCommunication
+            = new SourceInput("book/chapter_1/section_2/", "synchronized_communication");
+    protected final static SourceInput BookTimeInProcessJ
+            = new SourceInput("book/chapter_3/section_5/", "time_in_process_j");
+    protected final static SourceInput BookOneToOneChannels
+            = new SourceInput("book/chapter_3/section_6/", "one_to_one_channels");
+    protected final static SourceInput BookFibonacci
+            = new SourceInput("book/chapter_3/section_7/", "fibonacci");
+    protected final static SourceInput BookFifo6
+            = new SourceInput("book/chapter_3/section_7/", "fifo6");
+    protected final static SourceInput BookIntegrate
+            = new SourceInput("book/chapter_3/section_7/", "integrate");
+    protected final static SourceInput BookNumbers
+            = new SourceInput("book/chapter_3/section_7/", "numbers");
+    protected final static SourceInput BookPairs
+            = new SourceInput("book/chapter_3/section_7/", "pairs");
+    protected final static SourceInput BookSquares
+            = new SourceInput("book/chapter_3/section_7/", "squares");
+    protected final static SourceInput BookStructuredExecution
+            = new SourceInput("book/chapter_3/section_7/", "structured_execution");
+    protected final static SourceInput BookEightBitAdder
+            = new SourceInput("book/chapter_3/section_8/", "eight_bit_adder");
+    protected final static SourceInput BookFourBitAdder
+            = new SourceInput("book/chapter_3/section_8/", "four_bit_adder");
+    protected final static SourceInput BookOneBitAdder
+            = new SourceInput("book/chapter_3/section_8/", "one_bit_adder");
+    protected final static SourceInput BookOutput
+            = new SourceInput("book/chapter_3/section_9/", "output");
+    protected final static SourceInput BookSwitch
+            = new SourceInput("book/chapter_4/section_1/", "switch");
+    protected final static SourceInput BookFor
+            = new SourceInput("book/chapter_4/section_2/", "for");
+    protected final static SourceInput BookWhile
+            = new SourceInput("book/chapter_4/section_2/", "while");
+    protected final static SourceInput BookRepetition
+            = new SourceInput("book/chapter_4/section_3/", "repetition");
+    protected final static SourceInput BookAlt
+            = new SourceInput("book/chapter_4/section_4/", "alt");
+    protected final static SourceInput BookMux
+            = new SourceInput("book/chapter_4/section_4/", "mux");
+    protected final static SourceInput BookTimeoutGuard
+            = new SourceInput("book/chapter_4/section_4/", "timeoutguard");
+    protected final static SourceInput BookWatchdog
+            = new SourceInput("book/chapter_4/section_4/", "watchdog");
+    protected final static SourceInput BookPriAlt
+            = new SourceInput("book/chapter_4/section_5/", "pri_alt");
 
     /// ------------
     /// General Code
 
-    protected final static String CODE_TEST_ALT_01
-            = "src/test/resources/code/test/Alt01.pj";
-    protected final static String CODE_TEST_ARRAY_01
-            = "src/test/resources/code/test/Array01.pj";
-    protected final static String CODE_TEST_ARRAY_02
-            = "src/test/resources/code/test/Array02.pj";
-    protected final static String CODE_TEST_BARRIER_01
-            = "src/test/resources/code/test/Barrier01.pj";
-    protected final static String CODE_TEST_BARRIER_02
-            = "src/test/resources/code/test/Barrier02.pj";
-    protected final static String CODE_TEST_BINARY_EXPRESSION_01
-            = "src/test/resources/code/test/BinaryExpression01.pj";
-    protected final static String CODE_TEST_BINARY_EXPRESSION_02
-            = "src/test/resources/code/test/BinaryExpression02.pj";
-    protected final static String CODE_TEST_BYTECODE_01
-            = "src/test/resources/code/test/ByteCode01.pj";
-    protected final static String CODE_TEST_CHANNEL_ARRAY_01
-            = "src/test/resources/code/test/ChannelArray01.pj";
-    protected final static String CODE_TEST_CHANNEL_ARRAY_02
-            = "src/test/resources/code/test/ChannelArray02.pj";
-    protected final static String CODE_TEST_CHANNEL_END_ARRAY_01
-            = "src/test/resources/code/test/ChannelEndArray01.pj";
-    protected final static String CODE_TEST_CHANNEL_END_ARRAY_02
-            = "src/test/resources/code/test/ChannelEndArray02.pj";
-    protected final static String CODE_TEST_CHANNEL_READ_01
-            = "src/test/resources/code/test/ChannelRead01.pj";
-    protected final static String CODE_TEST_CHANNEL_READ_02
-            = "src/test/resources/code/test/ChannelRead02.pj";
-    protected final static String CODE_TEST_CHANNEL_WRITE_01
-            = "src/test/resources/code/test/ChannelWrite01.pj";
-    protected final static String CODE_TEST_CHANNEL_WRITE_02
-            = "src/test/resources/code/test/ChannelWrite02.pj";
-    protected final static String CODE_TEST_CHANNEL_WRITE_03
-            = "src/test/resources/code/test/ChannelWrite03.pj";
-    protected final static String CODE_TEST_CHANNEL_WRITE_04
-            = "src/test/resources/code/test/ChannelWrite04.pj";
-    protected final static String CODE_TEST_ENROLL_01
-            = "src/test/resources/code/test/Enroll01.pj";
-    protected final static String CODE_TEST_FIBONACCI
-            = "src/test/resources/code/test/Fibonacci.pj";
-    protected final static String CODE_TEST_FOR_01
-            = "src/test/resources/code/test/For01.pj";
-    protected final static String CODE_TEST_FULL_ADDER
-            = "src/test/resources/code/test/FullAdder.pj";
-    protected final static String CODE_TEST_HELLO
-            = "src/test/resources/code/test/Hello.pj";
-    protected final static String CODE_TEST_IF_01
-            = "src/test/resources/code/test/If01.pj";
-    protected final static String CODE_TEST_INTEGRATE
-            = "src/test/resources/code/test/Integrate.pj";
-    protected final static String CODE_TEST_LOCAL_DECLARATION_01
-            = "src/test/resources/code/test/LocalDeclaration01.pj";
-    protected final static String CODE_TEST_MANDELBROT_01
-            = "src/test/resources/code/test/Mandelbrot01.pj";
-    protected final static String CODE_TEST_MANDELBROT_02
-            = "src/test/resources/code/test/Mandelbrot02.pj";
-    protected final static String CODE_TEST_MANDELBROT_03
-            = "src/test/resources/code/test/Mandelbrot03.pj";
-    protected final static String CODE_TEST_MANDELBROT_04
-            = "src/test/resources/code/test/Mandelbrot04.pj";
-    protected final static String CODE_TEST_PAR_01
-            = "src/test/resources/code/test/Par01.pj";
-    protected final static String CODE_TEST_PAR_02
-            = "src/test/resources/code/test/Par02.pj";
-    protected final static String CODE_TEST_PAR_03
-            = "src/test/resources/code/test/Par03.pj";
-    protected final static String CODE_TEST_PRI_ALT_01
-            = "src/test/resources/code/test/PriAlt01.pj";
-    protected final static String CODE_TEST_PROTOCOL_01
-            = "src/test/resources/code/test/Protocol01.pj";
-    protected final static String CODE_TEST_PROTOCOL_02
-            = "src/test/resources/code/test/Protocol02.pj";
-    protected final static String CODE_TEST_PROTOCOL_03
-            = "src/test/resources/code/test/Protocol03.pj";
-    protected final static String CODE_TEST_RECORD_01
-            = "src/test/resources/code/test/Record01.pj";
-    protected final static String CODE_TEST_RECORD_02
-            = "src/test/resources/code/test/Record02.pj";
-    protected final static String CODE_TEST_RECORD_03
-            = "src/test/resources/code/test/Record03.pj";
-    protected final static String CODE_TEST_RECORD_04
-            = "src/test/resources/code/test/Record04.pj";
-    protected final static String CODE_TEST_RECORD_05
-            = "src/test/resources/code/test/Record05.pj";
-    protected final static String CODE_TEST_SANTA_01
-            = "src/test/resources/code/test/Santa01.pj";
-    protected final static String CODE_TEST_SANTA_02
-            = "src/test/resources/code/test/Santa02.pj";
-    protected final static String CODE_TEST_SANTA_03
-            = "src/test/resources/code/test/Santa03.pj";
-    protected final static String CODE_TEST_SHARED_CHANNEL_01
-            = "src/test/resources/code/test/SharedChannel01.pj";
-    protected final static String CODE_TEST_SHARED_CHANNEL_READ_01
-            = "src/test/resources/code/test/SharedChannelRead01.pj";
-    protected final static String CODE_TEST_SHARED_CHANNEL_WRITE_01
-            = "src/test/resources/code/test/SharedChannelWrite01.pj";
-    protected final static String CODE_TEST_SILLY
-            = "src/test/resources/code/test/Silly.pj";
-    protected final static String CODE_TEST_SORT_PUMP
-            = "src/test/resources/code/test/SortPump.pj";
-    protected final static String CODE_TEST_SWITCH_01
-            = "src/test/resources/code/test/Switch01.pj";
-    protected final static String CODE_TEST_TIMER_01
-            = "src/test/resources/code/test/Timer01.pj";
-
-    /// ------------------------
-    /// Protected Static Methods
-
-    protected String stringOf(final String filePath) {
-
-        String result = "";
-
-        try {
-
-            result = (new FileInputStream(filePath)).toString();
-
-        } catch(final FileNotFoundException fileNotFoundException) {
-
-            System.out.println(fileNotFoundException.getMessage());
-
-        }
-
-        return result;
-
-    }
-
-    protected boolean compile(final String program) {
-
-        // Create the java file object
-        final Iterable<? extends JavaFileObject> compilationUnits = List.of(new SimpleJavaFileObject(
-                URI.create("string:///" + program.replace('.', '/') +
-                        JavaFileObject.Kind.SOURCE.extension), JavaFileObject.Kind.SOURCE) {
-
-            @Override
-            public CharSequence getCharContent(final boolean ignoreEncodingErrors) {
-
-                return program;
-
-            }
-
-        });
-
-        final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
-
-        return ToolProvider.getSystemJavaCompiler().getTask(
-                null, null, diagnostics, null, null, compilationUnits).call();
-
-    }
-
-
+    protected final static SourceInput Alt01
+            = new SourceInput("test/", "Alt01");
+    protected final static SourceInput Array01
+            = new SourceInput("test/", "Array01");
+    protected final static SourceInput Array02
+            = new SourceInput("test/", "Array02");
+    protected final static SourceInput Barrier01
+            = new SourceInput("test/", "Barrier01");
+    protected final static SourceInput Barrier02
+            = new SourceInput("test/", "Barrier02");
+    protected final static SourceInput BinaryExpression01
+            = new SourceInput("test/", "BinaryExpression01");
+    protected final static SourceInput BinaryExpression02
+            = new SourceInput("test/", "BinaryExpression02");
+    protected final static SourceInput ByteCode01
+            = new SourceInput("test/", "ByteCode01");
+    protected final static SourceInput ChannelArray01
+            = new SourceInput("test/", "ChannelArray01");
+    protected final static SourceInput ChannelArray02
+            = new SourceInput("test/", "ChannelArray02");
+    protected final static SourceInput ChannelEndArray01
+            = new SourceInput("test/", "ChannelEndArray01");
+    protected final static SourceInput ChannelEndArray02
+            = new SourceInput("test/", "ChannelEndArray02");
+    protected final static SourceInput ChannelRead01
+            = new SourceInput("test/", "ChannelRead01");
+    protected final static SourceInput ChannelRead02
+            = new SourceInput("test/", "ChannelRead02");
+    protected final static SourceInput ChannelWrite01
+            = new SourceInput("test/", "ChannelWrite01");
+    protected final static SourceInput ChannelWrite02
+            = new SourceInput("test/", "ChannelWrite02");
+    protected final static SourceInput ChannelWrite03
+            = new SourceInput("test/", "ChannelWrite03");
+    protected final static SourceInput ChannelWrite04
+            = new SourceInput("test/", "ChannelWrite04");
+    protected final static SourceInput Enroll01
+            = new SourceInput("test/", "Enroll01");
+    protected final static SourceInput Fibonacci
+            = new SourceInput("test/", "Fibonacci");
+    protected final static SourceInput For01
+            = new SourceInput("test/", "For01");
+    protected final static SourceInput FullAdder
+            = new SourceInput("test/", "FullAdder");
+    protected final static SourceInput Hello
+            = new SourceInput("test/", "Hello");
+    protected final static SourceInput If01
+            = new SourceInput("test/", "If01");
+    protected final static SourceInput Integrate
+            = new SourceInput("test/", "Integrate");
+    protected final static SourceInput LocalDeclaration01
+            = new SourceInput("test/", "LocalDeclaration01");
+    protected final static SourceInput Mandelbrot01
+            = new SourceInput("test/", "Mandelbrot01");
+    protected final static SourceInput Mandelbrot02
+            = new SourceInput("test/", "Mandelbrot02");
+    protected final static SourceInput Mandelbrot03
+            = new SourceInput("test/", "Mandelbrot03");
+    protected final static SourceInput Mandelbrot04
+            = new SourceInput("test/", "Mandelbrot04");
+    protected final static SourceInput Par01
+            = new SourceInput("test/", "Par01");
+    protected final static SourceInput Par02
+            = new SourceInput("test/", "Par02");
+    protected final static SourceInput Par03
+            = new SourceInput("test/", "Par03");
+    protected final static SourceInput PriAlt01
+            = new SourceInput("test/", "PriAlt01");
+    protected final static SourceInput Protocol01
+            = new SourceInput("test/", "Protocol01");
+    protected final static SourceInput Protocol02
+            = new SourceInput("test/", "Protocol02");
+    protected final static SourceInput Protocol03
+            = new SourceInput("test/", "Protocol03");
+    protected final static SourceInput Record01
+            = new SourceInput("test/", "Record01");
+    protected final static SourceInput Record02
+            = new SourceInput("test/", "Record02");
+    protected final static SourceInput Record03
+            = new SourceInput("test/", "Record03");
+    protected final static SourceInput Record04
+            = new SourceInput("test/", "Record04");
+    protected final static SourceInput Record05
+            = new SourceInput("test/", "Record05");
+    protected final static SourceInput Santa01
+            = new SourceInput("test/", "Santa01");
+    protected final static SourceInput Santa02
+            = new SourceInput("test/", "Santa02");
+    protected final static SourceInput Santa03
+            = new SourceInput("test/", "Santa03");
+    protected final static SourceInput SharedChannel01
+            = new SourceInput("test/", "SharedChannel01");
+    protected final static SourceInput SharedChannelRead01
+            = new SourceInput("test/", "SharedChannelRead01");
+    protected final static SourceInput SharedChannelWrite01
+            = new SourceInput("test/", "SharedChannelWrite01");
+    protected final static SourceInput Silly
+            = new SourceInput("test/", "Silly");
+    protected final static SourceInput SortPump
+            = new SourceInput("test/", "SortPump");
+    protected final static SourceInput Switch01
+            = new SourceInput("test/", "Switch01");
+    protected final static SourceInput Timer01
+            = new SourceInput("test/", "Timer01");
 
 }
