@@ -9,6 +9,15 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * <p>Represents a ProcessJ-Java source file pair (.pj, .java) along with the corresponding input & output path.
+ * This class provides {@link SourceInput#compileJava(SourceInput)} in order to verify syntactic correctness of
+ * the ProcessJ input & generated Java output.</p>
+ * @author Carlos L. Cuenca
+ * @version 1.0.0
+ * @see TestInput
+ * @since 0.1.0
+ */
 public class SourceInput extends SimpleJavaFileObject implements TestInput {
 
     /// --------------------
