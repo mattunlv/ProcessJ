@@ -196,7 +196,7 @@ public enum VisitorMessageNumber implements MessageNumber {
     private static Properties localizable;
     
     // Local path of properties file in parent directory
-    private final static String PATH = "resources/properties/VisitorMessageNumber.properties";
+    private final static String PATH = "src/main/resources/properties/VisitorMessageNumber.properties";
     
     // The error number
     private final int number;

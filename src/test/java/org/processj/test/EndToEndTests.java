@@ -41,4 +41,23 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void bookCodeChapter3Section7_fifo6_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_3_7_FIFO6};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void bookCodeChapter3Section7_integrate_endToEnd() {
+
+        final String[] arguments = {CODE_BOOK_3_7_INTEGRATE};
+
+        ProcessJc.main(arguments);
+
+    }
+
+
 }
