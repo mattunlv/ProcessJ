@@ -191,6 +191,7 @@ public class Helper {
         Writer writer = null;
         try {
             String home = System.getProperty("user.home");
+
             File f = new File(home + File.separator + workdir);
             if (!f.exists()) {
                 System.out.println("Missing working directory!");

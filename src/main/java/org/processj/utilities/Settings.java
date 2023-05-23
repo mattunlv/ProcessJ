@@ -9,7 +9,7 @@ import java.io.File;
 public class Settings {
 
     public static String    absolutePath                = new File("").getAbsolutePath() + File.separator;
-    public static String    includeDir                  = "org/processj/include";
+    public static String    includeDir                  = "include";
     public static Language  language                    = Language.JVM;
     // Notice: This was in the org.processj.cppruntime branch to allow c++ output. The old branch's language default
     // was c++, but this contradicts the default language output for java. I  kept this here for reference

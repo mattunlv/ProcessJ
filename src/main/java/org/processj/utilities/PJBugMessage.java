@@ -26,7 +26,7 @@ public abstract class PJBugMessage {
     private static final Object[] EMPTY_ARGUMENTS = new Object[0];
 
     /** String template file locator */
-    protected static final String ERROR_FILE = "resources/stringtemplates/messages/errorTemplate.stg";
+    protected static final String ERROR_FILE = "src/main/resources/stringtemplates/messages/errorTemplate.stg";
     
     /** Template for error messages */
     protected static final STGroup stGroup = new STGroupFile(ERROR_FILE);

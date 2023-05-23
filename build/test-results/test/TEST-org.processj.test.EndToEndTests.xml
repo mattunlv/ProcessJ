@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-22T21:52:56" hostname="Carloss-MacBook-Pro.local" time="0.094">
+  <properties/>
+  <testcase name="bookCodeChapter1Section2_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.094"/>
+  <system-out><![CDATA[-- Setting absolute path, file and package name for 'synchronized_communication.pj'.
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

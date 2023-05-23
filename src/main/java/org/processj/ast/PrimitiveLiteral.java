@@ -87,7 +87,7 @@ public class PrimitiveLiteral extends Literal {
         if (kind == StringKind || kind == NullKind)
             return text;
         else if (kind == BooleanKind) {
-            return new Boolean(text.equals("true"));
+            return text.equals("true");
         } else
             return new BigDecimal(text);
     }

@@ -94,7 +94,7 @@ import org.processj.utilities.Visitor;
 public class CodeGenJava extends Visitor<Object> {
 
     /** String template file locator */
-    private final String STGRAMMAR_FILE = "resources/stringtemplates/java/grammarTemplatesJava.stg";
+    private final String STGRAMMAR_FILE = "src/main/resources/stringtemplates/java/grammarTemplatesJava.stg";
 
     /** Current Java version -- only needed for debugging */
     private final String JVM_RUNTIME = System.getProperty("java.version");

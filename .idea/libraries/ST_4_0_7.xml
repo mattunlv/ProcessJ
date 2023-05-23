@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="ST-4.0.7">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/ST-4.0.7.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

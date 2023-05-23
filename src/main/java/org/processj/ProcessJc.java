@@ -64,7 +64,7 @@ public class ProcessJc {
     public static final Option[] OPTIONS = {
             new Option("showColor", "-showColor", "Use color on terminals that support ansi espace codes"),
             new Option("help", "-help", "Show this help message and exit"),
-            new Option("org/processj/include", "-include", OptionType.STRING, "Override the default include directory"),
+            new Option("include", "-include", OptionType.STRING, "Override the default include directory"),
             new Option("showMessage", "-showMessage", "Show all error and warning messages when available"),
             new Option("target", "-target", OptionType.STRING, "Specify the target language -- C++, Java (default)"),
             new Option("version", "-version", "Print version information and exit"),
@@ -131,7 +131,8 @@ public class ProcessJc {
         if ( pJc.version ) {
             pJc.version();
         }
-        Settings.includeDir = pJc.include;
+        // TODO: This emits a null pointer exception
+        //Settings.includeDir = pJc.include;
         AST root = null;
 
         // Process Butters source file, one by one

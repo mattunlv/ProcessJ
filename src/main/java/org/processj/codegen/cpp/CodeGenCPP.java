@@ -2701,7 +2701,7 @@ public class CodeGenCPP extends Visitor<Object> {
         Log.log("in findImports");
         Log.log("NOTE: current directory is " + System.getProperty("user.dir") + ".");
         // build fully qualified path to our include directory
-        String dir = "org/processj/include/C++/" + importPath;
+        String dir = "include/C++/" + importPath;
         Log.log("dir length is " + dir.length() + ".");
         // chop off the last /*
         dir = dir.substring(0, dir.length() - 2);

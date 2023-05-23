@@ -10,7 +10,7 @@ import java.util.Properties;
 public class ConfigFileReader {
     
     /** Local path to configuration file */
-    private final static String PATH = "resources/properties/PJConfig.properties";
+    private final static String PATH = "src/main/resources/properties/PJConfig.properties";
     
     public static Properties openConfiguration() {
         URL url = PropertiesLoader.getURL(PATH);
@@ -69,7 +69,7 @@ public class ConfigFileReader {
         
         try {
             String home = System.getProperty("user.home");
-            String config = home + "/processjrc";
+            String config = home + "/processjc";
             in = new FileInputStream(config);
             p = new Properties();
             p.load(in);

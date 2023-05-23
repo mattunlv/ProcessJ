@@ -48,7 +48,7 @@ CONFIG_FILE="$homedir/$CONFIG_FILE"
 
 ############################################################################
 
-## check if the processjrc file contains an install directory
+## check if the processjc file contains an install directory
 installdir="`grep installdir $CONFIG_FILE | cut -d '=' -f 2 | sed 's/ //g'`"
 
 if [ -z "$installdir" ] ; then
