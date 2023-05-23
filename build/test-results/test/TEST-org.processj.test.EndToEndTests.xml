@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T03:08:40" hostname="Carloss-MacBook-Pro.local" time="0.094">
+<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-23T03:16:21" hostname="Carloss-MacBook-Pro.local" time="0.096">
   <properties/>
-  <testcase name="testCode_Record03_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.094"/>
-  <system-out><![CDATA[-- Setting absolute path, file and package name for 'Record03.pj'.
+  <testcase name="testCode_SharedChannelWrite01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.096"/>
+  <system-out><![CDATA[-- Setting absolute path, file and package name for 'SharedChannelWrite01.pj'.
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/test/SharedChannelWrite01.pj:4
+ ### Token: 'true', line 4 [10:13] (kind: 59)
+
+
+?[1;33mwarning[802]: ?[0mWhile-statement is an infinite loop
+[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/test/SharedChannelWrite01.pj:12
+ ### Token: 'true', line 12 [10:13] (kind: 59)
+
+
 -- Rewriting channel arrays local decls
 ** COMPILATION COMPLITED SUCCESSFULLY **
 ]]></system-out>

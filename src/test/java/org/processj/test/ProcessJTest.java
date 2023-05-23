@@ -123,4 +123,18 @@ public class ProcessJTest {
             = "src/test/resources/code/test/Record02.pj";
     protected final static String CODE_TEST_RECORD_03
             = "src/test/resources/code/test/Record03.pj";
+    protected final static String CODE_TEST_RECORD_04
+            = "src/test/resources/code/test/Record04.pj";
+    protected final static String CODE_TEST_SANTA_01
+            = "src/test/resources/code/test/Santa01.pj";
+    protected final static String CODE_TEST_SANTA_02
+            = "src/test/resources/code/test/Santa02.pj";
+    protected final static String CODE_TEST_SANTA_03
+            = "src/test/resources/code/test/Santa03.pj";
+    protected final static String CODE_TEST_SHARED_CHANNEL_01
+            = "src/test/resources/code/test/SharedChannel01.pj";
+    protected final static String CODE_TEST_SHARED_CHANNEL_READ_01
+            = "src/test/resources/code/test/SharedChannelRead01.pj";
+    protected final static String CODE_TEST_SHARED_CHANNEL_WRITE_01
+            = "src/test/resources/code/test/SharedChannelWrite01.pj";
 }

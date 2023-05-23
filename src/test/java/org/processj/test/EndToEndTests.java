@@ -521,4 +521,67 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void testCode_Record04_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_RECORD_04};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_Santa01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SANTA_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_Santa02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SANTA_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_Santa03_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SANTA_03};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_SharedChannel01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SHARED_CHANNEL_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_SharedChannelRead01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SHARED_CHANNEL_READ_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_SharedChannelWrite01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SHARED_CHANNEL_WRITE_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
 }
