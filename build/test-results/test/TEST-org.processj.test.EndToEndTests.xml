@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.EndToEndTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-22T21:52:56" hostname="Carloss-MacBook-Pro.local" time="0.094">
+<testsuite name="org.processj.test.EndToEndTests" tests="2" skipped="0" failures="0" errors="0" timestamp="2023-05-23T01:28:38" hostname="Carloss-MacBook-Pro.local" time="0.126">
   <properties/>
-  <testcase name="bookCodeChapter1Section2_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.094"/>
+  <testcase name="bookCodeChapter1Section2_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.105"/>
+  <testcase name="bookCodeChapter3Section5_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.021"/>
   <system-out><![CDATA[-- Setting absolute path, file and package name for 'synchronized_communication.pj'.
+-- Rewriting channel arrays local decls
+** COMPILATION COMPLITED SUCCESSFULLY **
+-- Setting absolute path, file and package name for 'time_in_process_j.pj'.
 -- Rewriting channel arrays local decls
 ** COMPILATION COMPLITED SUCCESSFULLY **
 ]]></system-out>
