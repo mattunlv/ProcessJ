@@ -143,4 +143,8 @@ public class ProcessJTest {
             = "src/test/resources/code/test/SharedChannelWrite01.pj";
     protected final static String CODE_TEST_SILLY
             = "src/test/resources/code/test/Silly.pj";
+    protected final static String CODE_TEST_SORT_PUMP
+            = "src/test/resources/code/test/SortPump.pj";
+    protected final static String CODE_TEST_SWITCH_01
+            = "src/test/resources/code/test/Switch01.pj";
 }

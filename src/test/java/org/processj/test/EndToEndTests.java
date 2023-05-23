@@ -611,4 +611,22 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void testCode_sortPump_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SORT_PUMP};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_switch01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SWITCH_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
 }
