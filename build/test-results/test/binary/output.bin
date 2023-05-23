@@ -1,6 +1,10 @@
-U-- Setting absolute path, file and package name for 'synchronized_communication.pj'.
-(-- Rewriting channel arrays local decls
-)** COMPILATION COMPLITED SUCCESSFULLY **
-L-- Setting absolute path, file and package name for 'time_in_process_j.pj'.
+D-- Setting absolute path, file and package name for 'fibonacci.pj'.
+N-- Setting absolute path, file and package name for 'one_to_one_channels.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **
+U-- Setting absolute path, file and package name for 'synchronized_communication.pj'.
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
+L-- Setting absolute path, file and package name for 'time_in_process_j.pj'.
+(-- Rewriting channel arrays local decls
+)** COMPILATION COMPLITED SUCCESSFULLY **
