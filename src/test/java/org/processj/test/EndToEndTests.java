@@ -306,6 +306,15 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
+    public void testCode_channelRead02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_READ_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
     public void testCode_channelWrite01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_CHANNEL_WRITE_01};
@@ -327,6 +336,15 @@ public class EndToEndTests extends ProcessJTest {
     public void testCode_channelWrite03_endToEnd() {
 
         final String[] arguments = {CODE_TEST_CHANNEL_WRITE_03};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_channelWrite04_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_WRITE_04};
 
         ProcessJc.main(arguments);
 
@@ -468,7 +486,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_PriAlt01_endToEnd() {
+    public void testCode_priAlt01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_PRI_ALT_01};
 
@@ -477,7 +495,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Protocol01_endToEnd() {
+    public void testCode_protocol01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_PROTOCOL_01};
 
@@ -486,7 +504,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Protocol02_endToEnd() {
+    public void testCode_protocol02_endToEnd() {
 
         final String[] arguments = {CODE_TEST_PROTOCOL_02};
 
@@ -495,7 +513,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Record01_endToEnd() {
+    public void testCode_record01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_RECORD_01};
 
@@ -504,7 +522,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Record02_endToEnd() {
+    public void testCode_record02_endToEnd() {
 
         final String[] arguments = {CODE_TEST_RECORD_02};
 
@@ -513,7 +531,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Record03_endToEnd() {
+    public void testCode_record03_endToEnd() {
 
         final String[] arguments = {CODE_TEST_RECORD_03};
 
@@ -522,7 +540,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Record04_endToEnd() {
+    public void testCode_record04_endToEnd() {
 
         final String[] arguments = {CODE_TEST_RECORD_04};
 
@@ -531,7 +549,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Santa01_endToEnd() {
+    public void testCode_santa01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_SANTA_01};
 
@@ -540,7 +558,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Santa02_endToEnd() {
+    public void testCode_santa02_endToEnd() {
 
         final String[] arguments = {CODE_TEST_SANTA_02};
 
@@ -549,7 +567,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_Santa03_endToEnd() {
+    public void testCode_santa03_endToEnd() {
 
         final String[] arguments = {CODE_TEST_SANTA_03};
 
@@ -558,7 +576,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_SharedChannel01_endToEnd() {
+    public void testCode_sharedChannel01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_SHARED_CHANNEL_01};
 
@@ -567,7 +585,7 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_SharedChannelRead01_endToEnd() {
+    public void testCode_sharedChannelRead01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_SHARED_CHANNEL_READ_01};
 
@@ -576,9 +594,18 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
-    public void testCode_SharedChannelWrite01_endToEnd() {
+    public void testCode_sharedChannelWrite01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_SHARED_CHANNEL_WRITE_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_silly_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_SILLY};
 
         ProcessJc.main(arguments);
 

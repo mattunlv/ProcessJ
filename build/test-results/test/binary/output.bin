@@ -1,13 +1,3 @@
-O-- Setting absolute path, file and package name for 'SharedChannelWrite01.pj'.
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-^[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/test/SharedChannelWrite01.pj:4
-. ### Token: 'true', line 4 [10:13] (kind: 59)
-
-
-=[1;33mwarning[802]: [0mWhile-statement is an infinite loop
-_[+] /Users/cuenca/Programming/ProcessJ/src/test/resources/code/test/SharedChannelWrite01.pj:12
-/ ### Token: 'true', line 12 [10:13] (kind: 59)
-
-
+I-- Setting absolute path, file and package name for 'ChannelWrite04.pj'.
 (-- Rewriting channel arrays local decls
 )** COMPILATION COMPLITED SUCCESSFULLY **

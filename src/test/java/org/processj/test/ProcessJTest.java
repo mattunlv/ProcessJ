@@ -75,12 +75,16 @@ public class ProcessJTest {
             = "src/test/resources/code/test/ChannelArray02.pj";
     protected final static String CODE_TEST_CHANNEL_READ_01
             = "src/test/resources/code/test/ChannelRead01.pj";
+    protected final static String CODE_TEST_CHANNEL_READ_02
+            = "src/test/resources/code/test/ChannelRead02.pj";
     protected final static String CODE_TEST_CHANNEL_WRITE_01
             = "src/test/resources/code/test/ChannelWrite01.pj";
     protected final static String CODE_TEST_CHANNEL_WRITE_02
             = "src/test/resources/code/test/ChannelWrite02.pj";
     protected final static String CODE_TEST_CHANNEL_WRITE_03
             = "src/test/resources/code/test/ChannelWrite03.pj";
+    protected final static String CODE_TEST_CHANNEL_WRITE_04
+            = "src/test/resources/code/test/ChannelWrite04.pj";
     protected final static String CODE_TEST_ENROLL_01
             = "src/test/resources/code/test/Enroll01.pj";
     protected final static String CODE_TEST_FIBONACCI
@@ -137,4 +141,6 @@ public class ProcessJTest {
             = "src/test/resources/code/test/SharedChannelRead01.pj";
     protected final static String CODE_TEST_SHARED_CHANNEL_WRITE_01
             = "src/test/resources/code/test/SharedChannelWrite01.pj";
+    protected final static String CODE_TEST_SILLY
+            = "src/test/resources/code/test/Silly.pj";
 }
