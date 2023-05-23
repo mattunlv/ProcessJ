@@ -270,6 +270,15 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
+    public void testCode_binaryExpression02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_BINARY_EXPRESSION_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
     public void testCode_byteCode01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_BYTECODE_01};
@@ -291,6 +300,24 @@ public class EndToEndTests extends ProcessJTest {
     public void testCode_channelArray02_endToEnd() {
 
         final String[] arguments = {CODE_TEST_CHANNEL_ARRAY_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_channelEndArray01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_END_ARRAY_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_channelEndArray02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_END_ARRAY_02};
 
         ProcessJc.main(arguments);
 
@@ -513,6 +540,15 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
+    public void testCode_protocol03_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_PROTOCOL_03};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
     public void testCode_record01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_RECORD_01};
@@ -543,6 +579,15 @@ public class EndToEndTests extends ProcessJTest {
     public void testCode_record04_endToEnd() {
 
         final String[] arguments = {CODE_TEST_RECORD_04};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_record05_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_RECORD_05};
 
         ProcessJc.main(arguments);
 
@@ -624,6 +669,15 @@ public class EndToEndTests extends ProcessJTest {
     public void testCode_switch01_endToEnd() {
 
         final String[] arguments = {CODE_TEST_SWITCH_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_timer01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_TIMER_01};
 
         ProcessJc.main(arguments);
 

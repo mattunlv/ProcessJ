@@ -67,12 +67,18 @@ public class ProcessJTest {
             = "src/test/resources/code/test/Barrier02.pj";
     protected final static String CODE_TEST_BINARY_EXPRESSION_01
             = "src/test/resources/code/test/BinaryExpression01.pj";
+    protected final static String CODE_TEST_BINARY_EXPRESSION_02
+            = "src/test/resources/code/test/BinaryExpression02.pj";
     protected final static String CODE_TEST_BYTECODE_01
             = "src/test/resources/code/test/ByteCode01.pj";
     protected final static String CODE_TEST_CHANNEL_ARRAY_01
             = "src/test/resources/code/test/ChannelArray01.pj";
     protected final static String CODE_TEST_CHANNEL_ARRAY_02
             = "src/test/resources/code/test/ChannelArray02.pj";
+    protected final static String CODE_TEST_CHANNEL_END_ARRAY_01
+            = "src/test/resources/code/test/ChannelEndArray01.pj";
+    protected final static String CODE_TEST_CHANNEL_END_ARRAY_02
+            = "src/test/resources/code/test/ChannelEndArray02.pj";
     protected final static String CODE_TEST_CHANNEL_READ_01
             = "src/test/resources/code/test/ChannelRead01.pj";
     protected final static String CODE_TEST_CHANNEL_READ_02
@@ -121,6 +127,8 @@ public class ProcessJTest {
             = "src/test/resources/code/test/Protocol01.pj";
     protected final static String CODE_TEST_PROTOCOL_02
             = "src/test/resources/code/test/Protocol02.pj";
+    protected final static String CODE_TEST_PROTOCOL_03
+            = "src/test/resources/code/test/Protocol03.pj";
     protected final static String CODE_TEST_RECORD_01
             = "src/test/resources/code/test/Record01.pj";
     protected final static String CODE_TEST_RECORD_02
@@ -129,6 +137,8 @@ public class ProcessJTest {
             = "src/test/resources/code/test/Record03.pj";
     protected final static String CODE_TEST_RECORD_04
             = "src/test/resources/code/test/Record04.pj";
+    protected final static String CODE_TEST_RECORD_05
+            = "src/test/resources/code/test/Record05.pj";
     protected final static String CODE_TEST_SANTA_01
             = "src/test/resources/code/test/Santa01.pj";
     protected final static String CODE_TEST_SANTA_02
@@ -147,4 +157,6 @@ public class ProcessJTest {
             = "src/test/resources/code/test/SortPump.pj";
     protected final static String CODE_TEST_SWITCH_01
             = "src/test/resources/code/test/Switch01.pj";
+    protected final static String CODE_TEST_TIMER_01
+            = "src/test/resources/code/test/Timer01.pj";
 }

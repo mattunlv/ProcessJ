@@ -1,6 +1,6 @@
 import std.*;
 
-public void main(string[] agrs) {
+public void main(string[] args) {
     timer t;
     t.timeout(100);
     long a = t.read();
