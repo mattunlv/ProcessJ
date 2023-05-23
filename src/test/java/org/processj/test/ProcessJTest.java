@@ -29,7 +29,7 @@ public class ProcessJTest {
             = "src/test/resources/code/book/chapter_3/section_8/eight_bit_adder.pj";
     protected final static String CODE_BOOK_3_8_FOUR_BIT_ADDER
             = "src/test/resources/code/book/chapter_3/section_8/four_bit_adder.pj";
-    protected final static String CODE_BOOK_3_7_ONE_BIT_ADDER
+    protected final static String CODE_BOOK_3_8_ONE_BIT_ADDER
             = "src/test/resources/code/book/chapter_3/section_8/one_bit_adder.pj";
     protected final static String CODE_BOOK_3_9_OUTPUT
             = "src/test/resources/code/book/chapter_3/section_9/output.pj";
