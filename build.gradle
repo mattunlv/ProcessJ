@@ -1,7 +1,17 @@
+/**
+ * <p>Specifies the build & test steps for the ProcessJ Compiler.</p>
+ * @author Carlos L. Cuenca
+ * @version 1.0.0
+ * @since 0.1.0
+ */
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Plugins, Repositories, & Language Settings                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
 plugins {
 
     id 'java'
-    id 'org.jetbrains.intellij' version '1.13.0'
 
 }
 
@@ -21,51 +31,60 @@ java {
 
 }
 
-group 'edu.unlv.cs'
-version '1.0.0'
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Package Info                                                                                                    **/
+/** --------------------------------------------------------------------------------------------------------------- **/
 
-dependencies {
+group 'org.processj'
+version '0.1.0'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testImplementation project(path: ':')
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Dependencies                                                                                                    **/
+/** --------------------------------------------------------------------------------------------------------------- **/
 
-}
+dependencies { /* Empty */ }
 
-intellij {
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Source Sets                                                                                                     **/
+/** --------------------------------------------------------------------------------------------------------------- **/
 
-    version = '2022.3.2'
-    type    = 'IC'
-
-}
-
+/**
+ * <p>Specifies the source sets corresponding to the production & test code.</p>
+ */
 sourceSets {
+
+    /// ----------------------
+    /// Production Source Sets
+
     main {
         java {
             srcDirs 'src/main/java/'
-            destinationDirectory.file('out/bin')
         }
         compileClasspath = files(['lib/asm-all-5.2.jar',
                                   'lib/ST-4.0.7.jar',
                                   'lib/jflex-1.8.2.jar',
                                   'lib/cup-11b.jar'])
+        runtimeClasspath = files(['lib/jflex-1.8.2.jar',
+                                  'lib/cup-11b.jar'])
     }
+
+    /// ----------------
+    /// Test Source Sets
+
     test {
         java {
             srcDirs 'src/test/java/'
-            destinationDirectory.file('out/bin')
         }
-        compileClasspath = files(['lib/asm-all-5.2.jar',
-                                  'lib/ST-4.0.7.jar',
-                                  'lib/jflex-1.8.2.jar',
-                                  'lib/cup-11b.jar',
-                                  'build/classes/java/main/',
-                                  'lib/opentest4j-1.2.0.jar',
+        compileClasspath = files(['lib/opentest4j-1.2.0.jar',
                                   'lib/junit-jupiter-5.8.1.jar',
                                   'lib/junit-jupiter-api-5.8.1.jar',
                                   'lib/junit-jupiter-engine-5.8.1.jar',
                                   'lib/apiguardian-api-1.1.2.jar',
-                                  '/opt/homebrew/opt/openjdk@20/'])
+                                  'lib/asm-all-5.2.jar',
+                                  'lib/ST-4.0.7.jar',
+                                  'lib/jflex-1.8.2.jar',
+                                  'lib/cup-11b.jar',
+                                  sourceSets.main.java.classesDirectory])
         runtimeClasspath = files([
                 'lib/opentest4j-1.2.0.jar',
                 'lib/junit-jupiter-5.8.1.jar',
@@ -74,83 +93,105 @@ sourceSets {
                 'lib/apiguardian-api-1.1.2.jar',
                 'lib/asm-all-5.2.jar',
                 'lib/ST-4.0.7.jar',
+                'lib/jflex-1.8.2.jar',
                 'lib/cup-11b.jar',
-                '/opt/homebrew/opt/openjdk@20/'
-        ])
+                sourceSets.main.java.classesDirectory,
+                sourceSets.test.java.classesDirectory])
+
     }
 
 }
 
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Lexer Task                                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+/**
+ * <p>Generates the ProcessJ lexer with the specified .flex file.</p>
+ */
 tasks.register('lexer', JavaExec) {
 
-    main = '-jar'
-    args = ['lib/jflex-1.8.2.jar',
-            '-d', 'src/main/java/org/processj/scanner/',
-            'src/main/resources/flex/ProcessJ.flex']
+    // Initialize the classpath, entry point, & arguments
+    classpath   = sourceSets.main.runtimeClasspath
+    mainClass   = 'jflex.Main'
+    args        = ['-d', 'src/main/java/org/processj/lexer/',
+                   'src/main/resources/flex/ProcessJ.flex']
 
 }
 
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Parser Task                                                                                                     **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+/**
+ * <p>Generates the ProcessJ parser with the specified .cup file.</p>
+ */
 tasks.register('parser', JavaExec) {
 
-    main = '-jar'
-    args = ['lib/cup-11b.jar',
-            '-parser', 'Parser',
-            '-progress',
-            '-package',
-            'src/main/java/org/processj/parser/',
-            '-destdir',
-            'src/main/java/org/processj/parser/',
-            'src/main/resources/cup/ProcessJ.cup']
+    // Initialize the classpath, entry point, & arguments
+    classpath   = sourceSets.main.runtimeClasspath
+    mainClass   = 'java_cup.Main'
+    args        = ['-parser', 'Parser',
+                   '-progress',
+                   '-package',
+                   'src/main/java/org/processj/parser/',
+                   '-destdir',
+                   'src/main/java/org/processj/parser/',
+                   'src/main/resources/cup/ProcessJ.cup']
+
+    dependsOn('lexer')
 
 }
 
-tasks.register('compiler', JavaCompile) {
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Compile Task                                                                                                    **/
+/** --------------------------------------------------------------------------------------------------------------- **/
 
-    source                  = sourceSets.main.java.srcDirs
-    destinationDirectory    = sourceSets.main.java.destinationDirectory
-    classpath               = sourceSets.main.compileClasspath
-
-}
-
-tasks.register('artifact', Jar) {
-
-    manifest {
-
-        attributes( 'Implementation-Title': 'ProcessJ Compiler',
-                    'Implementation-Version': '1.0.0',
-                    'Main-Class': 'org.processj.org.processj.ProcessJc')
-
-    }
-
-    duplicatesStrategy DuplicatesStrategy.WARN
-
-    from sourceSets.main.java.destinationDirectory
-    dependsOn sourceSets.main.compileClasspath
-
-    from {
-        sourceSets.main.compileClasspath.findAll { it.name.endsWith('.jar') }.collect { zipTree(it) }
-    }
-
-}
-
-tasks.register('intTestJavadoc', Javadoc) {
-    source sourceSets.intTest.allJava
-    classpath = sourceSets.intTest.compileClasspath
-}
-
+/**
+ * <p>Compiles the ProcessJ compiler.</p>
+ */
 compileJava {
 
-    source                  = sourceSets.main.java.srcDirs
-    destinationDirectory    = sourceSets.main.java.destinationDirectory
-    classpath               = sourceSets.main.compileClasspath
+    // Initialize the source input & classpath
+    source      = sourceSets.main.java.srcDirs
+    classpath   = sourceSets.main.compileClasspath
+
+    // Specify its' dependencies
+    dependsOn('parser')
 
 }
 
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Test Compile Task                                                                                               **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+/**
+ * <p>Compiles the ProcessJ tests.</p>
+ */
+compileTestJava {
+
+    // Initialize the source input & classpath
+    source      = sourceSets.test.java.srcDirs
+    classpath   = sourceSets.test.compileClasspath
+
+    // Specify its' dependencies
+    dependsOn('compileJava')
+
+}
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Test Execution Task                                                                                             **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+/**
+ * <p>Executes the ProcessJ tests.</p>
+ */
 test {
 
-    classpath               = sourceSets.test.runtimeClasspath
+    // Specify the classpath
+    classpath = sourceSets.test.runtimeClasspath
 
-    //inputs.dir(tasks.compileJava.destinationDirectory)
+    // Specify the settings
     useJUnitPlatform()
     maxHeapSize = '2G'
 
@@ -160,6 +201,44 @@ test {
 
     }
 
+    // Specify its' dependencies
+    dependsOn('compileTestJava')
+
 }
 
-tasks.named("compileTestJava").configure { dependsOn("compileJava") }
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Jar Build Task                                                                                                  **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+/**
+ * <p>Builds the ProcessJ .jar. Packages all pertinent dependencies along with the compiler.</p>
+ */
+jar {
+
+    // Set the manifest
+    manifest {
+
+        attributes('Implementation-Title': 'ProcessJ Compiler',
+                   'Implementation-Version': '0.1.0',
+                   'Main-Class': 'org.processj.org.processj.ProcessJc')
+
+    }
+
+    // Initialize the Duplicate strategy
+    duplicatesStrategy DuplicatesStrategy.WARN
+
+    // Update the input & dependencies
+    from sourceSets.main.java.classesDirectory
+    dependsOn sourceSets.main.compileClasspath
+
+    // Package all the required jars
+    from {
+
+        sourceSets.main.compileClasspath.findAll { it.name.endsWith('.jar') }.collect { zipTree(it) }
+
+    }
+
+    // Specify its' dependencies
+    dependsOn('compileJava')
+
+}

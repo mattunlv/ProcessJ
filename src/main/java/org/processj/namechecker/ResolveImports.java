@@ -11,7 +11,7 @@ import org.processj.ast.Import;
 import org.processj.ast.Name;
 import org.processj.ast.Sequence;
 import org.processj.parser.Parser;
-import org.processj.scanner.Scanner;
+import org.processj.lexer.Lexer;
 import org.processj.utilities.PJMessage;
 import org.processj.utilities.Log;
 import org.processj.utilities.PJBugManager;
@@ -68,7 +68,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
             PJBugManager.INSTANCE.setPackageName(fileName);
 
             Log.log(a.line + " Starting import of file: '" + fileName + "'");
-            Scanner s1 = new Scanner(new java.io.FileReader(fileName));
+            Lexer s1 = new Lexer(new java.io.FileReader(fileName));
             Parser p1 = new Parser(s1);
             java_cup.runtime.Symbol r = p1.parse();
 

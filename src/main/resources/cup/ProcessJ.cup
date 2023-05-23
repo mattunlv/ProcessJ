@@ -1,6 +1,6 @@
 package org.processj.parser;
 
-import org.processj.scanner.Scanner;
+import org.processj.lexer.Lexer;
 import org.processj.ast.*;
 import org.processj.utilities.Error;
 import org.processj.utilities.PJBugManager;
@@ -30,22 +30,22 @@ public Sequence<Name> primary2PackageAccess(Expression e) {
 
 parser code  {: 
 
-  public Scanner lexer;
+  public Lexer lexer;
 
-  public Parser(Scanner l) {
+  public Parser(Lexer l) {
     this();
     lexer=l;
   }
 
   public void syntax_error(java_cup.runtime.Symbol current) {
     if(current.value == null) {
-      System.out.println("Unexpected end of file." + Scanner.curLine);
+      System.out.println("Unexpected end of file." + Lexer.curLine);
       System.exit(1);
     }   
     else {
       Token t = (Token)current.value;
-      System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + Scanner.lineCount + ": Syntax error:\n\n" + Scanner.curLine);
-      for (int i=1; i<Scanner.curLine.length()+1-t.lexeme.length(); i++) 
+      System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + Lexer.lineCount + ": Syntax error:\n\n" + Lexer.curLine);
+      for (int i=1; i<Lexer.curLine.length()+1-t.lexeme.length(); i++)
         System.out.print(" ");
       System.out.println("^");
       System.exit(1);

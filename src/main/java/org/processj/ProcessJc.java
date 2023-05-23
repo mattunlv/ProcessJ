@@ -19,7 +19,7 @@ import org.processj.parser.Parser;
 import org.processj.printers.ParseTreePrinter;
 import org.processj.rewriters.CastRewrite;
 import org.processj.rewriters.IOCallsRewrite;
-import org.processj.scanner.Scanner;
+import org.processj.lexer.Lexer;
 import org.processj.utilities.PJBugManager;
 import org.processj.utilities.ConfigFileReader;
 import org.processj.utilities.Language;
@@ -140,14 +140,14 @@ public class ProcessJc {
             // Process nativelib
             if ( pJc.nativelib ) {
                 File inFile = new File(pJc.pjfile);
-                Scanner s = null;
+                Lexer s = null;
                 Parser p = null;
                 try {
                     String absoluteFilePath = inFile.getAbsolutePath();
                     // Set the package and filename
                     PJBugManager.INSTANCE.setFileName(absoluteFilePath);
                     PJBugManager.INSTANCE.setPackageName(absoluteFilePath);
-                    s = new Scanner(new java.io.FileReader(absoluteFilePath));
+                    s = new Lexer(new java.io.FileReader(absoluteFilePath));
                     p = new Parser(s);
                 } catch (Exception e) {
                     System.err.println(e.getMessage());
@@ -182,14 +182,14 @@ public class ProcessJc {
         // Process source file, one by one
         for (String f : pJc.inputFiles) {
             File inFile = new File(f);
-            Scanner s = null;
+            Lexer s = null;
             Parser p = null;
             try {
                 String absoluteFilePath = inFile.getAbsolutePath();
                 // Set the package and filename
                 PJBugManager.INSTANCE.setFileName(absoluteFilePath);
                 PJBugManager.INSTANCE.setPackageName(absoluteFilePath);
-                s = new Scanner(new java.io.FileReader(absoluteFilePath));
+                s = new Lexer(new java.io.FileReader(absoluteFilePath));
                 p = new Parser(s);
             } catch (Exception e) {
                 System.err.println(e.getMessage());

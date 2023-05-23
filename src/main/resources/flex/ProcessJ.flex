@@ -1,4 +1,4 @@
-package org.processj.scanner;
+package org.processj.lexer;
 
 import org.processj.ast.*;
 import org.processj.syntax.*;
@@ -6,7 +6,7 @@ import org.processj.parser.*;
 
 %%
 
-%class Scanner
+%class Lexer
 %public
 %7bit
 %pack
