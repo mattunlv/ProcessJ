@@ -79,4 +79,28 @@ public class ProcessJTest {
             = "src/test/resources/code/test/ChannelWrite02.pj";
     protected final static String CODE_TEST_CHANNEL_WRITE_03
             = "src/test/resources/code/test/ChannelWrite03.pj";
+    protected final static String CODE_TEST_ENROLL_01
+            = "src/test/resources/code/test/Enroll01.pj";
+    protected final static String CODE_TEST_FIBONACCI
+            = "src/test/resources/code/test/Fibonacci.pj";
+    protected final static String CODE_TEST_FOR_01
+            = "src/test/resources/code/test/For01.pj";
+    protected final static String CODE_TEST_FULL_ADDER
+            = "src/test/resources/code/test/FullAdder.pj";
+    protected final static String CODE_TEST_HELLO
+            = "src/test/resources/code/test/Hello.pj";
+    protected final static String CODE_TEST_IF_01
+            = "src/test/resources/code/test/If01.pj";
+    protected final static String CODE_TEST_INTEGRATE
+            = "src/test/resources/code/test/Integrate.pj";
+    protected final static String CODE_TEST_LOCAL_DECLARATION_01
+            = "src/test/resources/code/test/LocalDeclaration01.pj";
+    protected final static String CODE_TEST_MANDELBROT_01
+            = "src/test/resources/code/test/Mandelbrot01.pj";
+    protected final static String CODE_TEST_MANDELBROT_02
+            = "src/test/resources/code/test/Mandelbrot02.pj";
+    protected final static String CODE_TEST_MANDELBROT_03
+            = "src/test/resources/code/test/Mandelbrot03.pj";
+    protected final static String CODE_TEST_MANDELBROT_04
+            = "src/test/resources/code/test/Mandelbrot04.pj";
 }

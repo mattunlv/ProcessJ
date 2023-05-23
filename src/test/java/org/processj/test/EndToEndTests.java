@@ -323,4 +323,112 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void testCode_enroll01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_ENROLL_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_fibonacci_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_FIBONACCI};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_for01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_FOR_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_fullAdder_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_FULL_ADDER};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_hello_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_HELLO};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_if01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_IF_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_integrate_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_INTEGRATE};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_localDeclaration01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_LOCAL_DECLARATION_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_mandelbrot01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_MANDELBROT_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_mandelbrot02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_MANDELBROT_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_mandelbrot03_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_MANDELBROT_03};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_mandelbrot04_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_MANDELBROT_04};
+
+        ProcessJc.main(arguments);
+
+    }
+
 }

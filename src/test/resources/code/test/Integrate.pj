@@ -63,7 +63,7 @@ public void consume(chan<long>.read in) {
   while (true) {
     long x;
     x = in.read();
-    prlongln(x);
+    println(x);
   }
 }
 
