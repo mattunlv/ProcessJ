@@ -269,4 +269,49 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    @Test
+    public void testCode_byteCode01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_BYTECODE_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_channelArray01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_ARRAY_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_channelArray02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_ARRAY_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_channelWrite01_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_WRITE_01};
+
+        ProcessJc.main(arguments);
+
+    }
+
+    @Test
+    public void testCode_channelWrite02_endToEnd() {
+
+        final String[] arguments = {CODE_TEST_CHANNEL_WRITE_02};
+
+        ProcessJc.main(arguments);
+
+    }
+
 }

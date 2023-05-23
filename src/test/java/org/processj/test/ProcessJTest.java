@@ -67,5 +67,15 @@ public class ProcessJTest {
             = "src/test/resources/code/test/Barrier02.pj";
     protected final static String CODE_TEST_BINARY_EXPRESSION_01
             = "src/test/resources/code/test/BinaryExpression01.pj";
+    protected final static String CODE_TEST_BYTECODE_01
+            = "src/test/resources/code/test/ByteCode01.pj";
+    protected final static String CODE_TEST_CHANNEL_ARRAY_01
+            = "src/test/resources/code/test/ChannelArray01.pj";
+    protected final static String CODE_TEST_CHANNEL_ARRAY_02
+            = "src/test/resources/code/test/ChannelArray02.pj";
+    protected final static String CODE_TEST_CHANNEL_WRITE_01
+            = "src/test/resources/code/test/ChannelWrite01.pj";
+    protected final static String CODE_TEST_CHANNEL_WRITE_02
+            = "src/test/resources/code/test/ChannelWrite02.pj";
 
 }
