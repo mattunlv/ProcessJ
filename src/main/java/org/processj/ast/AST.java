@@ -43,6 +43,51 @@ public abstract class AST {
         }
     }
 
+    public AST(final AST[] children) {
+
+        this.children   = children                                  ;
+        this.nchildren  = (children != null) ? children.length : 0  ;
+        this.line       = GetLineStartFrom(children);
+        this.charBegin  = GetCharBeginFrom(children);
+
+    }
+
+    private static int GetLineStartFrom(final AST[] children) {
+
+        int result = 0;
+
+        if(children != null)
+            for(final AST child: children)
+                if(child != null) {
+
+                    result = child.line;
+
+                    break;
+
+                }
+
+        return result;
+
+    }
+
+    private static int GetCharBeginFrom(final AST[] children) {
+
+        int result = 0;
+
+        if(children != null)
+            for(final AST child: children)
+                if(child != null) {
+
+                    result = child.charBegin;
+
+                    break;
+
+                }
+
+        return result;
+
+    }
+
     public String toString() {
         return "";
     }

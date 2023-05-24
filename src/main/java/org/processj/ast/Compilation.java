@@ -12,13 +12,12 @@ public class Compilation extends AST {
     public boolean isImport = false;
     public String packageName = "";
     
-    public Compilation(Sequence<Pragma> pragmas,
-                       Sequence<Name> packageName,
-                       Sequence<Import> imports,
-                       Sequence<Type> typeDecls) {
-        super(typeDecls);
-        nchildren = 4;
-        children = new AST[] { pragmas, packageName, imports, typeDecls };
+    public Compilation(final Sequence<Pragma> pragmas,
+                       final Sequence<Name> packageName,
+                       final Sequence<Import> imports,
+                       final Sequence<Type> typeDecls) {
+        super(new AST[] { pragmas, packageName, imports, typeDecls });
+        // TODO: AST.line & AST.charBegin was originally derived from typeDecls
     }
 
     public Sequence<Pragma> pragmas() {

@@ -1,7 +1,9 @@
 package org.processj.test;
 
 import org.junit.jupiter.api.Assertions;
+import org.processj.ast.Compilation;
 import org.processj.lexer.Lexer;
+import org.processj.parser.Parser;
 
 import javax.tools.*;
 import java.io.FileReader;
@@ -156,6 +158,9 @@ public class ProcessJTest {
     protected final static TestInputFile Enroll01
             = new TestInputFile("code/test/", "Enroll01",
                         "pj", "java");
+    protected final static TestInputFile Empty
+            = new TestInputFile("code/test/", "Empty",
+            "pj", "java");
     protected final static TestInputFile Fibonacci
             = new TestInputFile("code/test/", "Fibonacci",
                         "pj", "java");
@@ -347,6 +352,33 @@ public class ProcessJTest {
 
         // Return a result
         return lexer;
+
+    }
+
+    protected static Compilation CompilationFor(final TestInputFile testInputFile) {
+
+        // Initialize the result
+        Compilation compilation = null;
+
+        // Attempt to
+        try {
+
+            // Parse the TestInputFile
+            compilation = (Compilation) (new Parser(LexerFor(testInputFile))).parse().value;
+
+        // Otherwise
+        } catch(final Exception exception) {
+
+            // Print the error message
+            System.out.println(exception.getMessage());
+
+        }
+
+        // Check
+        Assertions.assertNotNull(compilation);
+
+        // Return the result
+        return compilation;
 
     }
 

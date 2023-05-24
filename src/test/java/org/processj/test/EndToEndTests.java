@@ -336,6 +336,13 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
+    public void testCode_empty_endToEnd() {
+
+        UnitTestOf(Empty);
+
+    }
+
+    @Test
     public void testCode_enroll01_endToEnd() {
 
         UnitTestOf(Enroll01);

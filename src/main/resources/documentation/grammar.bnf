@@ -1,0 +1,12 @@
+source                  ::= compilation_unit
+compilation_unit        ::= pragmas package_declaration import_declaration type_declarations
+
+pragmas                 ::= pragma pragmas | ε
+pragma                  ::= '#pragma' identifier string_optional ';'
+
+package_declaration     ::= 'package' package_access ';' | ε
+
+package_access          ::= identifier package_access_trail
+package_access_trail    ::= '.' identifier package_access_trail | ε
+
+string_optional         ::= string | ε
