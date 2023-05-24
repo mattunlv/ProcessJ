@@ -15,21 +15,6 @@ import org.junit.jupiter.api.Test;
  */
 public class EndToEndTests extends ProcessJTest {
 
-    /// ---------------------
-    /// Private Static Fields
-
-    /**
-     * <p>The directory within the local system where the ProcessJ compiler writes the generated Java output.</p>
-     * @since 0.1.0
-     */
-    private final static String WorkingDirectory   = "/Users/cuenca/workingpj/";
-
-    /**
-     * <p>The directory within the local system of the target test ProcessJ source input to specify to the compiler.</p>
-     * @since 0.1.0
-     */
-    private final static String InputDirectory     = "src/test/resources/code/";
-
     /// ------
     /// Before
 

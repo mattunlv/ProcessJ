@@ -1041,7 +1041,8 @@ public class Lexer implements java_cup.runtime.Scanner {
 
     public void addLineComment() {
 
-        final String line = "Comment, line " + (yyline + 1) + " [" + (yycolumn + 1 + Spaces) + ":" + (yycolumn + yylength()) + "]";
+        final String line = "Comment, line "
+            + (yyline + 1) + " [" + (yycolumn + 1 + Spaces) + ":" + (yycolumn + yylength()) + "]";
 
         final Token token = (yytext().startsWith("/*"))
             ? new Token(Types.INSTANCE.MULTILINE_COMMENT,

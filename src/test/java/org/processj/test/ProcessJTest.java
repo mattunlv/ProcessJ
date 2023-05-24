@@ -1,9 +1,26 @@
 package org.processj.test;
 
+import org.processj.lexer.Lexer;
+
+import java.io.FileReader;
+import java.io.IOException;
+
 public class ProcessJTest {
 
     /// --------------------------
     /// Protected Static Constants
+
+    /**
+     * <p>The directory within the local system where the ProcessJ compiler writes the generated Java output.</p>
+     * @since 0.1.0
+     */
+    protected final static String WorkingDirectory   = "/Users/cuenca/workingpj/";
+
+    /**
+     * <p>The directory within the local system of the target test ProcessJ source input to specify to the compiler.</p>
+     * @since 0.1.0
+     */
+    protected final static String InputDirectory     = "src/test/resources/code/";
 
     protected final static SourceInput BookSynchronizedCommunication
             = new SourceInput("book/chapter_1/section_2/", "synchronized_communication");
@@ -159,5 +176,32 @@ public class ProcessJTest {
             = new SourceInput("test/", "Switch01");
     protected final static SourceInput Timer01
             = new SourceInput("test/", "Timer01");
+
+    /// ------------------------
+    /// Protected Static Methods
+
+    protected Lexer lexerWith(final String inputPath) {
+
+        // Initialize the result
+        FileReader fileReader = null;
+
+        // Attempt
+        try {
+
+            // To instantiate a FileInputStream with the specified path
+            fileReader = new FileReader(inputPath);
+
+            // Otherwise
+        } catch(final IOException ioException) {
+
+            // Print the error
+            System.out.println(ioException.getMessage());
+
+        }
+
+        // Return a result
+        return (fileReader != null) ? new Lexer(fileReader) : null;
+
+    }
 
 }
