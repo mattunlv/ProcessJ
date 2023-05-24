@@ -2,70 +2,199 @@ package org.processj.test.unit;
 
 import java_cup.runtime.Symbol;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.processj.lexer.Lexer;
 import org.processj.parser.sym;
 import org.processj.test.ProcessJTest;
-import org.processj.test.SourceInput;
+import org.processj.test.TestInputFile;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * <p>Collection of tests that check the ProcessJ lexer against the current collection of test inputs.</p>
+ * @author Carlos L. Cuenca
+ * @version 1.0.0
+ * @see ProcessJTest
+ * @since 0.1.0
+ */
 public class LexerUnitTest extends ProcessJTest {
+
+    /// -----------------------
+    /// Public Static Constants
+
+    public final static boolean TestRegression                  = true  ;
+    public final static boolean OverwriteRegressionWithStaged   = false ;
+
+    /// ------------------------
+    /// Private Static Constants
+
+    private final static String RegressionStage = "src/test/resources/inputs/regression/lexer_unit_tests/staged/";
+    private final static String RegressionPath  = "src/test/resources/inputs/regression/lexer_unit_tests/check/";
 
     /// ----------------------
     /// Private Static Methods
 
-    private static List<Symbol> StreamOf(final Lexer lexer) {
+    /**
+     * <p>Attempts to initialize a {@link FileWriter} that corresponds to the {@link TestInputFile}'s output file path.
+     * @param testInputFile Instance with a corresponding output file path to instantiate the {@link FileWriter} with.
+     * @return {@link FileWriter} instance corresponding to the {@link TestInputFile}'s output file path.</p>
+     * @see TestInputFile
+     * @see FileWriter
+     * @since 0.1.0
+     */
+    private static FileWriter FileWriterFor(final TestInputFile testInputFile) {
 
-        // Initialize the result
-        final List<Symbol> symbols = new ArrayList<>();
+        // Initialize a handle to the file writer
+        FileWriter fileWriter = null;
 
-        // Keep a local to check
-        do {
+        // Attempt to
+        try {
 
-            // Attempt
-            try {
+            // Create any missing intermediate directories
+            new File(testInputFile.getAbsoluteOutputPath()).mkdirs();
 
-                // To append the next token
-                symbols.add(lexer.next_token());
+            // Instantiate a FileWriter
+            fileWriter = new FileWriter((new File(testInputFile.getAbsoluteOutputFilePath())).getAbsolutePath());
 
-            // Otherwise
-            } catch(final IOException ioException) {
+        // Otherwise
+        } catch(final IOException ioException) {
 
-                // Print the error
-                System.out.println(ioException.getMessage());
+            // Print the error
+            System.out.println(ioException.getMessage());
 
-                // Leave
-                break;
+        }
 
-            }
+        // Check
+        Assertions.assertNotNull(fileWriter);
 
-        } while(symbols.get(symbols.size() - 1).sym != sym.EOF);
+        // Return the result
+        return fileWriter;
+
+    }
+
+    /**
+     * <p>Returns the {@link TestInputFile}'s stream of tokens as a {@link List} of {@link Symbol}s as produced by the
+     * {@link org.processj.lexer.Lexer}. This method will also stage a regression test input in the path specified
+     * by {@link LexerUnitTest#RegressionStage}. This method will fail an assertion if a
+     * {@link org.processj.lexer.Lexer} with the specified {@link TestInputFile} or the {@link FileWriter} corresponding
+     * to the output text file cannot be instantiated.</p>
+     * @param testInputFile Instance representing a ProcessJ source file.
+     * @return The {@link TestInputFile}'s corresponding token stream as a {@link List} of {@link Symbol}s.
+     * @see TestInputFile
+     * @see org.processj.lexer.Lexer
+     * @see Symbol
+     * @since 0.1.0
+     */
+    private static List<Symbol> StreamOf(final TestInputFile testInputFile) {
+
+        // Update the base input path to that of the source files & the base output path to that of the staged
+        // regression input
+        TestInputFile.BaseInputPath   = InputDirectory;
+        TestInputFile.BaseOutputPath  = RegressionStage;
+
+        // Initialize the result & retrieve a lexer with the specified source &
+        // a FileWriter for the corresponding text file
+        final List<Symbol> symbols      = new ArrayList<>();
+        final Lexer        lexer        = LexerFor(testInputFile);
+        final FileWriter   fileWriter   = FileWriterFor(new TestInputFile(testInputFile.getRelativePath(),
+                testInputFile.getName(), "txt", "txt"));
+
+        // Attempt to
+        try {
+
+            do {
+
+                // Retrieve the next token
+                final Symbol symbol = lexer.next_token();
+
+                // Write the line
+                fileWriter.write(symbol.sym + ":" + symbol + '\n');
+
+                // Add the symbol to the result
+                symbols.add(symbol);
+
+            // While we haven't reached the end of file
+            } while(symbols.get(symbols.size() - 1).sym != sym.EOF);
+
+            // Close the FileWriter
+            fileWriter.close();
+
+        // Otherwise
+        } catch(final IOException ioException) {
+
+            // Print the error
+            System.out.println(ioException.getMessage());
+
+        }
 
         // Return the result
         return symbols;
 
     }
 
-    /// ------
-    /// Before
-
     /**
-     * <p>Initializes the local test environment. Updates the {@link SourceInput#InputPath} &
-     * {@link SourceInput#OutputPath} static fields to specify the proper location of the ProcessJ test input source
-     * files to the ProcessJ compiler in addition to specifying the proper location of the generated Java source files.
-     * </p>
+     * <p>Performs a regression test on the staged text file produced from the specified {@link TestInputFile}
+     * against the existing regression test if {@link LexerUnitTest#TestRegression} is true.
+     * This will fail the assertion if the existing regression test exists (non-blank) and the contents do not match.
+     * Finally, if {@link LexerUnitTest#OverwriteRegressionWithStaged} is true, then this will overwrite the current
+     * regression test with the staged regression test.</p>
+     * @param testInputFile Instance representing a ProcessJ source file to test its' Token stream against a corresponding
+     *                    regression input.
+     * @see TestInputFile
      * @since 0.1.0
      */
-    @BeforeAll
-    public static void initializeDirectories() {
+    private static void TestRegression(final TestInputFile testInputFile) {
 
-        // Update the input & output paths
-        SourceInput.InputPath   = InputDirectory    ;
-        SourceInput.OutputPath  = WorkingDirectory  ;
+        // Update the base input path to the regression input
+        TestInputFile.BaseInputPath = RegressionPath;
+
+        // Instantiate a text representation
+        final TestInputFile test = new TestInputFile(testInputFile.getRelativePath(), testInputFile.getName(),
+                "txt", "txt");
+
+        // Update the base input & output paths to the regression stage & input respectively
+        TestInputFile.BaseInputPath  = RegressionStage;
+        TestInputFile.BaseOutputPath = RegressionPath ;
+
+        // Instantiate a text representation of the staged input
+        final TestInputFile staged = new TestInputFile(testInputFile.getRelativePath(), testInputFile.getName(),
+                "txt", "txt");
+
+        // Assert. If the test is blank, we pass; otherwise we return the result of the
+        // equality of the staged against the test.
+        if(TestRegression) Assertions.assertTrue(test.toString().isBlank() || test.equals(staged));
+
+        // Overwrite if applicable
+        if(OverwriteRegressionWithStaged) staged.write();
+
+    }
+
+    /**
+     * <p>Generic {@link org.processj.lexer.Lexer} unit test procedure. This executes a test that satisfies all
+     * Test Oracles defined in the specification.</p>
+     * @param testInputFile Instance representing a ProcessJ source file to unit test against the
+     *                    {@link org.processj.lexer.Lexer}
+     * @see org.processj.lexer.Lexer
+     * @see TestInputFile
+     * @since 0.1.0
+     */
+    private static void UnitTestOf(final TestInputFile testInputFile) {
+
+        // Retrieve the stream & output the staged regression test input
+        final List<Symbol> tokenStream = StreamOf(testInputFile);
+
+        // Assert non-empty
+        Assertions.assertFalse(tokenStream.isEmpty());
+
+        // Assert Successful tokenization; the token stream should always contain an end-of-file at the end.
+        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+
+        // Test Regression
+        TestRegression(testInputFile);
 
     }
 
@@ -75,460 +204,161 @@ public class LexerUnitTest extends ProcessJTest {
     @Test
     public void testCode_chapter1Section2SynchronizedCommunication_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookSynchronizedCommunication.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookSynchronizedCommunication);
 
     }
 
     @Test
     public void testCode_chapter3Section5TimeInProcessJ_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookTimeInProcessJ.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookTimeInProcessJ);
 
     }
 
     @Test
     public void testCode_chapter3Section6OneToOneChannels_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookOneToOneChannels.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookOneToOneChannels);
 
     }
 
     @Test
     public void testCode_chapter3Section7Fibonacci_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookFibonacci.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookFibonacci);
 
     }
 
     @Test
     public void testCode_chapter3Section7Fifo6_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookFifo6.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookFifo6);
 
     }
 
     @Test
     public void testCode_chapter3Section7Integrate_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookIntegrate.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookIntegrate);
 
     }
 
     @Test
     public void testCode_chapter3Section7Numbers_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookNumbers.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookNumbers);
 
     }
 
     @Test
     public void testCode_chapter3Section7Pairs_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookPairs.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookPairs);
 
     }
 
     @Test
     public void testCode_chapter3Section7Squares_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookSquares.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookSquares);
 
     }
 
     @Test
     public void testCode_chapter3Section7StructuredExecution_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookStructuredExecution.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookStructuredExecution);
 
     }
 
     @Test
     public void testCode_chapter3Section8OneBitAdder_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookOneBitAdder.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookOneBitAdder);
 
     }
 
     @Test
     public void testCode_chapter3Section8FourBitAdder_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookFourBitAdder.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookFourBitAdder);
 
     }
 
     @Test
     public void testCode_chapter3Section8EightBitAdder_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookEightBitAdder.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookEightBitAdder);
 
     }
 
     @Test
     public void testCode_chapter3Section9Output_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookOutput.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookOutput);
 
     }
 
     @Test
     public void testCode_chapter4Section1Switch_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookSwitch.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookSwitch);
 
     }
 
     @Test
     public void testCode_chapter4Section2For_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookFor.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookFor);
 
     }
 
     @Test
     public void testCode_chapter4Section2While_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookWhile.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookWhile);
 
     }
 
     @Test
     public void testCode_chapter4Section3Repetition_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookRepetition.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookRepetition);
 
     }
 
     @Test
     public void testCode_chapter4Section4Alt_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookAlt.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookAlt);
 
     }
 
     @Test
     public void testCode_chapter4Section4Mux_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookMux.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookMux);
 
     }
 
     @Test
     public void testCode_chapter4Section4TimeoutGuard_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookTimeoutGuard.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookTimeoutGuard);
 
     }
 
     @Test
     public void testCode_chapter4Section4Watchdog_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookWatchdog.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookWatchdog);
 
     }
 
     @Test
     public void testCode_chapter4Section5PriAlt_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BookPriAlt.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BookPriAlt);
 
     }
 
@@ -538,1040 +368,364 @@ public class LexerUnitTest extends ProcessJTest {
     @Test
     public void testCode_alt01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Alt01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Alt01);
 
     }
 
     @Test
     public void testCode_array01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Array01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Array01);
 
     }
 
     @Test
     public void testCode_array02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Array02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Array02);
 
     }
 
     @Test
     public void testCode_barrier01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Barrier01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Barrier01);
 
     }
 
     @Test
     public void testCode_barrier02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Barrier02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Barrier02);
 
     }
 
     @Test
     public void testCode_binaryExpression01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BinaryExpression01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BinaryExpression01);
 
     }
 
     @Test
     public void testCode_binaryExpression02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(BinaryExpression02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(BinaryExpression02);
 
     }
 
     @Test
     public void testCode_byteCode01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ByteCode01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ByteCode01);
 
     }
 
     @Test
     public void testCode_channelArray01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelArray01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelArray01);
 
     }
 
     @Test
     public void testCode_channelArray02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelArray02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelArray02);
 
     }
 
     @Test
     public void testCode_channelEndArray01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelEndArray01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelEndArray01);
 
     }
 
     @Test
     public void testCode_channelEndArray02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelEndArray02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelEndArray02);
 
     }
 
     @Test
     public void testCode_channelRead01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelRead01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelRead01);
 
     }
 
     @Test
     public void testCode_channelRead02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelRead02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelRead02);
 
     }
 
     @Test
     public void testCode_channelWrite01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelWrite01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelWrite01);
 
     }
 
     @Test
     public void testCode_channelWrite02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelWrite02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelWrite02);
 
     }
 
     @Test
     public void testCode_channelWrite03_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelWrite03.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelWrite03);
 
     }
 
     @Test
     public void testCode_channelWrite04_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(ChannelWrite04.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(ChannelWrite04);
 
     }
 
     @Test
     public void testCode_enroll01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Enroll01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Enroll01);
 
     }
 
     @Test
     public void testCode_fibonacci_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Fibonacci.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Fibonacci);
 
     }
 
     @Test
     public void testCode_for01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(For01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(For01);
 
     }
 
     @Test
     public void testCode_fullAdder_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(FullAdder.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(FullAdder);
 
     }
 
     @Test
     public void testCode_hello_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Hello.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Hello);
 
     }
 
     @Test
     public void testCode_if01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(If01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(If01);
 
     }
 
     @Test
     public void testCode_integrate_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Integrate.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Integrate);
 
     }
 
     @Test
     public void testCode_localDeclaration01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(LocalDeclaration01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(LocalDeclaration01);
 
     }
 
     @Test
     public void testCode_mandelbrot01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Mandelbrot01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Mandelbrot01);
 
     }
 
     @Test
     public void testCode_mandelbrot02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Mandelbrot02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Mandelbrot02);
 
     }
 
     @Test
     public void testCode_mandelbrot03_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Mandelbrot03.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Mandelbrot03);
 
     }
 
     @Test
     public void testCode_mandelbrot04_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Mandelbrot04.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Mandelbrot04);
 
     }
 
     @Test
     public void testCode_par01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Par01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Par01);
 
     }
 
     @Test
     public void testCode_par02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Par02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Par02);
 
     }
 
     @Test
     public void testCode_par03_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Par03.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Par03);
 
     }
 
     @Test
     public void testCode_priAlt01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(PriAlt01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(PriAlt01);
 
     }
 
     @Test
     public void testCode_protocol01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Protocol01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Protocol01);
 
     }
 
     @Test
     public void testCode_protocol02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Protocol02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Protocol02);
 
     }
 
     @Test
     public void testCode_protocol03_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Protocol03.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Protocol03);
 
     }
 
     @Test
     public void testCode_record01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Record01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Record01);
 
     }
 
     @Test
     public void testCode_record02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Record02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Record02);
 
     }
 
     @Test
     public void testCode_record03_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Record03.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Record03);
 
     }
 
     @Test
     public void testCode_record04_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Record04.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Record04);
 
     }
 
     @Test
     public void testCode_record05_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Record05.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Record05);
 
     }
 
     @Test
     public void testCode_santa01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Santa01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Santa01);
 
     }
 
     @Test
     public void testCode_santa02_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Santa02.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Santa02);
 
     }
 
     @Test
     public void testCode_santa03_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Santa03.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Santa03);
 
     }
 
     @Test
     public void testCode_sharedChannel01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(SharedChannel01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(SharedChannel01);
 
     }
 
     @Test
     public void testCode_sharedChannelRead01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(SharedChannelRead01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(SharedChannelRead01);
 
     }
 
     @Test
     public void testCode_sharedChannelWrite01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(SharedChannelWrite01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(SharedChannelWrite01);
 
     }
 
     @Test
     public void testCode_silly_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Silly.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Silly);
 
     }
 
     @Test
     public void testCode_sortPump_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(SortPump.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(SortPump);
 
     }
 
     @Test
     public void testCode_switch01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Switch01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Switch01);
 
     }
 
     @Test
     public void testCode_timer01_lexerUnitTest() {
 
-        // Retrieve a lexer with the specified file
-        final Lexer lexer = lexerWith(Timer01.getInputPath());
-
-        // Check
-        Assertions.assertNotNull(lexer);
-
-        // Retrieve the stream
-        final List<Symbol> tokenStream = StreamOf(lexer);
-
-        // Assert non-empty
-        Assertions.assertFalse(tokenStream.isEmpty());
-
-        // Assert Successful tokenization
-        Assertions.assertEquals(tokenStream.get(tokenStream.size() - 1).sym, sym.EOF);
+        UnitTestOf(Timer01);
 
     }
 
