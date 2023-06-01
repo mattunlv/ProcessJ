@@ -176,8 +176,9 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
         ArrayList<String> fileList = new ArrayList<String>();
 
         if(importStatement.isWildcard()) { // a .* import
+
             // Is it a local directory?
-            if ((new File(fileName).isDirectory())) {
+            if((new File(fileName).isDirectory())) {
                 // Yes, so add it's content to the fileList
                 makeFileList(fileList, fileName);
             } else {
