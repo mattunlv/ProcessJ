@@ -58,4 +58,17 @@ public class Files {
 
     }
 
+    /**
+     * <p>Returns a {@link String} value of the specified path ending with a forward slash.</p>
+     * @param path The {@link String} value of the path to check.
+     * @return {@link String} value of the valid path.
+     * @since 0.1.0
+     */
+    public static String ValidPath(final String path) {
+
+        // Assert that the path ends with a forward slash
+        return (path == null) ? "" : path + ((path.charAt(path.length() - 1) == '/') ? "" : '/');
+
+    }
+
 }
