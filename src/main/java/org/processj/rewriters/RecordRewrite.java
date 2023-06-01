@@ -29,7 +29,7 @@ public class RecordRewrite extends Visitor<AST> {
     }
     
     public Set<RecordMember> addExtendedRecordName(AST a) {
-        Log.log(a, "extends a RecordTypeDecl (" + ((RecordTypeDecl) a).name().getname() + ")");
+        Log.log(a, "extends a RecordTypeDecl (" + a + ")");
         RecordTypeDecl rt = (RecordTypeDecl) a;
         Set<RecordMember> set = new LinkedHashSet<>();
         for (RecordMember rm : rt.body()) {
@@ -42,7 +42,7 @@ public class RecordRewrite extends Visitor<AST> {
                 Set<RecordMember> setNames = addExtendedRecordName((RecordTypeDecl) sym.get(parent.getname()));
                 for (RecordMember rm : setNames)
                     if (!set.add(rm))
-                        Log.log(rt, String.format("Name '%s' already in (%s)", rm.name().getname(), rt.name().getname()));
+                        Log.log(rt, String.format("Name '%s' already in (%s)", rm.name().getname(), rt));
             }
         }
         return (Set<RecordMember>) set;
@@ -51,7 +51,7 @@ public class RecordRewrite extends Visitor<AST> {
     // DONE
     @Override
     public AST visitRecordTypeDecl(RecordTypeDecl rt) {
-        Log.log(rt, "Visiting a RecordTypeDecl (" + rt.name().getname() + ")");
+        Log.log(rt, "Visiting a RecordTypeDecl (" + rt + ")");
         Set<RecordMember> set = new LinkedHashSet<>();
         // Merge the member fields of all extended records
         for (Name name : rt.extend())
@@ -63,7 +63,7 @@ public class RecordRewrite extends Visitor<AST> {
         // Rewrite the extend node
         for (RecordMember rm : set)
             rt.body().append(rm);
-        Log.log(rt, String.format("record %s with %s member(s)", rt.name().getname(), rt.body().size()));
+        Log.log(rt, String.format("record %s with %s member(s)", rt, rt.body().size()));
         for (RecordMember rm : rt.body())
             Log.log(rt, "> member " + rm.type() + " " + rm.name());
         return null;

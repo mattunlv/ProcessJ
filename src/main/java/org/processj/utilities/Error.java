@@ -34,35 +34,32 @@ public class Error {
 
     public static void error(AST e, String msg) {
 //        System.out.println(fileName + ":" + e.line + ": " + msg);
-        System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
-        System.exit(1);
+        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
     }
 
     public static void error(String msg) {
 //        System.out.println(fileName + ": " + msg);
-        System.out.println(PJBugManager.INSTANCE.getFileName() + ": " + msg);
-        System.exit(1);
+        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ": " + msg);
+
     }
 
     public static void error(AST e, String msg, boolean terminate) {
 //        System.out.println(fileName + ":" + e.line + ": " + msg);
-        System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
-        if (terminate)
-            System.exit(1);
+        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
+
     }
 
     public static void error(AST e, String msg, boolean terminate, int errorno) {
-//        System.out.print(fileName + ":" + e.line + ": " + msg);
-        System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
-        System.out.print("Error number: " + errorno);
-        if (terminate)
-            System.exit(1);
-        else {
+
+        //if(terminate)
+        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg
+                + "\nError number: " + errorno);
+
             errorCount++;
 //            errors += "\n" + fileName + ":" + e.line + ": " + msg;
             errors += "\n" + PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg;
             errors += "\n" + "Error number: " + errorno;
-        }
+
     }
 
     public static void warning(AST e, String msg, int errorno) {
@@ -88,7 +85,8 @@ public class Error {
     public static void error(String msg, boolean terminate) {
 //        System.out.println(fileName + ": " + msg);
         System.out.println(PJBugManager.INSTANCE.getFileName() + ": " + msg);
-        if (terminate)
-            System.exit(1);
+        if(terminate)
+            PJBugManager.ReportMessageAndExit("");
+
     }
 }

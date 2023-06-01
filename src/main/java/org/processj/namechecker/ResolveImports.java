@@ -18,14 +18,15 @@ import org.processj.utilities.PJBugManager;
 import org.processj.utilities.SymbolTable;
 import org.processj.utilities.Visitor;
 import org.processj.utilities.VisitorMessageNumber;
+import org.processj.utilities.Settings;
 
 public class ResolveImports<T extends AST> extends Visitor<T> {
 
     public static String currentFileName = PJBugManager.INSTANCE.getFileName();
-    private SymbolTable importChild = null;
+    private SymbolTable currentScope = null;
 
-    public ResolveImports(SymbolTable importChild) {
-        this.importChild = importChild;
+    public ResolveImports(SymbolTable currentScope) {
+        this.currentScope = currentScope;
         Log.logHeader("****************************************");
         Log.logHeader("*    R E S O L V E   I M P O R T S     *");
         Log.logHeader("****************************************");
@@ -76,16 +77,16 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
             return (Compilation) r.value;
         } catch (java.io.FileNotFoundException e) {
             PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                        .addAST(a)
-                        .addError(VisitorMessageNumber.RESOLVE_IMPORTS_102)
-                        .addArguments(fileName)
-                        .build());
+                    .addAST(a)
+                    .addError(VisitorMessageNumber.RESOLVE_IMPORTS_102)
+                    .addArguments(fileName)
+                    .build());
         } catch (Exception e) {
             PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                        .addAST(a)
-                        .addError(VisitorMessageNumber.RESOLVE_IMPORTS_106)
-                        .addArguments(fileName)
-                        .build());
+                    .addAST(a)
+                    .addError(VisitorMessageNumber.RESOLVE_IMPORTS_106)
+                    .addArguments(fileName)
+                    .build());
         }
         return null;
     }
@@ -101,7 +102,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
         public boolean accept(File dir, String name) {
             String[] result = name.split("\\.");
             return result[result.length - 1]
-                    .equals(org.processj.utilities.Settings.IMPORT_FILE_EXTENSSION);
+                    .equals(Settings.IMPORT_FILE_EXTENSSION);
         }
     }
 
@@ -156,62 +157,63 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
      * will be left in the 'symtab' field. The parentage of multiple files imported in
      * the same import is also through the parent link.
      */
-    public T visitImport(Import im) {
-        Log.log(im.line + ": Visiting an import (of file: " + im + ")");
-        // An import is first tried in the local director
+    public T visitImport(final Import importStatement) {
+        // TODO: Make sure absolute file paths are not necessary
+        Log.log(importStatement.line + ": Visiting an import (of file: " + importStatement + ")");
+
+        // An import is first tried in the local directory
         // then in the include directory - unless it is of the form 'f' then it must be local.
         // Make the path for this import
-        String path = ResolveImports.makeImportPath(im);
+        String path = ResolveImports.makeImportPath(importStatement);
 
-        Log.log("visitImport(): Package path is : " + path);
-        Log.log("visitImport(): Package file name is : " + im.file().getname());
+        Log.log("visitImport(): Package path is : " + importStatement.getPath());
+        Log.log("visitImport(): Package file name is : " + importStatement.getSymbol());
 
         // Try local first
-        String fileName = new File("").getAbsolutePath() + "/" + path;
+        String fileName = /*new File("").getAbsolutePath() + "/" +*/ importStatement.getPath();
 
         // 'fileList' will hold a list of files found in wildcard imports (.*)
         ArrayList<String> fileList = new ArrayList<String>();
 
-        if (im.importAll()) { // a .* import
+        if (importStatement.importAll()) { // a .* import
             // Is it a local directory?
             if ((new File(fileName).isDirectory())) {
                 // Yes, so add it's content to the fileList
                 makeFileList(fileList, fileName);
             } else {
-                // It was not a local directory, but see if it is a org.processj.library directory
-                fileName = new File(org.processj.utilities.Settings.includeDir)
-                        .getAbsolutePath() + "/" + org.processj.utilities.Settings.language + "/" + path;
-                Log.log("visitImport(): Not a local, so try a org.processj.library: " + fileName);
+                // It was not a local directory, but see if it is a library directory
+                fileName = new File(Settings.includeDir)
+                        .getAbsolutePath() + "/" + Settings.language + "/" + importStatement.getPath();
+                Log.log("visitImport(): Not a local, so try a library: " + fileName);
                 if (new File(fileName).isDirectory()) {
                     // Yes, it was, so add it's content to the fileList
                     makeFileList(fileList, fileName);
                 } else {
                     // Oh no, the directory wasn't found at all!
-                    String packageName = path.replaceAll("/", ".");
-                    packageName = packageName.substring(0, packageName.length() - 1);
                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                                .addAST(im)
-                                .addError(VisitorMessageNumber.RESOLVE_IMPORTS_103)
-                                .addArguments(packageName)
-                                .build());
+                            .addAST(importStatement)
+                            .addError(VisitorMessageNumber.RESOLVE_IMPORTS_103)
+                            .addArguments(importStatement.getPackageName())
+                            .build());
                 }
             }
-            Log.log("visitImport(): About to import '" + im.file().getname() + ".pj'");
+            Log.log("visitImport(): About to import '" + importStatement.file().getname() + ".pj'");
+
         } else { // Not a .* import
-            fileName = fileName + "/" + im.file().getname() + ".pj";
+            fileName = fileName + "/" + importStatement.file().getname() + ".pj";
             // Set package name
-            PJBugManager.INSTANCE.setPackageName(path + "." + im.file().getname());
+            PJBugManager.INSTANCE.setPackageName(path + "." + importStatement.file().getname());
 
             // Is it a local file
             if (new File(fileName).isFile()) {
                 // Yes, so add it to the fileList
                 fileList.add(fileName);
             } else {
-                // No, so look in the org.processj.library
-                fileName = new File(org.processj.utilities.Settings.includeDir)
-                        .getAbsolutePath() + "/" + org.processj.utilities.Settings.language
-                        + "/" + path + (path.equals("") ? "" : "/") + im.file().getname() + ".pj";
-                Log.log("visitImport(): Not a local so try a org.processj.library: " + fileName);
+                // No, so look in the library
+                fileName = new File(Settings.includeDir)
+                        .getAbsolutePath() + "/" + Settings.language
+                        + "/" + path + (path.equals("") ? "" : "/") + importStatement.file().getname() + ".pj";
+                Log.log("visitImport(): Not a local so try a library: " + fileName);
                 // But only if it isn't of the form 'import f' cause they can only be local!
                 if (!path.equals("") && new File(fileName).isFile()) {
                     fileList.add(fileName);
@@ -219,18 +221,18 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
                     // Nope, nothing found!
                     if (path.equals("")) {
                         PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                                    .addAST(im)
-                                    .addError(VisitorMessageNumber.RESOLVE_IMPORTS_102)
-                                    .addArguments(im.file().getname())
-                                    .build());
+                                .addAST(importStatement)
+                                .addError(VisitorMessageNumber.RESOLVE_IMPORTS_102)
+                                .addArguments(importStatement.file().getname())
+                                .build());
                     } else {
                         String packageName = path.replaceAll("/", ".");
                         packageName = packageName.substring(0, packageName.length() - 1);
                         PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                                    .addAST(im)
-                                    .addError(VisitorMessageNumber.RESOLVE_IMPORTS_105)
-                                    .addArguments(im.file().getname(), path)
-                                    .build());
+                                .addAST(importStatement)
+                                .addError(VisitorMessageNumber.RESOLVE_IMPORTS_105)
+                                .addArguments(importStatement.file().getname(), path)
+                                .build());
                     }
                 }
             }
@@ -245,7 +247,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
             currentFileName = fn;
             // Set current filename
             PJBugManager.INSTANCE.setFileName(fn);
-            Compilation c = ResolveImports.importFile(im, fn);
+            Compilation c = ResolveImports.importFile(importStatement, fn);
 
             // Set absolute path, file and package name from where the Import is created
             c.fileName = fn.substring(fn.lastIndexOf(File.separator) + 1, fn.length());
@@ -253,11 +255,11 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
             c.packageName = path.replaceAll(File.separator, "\\.");
 
             // Add it to the list of compilations for this import
-            im.addCompilation(c);
+            importStatement.addCompilation(c);
             // Create a symboltable for it
             SymbolTable symtab = new SymbolTable("Import: " + fn);
 
-            importChild.setImportParent(symtab);
+            currentScope.setImportParent(symtab);
             // Point to whoever called you
             symtab.setParent(SymbolTable.hook);
             SymbolTable.hook = symtab;

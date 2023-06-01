@@ -24,6 +24,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import org.processj.utilities.Log;
+import org.processj.utilities.PJBugManager;
 
 /**
  * @author ben
@@ -43,12 +44,7 @@ public class GotoLabelRewrite {
             return false;
         return isFile ? Files.exists(path) : Files.isDirectory(path);
     }
-    
-    public static void exit(String msg, int code) {
-        System.out.println(msg);
-        System.exit(code);
-    }
-    
+
     public GotoLabelRewrite(String path) {
         this.path = path.isEmpty() ? "" : path;
         Log.doLog = false; // Change this to 'true' for debugging
@@ -186,11 +182,15 @@ public class GotoLabelRewrite {
     public void rewrite() {
         // Verify that we have a valid path
         if (!checkPath(Paths.get(path), false))
-            exit("File '" + path + "' does not exists!", 101);
+            // Exit Code 101
+            PJBugManager.ReportMessageAndExit("File '" + path + "' does not exists!");
+
         // Grab .class files form given directory
         File[] cf = new File(path).listFiles();
         if (cf == null || cf.length == 0)
-            exit("Missing .class files!", 101);
+            // Exit Code 101
+            PJBugManager.ReportMessageAndExit("Missing .class files!");
+
         for (File f : cf) {
             if (!f.isFile())
                 continue;
@@ -223,15 +223,20 @@ public class GotoLabelRewrite {
                     fo.close();
                     is.close();
                 } catch (IOException ex) {
-                    exit(ex.getMessage(), 101);
+
+                    // Exit Code 101
+                    PJBugManager.ReportMessageAndExit(ex.getMessage());
+
                 }
             }
         }
     }
     
     public static void main(String[] args) {
-        if (args.length != 1)
-            exit("Invalid command-line arguments", 101);
+        if(args.length != 1)
+            // Exit Code 101
+            PJBugManager.ReportMessageAndExit("Invalid command-line arguments");
+
         new GotoLabelRewrite(args[0]).rewrite();
         System.out.println("** REWRITING DONE **");
     }

@@ -17,7 +17,7 @@ public class SuspendStat extends Statement {
     public String signature() {
         String s = "(";
         for (ParamDecl pd : params())
-            s = s + pd.type().signature();
+            s = s + pd.type().getSignature();
         s = s + ")V";
         return s;
     }

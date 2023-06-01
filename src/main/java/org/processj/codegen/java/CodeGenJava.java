@@ -304,7 +304,7 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitProcTypeDecl(ProcTypeDecl pd) {
-        Log.log(pd, "Visiting a ProcTypeDecl (" + pd.name().getname() + ")");
+        Log.log(pd, "Visiting a ProcTypeDecl (" + pd + ")");
 
         ST stProcTypeDecl = null;
         // Save previous procedure state
@@ -314,7 +314,7 @@ public class CodeGenJava extends Visitor<Object> {
         if (!switchCases.isEmpty())
             switchCases = new ArrayList<>();
         // Name of the invoked procedure
-        currentProcName = (String) pd.name().visit(this);
+        currentProcName = paramToVarNames.getOrDefault(pd.toString(), pd.toString());
         // Procedures are static classes which belong to the same package and
         // class. To avoid having classes with the same name, we generate a
         // new name for the currently executing procedure
@@ -400,7 +400,7 @@ public class CodeGenJava extends Visitor<Object> {
 
             // Create an entry point for the ProcessJ program, which is just
             // a Java main method that is called by the JVM
-            if ("main".equals(currentProcName) && pd.signature().equals(Tag.MAIN_NAME.toString())) {
+            if ("main".equals(currentProcName) && pd.getSignature().equals(Tag.MAIN_NAME.toString())) {
                 // Create an instance of a Java main method template
                 ST stMain = stGroup.getInstanceOf("Main");
                 stMain.add("class", currentCompilation.fileNoExtension());
@@ -747,9 +747,9 @@ public class CodeGenJava extends Visitor<Object> {
             // done in Java. Thus we need need to cast - unnecessarily - the returned
             // value of a channel read expression
             if (as.left().type != null) {
-                if (as.left().type.isRecordType())
-                    type = ((RecordTypeDecl) as.left().type).name().getname();
-                else if (as.left().type.isProtocolType())
+                if (as.left().type instanceof RecordTypeDecl)
+                    type = as.left().type.toString();
+                else if (as.left().type instanceof ProtocolTypeDecl)
                     type = PJProtocolCase.class.getSimpleName();
                 else
                     type = (String) as.left().type.visit(this);
@@ -774,19 +774,19 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitParamDecl(ParamDecl pd) {
-        Log.log(pd, "Visiting a ParamDecl (" + pd.type().typeName() + " " + pd.paramName().getname() + ")");
+        Log.log(pd, "Visiting a ParamDecl (" + pd.type() + " " + pd.paramName().getname() + ")");
 
         // Grab the type and name of a variable declaration
         String name = (String) pd.paramName().visit(this);
         String type = (String) pd.type().visit(this);
 
         // Silly fix for channel types
-        if (pd.type().isChannelType() || pd.type().isChannelEndType())
+        if (pd.type() instanceof ChannelType || pd.type() instanceof ChannelEndType)
             type = PJChannel.class.getSimpleName() + type.substring(type.indexOf("<"), type.length());
         else if (pd.type() instanceof RecordTypeDecl)
-            type = ((RecordTypeDecl) pd.type()).name().getname();
+            type = pd.type().toString();
         else if (pd.type() instanceof ProtocolTypeDecl)
-            type = ((ProtocolTypeDecl) pd.type()).name().getname();
+            type = pd.type().toString();
 
         // Create a tag for this parameter and then add it to the collection
         // of parameters for reference
@@ -803,7 +803,7 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitLocalDecl(LocalDecl ld) {
-        Log.log(ld, "Visting a LocalDecl (" + ld.type().typeName() + " " + ld.var().name().getname() + ")");
+        Log.log(ld, "Visting a LocalDecl (" + ld.type() + " " + ld.var().name().getname() + ")");
 
         // We could have the following targets:
         // 1.) T x; // A declaration
@@ -819,9 +819,9 @@ public class CodeGenJava extends Visitor<Object> {
         boolean isConstant = ld.isConst();
 
         // Is it a protocol or a record type?
-        if (ld.type().isRecordType())
-            type = ((RecordTypeDecl) ld.type()).name().getname();
-        if (ld.type().isProtocolType())
+        if (ld.type() instanceof RecordTypeDecl)
+            type = ld.type().toString();
+        if (ld.type() instanceof ProtocolTypeDecl)
             type = PJProtocolCase.class.getSimpleName();
         // Update the type for record and protocol types
         String chanType = type; // TODO: is this needed?
@@ -845,11 +845,11 @@ public class CodeGenJava extends Visitor<Object> {
         Expression expr = ld.var().init();
         // Visit the expressions associated with this variable
         if (expr != null) {
-            if (ld.type().isPrimitiveType())
+            if (ld.type() instanceof PrimitiveType)
                 val = (String) expr.visit(this);
-            else if (ld.type().isRecordType() || ld.type().isProtocolType())
+            else if (ld.type() instanceof RecordTypeDecl || ld.type() instanceof ProtocolTypeDecl)
                 val = (String) expr.visit(this);
-            else if (ld.type().isArrayType()) {
+            else if (ld.type() instanceof ArrayType) {
                 newChanArrayName = newName;
                 val = (String) expr.visit(this);
                 newChanArrayName = null;
@@ -865,7 +865,7 @@ public class CodeGenJava extends Visitor<Object> {
         // Is it a simple declaration for a channel type? If so, and since
         // channels cannot be created using the operator 'new', we generate
         // code to create a channel object
-        if (ld.type().isChannelType() && expr == null) {
+        if (ld.type() instanceof ChannelType && expr == null) {
             ST stChannelDecl = stGroup.getInstanceOf("ChannelDecl");
             stChannelDecl.add("type", chanType);
             val = stChannelDecl.render();
@@ -874,12 +874,12 @@ public class CodeGenJava extends Visitor<Object> {
         // in which it was declared, we return iff this local variable
         // is not initialized
         if (expr == null) {
-            if (!ld.type().isBarrierType() && (ld.type().isPrimitiveType() || ld.type().isArrayType() || // Could be an
+            if (!ld.type().isBarrierType() && (ld.type() instanceof PrimitiveType || (ld.type() instanceof ArrayType) || // Could be an
                                                                                                          // uninitialized
                                                                                                          // array
                                                                                                          // declaration
-                    ld.type().isRecordType() || // Could be a record or protocol declaration
-                    ld.type().isProtocolType())) // The 'null' value is used to removed empty
+                    ld.type() instanceof RecordTypeDecl || // Could be a record or protocol declaration
+                    ld.type() instanceof ProtocolTypeDecl)) // The 'null' value is used to removed empty
                 return null; // sequences in the generated code
         }
 
@@ -918,18 +918,9 @@ public class CodeGenJava extends Visitor<Object> {
     public Object visitName(Name na) {
         Log.log(na, "Visiting a Name (" + na.getname() + ")");
 
-        String name = null;
+        // TODO: Used to be paramsForAnon
+        return paramToVarNames.getOrDefault(na.getname(), na.getname());
 
-        if (paramToVarNames.containsKey(na.getname()))
-            name = paramToVarNames.get(na.getname());
-
-//        if (paramsForAnon.containsKey(na.getname()))
-//            name = paramsForAnon.get(na.getname());
-
-        if (name == null)
-            name = na.getname();
-
-        return name;
     }
 
     @Override
@@ -943,14 +934,17 @@ public class CodeGenJava extends Visitor<Object> {
     // resolved by the ResolveNamedType visitor.
     @Override
     public Object visitNamedType(NamedType nt) {
-        Log.log(nt, "Visiting a NamedType (" + nt.name().getname() + ")");
 
-        String type = nt.name().getname();
+        Log.log(nt, "Visiting a NamedType (" + nt + ")");
+
+        String type = nt.toString();
+
         // Is this a protocol? Change the type to enable multiple inheritance
-        if (nt.type() != null && nt.type().isProtocolType())
+        if(nt.getType() != null && nt.getType() instanceof ProtocolTypeDecl)
             type = PJProtocolCase.class.getSimpleName();
 
         return type;
+
     }
 
     @Override
@@ -962,11 +956,11 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitPrimitiveType(PrimitiveType py) {
-        Log.log(py, "Visiting a Primitive Type (" + py.typeName() + ")");
+        Log.log(py, "Visiting a Primitive Type (" + py + ")");
 
         // ProcessJ primitive types that do not translate directly
         // to Java primitive types
-        String typeStr = py.typeName();
+        String typeStr = py.toString();
         if (py.isStringType())
             typeStr = "String";
         else if (py.isTimerType())
@@ -995,7 +989,7 @@ public class CodeGenJava extends Visitor<Object> {
 
         // Channel class type
         String chantype = "";
-        switch (ct.shared()) {
+        switch (ct.isShared()) {
         case ChannelType.NOT_SHARED:
             chantype = PJOne2OneChannel.class.getSimpleName();
             break;
@@ -1011,7 +1005,7 @@ public class CodeGenJava extends Visitor<Object> {
         }
         // Resolve parameterized type for channel, e.g. chan<T> where
         // 'T' is the type to be resolved
-        String type = getChannelType(ct.baseType());
+        String type = getChannelType(ct.getComponentType());
 
         return String.format("%s<%s>", chantype, type);
     }
@@ -1027,22 +1021,22 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitChannelEndType(ChannelEndType ct) {
-        Log.log(ct, "Visiting a ChannelEndType (" + ct.typeName() + ")");
+        Log.log(ct, "Visiting a ChannelEndType (" + ct + ")");
 
         // Channel class type
         String chanType = PJOne2OneChannel.class.getSimpleName();
         // Is it a shared channel?
-        if (ct.isShared()) {
-            if (ct.isRead()) // One-2-Many channel
+        if (ct.isSharedEnd()) {
+            if (ct.isReadEnd()) // One-2-Many channel
                 chanType = PJOne2ManyChannel.class.getSimpleName();
-            else if (ct.isWrite()) // Many-2-One channel
+            else if (ct.isWriteEnd()) // Many-2-One channel
                 chanType = PJMany2OneChannel.class.getSimpleName();
             else // Many-2-Many channel
                 chanType = PJMany2ManyChannel.class.getSimpleName();
         }
         // Resolve parameterized type for channels, e.g. chan<T> where
         // 'T' is the type to be resolved
-        String type = getChannelType(ct.baseType());
+        String type = getChannelType(ct.getComponentType());
 
         return String.format("%s<%s>", chanType, type);
     }
@@ -1063,7 +1057,7 @@ public class CodeGenJava extends Visitor<Object> {
         // The value one is for the 'runLabel'
         int countLabel = 1;
         // Is the writing end of this channel shared?
-        if (chanExpr.type.isChannelEndType() && ((ChannelEndType) chanExpr.type).isShared()) {
+        if (chanExpr.type instanceof ChannelEndType && ((ChannelEndType) chanExpr.type).isSharedEnd()) {
             stChanWriteStat = stGroup.getInstanceOf("ChannelMany2One");
             ++countLabel;
         }
@@ -1133,8 +1127,8 @@ public class CodeGenJava extends Visitor<Object> {
         Log.log(ae, "Visiting an ArrayAccessExpr");
 
         ST stArrayAccessExpr = stGroup.getInstanceOf("ArrayAccessExpr");
-        String name = (String) ae.target().visit(this);
-        String index = (String) ae.index().visit(this);
+        String name = (String) ae.targetExpression().visit(this);
+        String index = (String) ae.indexExpression().visit(this);
 
         stArrayAccessExpr.add("name", name);
         stArrayAccessExpr.add("index", index);
@@ -1163,21 +1157,24 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitArrayType(ArrayType at) {
-        Log.log(at, "Visiting an ArrayType (" + at.typeName() + ")");
 
-        String type = (String) at.baseType().visit(this);
-//        System.out.println(">>>> " + type);
-        if (at.baseType().isChannelType() || at.baseType().isChannelEndType())
+        Log.log(at, "Visiting an ArrayType (" + at + ")");
+
+        final Type componentType = at.getComponentType();
+
+        String type = (String) componentType.visit(this);
+
+        if ((componentType instanceof ChannelType) || (componentType instanceof ChannelEndType))
             type = type.substring(0, type.indexOf("<"));// + "<?>";
-        else if (at.baseType().isRecordType())
-            type = ((RecordTypeDecl) at.baseType()).name().getname();
-        else if (at.baseType().isProtocolType())
+        else if (componentType instanceof RecordTypeDecl)
+            type = componentType.toString();
+        else if (componentType instanceof ProtocolTypeDecl)
             type = PJProtocolCase.class.getSimpleName();
-        else if (at.baseType().isPrimitiveType())
-            ;
-        String stArrayType = String.format("%s[]", type);
+        //else if (componentType instanceof PrimitiveType)
+        //    ;
 
-        return stArrayType;
+        return type + "[]".repeat(at.getDepth());
+
     }
 
     @Override
@@ -1294,7 +1291,7 @@ public class CodeGenJava extends Visitor<Object> {
 
         ST stSwitchStat = stGroup.getInstanceOf("SwitchStat");
         // Is this a protocol tag?
-        if (st.expr().type.isProtocolType())
+        if (st.expr().type instanceof ProtocolTypeDecl)
             isProtocolCase = true;
 
         String expr = (String) st.expr().visit(this);
@@ -1353,7 +1350,7 @@ public class CodeGenJava extends Visitor<Object> {
         // Target procedure
         ProcTypeDecl pd = in.targetProc;
         // Name of invoked procedure
-        String pdName = pd.name().getname();
+        String pdName = pd.toString();
         // Check local procedures, if none is found then the procedure must
         // come from a different file and maybe package
         if (currentCompilation.fileName.equals(pd.myCompilation.fileName)) {
@@ -1424,10 +1421,11 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitProtocolTypeDecl(ProtocolTypeDecl pd) {
-        Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd.name().getname() + ")");
+        Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd + ")");
 
         ST stProtocolClass = stGroup.getInstanceOf("ProtocolClass");
-        String name = (String) pd.name().visit(this);
+        // TODO: Used to be paramForAnon
+        String name = paramToVarNames.getOrDefault(pd.toString(), pd.toString());
         ArrayList<String> modifiers = new ArrayList<>();
         ArrayList<String> body = new ArrayList<>();
 
@@ -1440,8 +1438,8 @@ public class CodeGenJava extends Visitor<Object> {
             for (Name n : pd.extend()) {
                 ProtocolTypeDecl ptd = (ProtocolTypeDecl) topLvlDecls.get(n.getname());
                 for (ProtocolCase pc : ptd.body())
-                    protocolNameToProtocolTag.put(String.format("%s.%s", pd.name().getname(), pc.name().getname()),
-                            ptd.name().getname());
+                    protocolNameToProtocolTag.put(String.format("%s.%s", pd, pc.name().getname()),
+                            ptd.toString());
             }
         }
 
@@ -1529,10 +1527,12 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitRecordTypeDecl(RecordTypeDecl rt) {
-        Log.log(rt, "Visiting a RecordTypeDecl (" + rt.name().getname() + ")");
+        Log.log(rt, "Visiting a RecordTypeDecl (" + rt + ")");
 
         ST stRecordType = stGroup.getInstanceOf("RecordType");
-        String recName = (String) rt.name().visit(this);
+        // TODO: Used to be paramsForAnon
+        String recName = paramToVarNames.getOrDefault(rt.toString(), rt.toString());
+
         ArrayList<String> modifiers = new ArrayList<>();
 
         for (Modifier m : rt.modifiers())
@@ -1573,9 +1573,9 @@ public class CodeGenJava extends Visitor<Object> {
         String type = (String) rm.type().visit(this);
 
         // Check if the type is a record or protocol type
-        if (rm.type().isRecordType())
-            type = ((RecordTypeDecl) rm.type()).name().getname();
-        else if (rm.type().isProtocolType())
+        if (rm.type() instanceof RecordTypeDecl)
+            type = rm.type().toString();
+        else if (rm.type() instanceof ProtocolTypeDecl)
             type = PJProtocolCase.class.getSimpleName();
 
         // Add this field to the collection of record members for reference
@@ -1629,15 +1629,16 @@ public class CodeGenJava extends Visitor<Object> {
 
         ST stAccessor = stGroup.getInstanceOf("RecordAccessor");
 
-        if (ra.record().type.isRecordType()) {
+        if (ra.record().type instanceof RecordTypeDecl) {
             String name = (String) ra.record().visit(this);
             String field = ra.field().getname();
             stAccessor.add("name", name);
             stAccessor.add("member", field);
-        } else if (ra.record().type.isProtocolType()) {
+        } else if (ra.record().type instanceof ProtocolTypeDecl) {
             stAccessor = stGroup.getInstanceOf("ProtocolAccess");
             ProtocolTypeDecl pt = (ProtocolTypeDecl) ra.record().type;
-            String protocName = (String) pt.name().visit(this); // Wrapper class
+            // TODO: Used to be paramToAnonVar
+            String protocName = paramToVarNames.getOrDefault(pt.toString(), pt.toString());
             String name = (String) ra.record().visit(this); // Reference to inner class type
             String field = ra.field().getname(); // Field in inner class
 
@@ -1832,7 +1833,7 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     public Object visitConstantDecl(ConstantDecl cd) {
-        Log.log(cd, "Visting ConstantDecl (" + cd.type().typeName() + " " + cd.var().name().getname() + ")");
+        Log.log(cd, "Visting ConstantDecl (" + cd.type() + " " + cd.var().name().getname() + ")");
 
         ST stConstantDecl = stGroup.getInstanceOf("ConstantDecl");
         stConstantDecl.add("type", cd.type().visit(this));
@@ -2202,14 +2203,14 @@ public class CodeGenJava extends Visitor<Object> {
      */
     private String getChannelType(Type t) {
         String baseType = null;
-        if (t.isRecordType()) {
-            baseType = ((RecordTypeDecl) t).name().getname();
-        } else if (t.isProtocolType()) {
+        if (t instanceof RecordTypeDecl) {
+            baseType = t.toString();
+        } else if (t instanceof ProtocolTypeDecl) {
             baseType = PJProtocolCase.class.getSimpleName();
-        } else if (t.isPrimitiveType()) {
+        } else if (t instanceof PrimitiveType) {
             // This is needed because we can only have wrapper class
             baseType = Helper.getWrapperType(t);
-        } else if (t.isArrayType()) {
+        } else if (t instanceof ArrayType) {
             baseType = (String) t.visit(this);
         }
 
@@ -2293,7 +2294,7 @@ public class CodeGenJava extends Visitor<Object> {
 
         // This is done so that we can instantiate arrays of channel types
         // whose types are generic
-        if (na.baseType().isChannelType() || na.baseType().isChannelEndType()) {
+        if (na.baseType() instanceof ChannelType || na.baseType() instanceof ChannelEndType) {
             type = type.substring(0, type.indexOf("<"));// + "<?>";
             isChannelType = true;
         }
@@ -2360,7 +2361,7 @@ public class CodeGenJava extends Visitor<Object> {
         // One for the 'label' and one for the 'read' operation
         int countLabel = 2;
         // Is the reading end of this channel shared?
-        if (chanExpr.type.isChannelEndType() && ((ChannelEndType) chanExpr.type).isShared()) {
+        if (chanExpr.type instanceof ChannelEndType && ((ChannelEndType) chanExpr.type).isSharedEnd()) {
             stChannelReadExpr = stGroup.getInstanceOf("ChannelOne2Many");
             ++countLabel;
         }
@@ -2414,7 +2415,7 @@ public class CodeGenJava extends Visitor<Object> {
     // Returns a string representing the signature of the wrapper
     // class or Java method that encapsulates a PJProcess
     public String hashSignature(ProcTypeDecl pd) {
-        String signature = pd.signature();
+        String signature = pd.getSignature();
         return String.valueOf(signature.hashCode()).replace('-', '$');
     }
 }

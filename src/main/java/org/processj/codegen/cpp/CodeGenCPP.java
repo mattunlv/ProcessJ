@@ -266,7 +266,7 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitProcTypeDecl(ProcTypeDecl pd) {
-        Log.log(pd, "Visiting a ProcTypeDecl (" + pd.name().getname() + ")");
+        Log.log(pd, "Visiting a ProcTypeDecl (" + pd + ")");
 
         // Generated template after evaluating this visitor.
         ST stProcTypeDecl = null;
@@ -277,7 +277,7 @@ public class CodeGenCPP extends Visitor<Object> {
         if (!switchLabelList.isEmpty())
             switchLabelList = new ArrayList<String>();
         // Name of invoked procedure.
-        currentProcName = (String) pd.name().visit(this);
+        currentProcName = paramDeclNames.getOrDefault(pd.toString(), pd.toString());
         // Procedures are static classes which belong to the same package. To avoid
         // having classes with the same name, we generate a new name for this procedure.
         String procName = null;
@@ -410,7 +410,7 @@ public class CodeGenCPP extends Visitor<Object> {
             // Create an entry point for the ProcessJ program, which is just
             // a Java main method that is called by the JVM.
             Log.log(pd, "CHECKING FOR MAIN");
-            if ("main".equals(currentProcName) && pd.signature().equals(Tag.MAIN_NAME.toString())) {
+            if ("main".equals(currentProcName) && pd.getSignature().equals(Tag.MAIN_NAME.toString())) {
                 Log.log(pd, "FOUND MAIN");
                 // Create an instance of a Java main method template.
                 ST stMain = stGroup.getInstanceOf("Main");
@@ -743,21 +743,21 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitParamDecl(ParamDecl pd) {
-        Log.log(pd, "Visiting a ParamDecl (" + pd.type().typeName() + " " + pd.paramName().getname() + ")");
+        Log.log(pd, "Visiting a ParamDecl (" + pd.type() + " " + pd.paramName().getname() + ")");
 
         // Grab the type and name of a declared variable.
         String name = (String) pd.paramName().visit(this);
         String type = (String) pd.type().visit(this);
 
         // Temporary _silly_ fixed for channel types.
-        if (pd.type().isChannelType() || pd.type().isChannelEndType()) {
+        if (pd.type() instanceof ChannelType || pd.type() instanceof ChannelEndType) {
             // type = PJChannel.class.getSimpleName() + type.substring(type.indexOf("<"), type.length());
             // TODO: make this build the appropriate type a la C++
             Log.log(pd, "in visitParamDecl() type is " + type);
         }
 
         // If it needs to be a pointer, make it so
-        if(!(pd.type() instanceof NamedType && ((NamedType)pd.type()).type().isProtocolType()) &&  (pd.type().isBarrierType() || !(pd.type().isPrimitiveType() || pd.type().isArrayType()))) {
+        if(!(pd.type() instanceof NamedType && ((NamedType) pd.type()).getType() instanceof ProtocolTypeDecl) && (pd.type().isBarrierType() || !(pd.type() instanceof PrimitiveType || (pd.type() instanceof ArrayType)))) {
             Log.log(pd, "appending a pointer specifier to type of " + name);
             type += "*";
         }
@@ -775,7 +775,7 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitLocalDecl(LocalDecl ld) {
-        Log.log(ld, "Visting a LocalDecl (" + ld.type().typeName() + " " + ld.var().name().getname() + ")");
+        Log.log(ld, "Visting a LocalDecl (" + ld.type() + " " + ld.var().name().getname() + ")");
 
         // We could have the following targets:
         //   1.) T x;                                         // A declaration
@@ -794,7 +794,7 @@ public class CodeGenCPP extends Visitor<Object> {
         String newName = Helper.makeVariableName(name, ++localDecId, Tag.LOCAL_NAME);
 
         // If it needs to be a pointer, make it so
-        if(!(ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isProtocolType()) && (ld.type().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.type().isPrimitiveType() || ld.type().isArrayType()))) {
+        if(!(ld.type() instanceof NamedType && ((NamedType)ld.type()).getType() instanceof ProtocolTypeDecl) && (ld.type().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.type() instanceof PrimitiveType || (ld.type() instanceof ArrayType)))) {
             Log.log(ld, "appending a pointer specifier to type of " + name);
             type += "*";
         }
@@ -817,11 +817,11 @@ public class CodeGenCPP extends Visitor<Object> {
 
         if (/*expr == null && */ /* ld.type().isTimerType() ||*/
             ld.type().isBarrierType() ||
-            ld.type().isChannelType() ||
-            ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isRecordType() ||
-            ld.type().isArrayType() ||
-            ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isProtocolType()) {
-        // if(expr != null && !(ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isProtocolType()) && (ld.type().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.type().isPrimitiveType() || ld.type().isArrayType()))) {
+            ld.type() instanceof ChannelType ||
+            ld.type() instanceof NamedType && ((NamedType)ld.type()).getType() instanceof RecordTypeDecl ||
+            (ld.type() instanceof ArrayType) ||
+            ld.type() instanceof NamedType && ((NamedType)ld.type()).getType() instanceof ProtocolTypeDecl) {
+        // if(expr != null && !(ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isProtocolType()) && (ld.type().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.type().isPrimitiveType() || ld.type() instanceof ArrayType))) {
             Log.log(ld, "creating delete statement for " + name);
             String deleteStmt = "";
             if (expr != null && expr instanceof ProtocolLiteral) {
@@ -836,9 +836,9 @@ public class CodeGenCPP extends Visitor<Object> {
             localDeletes.put(name, deleteStmt);
         }
 
-        if (ld.type().isArrayType()) {
+        if (ld.type() instanceof ArrayType) {
             currentArrayTypeString = type;
-            currentArrayDepth = ((ArrayType)ld.type()).getActualDepth() - 1;
+            currentArrayDepth = ((ArrayType) ld.type()).getDepth() - 1;
         }
 
         // Visit the expressions associated with this variable
@@ -864,7 +864,7 @@ public class CodeGenCPP extends Visitor<Object> {
         // Is it a simple declaration for a channel type? If so, and since
         // channels cannot be created using the operator 'new', we generate
         // code to create a channel object
-        if (ld.type().isChannelType() && expr == null) {
+        if (ld.type() instanceof ChannelType && expr == null) {
             ST stChannelDecl = stGroup.getInstanceOf("ChannelDecl");
             stChannelDecl.add("type", chanType);
             val = stChannelDecl.render();
@@ -874,14 +874,14 @@ public class CodeGenCPP extends Visitor<Object> {
         // is not initialized
         if (expr == null) {
             Log.log(ld, "LocalDecl " + name + " is not initialized.");
-            if (!ld.type().isBarrierType() && (ld.type().isPrimitiveType() ||
-                ld.type().isArrayType() ||  // Could be an uninitialized array declaration
-                ld.type().isNamedType()))   // Could be a record or protocol declaration
+            if (!ld.type().isBarrierType() && (ld.type() instanceof PrimitiveType ||
+                ld.type() instanceof ArrayType ||  // Could be an uninitialized array declaration
+                ld.type() instanceof NamedType))   // Could be a record or protocol declaration
                 //return null;                // The 'null' value is used to removed empty
                                             // sequences in the generated code
 
                 // if it's a protocol, it can't have a null initializer
-                if (ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isProtocolType()) {
+                if (ld.type() instanceof NamedType && ((NamedType)ld.type()).getType() instanceof ProtocolTypeDecl) {
                     return null;
                 } else {
                     val = "static_cast<" + type + ">(0)";
@@ -905,7 +905,7 @@ public class CodeGenCPP extends Visitor<Object> {
 
     // @Override
     public Object visitLocalDeclOld(LocalDecl ld) {
-        Log.log(ld, "Visting a LocalDecl (" + ld.type().typeName() + " " + ld.var().name().getname() + ")");
+        Log.log(ld, "Visting a LocalDecl (" + ld.type() + " " + ld.var().name().getname() + ")");
 
         // We could have the following targets:
         //      T x;                              -> a declaration
@@ -932,11 +932,11 @@ public class CodeGenCPP extends Visitor<Object> {
         Expression expr = ld.var().init();
 
         // If it needs to be a pointer, make it so
-        if(!(ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isProtocolType()) && (ld.type().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.type().isPrimitiveType() || ld.type().isArrayType()))) {
+        if(!(ld.type() instanceof NamedType && ((NamedType)ld.type()).getType() instanceof ProtocolTypeDecl) && (ld.type().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.type() instanceof PrimitiveType || ld.type() instanceof ArrayType))) {
             Log.log(ld, "appending a pointer specifier to type of " + name);
             type += "*";
         }
-        if (expr == null &&/* ld.type().isTimerType() ||*/ ld.type().isBarrierType()/* || !(ld.type().isPrimitiveType())*/) {
+        if (expr == null &&/* ld.type().isTimerType() ||*/ ld.type().isBarrierType()/* || !(ld.type() instanceof PrimitiveType)*/) {
             Log.log(ld, "creating delete statement for " + name);
             String deleteStmt = "delete " + newName + ";";
             localDeletes.put(name, deleteStmt);
@@ -944,9 +944,9 @@ public class CodeGenCPP extends Visitor<Object> {
         localParams.put(newName, type);
         paramDeclNames.put(name, newName);
 
-        if (ld.type().isArrayType()) {
+        if (ld.type() instanceof ArrayType) {
             currentArrayTypeString = type;
-            currentArrayDepth = ((ArrayType)ld.type()).getActualDepth() - 1;
+            currentArrayDepth = ((ArrayType)ld.type()).getDepth() - 1;
         }
 
         // Visit the expressions associated with this variable.
@@ -977,7 +977,7 @@ public class CodeGenCPP extends Visitor<Object> {
         // Is it a simple declaration for a channel type? If so, and since
         // channels cannot be created using the operator 'new', we generate
         // code to create a channel object.
-        if (ld.type().isChannelType() && expr == null) {
+        if (ld.type() instanceof ChannelType && expr == null) {
             ST stChannelDecl = stGroup.getInstanceOf("ChannelDecl");
             stChannelDecl.add("type", chantype);
             val = stChannelDecl.render();
@@ -990,7 +990,7 @@ public class CodeGenCPP extends Visitor<Object> {
             Log.log(ld, name + "'s expr is null.");
             // if (!ld.type().isBarrierType() &&
             //     !ld.type().isChannelType() && (ld.type().isPrimitiveType() ||
-            //     ld.type().isArrayType() ||    // Could be an uninitialized array declaration.
+            //     ld.type() instanceof ArrayType ||    // Could be an uninitialized array declaration.
             //     ld.type().isNamedType())) {   // Could be records or protocols.
                 // Log.log(ld, name + " has a 0 initializer.");
                 // TODO: static cast this to the type of the variable
@@ -1021,11 +1021,12 @@ public class CodeGenCPP extends Visitor<Object> {
             // }
             // }
         } else {
-            if (ld.type() instanceof PrimitiveType && ((PrimitiveType)ld.type()).isStringType()) {
+            if (ld.type() instanceof PrimitiveType && ld.type().isStringType()) {
                 localInits.put(name, "\"\"");
-            } else if (ld.type() instanceof RecordTypeDecl && ((RecordTypeDecl)ld.type()).isRecordType()) {
+                // TODO: Double check this line
+            } else if (ld.type() instanceof RecordTypeDecl) {
                 val = "static_cast<" + type + ">(0)";
-            } else if (ld.type().isProtocolType()) {
+            } else if (ld.type() instanceof ProtocolTypeDecl) {
                 // TODO: find out how to fix this problem, variants cannot
                 // have null initializers. need to rework this so that we
                 // don't have two inits. ugh.
@@ -1041,11 +1042,11 @@ public class CodeGenCPP extends Visitor<Object> {
         }
 
         if (expr instanceof ChannelReadExpr) {
-            if (ld.type().isPrimitiveType()) {
+            if (ld.type() instanceof PrimitiveType) {
                 // TODO: do we need this as an init? probably not...
                 // localInits.put(newName, (((PrimitiveType)ld.type()).getKind() == PrimitiveType.StringKind) ? "\"\"" : "0");
-            } else if (ld.type().isNamedType() ||
-                       ld.type().isArrayType()) {
+            } else if (ld.type() instanceof NamedType ||
+                       ld.type() instanceof ArrayType) {
                 // TODO: do we need this as an init? probably not...
                 // localInits.put(name, "nullptr");
             }
@@ -1082,17 +1083,11 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitName(Name na) {
+
         Log.log(na, "Visiting a Name (" + na.getname() + ")");
 
-        String name = null;
+        return paramDeclNames.getOrDefault(na.getname(), na.getname());
 
-        if (!paramDeclNames.isEmpty() && paramDeclNames.containsKey(na.getname()))
-            name = paramDeclNames.get(na.getname());
-
-        if (name == null)
-            name = na.getname();
-
-        return name;
     }
 
     @Override
@@ -1109,11 +1104,12 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitNamedType(NamedType nt) {
-        Log.log(nt, "Visiting a NamedType (" + nt.name().getname() + ")");
+        Log.log(nt, "Visiting a NamedType (" + nt + ")");
 
-        String type = (String) nt.name().getname();
+        String type = nt.toString();
+
         // This is for protocol inheritance.
-        if (nt.type() != null && nt.type().isProtocolType()) {
+        if (nt.getType() != null && (nt.getType() instanceof ProtocolTypeDecl)) {
             // type = PJProtocolCase.class.getSimpleName();
             type = "ProcessJRuntime::pj_protocol_case*";
         }
@@ -1135,12 +1131,13 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitPrimitiveType(PrimitiveType py) {
-        Log.log(py, "Visiting a Primitive Type (" + py.typeName() + ")");
+        Log.log(py, "Visiting a Primitive Type (" + py + ")");
 
         // ProcessJ primitive types that do not translate directly
         // to Java primitive types.
-        String typeStr = py.typeName();
-        if (py.isStringType()) {
+        String typeStr = py.toString();
+
+        if(py.isStringType()) {
             // typeStr = "char*";
             typeStr = "std::string";
         } else if (py.isBooleanType()) {
@@ -1175,7 +1172,7 @@ public class CodeGenCPP extends Visitor<Object> {
 
         // Channel class type.
         String chantype = "";
-        switch (ct.shared()) {
+        switch (ct.isShared()) {
         case ChannelType.NOT_SHARED:
             chantype = "ProcessJRuntime::pj_one2one_channel";
             break;
@@ -1193,11 +1190,11 @@ public class CodeGenCPP extends Visitor<Object> {
         }
         // Resolve parameterized type for channel, e.g., chan<T>
         // where 'T' is the type to be resolved.
-        String type = getChannelType(ct.baseType());
+        String type = getChannelType(ct.getComponentType());
         // String type = getCPPChannelType(ct.baseType());
 
         // If it needs to be a pointer, make it so
-        if(!(ct.baseType() instanceof NamedType && ((NamedType)ct.baseType()).type().isProtocolType()) && (ct.baseType().isBarrierType() /*|| ct.baseType().isTimerType() */|| !(ct.baseType().isPrimitiveType() || ct.baseType().isArrayType()))) {
+        if(!(ct.getComponentType() instanceof NamedType && ((NamedType)ct.getComponentType()).getType() instanceof ProtocolTypeDecl) && (ct.getComponentType().isBarrierType() /*|| ct.baseType().isTimerType() */|| !(ct.getComponentType() instanceof PrimitiveType || (ct.getComponentType() instanceof ArrayType)))) {
             Log.log(ct, "appending a pointer specifier to type of " + ct);
             type += "*";
         }
@@ -1216,17 +1213,17 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitChannelEndType(ChannelEndType ct) {
-        Log.log(ct, "Visiting a ChannelEndType (" + ct.typeName() + ")");
+        Log.log(ct, "Visiting a ChannelEndType (" + ct + ")");
 
         // Channel class type.
         // String chanType = PJOne2OneChannel.class.getSimpleName();
         String chanType = "ProcessJRuntime::pj_one2one_channel";
-        if (ct.isShared()) {  // Is it a shared channel?
-            if (ct.isRead())  // One-2-many channel.
+        if (ct.isSharedEnd()) {  // Is it a shared channel?
+            if (ct.isReadEnd())  // One-2-many channel.
                 // chanType = PJOne2ManyChannel.class.getSimpleName();
                 // chanType = "ProcessJRuntime::pj_one2many_channel";
                 chanType = "ProcessJRuntime::pj_many2many_channel";
-            else if (ct.isWrite()) // Many-2-one channel.
+            else if (ct.isWriteEnd()) // Many-2-one channel.
                 // chanType = PJMany2OneChannel.class.getSimpleName();
                 // chanType = "ProcessJRuntime::pj_many2one_channel";
                 chanType = "ProcessJRuntime::pj_many2many_channel";
@@ -1236,11 +1233,11 @@ public class CodeGenCPP extends Visitor<Object> {
         }
         // Resolve parameterized type for channels, e.g., chan<T>
         // where 'T' is the type to be resolved.
-        String type = getChannelType(ct.baseType());
+        String type = getChannelType(ct.getComponentType());
         // STring type = getCPPChannelType(ct.baseType());
 
         // If it needs to be a pointer, make it so
-        if(!(ct.baseType() instanceof NamedType && ((NamedType)ct.baseType()).type().isProtocolType()) && (ct.baseType().isBarrierType() /*|| ct.baseType().isTimerType() */|| !(ct.baseType().isPrimitiveType() || ct.baseType().isArrayType()))) {
+        if(!(ct.getComponentType() instanceof NamedType && ((NamedType) ct.getComponentType()).getType() instanceof ProtocolTypeDecl) && (ct.getComponentType().isBarrierType() /*|| ct.baseType().isTimerType() */|| !(ct.getComponentType() instanceof PrimitiveType || (ct.getComponentType() instanceof ArrayType)))) {
             Log.log(ct, "appending a pointer specifier to type of " + ct);
             type += "*";
         }
@@ -1265,7 +1262,7 @@ public class CodeGenCPP extends Visitor<Object> {
 
         int countLabel = 1; // One for the 'runLabel'.
         // Is the writing end of this channel shared?
-        if (chanExpr.type.isChannelEndType() && ((ChannelEndType) chanExpr.type).isShared()) {
+        if (chanExpr.type instanceof ChannelEndType && ((ChannelEndType) chanExpr.type).isSharedEnd()) {
             stChanWriteStat = stGroup.getInstanceOf("ChannelMany2One");
             ++countLabel;
         }
@@ -1274,7 +1271,7 @@ public class CodeGenCPP extends Visitor<Object> {
             ((CastExpr)cw.expr()).expr() instanceof NameExpr &&
             ((NameExpr)((CastExpr)cw.expr()).expr()).myDecl instanceof LocalDecl &&
             ((LocalDecl)((NameExpr)((CastExpr)cw.expr()).expr()).myDecl).type() instanceof NamedType &&
-            ((NamedType)((LocalDecl)((NameExpr)((CastExpr)cw.expr()).expr()).myDecl).type()).type().isRecordType()) {
+            ((NamedType)((LocalDecl)((NameExpr)((CastExpr)cw.expr()).expr()).myDecl).type()).getType() instanceof RecordTypeDecl) {
             Log.log(cw, "adding null for sent pointer");
             localNulls.add(paramDeclNames.get(((NameExpr)((CastExpr)cw.expr()).expr()).name().getname()) + "= nullptr;");
         }
@@ -1360,8 +1357,8 @@ public class CodeGenCPP extends Visitor<Object> {
 
         // Generated template after evaluating this visitor.
         ST stArrayAccessExpr = stGroup.getInstanceOf("ArrayAccessExpr");
-        String name = (String) ae.target().visit(this);
-        String index = (String) ae.index().visit(this);
+        String name = (String) ae.targetExpression().visit(this);
+        String index = (String) ae.indexExpression().visit(this);
 
         stArrayAccessExpr.add("name", name);
         stArrayAccessExpr.add("index", index);
@@ -1400,21 +1397,29 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitArrayType(ArrayType at) {
-        Log.log(at, "Visiting an ArrayType (" + at.typeName() + ")");
 
-        String stArrayType = (String) at.baseType().visit(this);
+        Log.log(at, "Visiting an ArrayType (" + at + ")");
+
+        String stArrayType = (String) at.getComponentType().visit(this);
 
         Log.log(at, "stArrayType is " + stArrayType);
 
-        if (!at.baseType().isPrimitiveType() || !at.baseType().isNamedType()) {
-            if (at.getActualDepth() > 1) {
+        if(!(at.getComponentType() instanceof PrimitiveType)
+                || !(at.getComponentType() instanceof NamedType)) {
+
+            if(at.getDepth() > 1) {
                 Log.log(at, "depth > 1, pj_md_array used");
                 return "ProcessJRuntime::pj_md_array<" + stArrayType + ">*";
             }
+
             // return "ProcessJRuntime::pj_array<" + stArrayType + ">*";
+
         }
+
         Log.log(at, "base of array, pj_array used");
+
         return "ProcessJRuntime::pj_array<" + stArrayType + ">*";
+
     }
 
     @Override
@@ -1534,7 +1539,7 @@ public class CodeGenCPP extends Visitor<Object> {
         Log.log(st, "Visiting a SwitchStat");
 
         // Is this a protocol tag?
-        if (st.expr().type.isProtocolType()) {
+        if (st.expr().type instanceof ProtocolTypeDecl) {
             isProtocolCase = true;
             // Log.log(st, "Generating protocol choice for type " + st.expr().type);
             // return generateProtocolChoice(st);
@@ -1571,7 +1576,7 @@ public class CodeGenCPP extends Visitor<Object> {
         String expr = (String) ce.expr().visit(this);
 
         // If it needs to be a pointer, make it so
-        if(!(ce.type() instanceof NamedType && ((NamedType)ce.type()).type().isProtocolType()) && (ce.type().isBarrierType() /*|| ce.type().isTimerType() */|| !(ce.type().isPrimitiveType() || ce.type().isArrayType()))) {
+        if(!(ce.type() instanceof NamedType && ((NamedType)ce.type()).getType() instanceof ProtocolTypeDecl) && (ce.type().isBarrierType() /*|| ce.type().isTimerType() */|| !(ce.type() instanceof PrimitiveType || (ce.type() instanceof ArrayType)))) {
             Log.log(ce, "appending a pointer specifier to type of " + expr);
             type += "*";
         }
@@ -1609,14 +1614,14 @@ public class CodeGenCPP extends Visitor<Object> {
             return stIgnore.render();
         }
 
-        Log.log(in, "Visiting Invocation (" + in.targetProc.name().getname() + ")");
+        Log.log(in, "Visiting Invocation (" + in.targetProc + ")");
 
         // Generated template after evaluating this invocation.
         ST stInvocation = null;
         // Target procedure.
         ProcTypeDecl pd = in.targetProc;
         // Name of invoked procedure.
-        String pdName = pd.name().getname();
+        String pdName = pd.toString();
         String pdGenName = generatedProcNames.get(pdName);
         Log.log(in, "NOTE: " + pdName + " gets us " + generatedProcNames.get(pdName));
         // Check local procedures, if none is found then the procedure must come
@@ -1669,7 +1674,7 @@ public class CodeGenCPP extends Visitor<Object> {
             Type t = (Type) ((ParamDecl)formalParams.child(i)).type();
             typesList[i] = (String)t.visit(this);
 
-            if(!(t instanceof NamedType && ((NamedType)t).type().isProtocolType()) && (t.isBarrierType() || !(t.isPrimitiveType() || t.isArrayType()))) {
+            if(!(t instanceof NamedType && ((NamedType)t).getType() instanceof ProtocolTypeDecl) && (t.isBarrierType() || !(t instanceof PrimitiveType || (t instanceof ArrayType)))) {
                 Log.log(pd, "appending a pointer specifier to type of " + ((ParamDecl)formalParams.child(i)).name());
                 typesList[i] += "*";
             }
@@ -1808,11 +1813,13 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitProtocolTypeDecl(ProtocolTypeDecl pd) {
-        Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd.name().getname() + ")");
+        Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd + ")");
 
         // Generated template after evaluating this visitor.
         ST stProtocolClass = stGroup.getInstanceOf("ProtocolClass");
-        String name = (String) pd.name().visit(this);
+
+        String name = paramDeclNames.getOrDefault(pd.toString(), pd.toString());
+
         ArrayList<String> modifiers = new ArrayList<String>();
         ArrayList<String> body = new ArrayList<String>();
 
@@ -1824,8 +1831,8 @@ public class CodeGenCPP extends Visitor<Object> {
             for (Name n : pd.extend()) {
                 ProtocolTypeDecl ptd = (ProtocolTypeDecl) topLevelDecls.get(n.getname());
                 for (ProtocolCase pc : ptd.body())
-                    protocolTagsSwitchedOn.put(pd.name().getname() + "->" + pc.name().getname(),
-                            ptd.name().getname());
+                    protocolTagsSwitchedOn.put(pd + "->" + pc.name().getname(),
+                            ptd.toString());
             }
         }
 
@@ -1946,7 +1953,7 @@ public class CodeGenCPP extends Visitor<Object> {
         }
 
         stProtocolLiteral.add("type", type);
-        stProtocolLiteral.add("protocolType", pl.myTypeDecl.name().getname());
+        stProtocolLiteral.add("protocolType", pl.myTypeDecl.toString());
         stProtocolLiteral.add("tag", tag);
         stProtocolLiteral.add("vals", members.values());
 
@@ -1955,11 +1962,11 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitRecordTypeDecl(RecordTypeDecl rt) {
-        Log.log(rt, "Visiting a RecordTypeDecl (" + rt.name().getname() + ")");
+        Log.log(rt, "Visiting a RecordTypeDecl (" + rt + ")");
 
         // Generated template after evaluating this visitor.
         ST stRecordStruct = stGroup.getInstanceOf("RecordStruct");
-        String recName = (String) rt.name().visit(this);
+        String recName = paramDeclNames.getOrDefault(rt.toString(), rt.toString());
         ArrayList<String> modifiers = new ArrayList<String>();
         for (Modifier m : rt.modifiers()) {
             modifiers.add((String) m.visit(this));
@@ -2014,7 +2021,7 @@ public class CodeGenCPP extends Visitor<Object> {
         Log.log(rm, "type is " + type);
 
         // If it needs to be a pointer, make it so
-        if(!(rm.type() instanceof NamedType && ((NamedType)rm.type()).type().isProtocolType()) && (rm.type().isBarrierType() /*|| rm.type().isTimerType() */|| !(rm.type().isPrimitiveType() || rm.type().isArrayType()))) {
+        if(!(rm.type() instanceof NamedType && ((NamedType)rm.type()).getType() instanceof ProtocolTypeDecl) && (rm.type().isBarrierType() /*|| rm.type().isTimerType() */|| !(rm.type() instanceof PrimitiveType || (rm.type() instanceof ArrayType)))) {
             Log.log(rm, "appending a pointer specifier to type of " + name);
             type += "*";
         }
@@ -2077,17 +2084,17 @@ public class CodeGenCPP extends Visitor<Object> {
         // Generated template after evaluating this visitor.
         ST stRecordAccess = stGroup.getInstanceOf("RecordAccess");
 
-        if (ra.record().type.isRecordType()) {
+        if (ra.record().type instanceof RecordTypeDecl) {
             String name = (String) ra.record().visit(this);
             String field = (String) ra.field().getname();
 
             stRecordAccess.add("name", name);
             stRecordAccess.add("member", field);
             stRecordAccess.add("op", "->");
-        } else if (ra.record().type.isProtocolType()) {
+        } else if (ra.record().type instanceof ProtocolTypeDecl) {
             stRecordAccess = stGroup.getInstanceOf("ProtocolAccess");
             ProtocolTypeDecl pt = (ProtocolTypeDecl) ra.record().type;
-            String protocName = (String) pt.name().visit(this); // Wrapper class.
+            String protocName = paramDeclNames.getOrDefault(pt.toString(), pt.toString());
             String name = (String) ra.record().visit(this);     // Reference to inner class type.
             String field = (String) ra.field().getname();       // Field in inner class.
 
@@ -2331,7 +2338,7 @@ public class CodeGenCPP extends Visitor<Object> {
 
     @Override
     public Object visitConstantDecl(ConstantDecl cd) {
-        Log.log(cd, "Visting ConstantDecl (" + cd.type().typeName() + " " + cd.var().name().getname() + ")");
+        Log.log(cd, "Visting ConstantDecl (" + cd.type() + " " + cd.var().name().getname() + ")");
 
         // Generated template after evaluating this visitor.
         ST stConstantDecl = stGroup.getInstanceOf("ConstantDecl");
@@ -2491,10 +2498,10 @@ public class CodeGenCPP extends Visitor<Object> {
      */
     private String getChannelType(Type t) {
         String baseType = null;
-        if (t.isNamedType()) {
+        if (t instanceof NamedType) {
             NamedType nt = (NamedType) t;
             baseType = (String) nt.visit(this);
-        } else if (t.isPrimitiveType()) { // This is needed because we can only have wrapper class.
+        } else if (t instanceof PrimitiveType) { // This is needed because we can only have wrapper class.
             // baseType = Helper.getWrapperType(t);
             baseType = getCPPChannelType(t);
         }
@@ -2628,7 +2635,7 @@ public class CodeGenCPP extends Visitor<Object> {
 
         int countLabel = 2;  // One for the 'runLabel' and one for the 'read' operation.
         // Is the reading end of this channel shared?
-        if (chanExpr.type.isChannelEndType() && ((ChannelEndType) chanExpr.type).isShared()) {
+        if (chanExpr.type instanceof ChannelEndType && ((ChannelEndType) chanExpr.type).isSharedEnd()) {
             stChannelReadExpr = stGroup.getInstanceOf("ChannelOne2Many");
             ++countLabel;
         }
@@ -2668,22 +2675,22 @@ public class CodeGenCPP extends Visitor<Object> {
     private String signature(ProcTypeDecl pd) {
         String s = "";
         for (ParamDecl param : pd.formalParams()) {
-            s = s + "$" + param.type().signature();
+            s = s + "$" + param.type().getSignature();
             // Array [t; where 't' is the baste type.
-            if (param.type().isArrayType())
+            if (param.type() instanceof ArrayType)
                 s = s.replace("[", "ar").replace(DELIMITER, "");
             // <Rn; 'n' is the name.
-            else if (param.type().isRecordType())
+            else if (param.type() instanceof RecordTypeDecl)
                 s = s.replace("<", "rc").replace(DELIMITER, "");
             // <Pn; 'n' is the name.
-            else if (param.type().isProtocolType())
+            else if (param.type() instanceof ProtocolTypeDecl)
                 s = s.replace("<", "pt").replace(DELIMITER, "");
             // {t;
-            else if (param.type().isChannelType())
+            else if (param.type() instanceof ChannelType)
                 s = s.replace("{", "ct").replace(DELIMITER, "");
             // channel end type.
-            else if (param.type().isChannelEndType()) {
-                if (((ChannelEndType) param.type()).isRead()) // {t;? channel read.
+            else if (param.type() instanceof ChannelEndType) {
+                if (((ChannelEndType) param.type()).isReadEnd()) // {t;? channel read.
                     s = s.replace("{", "cr").replace(DELIMITER, "").replace("?", "");
                 else // {t;! channel write.
                     s = s.replace("{", "cw").replace(DELIMITER, "").replace("!", "");

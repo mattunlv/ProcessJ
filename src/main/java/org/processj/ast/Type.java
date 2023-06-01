@@ -15,13 +15,66 @@ public abstract class Type extends AST {
         super(t);
     }
 
-    public abstract String typeName();
-    
-    public boolean assignable() {
-        return (!typeName().equals("null") && !typeName().equals("void"));
+    public Type(final AST[] children) {
+        super(children);
     }
 
-    public abstract String signature();
+    /// ----------------
+    /// java.lang.Object
+
+    /**
+     * <p>Returns a flag indicating if the specified {@link Object} is an instance of {@link Type} & both represent
+     * the same {@link Type} via name.</p>
+     * @param that The {@link Object} instance to check.
+     * @return Flag indicating if the specified {@link Object} is an instance of {@link Type} & both represent
+     *         the same {@link Type} via name.
+     * @since 0.1.0
+     */
+    @Override
+    public boolean equals(final Object that) {
+
+        // Trivial check
+        return (that instanceof Type)
+                // And if the specified Instance is a NamedType
+                && ((that instanceof NamedType)
+                // Join the result with the recurred invocation
+                ? this.equals(((NamedType) that).getType())
+                // Otherwise, with something acceptable
+                : this.toString().equals(that.toString()));
+
+    }
+
+    /**
+     * <p>Returns a literal {@link String} representation of the {@link Type}.</p>
+     * @return Literal {@link String} representation of the {@link Type}.
+     * @since 0.1.0
+     */
+    @Override
+    public String toString() {
+
+        return "null";
+
+    }
+
+    /// --------------
+    /// Public Methods
+
+    /**
+     * <p>Returns the internal {@link String} signature representing the {@link Type}.</p>
+     * @return The internal {@link String} signature representing the {@link Type}.
+     * @since 0.1.0
+     */
+    public String getSignature() {
+
+        return "";
+
+    }
+
+    public boolean assignable() {
+
+        return (!this.toString().equals("null") && !this.toString().equals("void"));
+
+    }
 
     public abstract boolean typeEqual(Type other);
 
@@ -36,18 +89,6 @@ public abstract class Type extends AST {
 
     // Reimplemented in PrimitiveType
     public boolean isIntegerType() {
-        return false;
-    }
-
-    public boolean isErrorType() {
-        return false;
-    }
-
-    public boolean isExternType() {
-        return false;
-    }
-
-    public boolean isArrayType() {
         return false;
     }
 
@@ -84,28 +125,8 @@ public abstract class Type extends AST {
         return false;
     }
 
-    public boolean isChannelType() {
-        return false;
-    }
-
-    public boolean isChannelEndType() {
-        return false;
-    }
-
-    public boolean isRecordType() {
-        return false;
-    }
-
-    public boolean isProtocolType() {
-        return false;
-    }
-
     // Reimplemented in PrimitiveType
     public boolean isVoidType() {
-        return false;
-    }
-    
-    public boolean isNullType() {
         return false;
     }
 
@@ -134,16 +155,4 @@ public abstract class Type extends AST {
         return false;
     }
 
-    // Reimplemented in PrimitiveType
-    public boolean isPrimitiveType() {
-        return false;
-    }
-
-    public boolean isNamedType() {
-        return false;
-    }
-
-    public boolean isProcType() {
-        return false;
-    }
 }

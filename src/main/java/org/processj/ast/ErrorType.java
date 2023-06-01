@@ -3,54 +3,84 @@ package org.processj.ast;
 import org.processj.utilities.Visitor;
 
 public class ErrorType extends Type {
-    public static int errorCount = 0;
 
+    /// ------------
+    /// Constructors
+
+    /**
+     * <p>Initializes the {@link ErrorType} to its' default state.</p>
+     * @since 0.1.0
+     */
     public ErrorType() {
         super();
     }
 
-    public String signature() {
-        return "";
+    /// ----------------
+    /// java.lang.Object
+
+    /**
+     * <p>Returns a flag indicating if the specified {@link Object} is an instance of {@link ErrorType} & both
+     * represent the same {@link Type} via name.</p>
+     * @param that The {@link Object} instance to check.
+     * @return Flag indicating if the specified {@link Object} is an instance of {@link ErrorType} & both
+     *         represent the same {@link Type} via name.
+     * @since 0.1.0
+     */
+    @Override
+    public final boolean equals(final Object that) {
+
+        return super.equals(that) && (that instanceof ErrorType);
+
     }
 
-    public String typeName() {
-        return "Error type";
-    }
+    /**
+     * <p>Returns a literal {@link String} representation of the {@link ErrorType}.</p>
+     * @return Literal {@link String} representation of the {@link ErrorType}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String toString() {
 
-    public String toString() {
         return "<Error>";
+
     }
 
-    // *************************************************************************
-    // ** Visitor Related Methods
+    /// --------------------
+    /// org.processj.ast.AST
 
-    public <S extends Object> S visit(Visitor<S> v) {
-        return v.visitErrorType(this);
+    /**
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ChannelEndType}.
+     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitErrorType(ErrorType)} method.</p>
+     * @param visitor The {@link Visitor} to dispatch.
+     * @return Type result of the visitation.
+     * @param <S> Parametric type parameter.
+     */
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) {
+
+        return visitor.visitErrorType(this);
+
     }
 
     // *************************************************************************
     // ** Type Related Methods
 
-    @Override 
-    public boolean isErrorType() {
-        return true;
-    }
-
     // Error types should not be checked like this...
     @Override 
-    public boolean typeEqual(Type t) {
+    public final boolean typeEqual(Type t) {
         return false;
     }
 
     // Error types should not be checked like this...
     @Override 
-    public boolean typeEquivalent(Type t) {
+    public final boolean typeEquivalent(Type t) {
         return false;
     }
 
     // Error types should not be checked like this...
     @Override 
-    public boolean typeAssignmentCompatible(Type t) {
+    public final boolean typeAssignmentCompatible(Type t) {
         return false;
     }
+
 }

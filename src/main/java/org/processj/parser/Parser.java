@@ -3191,33 +3191,36 @@ public class Parser extends java_cup.runtime.lr_parser {
 
 
 
-    public Lexer lexer;
+    public  Lexer   lexer   ;
+    private Handler handler ;
 
     public Parser(final Lexer lexer) {
         this();
         this.lexer = lexer;
     }
 
+    public Parser(final Lexer lexer, final Handler handler) {
+        this(lexer);
+
+        this.handler = handler;
+
+    }
+
     public void syntax_error(java_cup.runtime.Symbol current) {
 
-        final Token token = (Token) current.value;
+        // Delegate this to the Handler
+        this.handler.onSyntaxError((Token) current.value,
+            Lexer.LineCount, Lexer.CurrentLine.length() + 1, Lexer.LineCount);
 
-        if(token == null) {
+    }
 
-            System.out.println("Unexpected end of file." + Lexer.CurrentLine);
-            System.exit(1);
+    protected interface Handler {
 
-        } else {
+        void onSyntaxError(final Token token, final int line, final int lineLength, final int lineCount);
 
-            System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + Lexer.LineCount + ": Syntax error:\n\n" + Lexer.CurrentLine);
+        void onIllegalCastExpression(final Expression expression, final int lineLength, final int lineCount);
 
-            for(int index = 1; index < Lexer.CurrentLine.length() + 1 - token.lexeme.length(); index++)
-                System.out.print(" ");
-
-            System.out.println("^");
-            System.exit(1);
-
-        }
+        void onMalformedPackageAccessExpression(final Expression expression, final int lineLength, final int lineCount);
 
     }
 
@@ -3252,7 +3255,8 @@ class CUP$Parser$actions {
         } else {
 
             // Only a record access looks like a package access - everything else should produce an error
-            Error.error(expression, "Syntax error in package access");
+            handler.onMalformedPackageAccessExpression(expression,
+                Lexer.CurrentLine.length() + 1, Lexer.LineCount);
 
         }
 
@@ -7540,9 +7544,10 @@ class CUP$Parser$actions {
 		int exright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Expression ex = (Expression)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		 if(e instanceof NameExpr)
-                                               RESULT = new CastExpr(new NamedType(((NameExpr)e).name()), ex);
+                                               RESULT = new CastExpr(new NamedType(((NameExpr) e).name()), ex);
                                            else {
-                                               Error.error(e,"Illegal Expression in cast - Type names only");
+                                               handler.onIllegalCastExpression(e,
+                                                    Lexer.CurrentLine.length() + 1, Lexer.LineCount);
                                                RESULT = null;
                                            }                                                                         
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("cast_expression",131, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);

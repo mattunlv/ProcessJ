@@ -120,7 +120,7 @@ BinaryDigit             = [01]
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 // TODO: Hexadecimal Floating-Point Literals?
-FloatLiteral            = ({FLit1}|{FLit2}|{FLit3}|{FLit4}) [fF]
+FloatLiteral            = ({FLit1}|{FLit2}|{FLit3}|{FLit4}) [fF]*
 DoubleLiteral           = ({FLit1}|{FLit2}|{FLit3}|{FLit4}) [dD]
 
 FLit1                   = [0-9]+ \. [0-9]* {Exponent}?
@@ -159,8 +159,8 @@ StringEscape            = \\([btnfr\"\'\\]|[0-3]?{OctDigit}?{OctDigit}|u{HexDigi
     "break"      { return token(sym.BREAK)                                                                           ;}
     "case"       { return token(sym.CASE)                                                                            ;}
     "continue"   { return token(sym.CONTINUE)                                                                        ;}
-    "do"         { return token(sym.DO)                                                                              ;}
     "default"    { return token(sym.DEFAULT)                                                                         ;}
+    "do"         { return token(sym.DO)                                                                              ;}
     "else"       { return token(sym.ELSE)                                                                            ;}
     "extends"    { return token(sym.EXTENDS)                                                                         ;}
     "for"        { return token(sym.FOR)                                                                             ;}

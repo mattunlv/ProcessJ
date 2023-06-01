@@ -6,13 +6,13 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import org.processj.ast.ProcTypeDecl;
-import org.processj.ast.Type;
+import org.processj.ast.*;
 import org.processj.runtime.PJBarrier;
 import org.processj.runtime.PJChannel;
 import org.processj.runtime.PJRecord;
 import org.processj.runtime.PJTimer;
 import org.processj.utilities.Assert;
+import org.processj.utilities.PJBugManager;
 import org.processj.utilities.Settings;
 
 /**
@@ -126,9 +126,9 @@ public class Helper {
             typeName = Character.class;
         else if (type.isShortType())
             typeName = Short.class;
-        else if (type.isRecordType())
+        else if (type instanceof RecordTypeDecl)
             typeName = PJRecord.class;
-        else if (type.isChannelType() || type.isChannelEndType())
+        else if (type instanceof ChannelType || type instanceof ChannelEndType)
             typeName = PJChannel.class;
         else if (type.isTimerType())
             typeName = PJTimer.class;
@@ -194,8 +194,7 @@ public class Helper {
 
             File f = new File(home + File.separator + workdir);
             if (!f.exists()) {
-                System.out.println("Missing working directory!");
-                System.exit(1);
+                PJBugManager.ReportMessageAndExit("Missing working directory!");
             }
             String outFile = f.getAbsolutePath() + File.separator + filename + extension;
             writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), "utf-8"));

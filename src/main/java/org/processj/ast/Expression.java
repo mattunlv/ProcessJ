@@ -6,7 +6,6 @@ public abstract class Expression extends AST {
     private boolean yields;
     public boolean hasParens = false;
 
-
     public Expression(Token t) {
         super(t);
     }
@@ -30,4 +29,17 @@ public abstract class Expression extends AST {
     public void setYield() {
         yields = true;
     }
+
+    public final Type getType() {
+
+        return this.type;
+
+    }
+
+    public final void setType(final Type type) {
+
+        this.type = type;
+
+    }
+
 }

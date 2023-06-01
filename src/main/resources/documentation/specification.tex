@@ -55,6 +55,17 @@
     \chapter{Definitions}
 
     %% ------------------------------------------------------------------------------------------------------------- %%
+    %% Design                                                                                                        %%
+    %% ------------------------------------------------------------------------------------------------------------- %%
+
+    \chapter{Design}
+
+    \noindent Prioritize Tree Transformations before binding Type.\\
+    \noindent Use NamedType as a barrier to prevent the Type checker from migrating over to another compilation unit;
+    \noindent i.e. Don't transform the Types after they have been checked, only check the immediate usages for a compilation
+    \noindent unit.
+
+    %% ------------------------------------------------------------------------------------------------------------- %%
     %% Testing & Verficiation                                                                                        %%
     %% ------------------------------------------------------------------------------------------------------------- %%
 

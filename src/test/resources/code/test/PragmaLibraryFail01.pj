@@ -1,0 +1,6 @@
+/**
+ * @test PragmaLibraryFail01
+ * @description Library Pragma failure due to extraneous parameter
+ * @author Carlos L. Cuenca
+ **/
+#pragma LIBRARY "C";

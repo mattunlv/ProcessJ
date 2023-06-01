@@ -2,12 +2,28 @@ package org.processj.ast;
 
 import org.processj.utilities.Visitor;
 
+/**
+ * Package Access (The ::) can be used for:
+ *      Type Names      type_list, new mobile, binary_expression: expr (RHS), new RecordLiteral, new Protocol Literal
+ *      Identifiers     NameExpr
+ *      Invocations     Invocation
+ *      Type Members? (For Protocol & Records)? NamedType
+ *
+ *      NamedType is contained in CastExpr, ExternTypeDeclaration?, ArrayType, NewArrayExpression
+ *
+ *      Note: Extern Types kind of end right then and there. They are coupled with Name
+ */
 public class Name extends AST {
+
+    /// --------------
+    /// Private Fields
+
+    private final Sequence<Name> packageAccess;
 
     public AST myDecl; // used for places in the the grammar where a Name is used (e.g., in extends of protocols) instead of a NameExpr.
 
     private String id;
-    private int arrayDepth = 0; // somewhat of a hack - we keep track of whether this name is an id in a variable declaration with [] on.
+    private int arrayDepth; // somewhat of a hack - we keep track of whether this name is an id in a variable declaration with [] on.
 
     // points to what ever packageAccess() resolved to.
     public DefineTopLevelDecl resolvedPackageAccess = null;
@@ -23,6 +39,7 @@ public class Name extends AST {
         this.id = p_id.lexeme;
         this.arrayDepth = 0;
         children = new AST[] { new Sequence() };
+        this.packageAccess = (Sequence<Name>) this.children[0];
     }
 
     public Name(String name) {
@@ -31,22 +48,32 @@ public class Name extends AST {
         this.id = name;
         this.arrayDepth = 0;
         children = new AST[] { new Sequence() };
+        this.packageAccess = (Sequence<Name>) this.children[0];
     }
 
     public Name(Name n, int arrayDepth) {
-        super(n);
+        super(new AST[] { new Sequence() });
         this.id = n.getname();
         this.arrayDepth = arrayDepth;
-        nchildren = 1;
-        children = new AST[] { new Sequence() };
+        this.packageAccess = (Sequence<Name>) this.children[0];
     }
 
     public Name(Token p_id, Sequence<Name> package_access) {
-        super(p_id);
+        super(new AST[] { package_access });
         this.id = p_id.lexeme;
         this.arrayDepth = 0;
-        nchildren = 1;
-        children = new AST[] { package_access };
+        this.packageAccess = package_access;
+    }
+
+    /**
+     * <p>Returns a flag indicating if the {@link Name} is prefixed with a fully-qualified package name.</p>
+     * @return Flag indicating if the {@link Name} is prefixed with a fully-qualified package name.
+     * @since 0.1.0
+     */
+    public final boolean specifiesPackage() {
+
+        return !this.packageAccess.isEmpty();
+
     }
 
     public Sequence<Name> packageAccess() {
@@ -54,7 +81,7 @@ public class Name extends AST {
     }
 
     public String getname() {
-        return toString(); //this.id;  // TODO: changed back to full name
+        return this.toString(); //this.id;  // TODO: changed back to full name
     }
 
     public String simplename() {
@@ -92,7 +119,7 @@ public class Name extends AST {
         this.arrayDepth = d;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) {
         return v.visitName(this);
     }
 }

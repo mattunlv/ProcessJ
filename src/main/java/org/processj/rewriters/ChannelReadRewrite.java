@@ -113,19 +113,19 @@ public class ChannelReadRewrite {
             return a;
         } else if (a instanceof ArrayAccessExpr) { // e1[e2]
             ArrayAccessExpr aae = (ArrayAccessExpr) a;
-            if (aae.target().doesYield() && !aae.index().doesYield()) {
+            if (aae.targetExpression().doesYield() && !aae.indexExpression().doesYield()) {
                 System.out.println("ArrayAccessExpr (Case 1)");
                 // e1[e2], if e1 yields
                 // return [ [T t; <t = e1>;], t1[e2] ], <...> means rewritten
                 String t = nextTemp();
                 // T t; (T is the type of e1)
-                LocalDecl ld = makeLocalDecl(aae.target().type, t);
+                LocalDecl ld = makeLocalDecl(aae.targetExpression().type, t);
                 // t = e1;
                 // rewrite 't = e1' -- e1 may be complex => [ {...}, null ]
-                Sequence re = (Sequence) go(new ExprStat(makeAssignment(t, aae.target())));
+                Sequence re = (Sequence) go(new ExprStat(makeAssignment(t, aae.targetExpression())));
                 Sequence bl = (Sequence) re.child(0); // t = ...; will be the last in this sequence
                 // make t[e2]
-                ArrayAccessExpr aae2 = new ArrayAccessExpr(new NameExpr(new Name(t)), aae.index());
+                ArrayAccessExpr aae2 = new ArrayAccessExpr(new NameExpr(new Name(t)), aae.indexExpression());
 
                 // now make [ [ld; stuff from bl;], aae2 ]
                 Sequence s = new Sequence(ld);
@@ -134,7 +134,7 @@ public class ChannelReadRewrite {
                 Sequence retSeq = new Sequence(s);
                 retSeq.append(aae2);
                 return retSeq;
-            } else if (aae.index().doesYield()) {
+            } else if (aae.indexExpression().doesYield()) {
                 System.out.println("ArrayAccessExpr (Case 2)");
                 // e1[e2], if e1 yields
                 // return [ [T1 t1; T2 t2; <t1 = e1>; <t2 = e2>], t1[t2] ], <...> means
@@ -142,15 +142,15 @@ public class ChannelReadRewrite {
                 String t1 = nextTemp();
                 String t2 = nextTemp();
                 // T1 t1; (T1 is the type of e1)
-                LocalDecl ld1 = makeLocalDecl(aae.target().type, t1);
+                LocalDecl ld1 = makeLocalDecl(aae.targetExpression().type, t1);
                 // T2 t2; (T2 is the type of e2)
-                LocalDecl ld2 = makeLocalDecl(aae.index().type, t2);
+                LocalDecl ld2 = makeLocalDecl(aae.indexExpression().type, t2);
                 // t1 = e1;
                 // t2 = e2;
                 // rewrite 't1 = e1' -- e1 may be complex => [ {...}, null ]
                 // rewrite 't2 = e2' -- e2 may be comples => [ {...}, null ]
-                Sequence re1 = (Sequence) go(new ExprStat(makeAssignment(t1, aae.target())));
-                Sequence re2 = (Sequence) go(new ExprStat(makeAssignment(t2, aae.index())));
+                Sequence re1 = (Sequence) go(new ExprStat(makeAssignment(t1, aae.targetExpression())));
+                Sequence re2 = (Sequence) go(new ExprStat(makeAssignment(t2, aae.indexExpression())));
                 Sequence bl1 = (Sequence) re1.child(0); // t1 = ...; will be the last in this block
                 Sequence bl2 = (Sequence) re2.child(0); // t2 = ...; will be the last in this block
                 // make t1[t2]
@@ -571,7 +571,6 @@ public class ChannelReadRewrite {
                 Sequence seq2 = (Sequence) go(seq.child(i));
                 // if (seq2.child(0) == null) {
                 // System.out.println("THIS SHOULD NEVER HAPPEN");
-                // System.exit(1);
                 // seq.set(i, seq2.child(1));
                 // } else {
                 // seq2 = [ [...] , c2 ] - just append c2 to the sequence in the first position.

@@ -48,9 +48,9 @@ public class ReplicatedAlts extends Visitor<Object> {
                             cr = (ChannelReadExpr) ((Assignment) e).right();
                             if ( cr.channel() instanceof ArrayAccessExpr ) {
                                 ArrayAccessExpr ae = (ArrayAccessExpr) cr.channel();
-                                if ( ae.index() instanceof Assignment ||
-                                     ae.index() instanceof BinaryExpr ||
-                                     ae.index() instanceof ChannelReadExpr )
+                                if ( ae.indexExpression() instanceof Assignment ||
+                                     ae.indexExpression() instanceof BinaryExpr ||
+                                     ae.indexExpression() instanceof ChannelReadExpr )
                                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                                             .addAST(as)
                                             .addError(VisitorMessageNumber.SEMATIC_CHECKS_902)

@@ -74,17 +74,21 @@ public class ConfigFileReader {
             p = new Properties();
             p.load(in);
         } catch (IOException e) {
-            System.out.println(e);
-            System.exit(1);
+
+            PJBugManager.ReportMessageAndExit(e.getMessage());
+
         } finally {
-            if (in != null) {
+            if(in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    System.out.print(e);
-                    System.exit(1);
+
+                    PJBugManager.ReportMessageAndExit(e.getMessage());
+
                 }
+
             }
+
         }
         
         return p;

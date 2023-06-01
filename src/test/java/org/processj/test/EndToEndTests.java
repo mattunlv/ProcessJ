@@ -40,6 +40,26 @@ public class EndToEndTests extends ProcessJTest {
 
     }
 
+    /**
+     * <p>Generic end-to-end test procedure. This executes a test that satisfies all Test Oracles defined in the
+     * specification.</p>
+     * @param testInputFile Instance representing a ProcessJ source file to test against the toolchain.
+     * @see org.processj.ProcessJc
+     * @see TestInputFile
+     * @since 0.1.0
+     */
+    @SuppressWarnings({"deprecation", "unused"})
+    private static void FailUnitTestOf(final TestInputFile testInputFile) {
+
+        // Update the input & output paths
+        TestInputFile.BaseInputPath   = InputDirectory    ;
+        TestInputFile.BaseOutputPath  = WorkingDirectory  ;
+
+        // Transpile with ProcessJ
+        ProcessJc.main(new String[]{testInputFile.getAbsoluteInputFilePath()});
+
+    }
+
     /// ---------------
     /// Book Code Tests
 
@@ -448,6 +468,13 @@ public class EndToEndTests extends ProcessJTest {
     }
 
     @Test
+    public void testCode_pragma01_endToEnd() {
+
+        UnitTestOf(Pragma01);
+
+    }
+
+    @Test
     public void testCode_priAlt01_endToEnd() {
 
         UnitTestOf(PriAlt01);
@@ -578,6 +605,16 @@ public class EndToEndTests extends ProcessJTest {
     public void testCode_timer01_endToEnd() {
 
         UnitTestOf(Timer01);
+
+    }
+
+    /// -------------
+    /// Failure Tests
+
+    @Test
+    public void testCode_pragmaLibraryFail01_endToEnd() {
+
+        //FailUnitTestOf(PragmaLibraryFail01);
 
     }
 

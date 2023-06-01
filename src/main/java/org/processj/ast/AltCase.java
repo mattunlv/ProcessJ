@@ -45,7 +45,7 @@ public class AltCase extends AST {
     }
 
     
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) {
         return v.visitAltCase(this);
     }
 

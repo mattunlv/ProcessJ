@@ -20,7 +20,8 @@ public class NameExpr extends Expression {
         children = new AST[] { name };
     }
 
-    public String toString() {
+    @Override
+    public final String toString() {
         return name().getname();
     }
 
@@ -28,7 +29,7 @@ public class NameExpr extends Expression {
         return (Name) children[0];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) {
         return v.visitNameExpr(this);
     }
 }

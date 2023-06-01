@@ -111,7 +111,7 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitArrayAccessExpr(ArrayAccessExpr ae) {
         Log.log("visiting an ArrayAccessExpr");
-        return ae.target().visit(this) || ae.index().visit(this);
+        return ae.targetExpression().visit(this) || ae.indexExpression().visit(this);
     }
 
     public Boolean visitArrayLiteral(ArrayLiteral al) {
@@ -327,7 +327,7 @@ public class Yield extends Visitor<Boolean> {
         Log.log("visiting a ParamDecl");
         // If a formal parameter is a channel-end type, a barrier, or a timer,
         // then the procedure must org.processj.yield
-        return pd.type().isChannelEndType() || pd.type().isBarrierType() || pd.type().isTimerType();
+        return pd.type() instanceof ChannelEndType || pd.type().isBarrierType() || pd.type().isTimerType();
     }
 
     public Boolean visitParBlock(ParBlock pb) {
@@ -362,10 +362,10 @@ public class Yield extends Visitor<Boolean> {
         }
         if (!pd.annotations().isDefined("yield") && b) {
             pd.annotations().add("yield", "true");
-            Log.log("  Setting [org.processj.yield=true] for " + pd.name() + ".");
-        } else if (pd.name().getname().equals("main")) {
+            Log.log("  Setting [org.processj.yield=true] for " + pd + ".");
+        } else if (pd.toString().equals("main")) {
             pd.annotations().add("yield", "true");
-            Log.log("  Setting [org.processj.yield=true] for " + pd.name() + ".");
+            Log.log("  Setting [org.processj.yield=true] for " + pd + ".");
         }
         return FALSE;
     }

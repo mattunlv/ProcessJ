@@ -23,6 +23,7 @@ import org.processj.ast.WhileStat;
 import org.processj.codegen.Helper;
 import org.processj.parser.sym;
 import org.processj.utilities.Log;
+import org.processj.utilities.PJBugManager;
 import org.processj.utilities.Visitor;
 
 /**
@@ -148,11 +149,11 @@ public class UnrollLoopRewrite extends Visitor<AST> {
      */
     public AST visitBreakStat(BreakStat bs) {
         Log.log("LoopRewriter:\tVisiting a BreakStat");
-        if (inside == OUTSIDE) {
+        if(inside == OUTSIDE) {
+
             // TODO: ERROR
-            Log.log("ERROR: break statement outside loop or switch");
-            Log.log("");
-            System.exit(1);
+            PJBugManager.ReportMessageAndExit("ERROR: break statement outside loop or switch");
+
         }
         // all breaks with labels get turned into a goto(...); breaks not OUTSIDE and
         // not INSIDE_LOOP must be in switch statements - they never become gotos - just
@@ -166,10 +167,10 @@ public class UnrollLoopRewrite extends Visitor<AST> {
             }
         } else {
             if (bls.get(bs.target().getname()) == null) {
+
                 // TODO: ERROR
-                Log.log("ERROR: Unknown break label '" + bs.target().getname() + "' in line " + bs.line);
-                Log.log("");
-                System.exit(1);
+                PJBugManager.ReportMessageAndExit("ERROR: Unknown break label '" + bs.target().getname() + "' in line " + bs.line);
+
             }
             int target = bls.get(bs.target().getname());
             // Goto(...);
@@ -198,20 +199,19 @@ public class UnrollLoopRewrite extends Visitor<AST> {
         Log.log("LoopRewriter:\tVisiting a ContinueStat");
         if (inside != INSIDE_LOOP) {
             // TODO: ERROR
-            Log.log("ERROR: continue statement outside loop");
-            Log.log("");
-            System.exit(1);
+            PJBugManager.ReportMessageAndExit("ERROR: continue statement outside loop");
+
         }
         // no target => continue to closest continue label.
         if (cs.target() == null) {
             return makeGoto(cl, cs);
         } else {
             // look up the target in the hash table.
-            if (cls.get(cs.target().getname()) == null) {
+            if(cls.get(cs.target().getname()) == null) {
+
                 // TODO: ERROR
-                Log.log("ERROR: Unknown continue label '" + cs.target().getname() + "' in line " + cs.line);
-                Log.log("");
-                System.exit(1);
+                PJBugManager.ReportMessageAndExit("ERROR: Unknown continue label '" + cs.target().getname() + "' in line " + cs.line);
+
             }
             int target = cls.get(cs.target().getname());
             // Goto(...);

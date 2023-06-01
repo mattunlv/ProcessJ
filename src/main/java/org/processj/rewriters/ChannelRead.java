@@ -463,28 +463,28 @@ public class ChannelRead extends Visitor<Pair<Sequence, Expression>> {
     public Pair<Sequence, Expression> visitArrayAccessExpr(ArrayAccessExpr ae) {
         Log.log(ae, "Visiting an ArrayAccessExpr");
         Pair<Sequence, Expression> p = null;
-        if (ae.target().doesYield() && !ae.index().doesYield()) {
+        if (ae.targetExpression().doesYield() && !ae.indexExpression().doesYield()) {
             Log.log("---- Case #1 ArrayAccessExpr");
             String name = nextTemp();
             // T t; where T represents the type of e
-            LocalDecl ld = createLocalDecl(name, ae.target().type);
+            LocalDecl ld = createLocalDecl(name, ae.targetExpression().type);
             // Rewrite the expression to t = e;
-            Pair<Sequence, Expression> t = new ExprStat(createAssignment(name, ae.target())).visit(this);
+            Pair<Sequence, Expression> t = new ExprStat(createAssignment(name, ae.targetExpression())).visit(this);
             Sequence se = new Sequence(ld);
             se.merge(t.getFirst());
-            p = new Pair<>(se, new ArrayAccessExpr(new NameExpr(new Name(name)), ae.index()));
-        } else if (ae.index().doesYield()) {
+            p = new Pair<>(se, new ArrayAccessExpr(new NameExpr(new Name(name)), ae.indexExpression()));
+        } else if (ae.indexExpression().doesYield()) {
             Log.log("---- Case #2 ArrayAccessExpr");
             String name1 = nextTemp();
             String name2 = nextTemp();
             // T t1; where T represents the type of e1
-            LocalDecl ld1 = createLocalDecl(name1, ae.target().type);
+            LocalDecl ld1 = createLocalDecl(name1, ae.targetExpression().type);
             // Rewrite the expression to t1 = e1;
-            Pair<Sequence, Expression> t1 = new ExprStat(createAssignment(name1, ae.target())).visit(this);
+            Pair<Sequence, Expression> t1 = new ExprStat(createAssignment(name1, ae.targetExpression())).visit(this);
             // T t2; where T represents the type of e2
-            LocalDecl ld2 = createLocalDecl(name2, ae.index().type);
+            LocalDecl ld2 = createLocalDecl(name2, ae.indexExpression().type);
             // Rewrite the expression to t2 = e2;
-            Pair<Sequence, Expression> t2 = new ExprStat(createAssignment(name2, ae.index())).visit(this);
+            Pair<Sequence, Expression> t2 = new ExprStat(createAssignment(name2, ae.indexExpression())).visit(this);
             Sequence se = new Sequence(ld1);
             se.merge(t1.getFirst());
             se.append(ld2);

@@ -2,29 +2,7 @@ package org.processj.namechecker;
 
 import java.util.HashSet;
 
-import org.processj.ast.AST;
-import org.processj.ast.AltStat;
-import org.processj.ast.Block;
-import org.processj.ast.Compilation;
-import org.processj.ast.ConstantDecl;
-import org.processj.ast.ForStat;
-import org.processj.ast.Invocation;
-import org.processj.ast.LocalDecl;
-import org.processj.ast.Name;
-import org.processj.ast.NameExpr;
-import org.processj.ast.NamedType;
-import org.processj.ast.NewMobile;
-import org.processj.ast.ParBlock;
-import org.processj.ast.ParamDecl;
-import org.processj.ast.PrimitiveLiteral;
-import org.processj.ast.ProcTypeDecl;
-import org.processj.ast.ProtocolCase;
-import org.processj.ast.ProtocolLiteral;
-import org.processj.ast.ProtocolTypeDecl;
-import org.processj.ast.RecordLiteral;
-import org.processj.ast.RecordTypeDecl;
-import org.processj.ast.SwitchLabel;
-import org.processj.ast.DefineTopLevelDecl;
+import org.processj.ast.*;
 import org.processj.utilities.PJMessage;
 import org.processj.utilities.PJBugManager;
 import org.processj.utilities.Log;
@@ -121,12 +99,13 @@ public class NameChecker<T extends Object> extends Visitor<T> {
     /** CONSTANT DECLARATION */
     public T visitConstantDecl(ConstantDecl cd) {
         Log.log(cd.line + ": Visting ConstantDecl '"
-                + cd.var().name().getname() + "' (Setting myDecl)");
+                + cd + "' (Setting myDecl)");
         super.visitConstantDecl(cd);
         cd.var().myDecl = cd;
         // TODO: cannot be a mobile procedure!!!! or any procedure ! that wouldn't make sense!
 
         return null;
+
     }
 
     // ContinueStat - nothing to do
@@ -198,7 +177,7 @@ public class NameChecker<T extends Object> extends Visitor<T> {
     }
 
     public T visitLocalDecl(LocalDecl ld) {
-        Log.log(ld.line + ": Visting LocalDecl (" + ld.type().typeName() + " "
+        Log.log(ld.line + ": Visting LocalDecl (" + ld.type() + " "
                 + ld.var().name().getname() + ")");
         if (!currentScope.put(ld.name(), ld))
             PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
@@ -223,13 +202,13 @@ public class NameChecker<T extends Object> extends Visitor<T> {
             PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                         .addAST(nt)
                         .addError(VisitorMessageNumber.NAME_CHECKER_401)
-                        .addArguments(nt.name().getname())
+                        .addArguments(nt.toString())
                         .build());
         if (o instanceof ConstantDecl) {
             PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                         .addAST(nt)
                         .addError(VisitorMessageNumber.NAME_CHECKER_407)
-                        .addArguments(nt.name().getname())
+                        .addArguments(nt.toString())
                         .build());
         }
         Log.log("NamedType: o = " + o);
@@ -247,8 +226,14 @@ public class NameChecker<T extends Object> extends Visitor<T> {
         //    if (o != null)
         //((AST)o).visit(this);  // < -------- this visit doesn't have to happen ... what ever type gets visited when the file is loaded.
         //Log.log("After");
-        nt.setResolvedTopLevelDecl((DefineTopLevelDecl) o);
+
+        if(o instanceof Type)
+            nt.setType((Type) o);
+
+        else nt.setResolvedTopLevelDecl((DefineTopLevelDecl) o);
+
         return null;
+
     }
 
     public T visitNameExpr(NameExpr ne) {
@@ -315,7 +300,7 @@ public class NameChecker<T extends Object> extends Visitor<T> {
     // PrimitiveType - nothing to do
 
     public T visitProcTypeDecl(ProcTypeDecl pd) {
-        Log.log(pd.line + ": Visiting ProcTypeDecl (" + pd.name().getname() + ").");
+        Log.log(pd.line + ": Visiting ProcTypeDecl (" + pd + ").");
         currentScope = currentScope.openScope();
         pd.formalParams().visit(this);
         for (Name name : pd.implement()) {
@@ -383,8 +368,7 @@ public class NameChecker<T extends Object> extends Visitor<T> {
     // ProtocolCase - nothing to do
 
     public T visitProtocolTypeDecl(ProtocolTypeDecl pd) {
-        Log.log(pd.line + ": Visiting ProtocolTypeDecl (" + pd.name().getname()
-                + ").");
+        Log.log(pd.line + ": Visiting ProtocolTypeDecl (" + pd + ").");
 
         for (Name n : pd.extend()) {
             Object o = resolveName(n);
@@ -433,7 +417,7 @@ public class NameChecker<T extends Object> extends Visitor<T> {
     // RecordMember - nothing to do
 
     public T visitRecordTypeDecl(RecordTypeDecl rt) {
-        Log.log(rt.line + ": Visiting RecordTypeDecl (" + rt.name().getname()
+        Log.log(rt.line + ": Visiting RecordTypeDecl (" + rt
                 + ").");
         for (Name n : rt.extend()) {
             Object o = resolveName(n);
@@ -458,7 +442,7 @@ public class NameChecker<T extends Object> extends Visitor<T> {
                 PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                         .addAST(rt)
                         .addError(VisitorMessageNumber.NAME_CHECKER_420)
-                        .addArguments(name.getname(), rt.name().getname())
+                        .addArguments(name.getname(), rt.toString())
                         .build());
             hs.add(name.getname());
         }

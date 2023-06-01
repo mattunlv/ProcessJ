@@ -3,15 +3,25 @@ package org.processj.ast;
 import org.processj.utilities.Visitor;
 
 public class Import extends AST {
+
+    /// --------------
+    /// Private Fields
+
+    private final String symbol         ;
+    private final String packageName    ;
+    private final String path           ;
+
     // All the compilations that this import perform are stored in compilations.
     private Sequence<Compilation> compilations = new Sequence<>();
 
     public Import(Sequence<Name> imp) {
         super(imp);
         nchildren = 2;
-        int size = imp.children.size();
-        Name file = imp.children.remove(size - 1);
+        Name file = imp.removeLast();
         children = new AST[] { imp, file };
+        this.symbol         = file.getname();
+        this.packageName    = imp.synthesizeStringWith(".");
+        this.path           = imp.synthesizeStringWith("/");
     }
 
     public Sequence<Name> path() {
@@ -46,7 +56,52 @@ public class Import extends AST {
         return compilations;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) {
         return v.visitImport(this);
     }
+
+    /**
+     * <p>Returns a flag indicating if the {@link Import} is a wildcard import.</p>
+     * @return Flag indicating if the {@link Import} is a wildcard import.
+     * @since 0.1.0
+     */
+    public final boolean isWildcard() {
+
+        return this.symbol.equals("*");
+
+    }
+
+    /**
+     * <p>Returns the {@link Import}'s symbol.</p>
+     * @return The {@link Import}'s symbol.
+     * @since 0.1.0
+     */
+    public final String getSymbol() {
+
+        return this.symbol;
+
+    }
+
+    /**
+     * <p>Returns the {@link Import}'s dot-delimited package name.</p>
+     * @return The {@link Import}'s dot-delimited package name.
+     * @since 0.1.0
+     */
+    public final String getPackageName() {
+
+        return this.packageName;
+
+    }
+
+    /**
+     * <p>Returns the {@link Import}'s forward slash-delimited path.</p>
+     * @return The {@link Import}'s forward slash-delimited path.
+     * @since 0.1.0
+     */
+    public final String getPath() {
+
+        return this.path;
+
+    }
+
 }

@@ -41,8 +41,9 @@ parser code  {:
 
   public void syntax_error(java_cup.runtime.Symbol current) {
     if(current.value == null) {
-      System.out.println("Unexpected end of file." + Scanner.curLine);
-      System.exit(1);
+
+      PJBugManager.reportMessageAndExit("Unexpected end of file." + Scanner.curLine)
+
     }   
     else {
       Token t = (Token)current.value;
@@ -50,7 +51,7 @@ parser code  {:
       for (int i=1; i<Scanner.curLine.length()+1-t.lexeme.length(); i++) 
         System.out.print(" ");
       System.out.println("^");
-      System.exit(1);
+      PJBugManager.reportMessageAndExit("");
     }
   }
 

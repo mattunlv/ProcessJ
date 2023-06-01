@@ -4,12 +4,86 @@ import org.processj.utilities.Visitor;
 
 public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
 
+    /// --------------
+    /// Private Fields
+
+    /**
+     * <p>{@link String} value of the {@link ProtocolTypeDecl}'s name.</p>
+     */
+    private final String name;
+
+    /// ------------
+    /// Constructors
+
     public ProtocolTypeDecl(Sequence<Modifier> modifiers, Name name,
                             Sequence<AST> extend, Annotations annotations,
                             Sequence<ProtocolCase> body) {
         super(name);
         nchildren = 5;
         children = new AST[] { modifiers, name, extend, annotations, body };
+        this.name = (name != null) ? name.toString() : "";
+    }
+
+    /// ----------------
+    /// java.lang.Object
+
+    /**
+     * <p>Returns a flag indicating if the specified {@link Object} is an instance of {@link ProtocolTypeDecl} & both
+     * represent the same {@link Type} via name.</p>
+     * @param that The {@link Object} instance to check.
+     * @return Flag indicating if the specified {@link Object} is an instance of {@link ProtocolTypeDecl} & both
+     *         represent the same {@link Type} via name.
+     * @since 0.1.0
+     */
+    @Override
+    public final boolean equals(final Object that) {
+
+        return super.equals(that) && (that instanceof ProtocolTypeDecl);
+
+    }
+
+    /**
+     * <p>Returns a literal {@link String} representation of the {@link ProtocolTypeDecl}.</p>
+     * @return Literal {@link String} representation of the {@link ProtocolTypeDecl}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String toString() {
+
+        return this.name;
+
+    }
+
+    /// --------------------
+    /// org.processj.ast.AST
+    
+    /**
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ProtocolTypeDecl}.
+     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitProtocolTypeDecl(ProtocolTypeDecl)} method.</p>
+     * @param visitor The {@link Visitor} to dispatch.
+     * @return Type result of the visitation.
+     * @param <S> Parametric type parameter.
+     */
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) {
+
+        return visitor.visitProtocolTypeDecl(this);
+
+    }
+
+    /// ---------------------
+    /// org.processj.ast.Type
+
+    /**
+     * <p>Returns the internal {@link String} signature representing the {@link ProtocolTypeDecl}.</p>
+     * @return The internal {@link String} signature representing the {@link ProtocolTypeDecl}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String getSignature() {
+
+        return "<P" + this.name + ";";
+
     }
 
     // *************************************************************************
@@ -33,20 +107,6 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
 
     public Sequence<ProtocolCase> body() {
         return (Sequence<ProtocolCase>) children[4];
-    }
-
-    // *************************************************************************
-    // ** Misc. Methods
-
-    public String toString() {
-        return typeName();
-    }
-
-    // *************************************************************************
-    // ** Visitor Related Methods
-
-    public <S extends Object> S visit(Visitor<S> v) {
-        return v.visitProtocolTypeDecl(this);
     }
 
     // *************************************************************************
@@ -79,36 +139,24 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
         return null;
     }
 
-    public String signature() {
-        return "<P" + name().getname() + ";";
-    }
+    @Override
+    public boolean typeEqual(final Type that) {
 
-    public String typeName() {
-        return "Protocol: " + name();
+        return this.equals(that);
+
     }
 
     @Override
-    public boolean isProtocolType() {
-        return true;
-    }
+    public boolean typeEquivalent(final Type that) {
 
-    @Override
-    public boolean typeEqual(Type t) {
-        if (!t.isProtocolType())
-            return false;
-        ProtocolTypeDecl pt = (ProtocolTypeDecl) t;
-        return name().getname().equals(pt.name().getname());
-    }
+        return this.equals(that);
 
-    @Override
-    public boolean typeEquivalent(Type t) {
-        return typeEqual(t);
     }
 
     // TODO
     @Override
     public boolean typeAssignmentCompatible(Type t) {
-        if (!t.isProtocolType())
+        if (!(t instanceof ProtocolTypeDecl))
             return false;
         ProtocolTypeDecl pt = (ProtocolTypeDecl) t;
         return pt.extendsProtocol(this);

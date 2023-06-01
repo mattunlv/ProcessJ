@@ -2,12 +2,7 @@ package org.processj.namechecker;
 
 import java.io.File;
 
-import org.processj.ast.AST;
-import org.processj.ast.Compilation;
-import org.processj.ast.Name;
-import org.processj.ast.NamedType;
-import org.processj.ast.Sequence;
-import org.processj.ast.DefineTopLevelDecl;
+import org.processj.ast.*;
 import org.processj.utilities.PJMessage;
 import org.processj.utilities.PJBugManager;
 import org.processj.utilities.Log;
@@ -53,7 +48,7 @@ public class ResolvePackageTypes extends Visitor<AST> {
             // Turn X.Y.Z::f into X/Y/Z.pj
             fileName = Settings.absolutePath + makeImportFileName(pa);
             // Does X/Y/Z.pj exist?
-            if (new File(fileName).isFile()) // Yes it did - so it is a non-libtary file.
+            if(new File(fileName).isFile()) // Yes it did - so it is a non-libtary file.
                 ; // don't do anything just continue after the if.
             else { // No, it was not a local file so now try the org.processj.library directory
                 fileName = new File(org.processj.utilities.Settings.includeDir)
@@ -102,20 +97,38 @@ public class ResolvePackageTypes extends Visitor<AST> {
         }
     }
 
-    public AST visitName(Name na) {
-        Log.log(na.line + " Resolving Name '" + na.getname() + "'");
-        if (na.packageAccess().size() > 0) {
-            resolveTypeOrConstant(na);
-        }
+    public AST visitName(final Name name) {
+
+        Log.log(name.line + " Resolving Name '" + name.getname() + "'");
+
+        if(name.specifiesPackage())
+            resolveTypeOrConstant(name);
+
         return null;
+
     }
 
-    public AST visitNamedType(NamedType nt) {
-        Log.log(nt.line + " Resolving NamedType '" + nt.name() + "'");
-        Sequence<Name> packages = nt.name().packageAccess();
-        if (packages.size() > 0) {
-            resolveTypeOrConstant(nt.name());
+    public AST visitNamedType(final NamedType namedType) {
+
+        Log.log(namedType.line + " Resolving NamedType '" + namedType + "'");
+
+        // If the NamedType specifies a Package
+        if(namedType.specifiesPackage()) {
+
+            // Initialize a handle to the Name
+            final Name name = namedType.name();
+
+            // Bind the resolved Type to the Name
+            resolveTypeOrConstant(name);
+
+            // Bind the resolved Type to the NamedType if possible
+            if(name.resolvedPackageAccess instanceof Type)
+                namedType.setType((Type) name.resolvedPackageAccess);
+
         }
+
         return null;
+
     }
+
 }

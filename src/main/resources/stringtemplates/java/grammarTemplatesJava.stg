@@ -776,8 +776,7 @@ AltStat(alt, count, timerLocals, initBooleanGuards, initGuards, bguards, guards,
 boolean ready<readyID> = <alt>.setGuards(<bguards>, <guards>);
 
 if (!ready<readyID>) {
-    System.out.println("RuntimeError: One of the boolean pre-guards must be true!");
-    System.exit(1);
+    PJBugManager.reportMessageAndExit("RuntimeError: One of the boolean pre-guards must be true!");
 }
 
 this.setNotReady();

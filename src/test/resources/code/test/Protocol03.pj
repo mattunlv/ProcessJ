@@ -14,5 +14,5 @@ record R {
   int b;
   int c;
   double d;
-  P p;
+  //P p;
 }

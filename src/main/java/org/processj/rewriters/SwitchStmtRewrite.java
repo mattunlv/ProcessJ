@@ -3,15 +3,7 @@ package org.processj.rewriters;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.processj.ast.BreakStat;
-import org.processj.ast.LocalDecl;
-import org.processj.ast.NameExpr;
-import org.processj.ast.NamedType;
-import org.processj.ast.PrimitiveType;
-import org.processj.ast.Sequence;
-import org.processj.ast.Statement;
-import org.processj.ast.SwitchGroup;
-import org.processj.ast.SwitchStat;
+import org.processj.ast.*;
 import org.processj.utilities.Log;
 import org.processj.utilities.PJBugManager;
 import org.processj.utilities.PJMessage;
@@ -68,7 +60,7 @@ public class SwitchStmtRewrite extends Visitor<Object> {
     public Object visitNamedType(NamedType nt) {
         Log.log(nt, "Visiting a NamedType");
         
-        if (nt.type() != null && nt.type().isProtocolType())
+        if (nt.getType() != null && nt.getType() instanceof ProtocolTypeDecl)
             return Boolean.TRUE;
         
         return Boolean.FALSE;

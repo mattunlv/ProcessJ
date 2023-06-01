@@ -148,9 +148,9 @@ public class Butters {
     // 'final' for the ProcessJ compiler
     public static void decodePragmas(Compilation c) throws ClassNotFoundException, MalformedURLException {
         LibInfo lib = new LibInfo();
-        for (Pragma p : c.pragmas()) {
-            String name = p.pname().getname();
-            String value = p.value();
+        for (Pragma p : c.getPragmas()) {
+            String name = p.getName().getname();
+            String value = p.getValue();
             if ( value==null ) {
                 // TODO: error out!!??
             } else {

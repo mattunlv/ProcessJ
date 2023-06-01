@@ -24,13 +24,13 @@ public class ArraysRewrite extends Visitor<AST> {
 	public AST visitLocalDecl(LocalDecl ld) {
 		Log.log(ld, "Attempting to rewrite array");
 		
-		if (ld.type().isArrayType() && ld.var().init() != null && ld.var().init() instanceof Literal) {
+		if ((ld.type() instanceof ArrayType) && ld.var().init() != null && ld.var().init() instanceof Literal) {
 			int depth = ((ArrayType) ld.type()).getDepth();
-			Sequence<AST> se = new Sequence<AST>();
-			for (int i = 0; i < depth; ++i)
+			Sequence<AST> se = new Sequence<>();
+			for(int i = 0; i < depth; ++i)
 				se.append(null);
-			ld.var().children[1] = new NewArray(((ArrayType) ld.type()).baseType(),
-			                                    new Sequence<Expression>() /* dimsExpr */,
+			ld.var().children[1] = new NewArray(((ArrayType) ld.type()).getComponentType(),
+			                                    new Sequence<>() /* dimsExpr */,
 			                                    se, ((ArrayLiteral) ld.var().init()));
 		}
 		

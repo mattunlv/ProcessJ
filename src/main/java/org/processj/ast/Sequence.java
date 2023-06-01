@@ -33,6 +33,53 @@ public class Sequence<T extends AST> extends AST implements Iterable<T> {
         return this;
     }
 
+    /**
+     * <p>Constructs a {@link String} consisting of the {@link String} representation of each of the elements
+     * delimited by the specified {@link String} separator.</p>
+     * @param separator The {@link String} to separate the elements with except for the first & last element.
+     * @return {@link String} consisting of the {@link String} representation of each of the elements
+     * delimited by the specified {@link String} separator.
+     * @since 0.1.0
+     */
+    public final String synthesizeStringWith(final String separator) {
+
+        // Initialize the StringBuilder
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        // Append each child with the specified separator
+        if(this.children != null) for(int index = 0; (index < this.children.size()); index++) {
+            stringBuilder.append(this.children.get(index))
+                    .append((index == (this.children.size() - 1)) ? "" : separator);
+
+        }
+
+        // Return the result
+        return stringBuilder.toString();
+
+    }
+
+    /**
+     * <p>Returns the last element in the {@link Sequence}.</p>
+     * @return Last element in the {@link Sequence}.
+     * @since 0.1.0
+     */
+    public final T getLast() {
+
+        return this.children.get(this.children.size() - 1);
+
+    }
+
+    /**
+     * <p>Removes & returns the last element in the {@link Sequence}.</p>
+     * @return The removed element in the {@link Sequence}
+     * @since 0.1.0
+     */
+    public final T removeLast() {
+
+        return this.children.remove(this.children.size() - 1);
+
+    }
+
     public Iterator<T> iterator() {
         return children.iterator();
     }
@@ -44,6 +91,12 @@ public class Sequence<T extends AST> extends AST implements Iterable<T> {
     public <S extends T> Sequence<T> merge(S other) {
         children.add(other);
         return this;
+    }
+
+    public final boolean isEmpty() {
+
+        return this.children.isEmpty();
+
     }
 
     public int size() {

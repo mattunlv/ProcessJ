@@ -597,6 +597,13 @@ public class LexerUnitTest extends ProcessJTest {
     }
 
     @Test
+    public void testCode_pragma01_lexerUnitTest() {
+
+        UnitTestOf(Pragma01);
+
+    }
+
+    @Test
     public void testCode_priAlt01_lexerUnitTest() {
 
         UnitTestOf(PriAlt01);

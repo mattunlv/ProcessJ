@@ -7,7 +7,6 @@ import org.processj.ast.LocalDecl;
 import org.processj.ast.Name;
 import org.processj.ast.ParamDecl;
 import org.processj.ast.Type;
-import org.processj.utilities.Log;
 import org.processj.utilities.Visitor;
 
 /**
@@ -26,58 +25,88 @@ import org.processj.utilities.Visitor;
  */
 public class ArrayTypeConstructor extends Visitor<AST> {
 
-    public ArrayTypeConstructor() {
-        debug = true;
-        Log.log("**************************************");
-        Log.log("*  A R R A Y   C O N S T R U C T O R *");
-        Log.log("**************************************");
+    /// ----------------------
+    /// Private Static Methods
 
-    }
+    /**
+     * <p>Constructs an {@link ArrayType} from the specified {@link Type} & {@link Name} only if the {@link Name} has
+     * a depth greater than 0.</p>
+     * @param type The {@link Type} to construct a consolidated {@link ArrayType}.
+     * @param name The {@link Name} that potentially has a depth value defined.
+     * @return {@link ArrayType} or identity {@link Type}.
+     * @see Name
+     * @see Type
+     * @see ArrayType
+     * @since 0.1.0
+     */
+    private static Type ConstructArrayTypeFrom(final Type type, final Name name) {
 
-    public Type constructArrayType(Type t, Name n) {
-        Type array = t;
-        if (t instanceof ArrayType || (n != null && n.getArrayDepth() != 0)) {
-            if (t instanceof ArrayType) {
-                ArrayType at = (ArrayType) t;
-                Type baseType = at.baseType();
-                array = baseType;
-                for (int i = 0; i < at.getDepth(); i++)
-                    array = new ArrayType(array, 1);
+        // Initialize the name depth & resultant Type
+        final int nameDepth = (name != null) ? name.getArrayDepth() : 0;
+        Type result = type;
+
+        // If the name had some depth
+        if(nameDepth > 0) {
+
+            // If the specified Type is an ArrayType
+            if(type instanceof ArrayType) {
+
+                // Initialize a handle to the ArrayType
+                final ArrayType arrayType = (ArrayType) type;
+
+                // Instantiate the result
+                result = new ArrayType(arrayType.getComponentType(), arrayType.getDepth() + nameDepth);
+
+                // Otherwise
+            } else {
+
+                // Instantiate a new ArrayType with the specified depth
+                result = new ArrayType(type, nameDepth);
+
             }
-            if (n != null)
-                for (int i = 0; i < n.getArrayDepth(); i++)
-                    array = new ArrayType(array, 1);
+
         }
-        return array;
+
+        // Return the result
+        return result;
+
     }
 
-    public AST visitParamDecl(ParamDecl pd) {
-        if (pd.type().isArrayType() || pd.paramName().getArrayDepth() > 0) {
-            pd.setType(constructArrayType(pd.type(), pd.paramName()));
-            pd.paramName().setArrayDepth(0);
-        }
+    /// ------------
+    /// Constructors
+
+    public ArrayTypeConstructor() { /* Empty */ }
+
+    /// ------------------------------
+    /// org.processj.utilities.Visitor
+
+    @Override
+    public AST visitParamDecl(ParamDecl parameterDeclaration) {
+
+        parameterDeclaration.setType(
+                ConstructArrayTypeFrom(parameterDeclaration.type(), parameterDeclaration.paramName()));
+
         return null;
+
     }
 
-    public AST visitLocalDecl(LocalDecl ld) {
-        if (ld.type().isArrayType() || ld.var().name().getArrayDepth() > 0) {
-            ld.setType(constructArrayType(ld.type(), ld.var().name()));
-            ld.var().name().setArrayDepth(0);
-        }
+    @Override
+    public AST visitLocalDecl(LocalDecl localDeclaration) {
+
+        localDeclaration.setType(
+                ConstructArrayTypeFrom(localDeclaration.type(), localDeclaration.var().name()));
+
         return null;
+
     }
 
+    @Override
     public AST visitConstantDecl(ConstantDecl cd) {
-        if (cd.type().isArrayType() || cd.var().name().getArrayDepth() > 0) {
-            cd.setType(constructArrayType(cd.type(), cd.var().name()));
-            cd.var().name().setArrayDepth(0);
-        }
+
+        cd.setType(ConstructArrayTypeFrom(cd.type(), cd.var().name()));
+
         return null;
+
     }
 
-    public AST visitArrayType(ArrayType at) {
-        Type t = constructArrayType(at, null);
-        at.setBaseType(t);
-        return null;
-    }
 }

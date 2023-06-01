@@ -84,7 +84,7 @@ public class ParallelUsageCheck extends Visitor<Object> {
                             .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_702)
                             .addArguments(name)
                             .build());
-                aae.index().visit(this);
+                aae.indexExpression().visit(this);
             }
         }
         return null;

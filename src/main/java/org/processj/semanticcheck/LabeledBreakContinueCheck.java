@@ -1,6 +1,7 @@
 package org.processj.semanticcheck;
 
 import org.processj.ast.*;
+import org.processj.utilities.PJBugManager;
 
 import java.util.HashSet;
 
@@ -30,20 +31,21 @@ public class LabeledBreakContinueCheck {
             BreakStat bs = (BreakStat) a;
             if (bs.target() != null) {
                 String target = bs.target().getname();
-                if (!hs.contains(target)) {
+                if(!hs.contains(target)) {
+
                     // TODO: Proper error
-                    System.out.println("Undefined break label '" + target + "' (or not in scope).");
-                    System.exit(1);
+                    PJBugManager.ReportMessageAndExit("Undefined break label '" + target + "' (or not in scope).");
+
                 }
             }
         } else if (a instanceof ContinueStat) {
             ContinueStat cs = (ContinueStat) a;
             if (cs.target() != null) {
                 String target = cs.target().getname();
-                if (!hs.contains(target)) {
+                if(!hs.contains(target)) {
                     // TODO: Proper Error
-                    System.out.println("Undefined continue label '" + target + "' (or not in scope).");
-                    System.exit(1);
+                    PJBugManager.ReportMessageAndExit("Undefined continue label '" + target + "' (or not in scope).");
+
                 }
             }
         } else if (a instanceof Statement) {
@@ -51,10 +53,10 @@ public class LabeledBreakContinueCheck {
             String label = s.getLabel();
             if (!label.equals("")) {
                 // Check if we already have a label of that name?
-                if (hs.contains(label)) {
+                if(hs.contains(label)) {
                     // TODO: Proper Error
-                    System.out.println("Label '" + label + "' already in use.");
-                    System.exit(1);
+                    PJBugManager.ReportMessageAndExit("Label '" + label + "' already in use.");
+
                 }
                 hs.add(label);
             }

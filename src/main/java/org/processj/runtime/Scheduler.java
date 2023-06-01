@@ -80,7 +80,7 @@ public class Scheduler extends Thread {
 //                // System.err.println("[Scheduler] Max RunQueue Size: " + maxrqsize);
 //
 //                logExecutionTime();
-//                System.exit(1);
+//
 //            }
         }
 

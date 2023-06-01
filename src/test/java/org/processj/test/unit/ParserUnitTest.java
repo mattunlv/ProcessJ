@@ -18,10 +18,9 @@ public class ParserUnitTest extends ProcessJTest {
 
     /**
      * Notes:
-     * - A non-existent package declaration will result in a null value compared to non-existent pragmas resulting in
-     *   an empty sequence
+     * - A non-existent package declaration will result in a null value compared to non-existent pragmas, imports,
+     *   & type decls resulting in an empty sequence
      */
-
     @Test
     public void testCode_empty_emptyPragmaSequence_parserUnitTest() {
 
@@ -29,7 +28,7 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Empty);
 
         // Assert an empty imports sequence
-        AssertEmpty(compilation.pragmas());
+        AssertEmpty(compilation.getPragmas());
 
     }
 
@@ -61,8 +60,19 @@ public class ParserUnitTest extends ProcessJTest {
         // Retrieve the compilation
         final Compilation compilation = CompilationFor(Empty);
 
-        // Check null package declaration
-        Assertions.assertNull(compilation.packageName());
+        // Check empty package declaration
+        AssertEmpty(compilation.getPackageName());
+
+    }
+
+    @Test
+    public void testCode_pragma01_nullPackageName_parserUnitTest() {
+
+        // Retrieve the compilation
+        final Compilation compilation = CompilationFor(Pragma01);
+
+        // Check empty package declaration
+        AssertEmpty(compilation.getPackageName());
 
     }
 

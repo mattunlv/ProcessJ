@@ -7,10 +7,10 @@ public class ParamDecl extends AST implements VarDecl {
     boolean constant;
 
     public ParamDecl(Type type, Name name, boolean constant) {
-        super(type);
-        nchildren = 2;
+        super(new AST[] { type, name });
+
         this.constant = constant;
-        children = new AST[] { type, name };
+
     }
 
     public boolean isConstant() {
@@ -37,7 +37,8 @@ public class ParamDecl extends AST implements VarDecl {
         return "ParamDecl (Type:" + type() + " " + "Name:" + name() + ")";
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) {
         return v.visitParamDecl(this);
     }
+
 }

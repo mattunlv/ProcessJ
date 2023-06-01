@@ -79,12 +79,16 @@ public final class FrequencyFileProcessing {
                     pw.close();
                     System.err.println("[info] Done..");
                 } else {
-                    System.err.println("[error] Server returned non-OK status: " + status);
-                    System.exit(0);
+
+                    PJBugManager.ReportMessageAndExit("[error] Server returned non-OK status: " + status);
+
                 }
+
             } catch (Exception ex) {
+
                 System.err.println("[error] Error connecting to the web server application..");
                 ex.printStackTrace();
+
             }
         }
     }

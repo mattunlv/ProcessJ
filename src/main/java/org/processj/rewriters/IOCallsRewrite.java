@@ -17,11 +17,11 @@ public class IOCallsRewrite extends Visitor<AST> {
         Log.log(in, "Attempting to rewrite invocation of " + in.toString());
 
         if (in.targetProc != null) {
-            Log.log(in,"targetProc is " + in.targetProc.name());
+            Log.log(in,"targetProc is " + in.targetProc);
             if ( in.targetProc.filename != null                    &&
                  in.targetProc.filename.equals("io")               &&
-                (in.targetProc.name().toString().equals("println") ||
-                 in.targetProc.name().toString().equals("print"))) {
+                (in.targetProc.toString().equals("println") ||
+                 in.targetProc.toString().equals("print"))) {
                 Log.log("This is the function we're looking for");
             } else {
                 return in;
@@ -109,7 +109,7 @@ public class IOCallsRewrite extends Visitor<AST> {
                 Log.log("Appending " + params.child(i).toString() + " to rebuiltParams");
                 rebuiltParams.append(params.child(i));
             } else if (params.child(i) instanceof ArrayAccessExpr) {
-                Type t = getArrayType(((ArrayAccessExpr)params.child(i)).target());
+                Type t = getArrayType(((ArrayAccessExpr)params.child(i)).targetExpression());
                 if (t instanceof NamedType) {
                         Log.log("array of NamedTypes");
                     } else if (t instanceof PrimitiveType) {
@@ -200,7 +200,7 @@ public class IOCallsRewrite extends Visitor<AST> {
         Log.log("Finding base type of n-dimensional array");
         Log.log("target of element is " + target.toString());
         if (target instanceof ArrayAccessExpr) {
-            return getArrayType(((ArrayAccessExpr)target).target());
+            return getArrayType(((ArrayAccessExpr)target).targetExpression());
         }
         Type t = null;
         if (target instanceof NameExpr) {
@@ -208,10 +208,10 @@ public class IOCallsRewrite extends Visitor<AST> {
             AST md = ((NameExpr)target).myDecl;
             Log.log("myDecl is " + md.toString());
             if (md instanceof LocalDecl) {
-                t = ((ArrayType)((LocalDecl)md).type()).getActualBaseType();
+                t = ((ArrayType)((LocalDecl)md).type()).getComponentType();
                 Log.log("md instanceof LocalDecl: " + t.toString());
             } else if (md instanceof ParamDecl) {
-                t = ((ArrayType)((ParamDecl)md).type()).getActualBaseType();
+                t = ((ArrayType)((ParamDecl)md).type()).getComponentType();
                 Log.log("md instanceof ParamDecl: " + t.toString());
             }
         }

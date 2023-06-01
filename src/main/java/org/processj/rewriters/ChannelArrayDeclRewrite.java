@@ -1,24 +1,6 @@
 package org.processj.rewriters;
 
-import org.processj.ast.AST;
-import org.processj.ast.ArrayType;
-import org.processj.ast.Assignment;
-import org.processj.ast.BinaryExpr;
-import org.processj.ast.Block;
-import org.processj.ast.ExprStat;
-import org.processj.ast.Expression;
-import org.processj.ast.LocalDecl;
-import org.processj.ast.Name;
-import org.processj.ast.NameExpr;
-import org.processj.ast.NewArray;
-import org.processj.ast.PrimitiveLiteral;
-import org.processj.ast.PrimitiveType;
-import org.processj.ast.ProcTypeDecl;
-import org.processj.ast.Sequence;
-import org.processj.ast.Statement;
-import org.processj.ast.Token;
-import org.processj.ast.UnaryPreExpr;
-import org.processj.ast.Var;
+import org.processj.ast.*;
 import org.processj.codegen.Helper;
 import org.processj.codegen.Tag;
 import org.processj.utilities.Tuple;
@@ -40,9 +22,10 @@ public class ChannelArrayDeclRewrite {
                         if ( b != null ) go(b.stats());
                     } else if ( stat instanceof LocalDecl ) {
                         LocalDecl ld = (LocalDecl) stat;
-                        if ( ld.type().isArrayType() ) {
+                        if ( ld.type() instanceof ArrayType ) {
                             ArrayType type = (ArrayType) ld.type();
-                            if ( type.getActualBaseType().isChannelType() || type.getActualBaseType().isChannelEndType() ) {
+                            if((type.getComponentType() instanceof ChannelType)
+                                    || (type.getComponentType() instanceof ChannelEndType) ) {
                                 // Rewrite the local declaration 
                                 System.out.println(">>>>>>>> " + ld.name());
                             }

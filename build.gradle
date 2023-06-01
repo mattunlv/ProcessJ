@@ -84,6 +84,7 @@ sourceSets {
                                   'lib/ST-4.0.7.jar',
                                   'lib/jflex-1.8.2.jar',
                                   'lib/cup-11b.jar',
+                                  'lib/system-rules-1.19.0.jar',
                                   sourceSets.main.java.classesDirectory])
         runtimeClasspath = files([
                 'lib/opentest4j-1.2.0.jar',
@@ -95,6 +96,7 @@ sourceSets {
                 'lib/ST-4.0.7.jar',
                 'lib/jflex-1.8.2.jar',
                 'lib/cup-11b.jar',
+                'lib/system-rules-1.19.0.jar',
                 sourceSets.main.java.classesDirectory,
                 sourceSets.test.java.classesDirectory])
 

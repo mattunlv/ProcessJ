@@ -42,12 +42,12 @@ public class ResolveNativeImports extends Visitor<AST> {
     
     @Override
     public AST visitPragma(Pragma pr) {
-        String str = pr.value()!=null? pr.value() : "";
-        Log.log(pr, "Visiting a pragma " + pr.pname().getname() + " " + str);
+        String str = pr.getValue()!=null? pr.getValue() : "";
+        Log.log(pr, "Visiting a pragma " + pr.getName().getname() + " " + str);
         if ( str.isEmpty() )
-            hm.put(pr.pname().getname(), pr.pname().getname());
+            hm.put(pr.getName().getname(), pr.getName().getname());
         else
-            hm.put(pr.pname().getname(), str.replace("\"", ""));
+            hm.put(pr.getName().getname(), str.replace("\"", ""));
         return null;
     }
     
@@ -62,7 +62,7 @@ public class ResolveNativeImports extends Visitor<AST> {
                 continue;
             // For each pragma, check if they are part of a native org.processj.library
             // function
-            for (Pragma p : c.pragmas())
+            for (Pragma p : c.getPragmas())
                 p.visit(this);
             // Mark all top-level declarations 'native' if they are part
             // of a PJ native org.processj.library function
@@ -75,7 +75,7 @@ public class ResolveNativeImports extends Visitor<AST> {
     
     @Override
     public AST visitProcTypeDecl(ProcTypeDecl pd) {
-        Log.log(pd, "Visiting a ProcTypeDecl (" + pd.name().getname() + " " + pd.signature() + ")");
+        Log.log(pd, "Visiting a ProcTypeDecl (" + pd + " " + pd.getSignature() + ")");
         if ( !hm.isEmpty() && curImport!=null ) {
             String path = ResolveImports.makeImportPath(curImport);
             Log.log(pd, "Package path: " + path);
@@ -85,7 +85,7 @@ public class ResolveNativeImports extends Visitor<AST> {
                 pd.isNative = true;
                 pd.library = curImport.toString();
                 pd.filename = hm.get("FILE");
-                pd.nativeFunction = pd.name().getname();
+                pd.nativeFunction = pd.toString();
             } else {
                 // TODO: Non-native procedure found??
             }

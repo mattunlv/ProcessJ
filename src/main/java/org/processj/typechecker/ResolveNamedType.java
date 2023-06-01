@@ -34,72 +34,77 @@ public class ResolveNamedType extends Visitor<Type> {
         Log.log("*    R E S O L V E   N A M E D T Y P E    *");
         Log.log("*******************************************");
     }
-    
+
+    @Override
+    public Type visitNamedType(final NamedType namedType) {
+        Log.log(namedType, "Visiting a named type.");
+
+        // If the NamedType has not resolved a Type; we should have already bound a Type
+        // to the NamedType if it specified a Package Access
+        if(!namedType.hasResolvedType()) {
+
+            // Attempt to retrieve a type from the current scope
+            final Type retrieved = (Type) currentScope.getIncludeImports(namedType.toString());
+
+            // If it wasn't in the include imports
+            if(retrieved == null)
+                Log.Error("No Type in Scope: " + namedType);
+            // TODO: Error here
+            //Error.addError(namedType, "Undefined named type '" + namedType + "'.", 3028);
+
+            //retrieved = new ErrorType();
+
+            // Otherwise set from the current scope
+            namedType.setType(retrieved);
+
+        }
+
+        return null;
+
+    }
+
     @Override
     public Type visitArrayType(ArrayType at) {
         Log.log(at, "Visiting an array type.");
-        if ( at.baseType().isNamedType() )
-            at.children[0] = at.baseType().visit(this);
+        if(at.getComponentType() instanceof NamedType)
+            at.children[0] = at.getComponentType().visit(this);
         return null;
     }
-    
-    @Override
-    public Type visitChannelEndType(ChannelEndType ct) {
-        Log.log(ct, "Visiting a channel end type.");
-        if ( ct.baseType().isNamedType() )
-            ct.children[0] = ct.baseType().visit(this);
-        return null;
-    }
-    
+
     @Override
     public Type visitChannelType(ChannelType ct) {
         Log.log(ct, "Visiting a channel type.");
-        if ( ct.baseType().isNamedType() )
-            ct.children[0] = ct.baseType().visit(this);
+        ct.getComponentType().visit(this);
         return null;
     }
-    
+
+    @Override
+    public Type visitChannelEndType(ChannelEndType ct) {
+        Log.log(ct, "Visiting a channel end type.");
+        ct.getComponentType().visit(this);
+        return null;
+    }
+
     @Override
     public Type visitLocalDecl(LocalDecl ld) {
         Log.log(ld, "Visiting a local decl");
-        if ( ld.type().isArrayType() )
+        if (ld.type() instanceof ArrayType)
             ld.type().visit(this);
-        else if ( ld.type().isChannelType() || ld.type().isChannelEndType() )
+        else if (ld.type() instanceof ChannelType || ld.type() instanceof ChannelEndType)
             ld.type().visit(this);
-        else if ( ld.type().isNamedType() )
+        else if ( ld.type() instanceof NamedType )
             ld.children[0] = ld.type().visit(this);
         return null;
     }
-    
-    @Override
-    public Type visitNamedType(NamedType nt) {
-        Log.log(nt, "Visiting a named type.");
-        Type type = nt.type();
-        if ( type==null ) {
-            // Look up the type in the closest import statement going
-            // backwards (i.e., look for a record or protocol type)
-            type = (Type) currentScope.getIncludeImports(nt.name().getname());
-            // If null, check if it was a external packaged
-            // type (i.e., something with ::)
-            if ( type==null ) {
-                if ( nt.name().resolvedPackageAccess!=null ) {
-                    Log.log("Package type accessed with ::");
-                    type = (Type) nt.name().resolvedPackageAccess;
-                } else
-                    ; // TODO: Error??
-            }
-        }
-        return type;
-    }
-    
+
     @Override
     public Type visitParamDecl(ParamDecl pd) {
         Log.log(pd, "Visiting a paramdecl.");
-        if ( pd.type().isArrayType() )
+        if (pd.type() instanceof ArrayType)
             pd.type().visit(this);
-        else if ( pd.type().isChannelType() || pd.type().isChannelEndType() )
+        else if ( pd.type() instanceof ChannelType || pd.type() instanceof ChannelEndType )
             pd.type().visit(this);
-        else if ( pd.type().isNamedType() )
+        else if (pd.type() instanceof NamedType)
             pd.children[0] = pd.type().visit(this);
         return null;
     }
@@ -122,7 +127,7 @@ public class ResolveNamedType extends Visitor<Type> {
             Sequence<RecordMember> se2 = pc.body();
             for (int j=0; j<se2.size(); ++j) {
                 RecordMember rm = se2.child(j);
-                if ( rm.type().isNamedType() )
+                if ( rm.type() instanceof NamedType )
                     rm.children[0] = rm.type().visit(this);
             }
         }
@@ -135,7 +140,7 @@ public class ResolveNamedType extends Visitor<Type> {
         Sequence<RecordMember> se = rt.body();
         for (int i=0; i<se.size(); ++i) {
             RecordMember rm = se.child(i);
-            if ( rm.type().isNamedType() )
+            if ( rm.type() instanceof NamedType )
                 rm.children[0] = rm.type().visit(this);
         }
         return null;

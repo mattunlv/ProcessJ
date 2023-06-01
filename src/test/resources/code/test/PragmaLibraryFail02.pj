@@ -1,0 +1,6 @@
+/**
+ * @test PragmaLibraryFail02
+ * @description Library Pragma failure due to misspelling
+ * @author Carlos L. Cuenca
+ **/
+#pragma LIBRARy;

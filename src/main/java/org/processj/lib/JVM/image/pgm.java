@@ -1,5 +1,7 @@
 package image;
 
+import org.processj.utilities.PJBugManager;
+
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -22,8 +24,8 @@ public class pgm {
             }
             write.close();
         } catch (Exception e) {
-            System.err.println(e);
-            System.exit(1);
+            PJBugManager.ReportMessageAndExit(e.getMessage());
+
         }
     }
 }

@@ -119,9 +119,9 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 	}
 
 	public T visitArrayAccessExpr(ArrayAccessExpr ae) {
-		ae.target().visit(this);
+		ae.targetExpression().visit(this);
 		System.out.print("[");
-		ae.index().visit(this);
+		ae.indexExpression().visit(this);
 		System.out.print("]");
 		return null;
 	}
@@ -132,10 +132,11 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 	}
 
 	public T visitArrayType(ArrayType at) {
-		at.baseType().visit(this);
-		for (int i = 0; i < at.getDepth(); i++)
-			System.out.print("[]");
+
+		System.out.print(at.toString());
+
 		return null;
+
 	}
 
 	public T visitAssignment(Assignment as) {
@@ -191,7 +192,7 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 		if (!modString.equals(""))
 			System.out.print(" ");
 		System.out.print("chan<");
-		ct.baseType().visit(this);
+		ct.getComponentType().visit(this);
 		System.out.print(">");
 		return null;
 	}
@@ -203,11 +204,11 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 	}
 
 	public T visitChannelEndType(ChannelEndType ct) {
-		if (ct.isShared())
+		if (ct.isSharedEnd())
 			System.out.print("shared ");
 		System.out.print("chan<");
-		ct.baseType().visit(this);
-		System.out.print(">." + (ct.isRead() ? "read" : "write"));
+		ct.getComponentType().visit(this);
+		System.out.print(">." + (ct.isReadEnd() ? "read" : "write"));
 		return null;
 	}
 
@@ -304,7 +305,7 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 				// there are some children - if the first is a localDecl so are the rest!
 				if (fs.init().child(0) instanceof LocalDecl) {
 					LocalDecl ld = (LocalDecl) fs.init().child(0);
-					System.out.print(ld.type().typeName() + " ");
+					System.out.print(ld.type().toString() + " ");
 					for (int i = 0; i < fs.init().size(); i++) {
 						ld = (LocalDecl) fs.init().child(i);
 						ld.var().visit(this);
@@ -497,7 +498,7 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 	}
 
 	public T visitPragma(Pragma pr) {
-		System.out.println(tab() + "#pragma " + pr.pname() + " " + (pr.value() == null ? "" : pr.value()));
+		System.out.println(tab() + "#pragma " + pr.getName() + " " + (pr.getValue() == null ? "" : pr.getValue()));
 		return null;
 	}
 
@@ -507,7 +508,7 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 	}
 
 	public T visitPrimitiveType(PrimitiveType pt) {
-		System.out.print(pt.typeName());
+		System.out.print(pt.toString());
 		return null;
 	}
 
@@ -518,7 +519,7 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 			System.out.print(" ");
 		pd.returnType().visit(this);
 		System.out.print(" ");
-		pd.name().visit(this);
+		System.out.print(pd);
 		System.out.print("(");
 		for (int i = 0; i < pd.formalParams().size(); i++) {
 			pd.formalParams().child(i).visit(this);
@@ -589,7 +590,7 @@ public class PrettyPrinter<T extends AST> extends Visitor<T> {
 		if (rt.modifiers().size() > 0)
 			System.out.print(" ");
 		System.out.print("record ");
-		rt.name().visit(this);
+		System.out.print(rt);
 		if (rt.extend().size() > 0) {
 			System.out.print(" extends ");
 			for (int i = 0; i < rt.extend().size(); i++) {

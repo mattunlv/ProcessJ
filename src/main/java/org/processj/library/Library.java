@@ -44,30 +44,32 @@ public class Library {
     /**
      * This method <b>must</b> be called before any of the other methods in this class.
      */
-    public static void decodePragmas(Compilation c) {
+    public static void decodePragmas(final Compilation compilation) {
         // Fill the pragmaTable hash table with values.
         //System.out.println("is c == null?" + (c==null) + c.pragmas());
 
         //System.out.println("is c.pragmas() == null?" + c.pragmas()==null);
-        for (Pragma p : c.pragmas()) {
-            String name = p.pname().getname().toUpperCase(); // TODO: perhaps error if pragma names are lowercase....
+        for(final Pragma pragma: compilation.getPragmas()) {
+            String name = pragma.getName().getname().toUpperCase(); // TODO: perhaps error if pragma names are lowercase....
             Log.log("Looking up pragma '" + name + "'.");
-            if (!ht.containsKey(name))
+            if(!ht.containsKey(name))
                 PJBugManager.INSTANCE.reportMessageAndExit(
                         new PJMessage.Builder()
                         .addArguments("Illegal pragma '" + name + "'.")
                         .build(), MessageType.PRINT_STOP);
+
             int argCount = pragmaArgCount[ht.get(name)];
-            if (argCount != 0 && p.value() == null)
+            if (argCount != 0 && pragma.getValue() == null)
                 PJBugManager.INSTANCE.reportMessageAndExit(
                         new PJMessage.Builder()
                         .addArguments("Pragma '" + name + "' requires 1 parameter, none was given.")
                         .build(), MessageType.PRINT_STOP);
-            if (argCount == 0 && p.value() != null)
+            if (argCount == 0 && pragma.getValue() != null)
                 PJBugManager.INSTANCE.reportMessageAndExit(
                         new PJMessage.Builder()
                         .addArguments("Pragma '" + name + "' does not require any parameters.")
                         .build(), MessageType.PRINT_STOP);
+
             if (pragmaTable.containsKey(name))
                 PJBugManager.INSTANCE.reportMessageAndExit(
                         new PJMessage.Builder()
@@ -77,13 +79,13 @@ public class Library {
                 Log.log("Entering <"
                         + name
                         + ","
-                        + (p.value() != null ? p.value().substring(1,
-                        p.value().length() - 1) : "")
+                        + (pragma.getValue() != null ? pragma.getValue().substring(1,
+                        pragma.getValue().length() - 1) : "")
                         + "> into pragmaTable.");
                 pragmaTable.put(
                         name,
-                        p.value() != null ? p.value().substring(1,
-                                p.value().length() - 1) : "");
+                        pragma.getValue() != null ? pragma.getValue().substring(1,
+                                pragma.getValue().length() - 1) : "");
             }
             // TODO: check values against pragmaArgValues[][];
         }
@@ -129,7 +131,7 @@ public class Library {
                         new PJMessage.Builder()
                         .addArguments("Missing FILE pragma.")
                         .build(), MessageType.PRINT_STOP);
-            if (c.packageName() == null)
+            if (c.getPackageName() == null)
                 PJBugManager.INSTANCE.reportMessageAndExit(
                         new PJMessage.Builder()
                         .addArguments("Library files must declare a package name.")
@@ -177,7 +179,7 @@ public class Library {
                 String language = pragmaTable.get("LANGUAGE");
                 if (language.equals("C")) {
                     c.visit(new Library.CheckProcedures<AST>(true));
-                    generateNativeFiles(c);
+                    c.visit(new Library.GenerateNativeCode<AST>());
                 } else
                     PJBugManager.INSTANCE.reportMessageAndExit(
                             new PJMessage.Builder()
@@ -207,13 +209,13 @@ public class Library {
         }
 
         public T visitProcTypeDecl(ProcTypeDecl pd) {
-            if (nativeLib) {
+            if(nativeLib) {
                 // All NATIVELIB and NATIVE files cannot contain procedures with ProcessJ bodies.
                 if (pd.body() != null)
                     PJBugManager.INSTANCE.reportMessageAndExit(
                             new PJMessage.Builder()
                             .addAST(pd)
-                            .addArguments("Procedure '" + pd.name().getname()
+                            .addArguments("Procedure '" + pd
                             + "' is cannot have a body in a non-ProcessJ org.processj.library file.")
                             .build(), MessageType.PRINT_STOP);
                 boolean nativeModifierFound = false;
@@ -224,7 +226,7 @@ public class Library {
                     PJBugManager.INSTANCE.reportMessageAndExit(
                             new PJMessage.Builder()
                             .addAST(pd)
-                            .addArguments("Procedure '" + pd.name().getname() + "' must be declared native.")
+                            .addArguments("Procedure '" + pd + "' must be declared native.")
                             .build(), MessageType.PRINT_STOP);
             } else {
                 // Regular ProcessJ Library
@@ -232,7 +234,7 @@ public class Library {
                     PJBugManager.INSTANCE.reportMessageAndExit(
                             new PJMessage.Builder()
                             .addAST(pd)
-                            .addArguments("Procedure '" + pd.name().getname() + "' must have a body.")
+                            .addArguments("Procedure '" + pd + "' must have a body.")
                             .build(), MessageType.PRINT_STOP);
 
                 boolean nativeModifierFound = false;
@@ -242,7 +244,7 @@ public class Library {
                     PJBugManager.INSTANCE.reportMessageAndExit(
                             new PJMessage.Builder()
                             .addAST(pd)
-                            .addArguments("Procedure '" + pd.name().getname() + "' cannot be declared native.")
+                            .addArguments("Procedure '" + pd + "' cannot be declared native.")
                             .build(), MessageType.PRINT_STOP);
             }
             return null;
@@ -253,7 +255,7 @@ public class Library {
                 PJBugManager.INSTANCE.reportMessageAndExit(
                         new PJMessage.Builder()
                         .addArguments("Native libraries cannot contain record type declarations ('"
-                        + rd.name().getname() + "'.")
+                        + rd + "'.")
                         .build(), MessageType.PRINT_STOP);
             return null;
         }
@@ -263,7 +265,7 @@ public class Library {
                 PJBugManager.INSTANCE.reportMessageAndExit(
                         new PJMessage.Builder()
                         .addArguments("Native libraries cannot contain protocol type declarations ('"
-                        + pd.name().getname() + "'.")
+                        + pd + "'.")
                         .build(), MessageType.PRINT_STOP);
             return null;
         }
@@ -333,7 +335,7 @@ public class Library {
         Log.log("Library.generateNativeCLibFiles: Native Library: "
                 + libFileName);
 
-        String pjClibFileName = c.packageName().getname() + "_"
+        String pjClibFileName = c.getPackageName().getname() + "_"
                 + pragmaTable.get("FILE");
         String pjHeaderFileName = pragmaTable.get("FILE");
         Log.log("Library.generateNativeCLibFiles: ProcessJ C header file: "
@@ -381,12 +383,12 @@ public class Library {
             file.close();
 
             Log.log("Generated file \"" + pjClibFileName
-                    + ".h\" - this file must be moved to org.processj.lib/C/include/");
+                    + ".h\" - this file must be moved to lib/C/include/");
             Log.log("Generated file \"" + pjClibFileName
-                    + ".c\" - this file must be moved to org.processj.lib/C/include/");
+                    + ".c\" - this file must be moved to lib/C/include/");
             Log.log("Provided file \"" + pjHeaderFileName
-                    + ".pj must be moved to inlcude/C/"
-                    + c.packageName().getname() + "/" + pjHeaderFileName
+                    + ".pj must be moved to include/C/"
+                    + c.getPackageName().getname() + "/" + pjHeaderFileName
                     + ".inc");
 
             headerFile.close();
@@ -398,10 +400,6 @@ public class Library {
         }
     }
 
-    public static void generateNativeFiles(Compilation c) {
-        c.visit(new Library.GenerateNativeCode<AST>());
-    }
-
     private static class GenerateNativeCode<T extends AST> extends Visitor<T> {
         private String pjClibFileName;
         private String pjHeaderFileName;
@@ -410,7 +408,7 @@ public class Library {
         private String packageName;
 
         public T visitCompilation(Compilation c) {
-            pjClibFileName = c.packageName().getname() + "_"
+            pjClibFileName = c.getPackageName().getname() + "_"
                     + pragmaTable.get("FILE");
             pjHeaderFileName = pragmaTable.get("FILE");
             System.out.println("Library.GenerateNativeCode.visitCompilation: ProcessJ C header file: "
@@ -419,7 +417,7 @@ public class Library {
                             + pjClibFileName + ".c");
             System.out.println("Library.GenerateNativeCode.visitCompilation: ProcessJ header file: "
                             + pjHeaderFileName + ".pj");
-            packageName = c.packageName().getname();
+            packageName = c.getPackageName().getname();
 
             //Generate the .h and .c file
             try {
@@ -466,7 +464,7 @@ public class Library {
                         + ".c\" - this file must be moved to org.processj.lib/C/include/");
                 System.out.println("Provided file \"" + pjHeaderFileName
                         + ".pj must be moved to inlcude/C/"
-                        + c.packageName().getname() + "/" + pjHeaderFileName
+                        + c.getPackageName().getname() + "/" + pjHeaderFileName
                         + ".inc");
 
                 headerFile.close();
@@ -479,15 +477,17 @@ public class Library {
         }
 
         public T visitConstantDecl(ConstantDecl cd) {
+
             boolean nativeModifierFound = false;
-            for (Modifier m : cd.modifiers())
+
+            for(Modifier m : cd.modifiers())
                 nativeModifierFound |= (m.getModifier() == Modifier.NATIVE);
 
-            if (nativeModifierFound) {
+            if(nativeModifierFound) {
                 PJBugManager.INSTANCE.reportMessageAndExit(
                         new PJMessage.Builder()
                         .addAST(cd)
-                        .addArguments("Native keyword not allowed in non NATIVELIB org.processj.library constants.")
+                        .addArguments("'native' keyword not allowed in non NATIVELIB library constants.")
                         .build(), MessageType.PRINT_STOP);
             }
             return null;
@@ -498,11 +498,11 @@ public class Library {
                 String procedure = "";
                 // Only primitive types (not Timer or Barrier) can be used as parameter and return types
                 Type returnType = pd.returnType();
-                if (!(returnType instanceof PrimitiveType))
+                if(!(returnType instanceof PrimitiveType))
                     PJBugManager.INSTANCE.reportMessageAndExit(
                             new PJMessage.Builder()
                             .addAST(pd)
-                            .addArguments("Native C org.processj.library procedures must return a primitive type.")
+                            .addArguments("Native C library procedures must return a primitive type.")
                             .build(), MessageType.PRINT_STOP);
                 PrimitiveType pt = (PrimitiveType) returnType;
                 if (pt.getKind() == PrimitiveType.BarrierKind
@@ -510,26 +510,25 @@ public class Library {
                     PJBugManager.INSTANCE.reportMessageAndExit(
                             new PJMessage.Builder()
                             .addAST(pd)
-                            .addArguments("Native C org.processj.library procedures cannot return barrier or timer types.")
+                            .addArguments("Native C library procedures cannot return barrier or timer types.")
                             .build(), MessageType.PRINT_STOP);
                 if (pt.getKind() == PrimitiveType.StringKind)
                     procedure += "char* ";
                 else if (pt.getKind() == PrimitiveType.BooleanKind)
                     procedure += "int ";
                 else
-                    procedure += pt.typeName() + " ";
+                    procedure += pt + " ";
 
                 // Procedure Name
                 // packagename_procname_signature
-                procedure += packageName + "_" + pd.name().getname() + "_";
+                procedure += packageName + "_" + pd + "_";
                 for (ParamDecl param : pd.formalParams()) {
                     if (!(param.type() instanceof PrimitiveType))
                         PJBugManager.INSTANCE.reportMessageAndExit(
                                 new PJMessage.Builder()
                                 .addAST(pd)
-                                .addArguments("Native C org.processj.library procedures can only "
-                                +"accept primitive types as parameters."
-                                + param.type().typeName())
+                                .addArguments("Native C library procedures can only " + "accept primitive types as parameters."
+                                + param.type().toString())
                                 .build(), MessageType.PRINT_STOP);
                     pt = (PrimitiveType) param.type();
                     if (pt.getKind() == PrimitiveType.BarrierKind
@@ -537,10 +536,9 @@ public class Library {
                         PJBugManager.INSTANCE.reportMessageAndExit(
                                 new PJMessage.Builder()
                                 .addAST(pd)
-                                .addArguments("Native C org.processj.library procedures cannot accept "
-                                +"barrier or timer types as parameters.")
+                                .addArguments("Native C org.processj.library procedures cannot accept " +"barrier or timer types as parameters.")
                                 .build(), MessageType.PRINT_STOP);
-                    procedure += pt.signature();
+                    procedure += pt.getSignature();
                 }
                 procedure += "(";
                 int i = 0;
@@ -551,7 +549,7 @@ public class Library {
                     else if (pt.getKind() == PrimitiveType.BooleanKind)
                         procedure += "int";
                     else
-                        procedure += pt.typeName();
+                        procedure += pt.toString(); // TODO: Watch out for RecordTypeDecls for this
                     procedure += " " + param.name();
                     if (i < pd.formalParams().size() - 1)
                         procedure += ", ";
@@ -576,7 +574,7 @@ public class Library {
         }
     }
 
-    public static void generateProcessJFiles(Compilation c) {
+    public static void generateProcessJFiles(final Compilation compilation) {
         // TODO: nothing??
     }
 }

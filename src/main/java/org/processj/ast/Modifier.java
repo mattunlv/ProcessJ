@@ -37,6 +37,28 @@ public class Modifier extends AST {
         return this.modifier;
     }
 
+    /**
+     * <p>Returns a flag indicating if the {@link Modifier} is specified as native.</p>
+     * @return flag indicating if the {@link Modifier} is specified as native.
+     * @since 0.1.0
+     */
+    public final boolean isNative() {
+
+        return this.modifier == NATIVE;
+
+    }
+
+    /**
+     * <p>Returns a flag indicating if the {@link Modifier} is specified as mobile.</p>
+     * @return flag indicating if the {@link Modifier} is specified as mobile.
+     * @since 0.1.0
+     */
+    public final boolean isMobile() {
+
+        return this.modifier == MOBILE;
+
+    }
+
     public static boolean hasModifierSet(Sequence<Modifier> mo, int modifier) {
         for (Modifier m : mo) {
             if (m.getModifier() == modifier)

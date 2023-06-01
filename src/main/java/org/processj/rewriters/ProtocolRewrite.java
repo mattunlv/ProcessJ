@@ -44,14 +44,14 @@ public class ProtocolRewrite extends Visitor<AST> {
     }
     
     public Set<Name> addExtendProtocolName(AST a) {
-        Log.log(a, "extends a ProtocolypeDecl (" + ((ProtocolTypeDecl) a).name().getname() + ")");
+        Log.log(a, "extends a ProtocolypeDecl (" + a + ")");
         ProtocolTypeDecl pd = (ProtocolTypeDecl) a;
         Set<Name> set = new LinkedHashSet<>();
-        Log.log(pd, "adding protocol " + pd.name().getname());
+        Log.log(pd, "adding protocol " + pd);
         set.add(pd.name());
         // Add extended protocols
         for (Name parent : pd.extend()) {
-            if (sym.get(parent.getname()) != null) {
+            if (sym.get(parent.toString()) != null) {
                 Set<Name> setNames = addExtendProtocolName((ProtocolTypeDecl) sym.get(parent.getname()));
                 for (Name pdt : setNames) {
                     boolean found = addProtocolName(set, pdt);
@@ -66,7 +66,7 @@ public class ProtocolRewrite extends Visitor<AST> {
     // DONE
     @Override
     public AST visitProtocolTypeDecl(ProtocolTypeDecl pd) {
-        Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd.name().getname() + ")");
+        Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd + ")");
         Set<Name> set = new LinkedHashSet<>();
         // Merge the member tags of all extended protocols
         for (Name name : pd.extend())
@@ -78,7 +78,7 @@ public class ProtocolRewrite extends Visitor<AST> {
         // Rewrite the extend node
         for (Name n : set)
             pd.extend().append(n);
-        Log.log(pd, String.format("Protocol %s with %s parent(s)", pd.name().getname(), pd.extend().size()));
+        Log.log(pd, String.format("Protocol %s with %s parent(s)", pd, pd.extend().size()));
         for (Name n : pd.extend())
             Log.log(pd, "> protocol " + n);
         return null;

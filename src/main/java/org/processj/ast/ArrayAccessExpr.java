@@ -10,19 +10,24 @@ public class ArrayAccessExpr extends Expression {
         children = new AST[] { target, index };
     }
 
-    public Expression target() {
+    @Override
+    public String toString() {
+        return targetExpression() + "[" + indexExpression() + "]";
+    }
+
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) {
+
+        return visitor.visitArrayAccessExpr(this);
+
+    }
+
+    public final Expression targetExpression() {
         return (Expression) children[0];
     }
 
-    public Expression index() {
+    public final Expression indexExpression() {
         return (Expression) children[1];
     }
 
-    public String toString() {
-        return target() + "[" + index() + "]";
-    }
-
-    public <S extends Object> S visit(Visitor<S> v) {
-        return v.visitArrayAccessExpr(this);
-    }
 }

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.processj.utilities.PJBugManager;
 import org.processj.utilities.Pair;
 import org.processj.utilities.PJUtil;
 
@@ -62,8 +63,8 @@ public class PJRecord {
         } catch (Exception e) {
             // An exception should never be thrown because the members of a
             // PJRecord are 'public' by default!
-            System.out.println("Failed to access field of PJRecord");
-            System.exit(1);
+            PJBugManager.ReportMessageAndExit("Failed to access field of PJRecord");
+
         }
         sb.append("]");
         return sb.toString();

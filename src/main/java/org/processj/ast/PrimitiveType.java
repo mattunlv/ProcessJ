@@ -23,14 +23,104 @@ public class PrimitiveType extends Type {
 
     private int kind;
 
-    public PrimitiveType(Token p_t, int kind) {
+    /// ------------
+    /// Constructors
+
+    public PrimitiveType(final Token p_t, final int kind) {
         super(p_t);
         this.kind = kind;
     }
 
-    public PrimitiveType(int kind) {
+    public PrimitiveType(final int kind) {
         super((AST) null);
         this.kind = kind;
+    }
+
+    /// ----------------
+    /// java.lang.Object
+
+    /**
+     * <p>Returns a flag indicating if the specified {@link Object} is an instance of {@link PrimitiveType} & both
+     * represent the same {@link Type} via name.</p>
+     * @param that The {@link Object} instance to check.
+     * @return Flag indicating if the specified {@link Object} is an instance of {@link PrimitiveType} & both
+     *         represent the same {@link Type} via name.
+     * @since 0.1.0
+     */
+    @Override
+    public final boolean equals(final Object that) {
+
+        return super.equals(that) && (that instanceof PrimitiveType);
+
+    }
+
+    /**
+     * <p>Returns a literal {@link String} representation of the {@link PrimitiveType}.</p>
+     * @return Literal {@link String} representation of the {@link PrimitiveType}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String toString() {
+
+        return names[kind];
+
+    }
+
+    /// --------------------
+    /// org.processj.ast.AST
+    
+    /**
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link PrimitiveType}.
+     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitPrimitiveType(PrimitiveType)} method.</p>
+     * @param visitor The {@link Visitor} to dispatch.
+     * @return Type result of the visitation.
+     * @param <S> Parametric type parameter.
+     */
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) {
+
+        return visitor.visitPrimitiveType(this);
+
+    }
+
+    /// ---------------------
+    /// org.processj.ast.Type
+
+    /**
+     * <p>Returns the internal {@link String} signature representing the {@link ExternType}.</p>
+     * @return The internal {@link String} signature representing the {@link ExternType}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String getSignature() {
+        switch (kind) {
+            case BooleanKind:
+                return "Z";
+            case ByteKind:
+                return "B";
+            case ShortKind:
+                return "S";
+            case CharKind:
+                return "C";
+            case IntKind:
+                return "I";
+            case LongKind:
+                return "J";
+            case FloatKind:
+                return "F";
+            case DoubleKind:
+                return "D";
+            case StringKind:
+                return "T";
+            case VoidKind:
+                return "V";
+            case BarrierKind:
+                return "R";
+            case TimerKind:
+                return "M";
+            default:
+                return "UNKNOWN TYPE";
+        }
     }
 
     /** Return the size of this type in bytes in C. */
@@ -71,54 +161,8 @@ public class PrimitiveType extends Type {
         return p1.kind;
     }
 
-    public String toString() {
-        return typeName();
-    }
-
-    public String typeName() {
-        return names[kind];
-    }
-
     public int getKind() {
         return kind;
-    }
-
-    public String signature() {
-        switch (kind) {
-        case BooleanKind:
-            return "Z";
-        case ByteKind:
-            return "B";
-        case ShortKind:
-            return "S";
-        case CharKind:
-            return "C";
-        case IntKind:
-            return "I";
-        case LongKind:
-            return "J";
-        case FloatKind:
-            return "F";
-        case DoubleKind:
-            return "D";
-        case StringKind:
-            return "T";
-        case VoidKind:
-            return "V";
-        case BarrierKind:
-            return "R";
-        case TimerKind:
-            return "M";
-        default:
-            return "UNKNOWN TYPE";
-        }
-    }
-
-    // *************************************************************************
-    // ** Visitor Related Methods
-
-    public <S extends Object> S visit(Visitor<S> v) {
-        return v.visitPrimitiveType(this);
     }
 
     // *************************************************************************
@@ -126,23 +170,24 @@ public class PrimitiveType extends Type {
 
     // α =T β ⇔ Primitive?(α) ∧ Primitive?(β) ∧ α = β
     @Override
-    public boolean typeEqual(Type t) {
-        if (!t.isPrimitiveType())
-            return false;
-        PrimitiveType other = (PrimitiveType) t;
-        return (this.kind == other.kind);
+    public boolean typeEqual(final Type that) {
+
+        return this.equals(that);
+
     }
 
     // α ∼T β ⇔ Primitive?(α) ∧ Primitive?(β) ∧ α =T β
     @Override
-    public boolean typeEquivalent(Type t) {
-        return this.typeEqual(t);
+    public boolean typeEquivalent(Type that) {
+
+        return this.equals(that);
+
     }
 
     // α :=T β ⇔ Primitive?(α) ∧ Primitive?(β) ∧ β ≤ α
     @Override
     public boolean typeAssignmentCompatible(Type t) {
-        if (!t.isPrimitiveType())
+        if (!(t instanceof PrimitiveType))
             return false;
         PrimitiveType other = (PrimitiveType) t;
         return other.typeLessThanEqual(this);
@@ -161,7 +206,7 @@ public class PrimitiveType extends Type {
     // α <=T β ⇔ Primitive?(α) ∧ Primitive?(β) ∧
     // (α =T β || (Numeric?(α) ∧ Numeric?(β) ∧ α <T β))
     public boolean typeLessThanEqual(Type t) {
-        if (!t.isPrimitiveType())
+        if (!(t instanceof PrimitiveType))
             return false;
         if (t.typeEqual(this))
             return true;
@@ -179,11 +224,6 @@ public class PrimitiveType extends Type {
         if (this.kind < t.kind)
             return t;
         return this;
-    }
-
-    @Override
-    public boolean isPrimitiveType() {
-        return true;
     }
 
     @Override

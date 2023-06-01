@@ -2,26 +2,122 @@ package org.processj.ast;
 
 import org.processj.utilities.Visitor;
 
+/**
+ * <p>Class that represents a {@link Pragma}.</p>
+ * @author Jan B. Pedersen
+ * @author Cabel Shrestha
+ * @author Benjamin Cisneros
+ * @author Carlos L. Cuenca.
+ * @version 1.0.0
+ * @since 0.1.0
+ * @see AST
+ */
 public class Pragma extends AST {
 
-    private String value;
+    /// ---------------
+    /// Private Members
 
-    public Pragma(Name pname, String value) {
-        super(pname);
-        nchildren = 1;
-        this.value = value;
-        children = new AST[] { pname };
+    /**
+     * <p>The {@link Name} corresponding to the {@link Pragma}.</p>
+     */
+    private final Name   name    ;
+
+    /**
+     * <p>The {@link String} literal value specified with the {@link Pragma}.</p>
+     */
+    private final String value   ;
+
+    /// ------------
+    /// Constructors
+
+    /**
+     * <p>Initializes the {@link Pragma} to its' default state.</p>
+     * @param name The {@link Name} corresponding to the {@link Pragma}.
+     * @param stringLiteral The {@link String} literal value specified with the {@link Pragma}.
+     * @since 0.1.0
+     */
+    public Pragma(final Name name, final String stringLiteral) {
+        super(new AST[] { name });
+
+        this.name   = name          ;
+        this.value  = stringLiteral ;
+
     }
 
-    public Name pname() {
-        return (Name) children[0];
+    /// ----------------
+    /// java.lang.Object
+
+    // TODO: Hashcode
+
+    /**
+     * <p>Returns a boolean flag indicating if the specified {@link Pragma} is identical to the
+     * given {@link Pragma}. This method will check the super class invocation of {@link Object#equals(Object)},
+     * the instance of the specified {@link Object}, the {@link Name}, & the {@link String} literal value.</p>
+     * @param that The {@link Object} instance to check against the given instance.
+     * @return boolean flag indicating if the specified instance is identical to this.
+     * @since 0.1.0
+     */
+    @Override
+    public final boolean equals(final Object that) {
+
+        return super.equals(that) && (that instanceof Pragma)
+                && this.toString().equals(that.toString())
+                && this.value.equals(((Pragma) that).value);
+
     }
 
-    public String value() {
-        return value;
+    /**
+     * <p>Returns the {@link String} representation of the {@link Pragma}.</p>
+     * @return {@link String} representation of the {@link Pragma}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String toString() {
+
+        return this.getName().getname().toUpperCase();
+
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
-        return v.visitPragma(this);
+    /// --------------------
+    /// org.processj.ast.AST
+
+    /**
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link Pragma}.
+     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitPragma} method.</p>
+     * @param visitor The {@link Visitor} to dispatch.
+     * @return Type result of the visitation.
+     * @param <S> Parametric type parameter.
+     */
+    @Override
+    public <S> S visit(final Visitor<S> visitor) {
+
+        return visitor.visitPragma(this);
+
     }
+
+    /// --------------
+    /// Public Methods
+
+    /**
+     * <p>Returns the {@link Name} instance corresponding with the {@link Pragma}.</p>
+     * @return {@link Name} instance corresponding with the {@link Pragma}.
+     * @since 0.1.0
+     */
+    public Name getName() {
+
+        return this.name;
+
+    }
+
+    /**
+     * <p>Returns the {@link String} literal value specified with the {@link Pragma}.</p>
+     * @return {{@link String} literal value specified with the {@link Pragma}.
+     * @since 0.1.0
+     */
+    public String getValue() {
+
+        return this.value;
+
+    }
+
 }

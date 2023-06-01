@@ -203,6 +203,15 @@ public class ProcessJTest {
     protected final static TestInputFile Par03
             = new TestInputFile("code/test/", "Par03",
                         "pj", "java");
+    protected final static TestInputFile Pragma01
+            = new TestInputFile("code/test/", "Pragma01",
+            "pj", "java");
+    protected final static TestInputFile PragmaLibraryFail01
+            = new TestInputFile("code/test/", "PragmaLibraryFail01",
+            "pj", "java");
+    protected final static TestInputFile PragmaLibraryFail02
+            = new TestInputFile("code/test/", "PragmaLibraryFail02",
+            "pj", "java");
     protected final static TestInputFile PriAlt01
             = new TestInputFile("code/test/", "PriAlt01",
                         "pj", "java");

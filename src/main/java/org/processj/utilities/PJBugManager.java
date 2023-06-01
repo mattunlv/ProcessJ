@@ -1,5 +1,7 @@
 package org.processj.utilities;
 
+import org.processj.ProcessJc;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,7 +67,31 @@ public enum PJBugManager {
             ++errorNum;
         trace.push(bug);
     }
-    
+
+    public static void ReportMessageAndExit(final Object... arguments) {
+
+        INSTANCE.reportMessageAndExit(arguments);
+
+    }
+
+    public static void ReportErrorAndExitWithUsage(final MessageNumber messageNumber) {
+
+        INSTANCE.reportErrorAndExitWithUsage(messageNumber);
+
+    }
+
+    public void reportMessageAndExit(final Object... arguments) {
+
+        this.reportMessageAndExit(new PJMessage.Builder().addArguments(arguments).build(), MessageType.PRINT_STOP);
+
+    }
+
+    public void reportErrorAndExitWithUsage(final MessageNumber messageNumber) {
+
+        this.reportErrorAndExitWithUsage(new PJMessage.Builder().addError(messageNumber).build(), MessageType.PRINT_STOP);
+
+    }
+
     public void reportMessageAndExit(PJBugMessage bug, MessageType type) {
         bug = Assert.nonNull(bug, "Compiler error message cannot be null");
         boolean stop = false;
@@ -78,13 +104,37 @@ public enum PJBugManager {
             if (postPonedMessage == null)
                 postPonedMessage = bug;
             System.out.println(bug.getRenderedMessage());
-            if (stop)
+            if(stop)
                 System.exit(1);
         case DONT_PRINT_CONTINUE:
             break;
         }
     }
-    
+
+    public void reportErrorAndExitWithUsage(PJBugMessage bug, MessageType type) {
+        bug = Assert.nonNull(bug, "Compiler error message cannot be null");
+        boolean stop = false;
+        addMessageAndExit(bug, bug.getMessageNumber());
+        switch(type) {
+            case PRINT_STOP:
+                stop = true;
+            case PRINT_CONTINUE:
+                // Throw the first error that occurred
+                if (postPonedMessage == null)
+                    postPonedMessage = bug;
+                System.out.println(bug.getRenderedMessage());
+                if(stop) {
+
+                    ProcessJc.printUsage();
+                    System.exit(1);
+
+                }
+
+            case DONT_PRINT_CONTINUE:
+                break;
+        }
+    }
+
     public void reportMessage(PJBugMessage bug) {
         MessageType type = MessageType.PRINT_STOP;
         if (bug.getMessageNumber() != null)

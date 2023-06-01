@@ -24,7 +24,6 @@ import org.processj.utilities.PJBugManager;
 import org.processj.utilities.ConfigFileReader;
 import org.processj.utilities.Language;
 import org.processj.utilities.Log;
-import org.processj.utilities.PJMessage;
 import org.processj.utilities.Settings;
 import org.processj.utilities.SymbolTable;
 import org.processj.utilities.VisitorMessageNumber;
@@ -82,7 +81,7 @@ public class ProcessJc {
     public boolean showColor = false;
     public boolean help = false;
     public String include = null;
-    public boolean showMessage = false;
+    public boolean showMessage = true;
     public Language target = Settings.language;
     public boolean version = false;
     public boolean visitAll = false;
@@ -115,18 +114,19 @@ public class ProcessJc {
 //        FrequencyFileProcessing.updateFrequency();
         ProcessJc pJc = new ProcessJc(args);
         // Do we have any arguments??
-        if ( args.length==2 ) { // @0: -include, @1: path
-            System.out.print(new PJMessage.Builder()
-                    .addError(VisitorMessageNumber.RESOLVE_IMPORTS_100)
-                    .build()
-                    .getST()
-                    .render());
-            System.out.println("...");
-            pJc.printUsageAndExit();
+        if(args.length == 2) { // @0: -include, @1: path
+
+            PJBugManager.ReportErrorAndExitWithUsage(VisitorMessageNumber.RESOLVE_IMPORTS_100);
+
         }
 
-        if ( pJc.help ) {
-            pJc.printUsageAndExit();
+        if(pJc.help) {
+
+            printUsage();
+
+            // TODO: Remove this, this is bad form
+            return;
+
         }
         if ( pJc.version ) {
             pJc.version();
@@ -149,9 +149,10 @@ public class ProcessJc {
                     PJBugManager.INSTANCE.setPackageName(absoluteFilePath);
                     s = new Lexer(new java.io.FileReader(absoluteFilePath));
                     p = new Parser(s);
-                } catch (Exception e) {
-                    System.err.println(e.getMessage());
-                    System.exit(1);
+                } catch(Exception e) {
+
+                    PJBugManager.ReportMessageAndExit(e.getMessage());
+
                 }
                 try {
                     java_cup.runtime.Symbol r = ((Parser) p).parse();
@@ -159,28 +160,32 @@ public class ProcessJc {
                     Compilation c = ((Compilation) root);
                     // This is needed in order to resolve the name of the package
                     // the user-defined or native org.processj.library belongs to
-                    if ( c.packageName()!=null ) {
-                        c.packageName = ResolveImports.packageNameToString(c.packageName());
+                    if ( c.getPackageName()!=null ) {
+                        c.packageName = ResolveImports.packageNameToString(c.getPackageName());
                     }
                     Butters.decodePragmas(c);
                     System.out.println("** LIBRARY COMPLITED SUCCESSFULLY **");
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(1);
+
+                    //e.printStackTrace
+                    PJBugManager.ReportMessageAndExit(e.getMessage());
+
                 }
             } else if ( pJc.userlib ){
                 // TODO: move files to the correct directory??
             } else {
-                System.out.println("Must specify if the org.processj.library is 'native' or 'user-defined'");
-                System.exit(1);
+
+                PJBugManager.ReportMessageAndExit("Must specify if the org.processj.library is 'native' or 'user-defined'");
+
             }
         }
-        if ( pJc.userlib || pJc.nativelib ) {
-            System.out.println("Missing command '-install'");
-            System.exit(1);
+        if(pJc.userlib || pJc.nativelib) {
+
+            PJBugManager.ReportMessageAndExit("Missing command '-install'");
+
         }
         // Process source file, one by one
-        for (String f : pJc.inputFiles) {
+        for(String f : pJc.inputFiles) {
             File inFile = new File(f);
             Lexer s = null;
             Parser p = null;
@@ -192,20 +197,15 @@ public class ProcessJc {
                 s = new Lexer(new java.io.FileReader(absoluteFilePath));
                 p = new Parser(s);
             } catch (Exception e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
+                PJBugManager.ReportMessageAndExit(e.getMessage());
             }
 
             try {
                 java_cup.runtime.Symbol r = ((Parser) p).parse();
                 root = (AST) r.value;
                 //TODO: handle org.processj.syntax error!!
-            } catch (java.io.IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
             } catch (Exception e) {
-                System.err.println(e.getMessage()); // Handle error!!
-                System.exit(1);
+                PJBugManager.ReportMessageAndExit(e.getMessage());
             }
 
             // Cast the result from the parse to a Compilation -- this is
@@ -220,8 +220,8 @@ public class ProcessJc {
             // The parent's absolute path of the compiled file
             c.path = parentPath.substring(0, parentPath.lastIndexOf(File.separator));
             // A package declaration is optional -- this can be null
-            if ( c.packageName()!=null ) {
-                c.packageName = ResolveImports.packageNameToString(c.packageName());
+            if(c.getPackageName()   != null) {
+                c.packageName = ResolveImports.packageNameToString(c.getPackageName());
             }
             // Decode pragmas -- these are used for generating stubs from libraries.
             // No regular program would have them
@@ -232,26 +232,27 @@ public class ProcessJc {
             SymbolTable globalTypeTable = new SymbolTable("Main file: " + PJBugManager.INSTANCE.getFileName());
 
             // Dump log messages if true
-            if ( pJc.visitAll ) {
+            if(pJc.visitAll) {
                 Log.startLogging();
             }
+
             // Dump generated AST
-            if ( pJc.showTree ) {
+            if(pJc.showTree) {
                 c.visit(new ParseTreePrinter());
             }
 
             SymbolTable.hook = null;
 
             // Visit import declarations
-            if ( pJc.showMessage )
+            if(pJc.showMessage)
                 System.out.println("-- Resolving imports.");
-            c.visit(new org.processj.namechecker.ResolveImports<AST>(globalTypeTable));
+            c.visit(new org.processj.namechecker.ResolveImports<>(globalTypeTable));
             globalTypeTable.printStructure("");
 
             // Visit top-level declarations
-            if ( pJc.showMessage )
+            if(pJc.showMessage)
                 System.out.println("-- Declaring Top Level Declarations.");
-            c.visit(new org.processj.namechecker.TopLevelDecls<AST>(globalTypeTable));
+            c.visit(new org.processj.namechecker.TopLevelDecls<>(globalTypeTable));
 
             // Visit and re-construct record types correctly
             if ( pJc.showMessage )
@@ -290,7 +291,7 @@ public class ProcessJc {
 
             // Visit and re-construct array literals
             if ( pJc.showMessage )
-                System.out.println("-- Reconstructing array literas.");
+                System.out.println("-- Reconstructing array literals.");
             c.visit(new org.processj.rewriters.ArraysRewrite());
 
             // Visit resolve named type
@@ -382,8 +383,8 @@ public class ProcessJc {
             c.visit(new org.processj.rewriters.ParFor());
             
             // Terminate if we have any errors
-            if ( PJBugManager.INSTANCE.getErrorCount() > 0 ) {
-                pJc.exit(1);
+            if(PJBugManager.INSTANCE.getErrorCount() > 0) {
+                PJBugManager.ReportMessageAndExit("Errors: " + PJBugManager.INSTANCE.getErrorCount());
             }
 
             // If we're generating C++ code, we need to rewrite print/println statements
@@ -402,8 +403,7 @@ public class ProcessJc {
                 }
             else {
                 // Unknown target language so abort/terminate program
-                System.out.println("Invalid target language!");
-                System.exit(1);
+                PJBugManager.ReportMessageAndExit("Invalid target language!");
             }
 
             System.out.println("** COMPILATION COMPLITED SUCCESSFULLY **");
@@ -501,16 +501,15 @@ public class ProcessJc {
                             } else
                                 f.set(this, true);
                         } catch (Exception e) {
-                        System.out.println(e);
-                            System.out.println("Failed to access field '" + o.fieldName + "'");
-                            exit(101);
+                            // Exit code 101
+                            PJBugManager.ReportMessageAndExit(e.getMessage() + "\n" + "Failed to access field '" + o.fieldName + "'");
                         }
                         break;
                     }
                 }
-                if ( !foundOption ) {
-                    System.out.println("Invalid option '" + arg + "' found.");
-                    exit(101);
+                if(!foundOption) {
+                    // Exit code 101
+                    PJBugManager.ReportMessageAndExit("Invalid option '" + arg + "' found.");
                 }
             }
         }
@@ -523,19 +522,21 @@ public class ProcessJc {
         f.set(this, value);
     }
 
-    public void printUsageAndExit() {
-        for (Option o : OPTIONS)
+    public static void printUsage() {
+
+        for(Option o : OPTIONS)
             System.out.println(String.format("%-20s %s", o.optionName, o.description));
-        exit(0);
+
+    }
+
+    public void printUsageAndExit() {
+        for(Option o : OPTIONS)
+            System.out.println(String.format("%-20s %s", o.optionName, o.description));
     }
 
     public void version() {
         String msg = "ProcessJ Version: " + Settings.VERSION;
         System.err.println(msg);
-        exit(0);
     }
 
-    public void exit(int code) {
-        System.exit(code);
-    }
 }

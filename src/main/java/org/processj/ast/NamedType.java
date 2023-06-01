@@ -4,83 +4,177 @@ import org.processj.utilities.Visitor;
 
 public class NamedType extends Type implements DefineTopLevelDecl {
 
+    /// --------------
+    /// Private Fields
+
+    /**
+     * <p>The {@link Name} instance corresponding with the {@link NamedType}.</p>
+     */
+    private final Name      name            ;
+
+    /**
+     * <p>{@link String} value of the {@link NamedType}'s name.</p>
+     */
+    private final String    nameLiteral     ;
+
+    /**
+     * <p>The {@link Name}'s resolved {@link Type}; either through the {@link Compilation}'s scope or a resolved
+     * package access.</p>
+     */
+    private Type            resolvedType    ;
+
     private DefineTopLevelDecl resolvedTopLevelDecl = null; // could be a SymbolTable
     // This field is set to the actual type this named type resolved to.
     // This is done in the resolve method in org.processj.typechecker/TypeChecker.java
-    private Type actualType = null;
 
-    public NamedType(Name name) {
-        super(name);
-        nchildren = 1;
-        children = new AST[] { name };
+    /// ------------
+    /// Constructors
+
+    public NamedType(final Name name) {
+        super(new AST[] { name });
+        this.nameLiteral    = (name != null) ? name.toString() : "";
+        this.name           = name;
+        this.resolvedType   = null;
     }
 
-    public NamedType(Name name, Type type) {
-        this(name);
-        this.actualType = type;
-        nchildren = 1;
-        children = new AST[] { name };
+    public NamedType(final Name name, final Type type) {
+        super(new AST[] { name });
+        this.nameLiteral    = (name != null) ? name.toString() : "";
+        this.name           = name;
+        this.resolvedType   = type;
+    }
+
+    /// ----------------
+    /// java.lang.Object
+
+    /**
+     * <p>Returns a flag indicating if the specified {@link Object} is an instance of the {@link NamedType}'s
+     * resolved {@link Type} & both represent the same {@link Type} via name.</p>
+     * @param that The {@link Object} instance to check.
+     * @return Flag indicating if the specified {@link Object} is an instance of the {@link NamedType}'s
+     *          resolved {@link Type} & both represent the same {@link Type} via name.
+     * @since 0.1.0
+     */
+    @Override
+    public final boolean equals(final Object that) {
+
+        return super.equals(that) && (this.resolvedType != null) && this.resolvedType.equals(that);
+
+    }
+
+    /**
+     * <p>Returns a literal {@link String} representation of the {@link NamedType}.</p>
+     * @return Literal {@link String} representation of the {@link NamedType}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String toString() {
+
+        return (this.resolvedType == null) ? this.nameLiteral : this.resolvedType.toString();
+
+    }
+
+    /// --------------------
+    /// org.processj.ast.AST
+    
+    /**
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link NamedType}.
+     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitNamedType(NamedType)} method.</p>
+     * @param visitor The {@link Visitor} to dispatch.
+     * @return Type result of the visitation.
+     * @param <S> Parametric type parameter.
+     */
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) {
+
+        return visitor.visitNamedType(this);
+
+    }
+
+    /// ---------------------
+    /// org.processj.ast.Type
+
+    /**
+     * <p>Returns the internal {@link String} signature representing the {@link NamedType}.</p>
+     * @return The internal {@link String} signature representing the {@link NamedType}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String getSignature() {
+
+        return "L" + this.nameLiteral + ";";
+
+    }
+
+    /// --------------
+    /// Public Methods
+
+    /**
+     * <p>Returns a flag indicating if the {@link NamedType} has a bound, resolved {@link Type}.</p>
+     * @return Flag indicating if the {@link NamedType} has a bound, resolved {@link Type}.
+     * @since 0.1.0
+     */
+    public final boolean hasResolvedType() {
+
+        return this.resolvedType != null;
+
+    }
+
+    /**
+     * <p>Returns a flag indicating if the {@link Name} is prefixed with a fully-qualified package name.</p>
+     * @return Flag indicating if the {@link Name} is prefixed with a fully-qualified package name.
+     * @since 0.1.0
+     */
+    public final boolean specifiesPackage() {
+
+        return this.name.specifiesPackage();
+
     }
 
     public Name name() {
-        return (Name) children[0];
+
+        return this.name;
+
     }
 
-    public Type type() {
-        return actualType;
+    public final Type getType() {
+
+        return this.resolvedType;
+
     }
 
-    public void setType(Type type) {
-        this.actualType = type;
-    }
+    public final void setType(Type type) {
 
-    public String typeName() {
-        return "NamedType: " + name();
+        this.resolvedType = type;
+
     }
 
     public void setResolvedTopLevelDecl(DefineTopLevelDecl td) {
         this.resolvedTopLevelDecl = td;
     }
 
-    public String toString() {
-        return typeName();
-    }
-
-    public String signature() {
-        return "L" + name().getname() + ";";
-    }
-
-    public <S extends Object> S visit(Visitor<S> v) {
-        return v.visitNamedType(this);
-    }
-
-    // ********************
-    // Type Related Stuff
-    // ********************
-
+    // TODO
     @Override
-    public boolean isNamedType() {
-        return true;
+    public boolean typeEqual(final Type that) {
+
+        return this.equals(that);
+
     }
 
     // TODO
     @Override
-    public boolean typeEqual(Type t) {
-        if (!t.isNamedType())
-            return false;
-        NamedType nt = (NamedType) t;
-        return name().getname().equals(nt.name().getname());
+    public boolean typeEquivalent(final Type that) {
+
+        return this.equals(that);
+
     }
 
     // TODO
     @Override
-    public boolean typeEquivalent(Type t) {
-        return this.typeEqual(t);
+    public boolean typeAssignmentCompatible(final Type that) {
+
+        return this.equals(that);
+
     }
 
-    // TODO
-    @Override
-    public boolean typeAssignmentCompatible(Type t) {
-        return this.typeEqual(t);
-    }
 }
