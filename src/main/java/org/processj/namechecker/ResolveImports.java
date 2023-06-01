@@ -20,6 +20,9 @@ import org.processj.utilities.Visitor;
 import org.processj.utilities.VisitorMessageNumber;
 import org.processj.utilities.Settings;
 
+import static org.processj.utilities.Files.IsDirectory;
+import static org.processj.utilities.Files.IsFile;
+
 public class ResolveImports<T extends AST> extends Visitor<T> {
 
     public static String currentFileName = PJBugManager.INSTANCE.getFileName();
@@ -164,13 +167,11 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
         // An import is first tried in the local directory
         // then in the include directory - unless it is of the form 'f' then it must be local.
         // Make the path for this import
-        String path = ResolveImports.makeImportPath(importStatement);
-
-        Log.log("visitImport(): Package path is : " + importStatement.getPath());
-        Log.log("visitImport(): Package file name is : " + importStatement.getSymbol());
-
         // Try local first
-        String fileName = /*new File("").getAbsolutePath() + "/" +*/ importStatement.getPath();
+        String path = /*new File("").getAbsolutePath() + "/" +*/ importStatement.getPath();
+
+        Log.log("visitImport(): Package path is : " + path);
+        Log.log("visitImport(): Package file name is : " + importStatement.getSymbol());
 
         // 'fileList' will hold a list of files found in wildcard imports (.*)
         ArrayList<String> fileList = new ArrayList<String>();
@@ -178,61 +179,81 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
         if(importStatement.isWildcard()) { // a .* import
 
             // Is it a local directory?
-            if((new File(fileName).isDirectory())) {
+            if(IsDirectory(path)) {
+
                 // Yes, so add it's content to the fileList
-                makeFileList(fileList, fileName);
+                makeFileList(fileList, path);
+
             } else {
+
                 // It was not a local directory, but see if it is a library directory
-                fileName = new File(Settings.includeDir)
+                path = new File(Settings.includeDir)
                         .getAbsolutePath() + "/" + Settings.language + "/" + importStatement.getPath();
-                Log.log("visitImport(): Not a local, so try a library: " + fileName);
-                if (new File(fileName).isDirectory()) {
+
+                Log.log("visitImport(): Not a local, so try a library: " + path);
+
+                if(IsDirectory(path)) {
+
                     // Yes, it was, so add it's content to the fileList
-                    makeFileList(fileList, fileName);
+                    makeFileList(fileList, path);
+
                 } else {
+
                     // Oh no, the directory wasn't found at all!
                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                             .addAST(importStatement)
                             .addError(VisitorMessageNumber.RESOLVE_IMPORTS_103)
                             .addArguments(importStatement.getPackageName())
                             .build());
+
                 }
+
             }
+
             Log.log("visitImport(): About to import '" + importStatement.file().getname() + ".pj'");
 
         } else { // Not a .* import
-            fileName = fileName + "/" + importStatement.file().getname() + ".pj";
+
+            path = path + "/" + importStatement.getSymbol() + ".pj";
+
             // Set package name
-            PJBugManager.INSTANCE.setPackageName(path + "." + importStatement.file().getname());
+            PJBugManager.INSTANCE.setPackageName(importStatement.getPackageName() + "." + importStatement.getSymbol());
 
             // Is it a local file
-            if (new File(fileName).isFile()) {
+            if(IsFile(path)) {
+
                 // Yes, so add it to the fileList
-                fileList.add(fileName);
+                fileList.add(path);
+
             } else {
+
                 // No, so look in the library
-                fileName = new File(Settings.includeDir)
+                path = new File(Settings.includeDir)
                         .getAbsolutePath() + "/" + Settings.language
-                        + "/" + path + (path.equals("") ? "" : "/") + importStatement.file().getname() + ".pj";
-                Log.log("visitImport(): Not a local so try a library: " + fileName);
+                        + "/" + importStatement.getPath() + (importStatement.getPath().equals("") ? "" : "/")
+                        + importStatement.file().getname() + ".pj";
+
+                Log.log("visitImport(): Not a local so try a library: " + path);
+
                 // But only if it isn't of the form 'import f' cause they can only be local!
-                if (!path.equals("") && new File(fileName).isFile()) {
-                    fileList.add(fileName);
+                if(!importStatement.isEmpty() && IsFile(path)) {
+
+                    fileList.add(path);
+
                 } else {
+
                     // Nope, nothing found!
-                    if (path.equals("")) {
+                    if(importStatement.isEmpty()) {
                         PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                                 .addAST(importStatement)
                                 .addError(VisitorMessageNumber.RESOLVE_IMPORTS_102)
                                 .addArguments(importStatement.file().getname())
                                 .build());
                     } else {
-                        String packageName = path.replaceAll("/", ".");
-                        packageName = packageName.substring(0, packageName.length() - 1);
                         PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                                 .addAST(importStatement)
                                 .addError(VisitorMessageNumber.RESOLVE_IMPORTS_105)
-                                .addArguments(importStatement.file().getname(), path)
+                                .addArguments(importStatement.getSymbol(), importStatement.getPath())
                                 .build());
                     }
                 }
@@ -253,7 +274,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
             // Set absolute path, file and package name from where the Import is created
             c.fileName = fn.substring(fn.lastIndexOf(File.separator) + 1, fn.length());
             c.path = fn.substring(0, fn.lastIndexOf(File.separator));
-            c.packageName = path.replaceAll(File.separator, "\\.");
+            c.packageName = importStatement.getPackageName();
 
             // Add it to the list of compilations for this import
             importStatement.addCompilation(c);

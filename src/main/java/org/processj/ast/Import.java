@@ -100,4 +100,15 @@ public class Import extends AST {
 
     }
 
+    /**
+     * <p>Returns a flag indicating if the {@link Import} path is empty.</p>
+     * @return flag indicating if the {@link Import} path is empty.
+     * @since 0.1.0
+     */
+    public final boolean isEmpty() {
+
+        return !this.path.isEmpty() && !this.path.isBlank();
+
+    }
+
 }
