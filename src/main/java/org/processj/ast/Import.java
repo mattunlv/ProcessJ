@@ -32,10 +32,6 @@ public class Import extends AST {
         return (Name) children[1];
     }
 
-    public boolean importAll() {
-        return file().getname().equals("*");
-    }
-
     public String toString() {
         String str = "";
 

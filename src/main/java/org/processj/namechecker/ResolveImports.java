@@ -175,7 +175,7 @@ public class ResolveImports<T extends AST> extends Visitor<T> {
         // 'fileList' will hold a list of files found in wildcard imports (.*)
         ArrayList<String> fileList = new ArrayList<String>();
 
-        if (importStatement.importAll()) { // a .* import
+        if(importStatement.isWildcard()) { // a .* import
             // Is it a local directory?
             if ((new File(fileName).isDirectory())) {
                 // Yes, so add it's content to the fileList
