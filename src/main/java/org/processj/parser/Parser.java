@@ -7,6 +7,12 @@ package org.processj.parser;
 
 import org.processj.lexer.Lexer;
 import org.processj.ast.*;
+import org.processj.ast.alt.*;
+import org.processj.ast.expression.ArrayAccessExpr;
+import org.processj.ast.expression.BinaryExpr;
+import org.processj.ast.expression.ArrayLiteral;
+import org.processj.ast.expression.Assignment;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Error;
 import org.processj.utilities.PJBugManager;
 import java_cup.runtime.XMLElement;
@@ -3214,7 +3220,7 @@ public class Parser extends java_cup.runtime.lr_parser {
 
     }
 
-    protected interface Handler {
+    public interface Handler {
 
         void onSyntaxError(final Token token, final int line, final int lineLength, final int lineCount);
 
@@ -3250,7 +3256,7 @@ class CUP$Parser$actions {
         } else if(expression instanceof NameExpr) {
 
             // A name is OK - just turn it into a sequence with one member
-            result = new Sequence<Name>(((NameExpr) expression).name());
+            result = new Sequence<Name>(((NameExpr) expression).getName());
 
         } else {
 
@@ -3451,7 +3457,7 @@ class CUP$Parser$actions {
 		int ileft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Token i = (Token)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		 e.setName(e.getname() + "." + i.lexeme); RESULT = e      ;
+		 e.setName(e.getName() + "." + i.lexeme); RESULT = e      ;
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("extern_type",4, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -4941,7 +4947,7 @@ class CUP$Parser$actions {
 		int vleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
 		int vright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
 		Name v = (Name)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
-		 v.setArrayDepth(v.getArrayDepth() + 1); RESULT = v               ;
+		 v.setDepth(v.getDepth() + 1); RESULT = v               ;
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("variable_declarator_identifier",51, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -7544,7 +7550,7 @@ class CUP$Parser$actions {
 		int exright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Expression ex = (Expression)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		 if(e instanceof NameExpr)
-                                               RESULT = new CastExpr(new NamedType(((NameExpr) e).name()), ex);
+                                               RESULT = new CastExpr(new NamedType(((NameExpr) e).getName()), ex);
                                            else {
                                                handler.onIllegalCastExpression(e,
                                                     Lexer.CurrentLine.length() + 1, Lexer.LineCount);

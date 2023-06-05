@@ -17,7 +17,7 @@ import org.processj.utilities.VisitorMessageNumber;
  * 
  * @author ben
  */
-public class SwitchStmtRewrite extends Visitor<Object> {
+public class SwitchStmtRewrite implements Visitor<Object> {
     
     private Set<String> protocols = new HashSet<>();
     private boolean inProtocol = false;
@@ -32,14 +32,20 @@ public class SwitchStmtRewrite extends Visitor<Object> {
     @Override
     public Object visitLocalDecl(LocalDecl ld) {
         Log.log(ld, "Visiting a LocalDecl");
-        
-        Boolean flag = (Boolean) ld.type().visit(this);
+
+        Boolean flag = null;
+        try {
+            flag = (Boolean) ld.getType().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         // A visit to a local declaration might return 'null', so
         // we must check to avoid throwing an exception at runtime
-        if (flag != null && flag)
-            protocols.add(ld.var().name().getname());
-        
+        if(flag != null && flag)
+            protocols.add(ld.toString());
+
         return null;
+
     }
     
     @Override
@@ -53,31 +59,40 @@ public class SwitchStmtRewrite extends Visitor<Object> {
     public Object visitNameExpr(NameExpr ne) {
         Log.log(ne, "Visiting a NameExpr");
         
-        return ne.name().getname();
+        return ne.toString();
     }
     
     @Override
     public Object visitNamedType(NamedType nt) {
         Log.log(nt, "Visiting a NamedType");
-        
-        if (nt.getType() != null && nt.getType() instanceof ProtocolTypeDecl)
+
+        if(nt.getType() != null && nt.getType() instanceof ProtocolTypeDecl)
             return Boolean.TRUE;
-        
+
         return Boolean.FALSE;
+
     }
     
     @Override
     public Object visitSwitchStat(SwitchStat st) {
         Log.log(st, "Visiting a SwitchStat");
-        
-        ne = (String) st.expr().visit(this);
-        
+
+        try {
+            ne = (String) st.getEvaluationExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+
         if (ne != null && protocols.contains(ne))
             inProtocol = true;
         
         for (SwitchGroup sg : st.switchBlocks())
-            sg.visit(this);
-        
+            try {
+                sg.visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+
         inProtocol = false;
         
         return null;
@@ -88,9 +103,9 @@ public class SwitchStmtRewrite extends Visitor<Object> {
         Log.log(sg, "Visiting a SwitchGroup");
         
         boolean hasBreak = false;
-        Sequence<Statement> se = sg.statements();
+        Sequence<Statement> se = sg.getStatements();
         
-        if (sg.labels().size() > 1 && inProtocol)
+        if (sg.getLabels().size() > 1 && inProtocol)
             PJBugManager.INSTANCE.reportMessage(
                     new PJMessage.Builder()
                     .addAST(sg)

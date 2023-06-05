@@ -2,6 +2,7 @@ package org.processj.ast;
 
 import java.math.BigDecimal;
 
+import org.processj.Phase;
 import org.processj.utilities.Error;
 import org.processj.utilities.Visitor;
 
@@ -36,6 +37,7 @@ public class PrimitiveLiteral extends Literal {
         this.kind = kind;
         this.text = p_t.lexeme;
         this.rawtext = p_t.lexeme;
+        this.type = new PrimitiveType(kind);
         nchildren = 0;
 
         if (kind == CharKind)
@@ -252,7 +254,7 @@ public class PrimitiveLiteral extends Literal {
                kind == FloatKind  ? 'f' : 'l';
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitPrimitiveLiteral(this);
     }
 }

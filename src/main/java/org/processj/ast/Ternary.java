@@ -1,5 +1,7 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class Ternary extends Expression {
@@ -11,31 +13,31 @@ public class Ternary extends Expression {
         children = new AST[] { expr, trueBranch, falseBranch };
     }
 
-    public Expression expr() {
+    public Expression getEvaluationExpression() {
         return (Expression) children[0];
     }
 
-    public Expression trueBranch() {
+    public Expression thenPart() {
         return (Expression) children[1];
     }
 
-    public Expression falseBranch() {
+    public Expression elsePart() {
         return (Expression) children[2];
     }
 
     public boolean isConstant() {
-        return expr().isConstant() && trueBranch().isConstant()
-            && falseBranch().isConstant();
+        return getEvaluationExpression().isConstant() && thenPart().isConstant()
+            && elsePart().isConstant();
     }
 
     public Object constantValue() {
-        Boolean b = (Boolean) expr().constantValue();
+        Boolean b = (Boolean) getEvaluationExpression().constantValue();
         if (b.booleanValue())
-            return trueBranch().constantValue();
-        return falseBranch().constantValue();
+            return thenPart().constantValue();
+        return elsePart().constantValue();
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitTernary(this);
     }
 }

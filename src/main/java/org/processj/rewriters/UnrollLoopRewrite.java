@@ -2,6 +2,7 @@ package org.processj.rewriters;
 
 import java.util.Hashtable;
 
+import org.processj.Phase;
 import org.processj.ast.*;
 import org.processj.ast.AST;
 import org.processj.ast.Block;
@@ -9,7 +10,7 @@ import org.processj.ast.BreakStat;
 import org.processj.ast.ContinueStat;
 import org.processj.ast.DoStat;
 import org.processj.ast.ExprStat;
-import org.processj.ast.Expression;
+import org.processj.ast.expression.Expression;
 import org.processj.ast.ForStat;
 import org.processj.ast.IfStat;
 import org.processj.ast.Invocation;
@@ -20,7 +21,8 @@ import org.processj.ast.Sequence;
 import org.processj.ast.Statement;
 import org.processj.ast.Token;
 import org.processj.ast.WhileStat;
-import org.processj.codegen.Helper;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.alt.AltStat;
 import org.processj.parser.sym;
 import org.processj.utilities.Log;
 import org.processj.utilities.PJBugManager;
@@ -34,7 +36,7 @@ import org.processj.utilities.Visitor;
  * @version 10/28/19
  * @since 1.2
  */
-public class UnrollLoopRewrite extends Visitor<AST> {
+public class UnrollLoopRewrite implements Visitor<AST> {
 
     private int labelNo = 0;
 
@@ -92,16 +94,24 @@ public class UnrollLoopRewrite extends Visitor<AST> {
     public AST visitAltCase(AltCase ac) {
         Log.log("LoopRewriter:\tVisiting an AltCase");
 	// if ac.guard() is null, it is because we have a nested alt.
-	if (ac.guard() != null)
-	    ac.guard().visit(this);
-        ac.children[2] = ac.stat().visit(this);
+	if (ac.getGuard() != null)
+        try {
+            ac.getGuard().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        try {
+            ac.children[2] = ac.getStatement().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         return null;
     }
 
-    public AST visitAltStat(AltStat as) {
+    public AST visitAltStat(AltStat as) throws Phase.Error {
         Log.log("LoopRewriter:\tVisiting an AltStat");
         // TODO: Replicated ALT
-        super.visitAltStat(as);
+        Visitor.super.visitAltStat(as);
         return as;
     }
 
@@ -118,7 +128,12 @@ public class UnrollLoopRewrite extends Visitor<AST> {
 
         for (int i = 0; i < stmts.size(); i++) {
             if ((Statement) stmts.child(i) != null) {
-                AST a = stmts.child(i).visit(this);
+                AST a = null;
+                try {
+                    a = stmts.child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (a instanceof Block) {
                     Block b = (Block) a;
                     if (b.canBeMerged) {
@@ -166,13 +181,13 @@ public class UnrollLoopRewrite extends Visitor<AST> {
                 return bs; // don't change the break in a switch.
             }
         } else {
-            if (bls.get(bs.target().getname()) == null) {
+            if (bls.get(bs.toString()) == null) {
 
                 // TODO: ERROR
-                PJBugManager.ReportMessageAndExit("ERROR: Unknown break label '" + bs.target().getname() + "' in line " + bs.line);
+                PJBugManager.ReportMessageAndExit("ERROR: Unknown break label '" + bs + "' in line " + bs.line);
 
             }
-            int target = bls.get(bs.target().getname());
+            int target = bls.get(bs.toString());
             // Goto(...);
             return makeGoto(target, bs);
         }
@@ -180,8 +195,12 @@ public class UnrollLoopRewrite extends Visitor<AST> {
 
     public AST visitChannelReadExpr(ChannelReadExpr cr) {
         Log.log("LoopRewriter:\tVisiting an ChannelReadExpr");
-        if (cr.extRV() != null) {
-            cr.children[1] = cr.extRV().visit(this);
+        if (cr.getExtendedRendezvous() != null) {
+            try {
+                cr.children[1] = cr.getExtendedRendezvous().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         }
         return null;
     }
@@ -207,13 +226,13 @@ public class UnrollLoopRewrite extends Visitor<AST> {
             return makeGoto(cl, cs);
         } else {
             // look up the target in the hash table.
-            if(cls.get(cs.target().getname()) == null) {
+            if(cls.get(cs.target().toString()) == null) {
 
                 // TODO: ERROR
-                PJBugManager.ReportMessageAndExit("ERROR: Unknown continue label '" + cs.target().getname() + "' in line " + cs.line);
+                PJBugManager.ReportMessageAndExit("ERROR: Unknown continue label '" + cs.target() + "' in line " + cs.line);
 
             }
-            int target = cls.get(cs.target().getname());
+            int target = cls.get(cs.target().toString());
             // Goto(...);
             return makeGoto(target, cs);
         }
@@ -251,10 +270,15 @@ public class UnrollLoopRewrite extends Visitor<AST> {
         cl = cl_;
         // Label(cl');
         stmts.append(makeLabel(cl_, ds));
-        Statement st = (Statement) ds.stat().visit(this);
+        Statement st = null;
+        try {
+            st = (Statement) ds.getStatement().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         stmts.merge(st);
         // if (e) { goto(cl'); }
-        stmts.append(new IfStat(ds.expr(), new Block(new Sequence(makeGoto(cl_, ds))), null));
+        stmts.append(new IfStat(ds.getEvaluationExpression(), new Block(new Sequence(makeGoto(cl_, ds))), null));
         // Label(bl');
         stmts.append(makeLabel(bl_, ds));
         // is the statement labeled?
@@ -270,16 +294,30 @@ public class UnrollLoopRewrite extends Visitor<AST> {
 
     public AST visitExprStat(ExprStat es) {
         Log.log("LoopRewriter:\tVisiting an ExprStat");
-        es.expr().visit(this);
+        try {
+            es.expr().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         return es;
     }
 
     public AST visitIfStat(IfStat is) {
         Log.log("LoopRewriter:\tVisiting an IfStat");
-        Statement thenPart = (Statement) is.thenpart().visit(this);
-        Statement elsePart = (is.elsepart() == null ? null : (Statement) is.elsepart().visit(this));
+        Statement thenPart = null;
+        try {
+            thenPart = (Statement) is.getThenPart().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        Statement elsePart = null;
+        try {
+            elsePart = (is.getElsePart() == null ? null : (Statement) is.getElsePart().visit(this));
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
-        return new IfStat(is.expr(), thenPart, elsePart);
+        return new IfStat(is.evaluationExpression(), thenPart, elsePart);
     }
 
     public AST visitLocalDecl(LocalDecl ld) {
@@ -291,7 +329,12 @@ public class UnrollLoopRewrite extends Visitor<AST> {
         Sequence<Statement> stmts = pb.stats();
         for (int i = 0; i < stmts.size(); i++) {
             if ((Statement) stmts.child(i) != null) {
-                Statement s = (Statement) stmts.child(i).visit(this);
+                Statement s = null;
+                try {
+                    s = (Statement) stmts.child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 stmts.set(i, s);
             }
         }
@@ -300,8 +343,12 @@ public class UnrollLoopRewrite extends Visitor<AST> {
 
     public AST visitProcTypeDecl(ProcTypeDecl pd) {
         Log.log("LoopRewriter:\tVisiting a ProcTypeDecl");
-        if (Helper.doesProcYield(pd))
-            pd.body().visit(this);
+        if (pd.doesYield())
+            try {
+                pd.getBody().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return null;
     }
 
@@ -340,7 +387,12 @@ public class UnrollLoopRewrite extends Visitor<AST> {
         int old_inside = inside;
         inside = INSIDE_SWITCH;
         for (int i = 0; i < ss.switchBlocks().size(); i++) {
-            SwitchGroup sg = (SwitchGroup) ss.switchBlocks().child(i).visit(this);
+            SwitchGroup sg = null;
+            try {
+                sg = (SwitchGroup) ss.switchBlocks().child(i).visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             ss.switchBlocks().set(i, sg);
         }
         inside = old_inside;
@@ -350,11 +402,16 @@ public class UnrollLoopRewrite extends Visitor<AST> {
     // Handled much like a Block - see the comments in the visitBlock() above.
     public AST visitSwitchGroup(SwitchGroup sg) {
         Log.log("LoopRewriter:\tVisiting a SwitchGroup");
-        Sequence<Statement> stmts = sg.statements();
+        Sequence<Statement> stmts = sg.getStatements();
         Sequence<Statement> newStmts = new Sequence<Statement>();
         for (int i = 0; i < stmts.size(); i++) {
             if ((Statement) stmts.child(i) != null) {
-                AST a = stmts.child(i).visit(this);
+                AST a = null;
+                try {
+                    a = stmts.child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (a instanceof Block) {
                     Block b = (Block) a;
                     if (b.canBeMerged) {
@@ -411,23 +468,28 @@ public class UnrollLoopRewrite extends Visitor<AST> {
         // -->
 
         // if e1 != null
-        if (fs.init() != null) {
-            stmts.merge(fs.init());
+        if (fs.getInitializationExpression() != null) {
+            stmts.merge(fs.getInitializationExpression());
         }
         // Label(cl');
         stmts.append(makeLabel(sl_, fs));
 
         // [ R[S](...); e3 ]
-        Statement st = (Statement) fs.stats().visit(this);
+        Statement st = null;
+        try {
+            st = (Statement) fs.getStatement().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         Sequence<Statement> body = new Sequence<Statement>();
-        if (fs.stats() instanceof Block) {
+        if (fs.getStatement() instanceof Block) {
             body.merge(((Block) st).stats());
         } else {
             body.merge(st);
         }
         body.append(makeLabel(cl_, fs));
-        if (fs.incr() != null) {
-            body.merge(fs.incr());
+        if (fs.getIncrementExpression() != null) {
+            body.merge(fs.getIncrementExpression());
         }
         // [ R[S](...); e3; Goto(cl'); ]
         body.append(makeGoto(sl_, fs));
@@ -437,11 +499,11 @@ public class UnrollLoopRewrite extends Visitor<AST> {
 
         // if e2 == null => e2 = true
         Expression expr;
-        if (fs.expr() == null) {
+        if (fs.getEvaluationExpression() == null) {
             expr = new PrimitiveLiteral(new Token(sym.BOOLEAN_LITERAL, "true", fs.line, fs.charBegin, fs.charBegin + 4),
                     PrimitiveLiteral.BooleanKind);
         } else {
-            expr = fs.expr();
+            expr = fs.getEvaluationExpression();
         }
 
         // if (e2) { R[S](...); e3; Goto(cl'); }
@@ -494,7 +556,12 @@ public class UnrollLoopRewrite extends Visitor<AST> {
         stmts.append(makeLabel(cl_, ws));
 
         Sequence<Statement> body = new Sequence<Statement>();
-        Statement st = (Statement) ws.stat().visit(this);
+        Statement st = null;
+        try {
+            st = (Statement) ws.getStatement().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         // st = R[S](bl',cl',bls',cls');
         if (st instanceof Block) {
             body.merge(((Block) st).stats());
@@ -505,7 +572,7 @@ public class UnrollLoopRewrite extends Visitor<AST> {
         // block = { R[S](...); Goto(cl'); }
         Block block = new Block(body);
         // is = if (e) { R[S](...); Goto(cl'); }
-        IfStat is = new IfStat(ws.expr(), block, null);
+        IfStat is = new IfStat(ws.getEvaluationExpression(), block, null);
         stmts.append(is);
         stmts.append(makeLabel(bl_, ws));
         // is the statement labeled?

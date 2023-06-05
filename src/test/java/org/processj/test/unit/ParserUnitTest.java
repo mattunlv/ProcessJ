@@ -39,7 +39,7 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Empty);
 
         // Assert an empty imports sequence
-        AssertEmpty(compilation.imports());
+        AssertEmpty(compilation.getImports());
 
     }
 
@@ -50,7 +50,7 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Empty);
 
         // Assert an empty imports sequence
-        AssertEmpty(compilation.typeDecls());
+        AssertEmpty(compilation.getTypeDeclarations());
 
     }
 
@@ -61,7 +61,7 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Empty);
 
         // Check empty package declaration
-        AssertEmpty(compilation.getPackageName());
+        Assertions.assertEquals("", compilation.getPackageName());
 
     }
 
@@ -72,7 +72,7 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Pragma01);
 
         // Check empty package declaration
-        AssertEmpty(compilation.getPackageName());
+        Assertions.assertEquals("", compilation.getPackageName());
 
     }
 

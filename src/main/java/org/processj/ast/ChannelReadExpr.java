@@ -1,24 +1,37 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class ChannelReadExpr extends Expression {
 
-    public ChannelReadExpr(Expression channel, Block extRV) {
+    final Block extendedRendezvous;
+
+    public ChannelReadExpr(final Expression channel, final Block extendedRendezvous) {
         super(channel);
         nchildren = 2;
-        children = new AST[] { channel, extRV };
+        children = new AST[] { channel, extendedRendezvous };
+        this.extendedRendezvous = extendedRendezvous;
     }
 
-    public Expression channel() {
+    public Expression getExpression() {
         return (Expression) children[0];
     }
 
-    public Block extRV() {
-        return (Block) children[1];
+    public Block getExtendedRendezvous() {
+
+        return this.extendedRendezvous;
+
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public final boolean definesExtendedRendezvous() {
+
+        return this.extendedRendezvous != null;
+
+    }
+
+    public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitChannelReadExpr(this);
     }
 }

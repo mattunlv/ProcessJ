@@ -1,15 +1,27 @@
 package org.processj.rewriters;
 
 import org.processj.ast.*;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.alt.AltStat;
+import org.processj.ast.alt.Guard;
+import org.processj.ast.expression.ArrayAccessExpr;
+import org.processj.ast.expression.ArrayLiteral;
+import org.processj.ast.expression.Assignment;
+import org.processj.ast.expression.BinaryExpr;
 import org.processj.utilities.Visitor;
 
-public class Yield extends Visitor<Boolean> {
+public class Yield implements Visitor<Boolean> {
 
     public Boolean visitChildren(AST[] children) {
         boolean b = false;
         for (AST c : children) {
             if (c != null) {
-                boolean bb = c.visit(this);
+                boolean bb = false;
+                try {
+                    bb = c.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 b = b || bb;
             }
         }
@@ -243,7 +255,7 @@ public class Yield extends Visitor<Boolean> {
     public Boolean visitProcTypeDecl(ProcTypeDecl pd) {
         //System.out.println("[Yield]: Visiting " + pd.name());
         boolean b = visitChildren(pd.children);
-        pd.yields = b;
+        if(b) pd.setYields();
         //System.out.println("[Yield]: Procedure " + pd.name() + " " + (b?"yields":"does not org.processj.yield"));
         return b;
     }
@@ -295,7 +307,12 @@ public class Yield extends Visitor<Boolean> {
         for (int i = 0; i < se.size(); i++)
             if (se.child(i) != null) {
 		//System.out.println(i + " " + (se==null) + " " + (se.child(i) == null) + " " + se.child(i));	       
-                boolean bb = se.child(i).visit(this);
+                boolean bb = false;
+                try {
+                    bb = se.child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 b = b || bb;
             }
         return b;
@@ -331,7 +348,11 @@ public class Yield extends Visitor<Boolean> {
     }
 
     public Boolean visitRecordMemberLiteral(RecordMemberLiteral rm) {
-	return rm.expr().visit(this);
+        try {
+            return rm.expr().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
 
@@ -363,11 +384,6 @@ public class Yield extends Visitor<Boolean> {
         boolean b = visitChildren(up.children);
         if (b)
             up.setYield();
-        return b;
-    }
-
-    public Boolean visitVar(Var va) {
-        boolean b = visitChildren(va.children);
         return b;
     }
 

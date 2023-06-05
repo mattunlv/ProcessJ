@@ -1,5 +1,10 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.ArrayAccessExpr;
+import org.processj.ast.expression.Expression;
+import org.processj.phases.ArrayTypeRewrite;
+import org.processj.phases.ArraysRewrite;
 import org.processj.utilities.Visitor;
 
 /**
@@ -9,7 +14,7 @@ import org.processj.utilities.Visitor;
  *      - ChannelType Array
  *      - Name with Dims identifier[][]...[]
  *      - Package Type (Static Import)
- *  {@link org.processj.namechecker.ArrayTypeConstructor}
+ *  {@link ArrayTypeRewrite}
  *  {@link org.processj.phases.TypeChecker}
  *      {@link org.processj.phases.TypeChecker#visitArrayAccessExpr(ArrayAccessExpr)}
  *      {@link org.processj.phases.TypeChecker#arrayAssignmentCompatible(Type, Expression)}
@@ -20,7 +25,7 @@ import org.processj.utilities.Visitor;
  *      3) TypeChecker
  *      As {@link ParamDecl}, {@link LocalDecl}, {@link ConstantDecl}
  *
- * Also Check {@link NewArray}, {@link ArrayAccessExpr} & {@link org.processj.rewriters.ArraysRewrite}
+ * Also Check {@link NewArray}, {@link ArrayAccessExpr} & {@link ArraysRewrite}
  */
 public class ArrayType extends Type {
 
@@ -28,24 +33,24 @@ public class ArrayType extends Type {
     /// Private Fields
 
     /**
-     * <p>The {@link ArrayType}'s component (base) {@link Type}. Must not be an instance of {@link ArrayType}.</p>
-     */
-    private final Type  componentType   ;
-
-    /**
      * <p>The specified {@link Integer} value corresponding to the {@link ArrayType}'s depth. Must be greater than
      * 1.</p>
      */
     private final int   depth           ;
 
+    /**
+     * <p>The {@link ArrayType}'s component (base) {@link Type}. Must not be an instance of {@link ArrayType}.</p>
+     */
+    private Type  componentType   ;
+
     /// ------------
     /// Constructors
 
-    public ArrayType(final Type baseType, final int depth) {
-        super(new AST[] { baseType });
+    public ArrayType(final Type componentType, final int depth) {
+        super(new AST[] { componentType });
 
-        this.componentType  = (baseType instanceof ArrayType) ? ((ArrayType) baseType).getComponentType() : baseType;
-        this.depth          = (baseType instanceof ArrayType) ? ((ArrayType) baseType).getDepth() + 1 : depth;
+        this.componentType  = (componentType instanceof ArrayType) ? ((ArrayType) componentType).getComponentType() : componentType;
+        this.depth          = (componentType instanceof ArrayType) ? ((ArrayType) componentType).getDepth() + 1 : depth;
 
     }
 
@@ -92,7 +97,7 @@ public class ArrayType extends Type {
      * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) {
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
         return visitor.visitArrayType(this);
 
@@ -146,6 +151,13 @@ public class ArrayType extends Type {
     public final int getDepth() {
 
         return this.depth;
+
+    }
+
+    public final void setComponentType(final Type componentType) {
+
+        this.componentType = componentType;
+        this.children[0] = componentType;
 
     }
 

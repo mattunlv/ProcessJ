@@ -1,27 +1,36 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
-public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
+public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl, SymbolMap.Context {
 
     /// --------------
     /// Private Fields
 
     /**
-     * <p>{@link String} value of the {@link ProtocolTypeDecl}'s name.</p>
+     * <p>{@link Name} corresponding to the {@link ProtocolTypeDecl}.</p>
      */
-    private final String name;
+    private final Name                      name        ;
+    private final Sequence<ProtocolCase>    body        ;
+    private final Sequence<Name>            extend      ;
+    private final Sequence<Type>            extendTypes ;
+    private SymbolMap scope;
 
     /// ------------
     /// Constructors
 
     public ProtocolTypeDecl(Sequence<Modifier> modifiers, Name name,
-                            Sequence<AST> extend, Annotations annotations,
+                            Sequence<Name> extend, Annotations annotations,
                             Sequence<ProtocolCase> body) {
         super(name);
         nchildren = 5;
         children = new AST[] { modifiers, name, extend, annotations, body };
-        this.name = (name != null) ? name.toString() : "";
+        this.name = name;
+        this.body = body;
+        this.scope = null;
+        this.extend = extend;
+        this.extendTypes = new Sequence<>();
     }
 
     /// ----------------
@@ -50,7 +59,7 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
     @Override
     public final String toString() {
 
-        return this.name;
+        return this.name.toString();
 
     }
 
@@ -65,9 +74,18 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
      * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) {
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
-        return visitor.visitProtocolTypeDecl(this);
+        // Open the scope
+        final SymbolMap scope = this.openScope(visitor.getScope());
+
+        // Visit
+        S result = visitor.visitProtocolTypeDecl(this);
+
+        // Close the scope
+        visitor.setScope(scope.getEnclosingScope());
+
+        return result;
 
     }
 
@@ -83,6 +101,61 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
     public final String getSignature() {
 
         return "<P" + this.name + ";";
+
+    }
+
+    public final void setTypeForEachExtend(final TypeReturnCallback typeReturnCallback) {
+
+        if((this.extend != null) && (typeReturnCallback != null)) {
+
+            // Clear the extend Types
+            this.extendTypes.clear();
+
+            // Append the results
+            this.extend.forEach(name -> {
+
+                Type type;
+
+                try {
+
+                    type = typeReturnCallback.Invoke(name);
+
+                } catch (final Phase.Error phaseError) {
+
+                    type = new ErrorType();
+
+                }
+
+                this.extendTypes.append(type);
+
+            });
+        }
+
+    }
+
+    public final void setTypeForEachRecordMember(final TypeReturnCallback typeReturnCallback) {
+
+        if((this.body != null) && (typeReturnCallback != null)) {
+
+            this.body.forEach(protocolCase -> protocolCase.body().forEach(recordMember -> {
+
+                Type type;
+
+                try {
+
+                    type = typeReturnCallback.Invoke(recordMember.getName());
+
+                } catch (final Phase.Error phaseError) {
+
+                    type = new ErrorType();
+
+                }
+
+                recordMember.setType(type);
+
+            }));
+
+        }
 
     }
 
@@ -109,6 +182,23 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
         return (Sequence<ProtocolCase>) children[4];
     }
 
+    public final ProtocolCase getCaseFrom(final String name) {
+
+        ProtocolCase result = null;
+
+        if((name != null) && (this.body != null))
+            for(final ProtocolCase protocolCase: this.body)
+                if(protocolCase.toString().equals(name)) {
+
+                    result = protocolCase;
+                    break;
+
+                }
+
+        return result;
+
+    }
+
     // *************************************************************************
     // ** Type Related Methods
 
@@ -125,7 +215,7 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
         /** Search our own body first */
         if (body() != null) {
             for (ProtocolCase pc : body()) {
-                if (pc.name().getname().equals(name))
+                if (pc.name().getName().equals(name))
                     return pc;
             }
         }
@@ -161,4 +251,12 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl {
         ProtocolTypeDecl pt = (ProtocolTypeDecl) t;
         return pt.extendsProtocol(this);
     }
+
+    @FunctionalInterface
+    public interface TypeReturnCallback {
+
+        Type Invoke(final Name name) throws Phase.Error;
+
+    }
+
 }

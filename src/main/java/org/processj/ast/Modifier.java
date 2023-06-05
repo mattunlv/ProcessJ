@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Error;
 import org.processj.utilities.Visitor;
 
@@ -77,7 +78,7 @@ public class Modifier extends AST {
         }
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitModifier(this);
     }
 }

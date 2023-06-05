@@ -1,10 +1,10 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class ReturnStat extends Statement {
-
-    private Type type; // this will be the return type of the method in which the ReturnStat appears
 
     /* Note that expr() can return null */
 
@@ -14,19 +14,11 @@ public class ReturnStat extends Statement {
         children = new AST[] { expr };
     }
 
-    public Expression expr() {
+    public Expression getExpression() {
         return (Expression) children[0];
     }
 
-    public void setType(Type t) {
-        this.type = t;
-    }
-
-    public Type getType() {
-        return this.type;
-    }
-
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitReturnStat(this);
     }
 }

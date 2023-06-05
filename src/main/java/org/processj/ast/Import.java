@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class Import extends AST {
@@ -7,53 +8,48 @@ public class Import extends AST {
     /// --------------
     /// Private Fields
 
-    private final String symbol         ;
-    private final String packageName    ;
-    private final String path           ;
+    private final String symbol             ;
+    private final String packageName        ;
+    private final String path               ;
 
-    // All the compilations that this import perform are stored in compilations.
-    private Sequence<Compilation> compilations = new Sequence<>();
+    /// ------------
+    /// Constructors
 
-    public Import(Sequence<Name> imp) {
-        super(imp);
-        nchildren = 2;
-        Name file = imp.removeLast();
-        children = new AST[] { imp, file };
-        this.symbol         = file.getname();
-        this.packageName    = imp.synthesizeStringWith(".");
-        this.path           = imp.synthesizeStringWith("/");
+    public Import(final Sequence<Name> packageName) {
+        super(packageName.line, packageName.charBegin);
+
+        this.symbol             = packageName.getLast().getName()                    ;
+        this.packageName        = packageName.synthesizeStringWith(".")     ;
+        this.path               = this.packageName.replace('.', '/') ;
+
     }
 
-    public Sequence<Name> path() {
-        return (Sequence<Name>) children[0];
+    /// ----------------
+    /// java.lang.Object
+
+    @Override
+    public final String toString() {
+
+        return this.packageName;
+
     }
 
-    public Name file() {
-        return (Name) children[1];
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+
+        return visitor.visitImport(this);
+
     }
 
-    public String toString() {
-        String str = "";
+    /**
+     * <p>Returns a flag indicating if the {@link Import} path is empty.</p>
+     * @return flag indicating if the {@link Import} path is empty.
+     * @since 0.1.0
+     */
+    public final boolean isEmpty() {
 
-        for (int i = 0; i < path().size(); i++) {
-            str += path().child(i);
-            if (i < path().size())
-                str += ".";
-        }
-        str += file().getname();
-        return str;
-    }
+        return this.path.isEmpty() || this.path.isBlank();
 
-    public void addCompilation(Compilation co) {
-        compilations.append(co);
-    }
-
-    public Sequence<Compilation> getCompilations() {
-        return compilations;
-    }
-
-    public <S> S visit(Visitor<S> v) {
-        return v.visitImport(this);
     }
 
     /**
@@ -64,17 +60,6 @@ public class Import extends AST {
     public final boolean isWildcard() {
 
         return this.symbol.equals("*");
-
-    }
-
-    /**
-     * <p>Returns the {@link Import}'s symbol.</p>
-     * @return The {@link Import}'s symbol.
-     * @since 0.1.0
-     */
-    public final String getSymbol() {
-
-        return this.symbol;
 
     }
 
@@ -97,17 +82,6 @@ public class Import extends AST {
     public final String getPath() {
 
         return this.path;
-
-    }
-
-    /**
-     * <p>Returns a flag indicating if the {@link Import} path is empty.</p>
-     * @return flag indicating if the {@link Import} path is empty.
-     * @since 0.1.0
-     */
-    public final boolean isEmpty() {
-
-        return !this.path.isEmpty() && !this.path.isBlank();
 
     }
 

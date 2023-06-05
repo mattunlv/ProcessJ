@@ -1,35 +1,40 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class NameExpr extends Expression {
 
-    public boolean rewriteToRecordAccess = false;
-    // this variable is set in NameChecker.visitNameExpr if the leading name of
-    // the qualified name name() resolved to a variable or constant.
-    public boolean rewriteToImplicitImport = false;
-    // this variable is set in NameChecker.visitNameExpr if the leading name of
-    // the qualified name name() did not resolve to a variable or constant.
-    // A name expression can represent a variable name (local, parameter) or
-
     public AST myDecl = null;
+
+    private final Name name;
 
     public NameExpr(Name name) {
         super(name);
         nchildren = 1;
         children = new AST[] { name };
+        this.name = name;
+    }
+
+    public final String getPackageName() {
+
+        return this.name.getPackageName();
+
     }
 
     @Override
     public final String toString() {
-        return name().getname();
+
+        return this.name.toString();
+
     }
 
-    public Name name() {
+    public Name getName() {
         return (Name) children[0];
     }
 
-    public <S> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitNameExpr(this);
     }
 }

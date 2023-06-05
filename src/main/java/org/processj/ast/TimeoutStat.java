@@ -1,24 +1,47 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class TimeoutStat extends Statement {
 
-    public TimeoutStat(Expression timer, Expression delay) {
-        super(timer);
-        nchildren = 2;
-        children = new AST[] { timer, delay };
+    /// --------------
+    /// Private Fields
+
+    private final Expression timerExpression    ;
+    private final Expression delayExpression    ;
+
+    /// ------------
+    /// Constructors
+
+    public TimeoutStat(final Expression timerExpression, final Expression delayExpression) {
+        super(timerExpression);
+
+        this.nchildren          = 2;
+        this.children           = new AST[] {timerExpression, delayExpression};
+        this.timerExpression    = timerExpression;
+        this.delayExpression    = delayExpression;
+
     }
 
-    public Expression timer() {
-        return (Expression) children[0];
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+
+        return visitor.visitTimeoutStat(this);
+
     }
 
-    public Expression delay() {
-        return (Expression) children[1];
+    public final Expression getTimerExpression() {
+
+        return this.timerExpression;
+
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
-        return v.visitTimeoutStat(this);
+    public final Expression getDelayExpression() {
+
+        return this.delayExpression;
+
     }
+
 }

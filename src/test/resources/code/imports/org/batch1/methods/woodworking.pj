@@ -1,0 +1,5 @@
+/**
+ * @test Imports Batch 1
+ * @package org.batch1.methods.woodworking
+ */
+ package org.batch1.methods.woodworking;

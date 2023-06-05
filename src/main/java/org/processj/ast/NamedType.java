@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class NamedType extends Type implements DefineTopLevelDecl {
@@ -13,33 +14,20 @@ public class NamedType extends Type implements DefineTopLevelDecl {
     private final Name      name            ;
 
     /**
-     * <p>{@link String} value of the {@link NamedType}'s name.</p>
-     */
-    private final String    nameLiteral     ;
-
-    /**
      * <p>The {@link Name}'s resolved {@link Type}; either through the {@link Compilation}'s scope or a resolved
      * package access.</p>
      */
     private Type            resolvedType    ;
 
-    private DefineTopLevelDecl resolvedTopLevelDecl = null; // could be a SymbolTable
-    // This field is set to the actual type this named type resolved to.
-    // This is done in the resolve method in org.processj.typechecker/TypeChecker.java
-
     /// ------------
     /// Constructors
 
     public NamedType(final Name name) {
-        super(new AST[] { name });
-        this.nameLiteral    = (name != null) ? name.toString() : "";
-        this.name           = name;
-        this.resolvedType   = null;
+        this(name, null);
     }
 
     public NamedType(final Name name, final Type type) {
         super(new AST[] { name });
-        this.nameLiteral    = (name != null) ? name.toString() : "";
         this.name           = name;
         this.resolvedType   = type;
     }
@@ -70,7 +58,7 @@ public class NamedType extends Type implements DefineTopLevelDecl {
     @Override
     public final String toString() {
 
-        return (this.resolvedType == null) ? this.nameLiteral : this.resolvedType.toString();
+        return this.name.toString();
 
     }
 
@@ -85,7 +73,7 @@ public class NamedType extends Type implements DefineTopLevelDecl {
      * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) {
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
         return visitor.visitNamedType(this);
 
@@ -102,36 +90,21 @@ public class NamedType extends Type implements DefineTopLevelDecl {
     @Override
     public final String getSignature() {
 
-        return "L" + this.nameLiteral + ";";
+        return "L" + this.name + ";";
+
+    }
+
+    @Override
+    public final String getPackageName() {
+
+        return this.name.getPackageName();
 
     }
 
     /// --------------
     /// Public Methods
 
-    /**
-     * <p>Returns a flag indicating if the {@link NamedType} has a bound, resolved {@link Type}.</p>
-     * @return Flag indicating if the {@link NamedType} has a bound, resolved {@link Type}.
-     * @since 0.1.0
-     */
-    public final boolean hasResolvedType() {
-
-        return this.resolvedType != null;
-
-    }
-
-    /**
-     * <p>Returns a flag indicating if the {@link Name} is prefixed with a fully-qualified package name.</p>
-     * @return Flag indicating if the {@link Name} is prefixed with a fully-qualified package name.
-     * @since 0.1.0
-     */
-    public final boolean specifiesPackage() {
-
-        return this.name.specifiesPackage();
-
-    }
-
-    public Name name() {
+    public final Name getName() {
 
         return this.name;
 
@@ -147,10 +120,6 @@ public class NamedType extends Type implements DefineTopLevelDecl {
 
         this.resolvedType = type;
 
-    }
-
-    public void setResolvedTopLevelDecl(DefineTopLevelDecl td) {
-        this.resolvedTopLevelDecl = td;
     }
 
     // TODO

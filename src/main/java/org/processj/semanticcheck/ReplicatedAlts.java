@@ -1,13 +1,13 @@
 package org.processj.semanticcheck;
 
-import org.processj.ast.AltCase;
-import org.processj.ast.AltStat;
-import org.processj.ast.ArrayAccessExpr;
-import org.processj.ast.Assignment;
-import org.processj.ast.BinaryExpr;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.alt.AltStat;
+import org.processj.ast.expression.ArrayAccessExpr;
+import org.processj.ast.expression.Assignment;
+import org.processj.ast.expression.BinaryExpr;
 import org.processj.ast.ChannelReadExpr;
 import org.processj.ast.ExprStat;
-import org.processj.ast.Expression;
+import org.processj.ast.expression.Expression;
 import org.processj.ast.Statement;
 import org.processj.utilities.PJBugManager;
 import org.processj.utilities.PJMessage;
@@ -20,14 +20,14 @@ import org.processj.utilities.VisitorMessageNumber;
  * 
  * @author ben
  */
-public class ReplicatedAlts extends Visitor<Object> {
+public class ReplicatedAlts implements Visitor<Object> {
     
     @Override
     public Object visitAltStat(AltStat as) {
-        if ( as.isDynamic() || as.isReplicated() ) {
+        if ( as.isReplicated() ) {
             // Check for multiple loop control variables
-            if ( as.init()!=null ) {
-                if ( as.init().size()>1 )
+            if ( as.initializationStatements()!=null ) {
+                if ( as.initializationStatements().size()>1 )
                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                             .addAST(as)
                             .addError(VisitorMessageNumber.SEMATIC_CHECKS_901)
@@ -37,17 +37,21 @@ public class ReplicatedAlts extends Visitor<Object> {
             // Check for any side effect
             for (int i=0; i<as.body().size(); ++i) {
                 AltCase ac = (AltCase) as.body().child(i);
-                if ( ac.isAltStat )
-                    ac.visit(this);
+                if ( ac.isNestedAltStatement() )
+                    try {
+                        ac.visit(this);
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                 else {
-                    Statement stat = ac.guard().guard();
+                    Statement stat = ac.getGuard().getStatement();
                     if ( stat instanceof ExprStat ) {
                         Expression e = ((ExprStat) stat).expr();
                         ChannelReadExpr cr = null;
                         if ( e instanceof Assignment ) {
                             cr = (ChannelReadExpr) ((Assignment) e).right();
-                            if ( cr.channel() instanceof ArrayAccessExpr ) {
-                                ArrayAccessExpr ae = (ArrayAccessExpr) cr.channel();
+                            if ( cr.getExpression() instanceof ArrayAccessExpr ) {
+                                ArrayAccessExpr ae = (ArrayAccessExpr) cr.getExpression();
                                 if ( ae.indexExpression() instanceof Assignment ||
                                      ae.indexExpression() instanceof BinaryExpr ||
                                      ae.indexExpression() instanceof ChannelReadExpr )

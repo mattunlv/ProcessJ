@@ -1,11 +1,11 @@
 package org.processj.rewriters;
 
 import org.processj.ast.AST;
-import org.processj.ast.Assignment;
+import org.processj.ast.expression.Assignment;
 import org.processj.ast.Block;
 import org.processj.ast.DoStat;
 import org.processj.ast.ExprStat;
-import org.processj.ast.Expression;
+import org.processj.ast.expression.Expression;
 import org.processj.ast.ForStat;
 import org.processj.ast.LocalDecl;
 import org.processj.ast.Name;
@@ -68,7 +68,7 @@ public class InfiniteLoopRewrite {
         if (a instanceof ProcTypeDecl) {
             // Rewrite the body if needed
             ProcTypeDecl pd = (ProcTypeDecl) a;
-            go(pd.body());
+            go(pd.getBody());
         } else if (a instanceof Sequence) {
             Sequence<AST> s = (Sequence<AST>) a;
             // Iterate through all the nodes in the sequence
@@ -84,8 +84,8 @@ public class InfiniteLoopRewrite {
                                     new Var(new Name(temp), null), true /* constant */);
                             // Replace the boolean literal value with the new local variable
                             NameExpr ne = new NameExpr(new Name(temp));
-                            ne.type = ld.type();
-                            ExprStat es = new ExprStat(new Assignment(ne, ws.expr(), Assignment.EQ));
+                            ne.type = ld.getType();
+                            ExprStat es = new ExprStat(new Assignment(ne, ws.getEvaluationExpression(), Assignment.EQ));
                             // Rewrite the expression for the while-loop
                             ws.children[0] = ne;
                             // Rewrite the i'th sequence of statements
@@ -96,7 +96,7 @@ public class InfiniteLoopRewrite {
                             Block b = new Block(stats);
                             s.set(i, b);
                         }
-                        go(ws.stat());
+                        go(ws.getStatement());
                     } else if (stat instanceof DoStat) { // DoStat -- done
                         DoStat ds = (DoStat) stat;
                         if (ds.foreverLoop) {
@@ -106,8 +106,8 @@ public class InfiniteLoopRewrite {
                                     new Var(new Name(temp), null), true /* constant */);
                             // Replace the boolean literal value with the new local variable
                             NameExpr ne = new NameExpr(new Name(temp));
-                            ne.type = ld.type();
-                            ExprStat es = new ExprStat(new Assignment(ne, ds.expr(), Assignment.EQ));
+                            ne.type = ld.getType();
+                            ExprStat es = new ExprStat(new Assignment(ne, ds.getEvaluationExpression(), Assignment.EQ));
                             // Rewrite the expression for the do-while loop
                             ds.children[1] = ne;
                             // Rewrite the i'th sequence of statements
@@ -118,7 +118,7 @@ public class InfiniteLoopRewrite {
                             Block b = new Block(stats);
                             s.set(i, b);
                         }
-                        go(ds.stat());
+                        go(ds.getStatement());
                     } else if (stat instanceof ForStat) { // ForStat -- done
                         ForStat fs = (ForStat) stat;
                         if (fs.foreverLoop) {
@@ -128,12 +128,12 @@ public class InfiniteLoopRewrite {
                                     new Var(new Name(temp), null), true /* constant */);
                             // Rewrite the expression if it isn't of the form:
                             //		for (...; true ; ...) S1
-                            Expression newExpr = fs.expr();
+                            Expression newExpr = fs.getEvaluationExpression();
                             if (newExpr == null)
                                 newExpr = new PrimitiveLiteral(new Token(0, Boolean.toString(true), 0, 0, 0), 0 /* kind */);
                             // Replace the boolean literal value with the new local variable
                             NameExpr ne = new NameExpr(new Name(temp));
-                            ne.type = ld.type();
+                            ne.type = ld.getType();
                             ExprStat es = new ExprStat(new Assignment(ne, newExpr, Assignment.EQ));
                             // Rewrite the expression for the for-loop
                             fs.children[1] = ne;
@@ -145,7 +145,7 @@ public class InfiniteLoopRewrite {
                             Block b = new Block(stats);
                             s.set(i, b);
                         }
-                        go(fs.stats());
+                        go(fs.getStatement());
                     } else if (s.child(i) != null) // Block, IfStat, ParBlock, SwitchStat
                         go(s.child(i));
                 } else if (s.child(i) != null)

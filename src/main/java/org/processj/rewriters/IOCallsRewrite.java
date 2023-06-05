@@ -1,10 +1,13 @@
 package org.processj.rewriters;
 
 import org.processj.ast.*;
+import org.processj.ast.expression.ArrayAccessExpr;
+import org.processj.ast.expression.BinaryExpr;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Log;
 import org.processj.utilities.Visitor;
 
-public class IOCallsRewrite extends Visitor<AST> {
+public class IOCallsRewrite implements Visitor<AST> {
 
     public IOCallsRewrite() {
         Log.logHeader("****************************************");
@@ -14,12 +17,13 @@ public class IOCallsRewrite extends Visitor<AST> {
 
     @Override
     public AST visitInvocation(Invocation in) {
-        Log.log(in, "Attempting to rewrite invocation of " + in.toString());
+        Log.log(in, "Attempting to rewrite invocation of " + in);
 
         if (in.targetProc != null) {
+
             Log.log(in,"targetProc is " + in.targetProc);
-            if ( in.targetProc.filename != null                    &&
-                 in.targetProc.filename.equals("io")               &&
+
+            if (in.targetProc.getPackageName().equals("io") &&
                 (in.targetProc.toString().equals("println") ||
                  in.targetProc.toString().equals("print"))) {
                 Log.log("This is the function we're looking for");
@@ -28,16 +32,16 @@ public class IOCallsRewrite extends Visitor<AST> {
             }
         }
 
-        if (in.params() != null) {
-            if(in.params().size() == 0) {
+        if (in.getParameters() != null) {
+            if(in.getParameters().size() == 0) {
                 Log.log(in, "Params are empty");
                 return in;
             }
 
             boolean rewritten = false;
-            Sequence<Expression> params = in.params();
+            Sequence<Expression> params = in.getParameters();
             Sequence<Expression> newParams = new Sequence<Expression>();
-            Log.log(in, "Invocation of " + in.toString() + " has argument(s):");
+            Log.log(in, "Invocation of " + in + " has argument(s):");
             for (int i = 0; i < params.size(); ++i) {
                 if (params.child(i) instanceof BinaryExpr) {
                     Log.log(in, params.child(i).toString());
@@ -64,7 +68,7 @@ public class IOCallsRewrite extends Visitor<AST> {
     }
 
     public Sequence<Expression> extractParams(BinaryExpr be) {
-        Log.log(be, "Extracting Parameters from " + be.toString());
+        Log.log(be, "Extracting Parameters from " + be);
 
         Log.log(be, "Left is " + be.left().toString() + ", right is " + be.right().toString());
 
@@ -208,10 +212,10 @@ public class IOCallsRewrite extends Visitor<AST> {
             AST md = ((NameExpr)target).myDecl;
             Log.log("myDecl is " + md.toString());
             if (md instanceof LocalDecl) {
-                t = ((ArrayType)((LocalDecl)md).type()).getComponentType();
+                t = ((ArrayType)((LocalDecl)md).getType()).getComponentType();
                 Log.log("md instanceof LocalDecl: " + t.toString());
             } else if (md instanceof ParamDecl) {
-                t = ((ArrayType)((ParamDecl)md).type()).getComponentType();
+                t = ((ArrayType)((ParamDecl)md).getType()).getComponentType();
                 Log.log("md instanceof ParamDecl: " + t.toString());
             }
         }

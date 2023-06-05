@@ -2,9 +2,8 @@ package org.processj.ast;
 
 public interface VarDecl {
 
-    public Type type();
+    Type getType();
 
-    public String name();
+    void setType(Type t);
 
-    public void setType(Type t);
 }

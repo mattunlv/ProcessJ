@@ -1,8 +1,9 @@
 package org.processj;
 
 import org.processj.ast.Compilation;
-import org.processj.ast.IVisitor;
+import org.processj.ast.SymbolMap;
 import org.processj.utilities.ProcessJSourceFile;
+import org.processj.utilities.Visitor;
 
 import java.util.*;
 
@@ -15,34 +16,16 @@ import java.util.*;
  * @version 1.0.0
  * @since 0.1.0
  */
-public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
+public abstract class Phase implements Visitor<Void> {
 
     /// --------------------
     /// Public Static Fields
 
     /**
-     * <p>Defined handle to a function that provides an {@link Integer} corresponding with an arbitrary
-     * {@link Phase}'s order.</p>
+     * <p>Functional interface for a method to be specified to the {@link Phase} class that provides a means to
+     * request a {@link org.processj.ast.Compilation}.</p>
      */
-    public static GetOrder              GetOrder                = null;
-
-    /**
-     * <p>Defined handle to a function that provides a flag indicating if the file in the specified path {@link String}
-     * value has been opened.</p>
-     */
-    public static Is                    Is                      = null;
-
-    /**
-     * <p>File open request method that provides the {@link Phase} with a method to notify the appropriate entity to
-     * open & aggregate a {@link ProcessJSourceFile} into the compilation queue.</p>
-     */
-    public static Request               Request                 = null;
-
-    /**
-     * <p>{@link ProcessJSourceFile} retrieving method that provides the {@link Phase} with a {@link ProcessJSourceFile}
-     * corresponding to a path {@link String} value.</p>
-     */
-    public static GetProcessJSourceFile GetProcessJSourceFile   = null;
+    public static Request Request = null;
 
     /// --------------
     /// Private Fields
@@ -51,6 +34,11 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
      * <p>{@link Listener} instance that receives any {@link Phase.Message} instances from the {@link Phase}.</p>
      */
     private final Listener      listener            ;
+
+    /**
+     * <p>The current scope when traversing the {@link org.processj.ast.Compilation}.</p>
+     */
+    private SymbolMap           scope               ;
 
     /**
      * <p>The {@link ProcessJSourceFile} instance that is associated with this {@link Phase}. This field is updated
@@ -62,32 +50,32 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
     /// Constructors
 
     /**
-     * <p>Initializes the {@link Phase} to its' default state with the specified {@link Listener} &
-     * {@link ProcessJSourceFile} instances.</p>
+     * <p>Initializes the {@link Phase} to its' default state with the specified {@link Listener}.</p>
      * @param listener The {@link Listener} to bind to the {@link Phase}.
+     * @since 0.1.0
      */
     public Phase(final Listener listener) {
 
-        this.listener = listener;
+        this.listener           = listener  ;
+        this.scope              = null      ;
+        this.processJSourceFile = null      ;
 
     }
 
-    /// --------------------
-    /// java.lang.Comparable
+    /// -------------------------
+    /// org.processj.ast.IVisitor
 
-    /**
-     * <p>Returns an {@link Integer} value corresponding to the comparison of the {@link ProcessJSourceFile}'s
-     * most recent completed {@link Phase}.</p>
-     * @param that the object to be compared.
-     * @return {@link Integer} value corresponding to the comparison of the {@link ProcessJSourceFile}'s
-     * most recent completed {@link Phase}.
-     * @since 0.1.0
-     */
     @Override
-    public final int compareTo(final Phase that) {
+    public final SymbolMap getScope() {
 
-        // Return the result of subtracting the ordinal values
-        return (GetOrder != null) ? GetOrder.For(this) - GetOrder.For(that) : -1;
+        return this.scope;
+
+    }
+
+    @Override
+    public final void setScope(final SymbolMap symbolMap) {
+
+        this.scope = symbolMap;
 
     }
 
@@ -95,12 +83,17 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
     /// Protected Abstract Methods
 
     /**
-     * <p>Abstract method that is invoked within {@link Phase#execute(ProcessJSourceFile)}. All Phase-dependent
-     * procedures should be executed here.</p>
+     * <p>Method that is invoked within {@link Phase#execute(ProcessJSourceFile)}. All Phase-dependent
+     * procedures should be executed here if not following the default visitor pattern.</p>
      * @see Phase.Error
      * @since 0.1.0
      */
-    protected abstract void executePhase() throws Phase.Error;
+    protected void executePhase() throws Phase.Error {
+
+        // Begin the traversal
+        this.retrieveValidCompilation().visit(this);
+
+    }
 
     /// -----------------
     /// Protected Methods
@@ -143,8 +136,33 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
 
     }
 
-    /// --------------------------
-    /// Public Abstract Methods
+    /**
+     * <p>Returns a valid {@link Compilation} instance from the {@link ProcessJSourceFile}. This method successfully
+     * returns if the {@link ProcessJSourceFile} contains a valid {@link Compilation}.</p>
+     * @return {@link Compilation} corresponding to the {@link ProcessJSourceFile}.
+     * @throws Phase.Error If the {@link ProcessJSourceFile} does not contain a {@link Compilation}.
+     * @since 0.1.0
+     */
+    protected Compilation retrieveValidCompilation() throws Phase.Error {
+
+        // Retrieve the ProcessJ Source File
+        final ProcessJSourceFile processJSourceFile = this.getProcessJSourceFile();
+
+        // If a null value was specified for the ProcessJ source file
+        if(processJSourceFile == null)
+            throw new NullProcessJSourceFile(this).commit();
+
+            // If the processJ source file does not contain a Compilation
+        else if(!processJSourceFile.containsCompilation())
+            throw new NullCompilationException(this).commit();
+
+        // Return the compilation
+        return processJSourceFile.getCompilation();
+
+    }
+
+    /// --------------
+    /// Public Methods
 
     /**
      * <p>Executes the {@link Phase}. Invokes the {@link Phase}'s specific implementation.</p>
@@ -161,17 +179,25 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
         else if(processJSourceFile == null)
             throw new NullProcessJSourceFile(this).commit();
 
-        // Otherwise, update the ProcessJSourceFile
-        this.processJSourceFile = processJSourceFile;
+        // If the file has not been completed by this
+        if(!processJSourceFile.hasBeenCompletedBy(this)) {
 
-        // Execute the phase
-        this.executePhase();
+            // Otherwise, update the ProcessJSourceFile
+            this.processJSourceFile = processJSourceFile;
 
-        // Sanity check
-        this.assertNoErrors();
+            // Execute the phase
+            this.executePhase();
 
-        // Clear
-        this.processJSourceFile = null;
+            // Sanity check
+            this.assertNoErrors();
+
+            // Clear
+            this.processJSourceFile = null;
+
+            // Mark the file as completed by this Phase
+            processJSourceFile.setCompletedPhase(this);
+
+        }
 
     }
 
@@ -444,7 +470,7 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
      * @version 1.0.0
      * @since 0.1.0
      */
-    protected static abstract class Listener {
+    public static class Listener {
 
         /// --------------------
         /// Public Static Fields
@@ -547,8 +573,10 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
          */
         protected void notify(final Phase.Info phaseInfo) {
 
+            final ProcessJSourceFile file = phaseInfo.getPhase().getProcessJSourceFile();
+
             // Simply log the info
-            Info.Log(phaseInfo.getMessage());
+            Info.Log(file + ": " + phaseInfo.getMessage());
 
             // Push the info
             this.push(phaseInfo);
@@ -563,8 +591,10 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
          */
         protected void notify(final Phase.Warning phaseWarning) {
 
+            final ProcessJSourceFile file = phaseWarning.getPhase().getProcessJSourceFile();
+
             // Simply log the warning
-            Warning.Log(phaseWarning.getMessage());
+            Warning.Log(file + ": " + phaseWarning.getMessage());
 
             // Push the warning
             this.push(phaseWarning);
@@ -579,8 +609,10 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
          */
         protected void notify(final Phase.Error phaseError)  {
 
+            final ProcessJSourceFile file = phaseError.getPhase().getProcessJSourceFile();
+
             // Log the message
-            Error.Log(phaseError.getMessage());
+            Error.Log(file + ": " + phaseError.getMessage());
 
             // Push the error
             this.push(phaseError);
@@ -663,41 +695,8 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
 
     /**
      * <p>Defines a functional interface for a method to be specified to the {@link Phase} class that
-     * provides {@link Integer} values that correspond with a {@link Phase}'s order to operate on or validate
-     * a {@link ProcessJSourceFile}.</p>
-     * @see Phase
-     * @see ProcessJSourceFile
-     * @author Carlos L. Cuenca
-     * @version 1.0.0
-     * @since 0.1.0
-     */
-    @FunctionalInterface
-    public interface GetOrder {
-
-        Integer For(final Phase phase);
-
-    }
-
-    /**
-     * <p>Defines a functional interface for a method to be specified to the {@link Phase} class that
-     * provides a flag indicating if the file at the specified path {@link String} value has been opened &
-     * aggregated to the compilation queue.</p>
-     * @see Phase
-     * @author Carlos L. Cuenca
-     * @version 1.0.0
-     * @since 0.1.0
-     */
-    @FunctionalInterface
-    public interface Is {
-
-        boolean Opened(final String filePath);
-
-    }
-
-    /**
-     * <p>Defines a functional interface for a method to be specified to the {@link Phase} class that
-     * provides requests a file specified at the {@link String} file path to be aggregated to the
-     * {@link ProcessJSourceFile} compilation queue.</p>
+     * provides a means to request a {@link org.processj.ast.Compilation} specified at the {@link String}
+     * file path.</p>
      * @see Phase
      * @author Carlos L. Cuenca
      * @version 1.0.0
@@ -706,23 +705,7 @@ public abstract class Phase implements IVisitor<Void>, Comparable<Phase> {
     @FunctionalInterface
     public interface Request {
 
-        void Open(final String filePath);
-
-    }
-
-    /**
-     * <p>Defines a functional interface for a method to be specified to the {@link Phase} class that
-     * provides {@link ProcessJSourceFile} instances that correspond with a {@link String} path value.</p>
-     * @see Phase
-     * @see ProcessJSourceFile
-     * @author Carlos L. Cuenca
-     * @version 1.0.0
-     * @since 0.1.0
-     */
-    @FunctionalInterface
-    public interface GetProcessJSourceFile {
-
-        ProcessJSourceFile For(final String filePath);
+        Compilation CompilationFor(final String filepath) throws Phase.Error;
 
     }
 

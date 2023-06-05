@@ -1,5 +1,7 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class ChannelEndExpr extends Expression {
@@ -24,7 +26,7 @@ public class ChannelEndExpr extends Expression {
         return end == WRITE;
     }
 
-    public Expression channel() {
+    public Expression getChannelType() {
         return (Expression) children[0];
     }
     
@@ -32,7 +34,7 @@ public class ChannelEndExpr extends Expression {
         return end;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitChannelEndExpr(this);
     }
 }

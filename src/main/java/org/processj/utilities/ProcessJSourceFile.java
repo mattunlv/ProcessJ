@@ -16,7 +16,7 @@ import java.util.*;
  * @version 1.0.0
  * @since 0.1.0
  */
-public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
+public class ProcessJSourceFile {
 
     /// --------------
     /// Private Fields
@@ -32,16 +32,6 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
     private final File                          file                ;
 
     /**
-     * <p>A {@link List} containing the set of import statement paths as {@link String}s.</p>
-     */
-    private final List<String>                  importFiles         ;
-
-    /**
-     * <p>The {@link Set} of import paths to check for duplicates.</p>
-     */
-    private final Set<String>                   importSet           ;
-
-    /**
      * <p>The most recent {@link Phase} that operated or validated the {@link ProcessJSourceFile}.</p>
      */
     private Phase                               lastCompletedPhase  ;
@@ -51,6 +41,7 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
      * the toolchain.</p>
      */
     private Compilation                         compilation         ;
+
 
     /// ------------
     /// Constructors
@@ -64,30 +55,9 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
 
         // Initialize the file & Compilation
         this.completedPhases    = new HashSet<>()       ;
-        this.importFiles        = new ArrayList<>()     ;
-        this.importSet          = new HashSet<>()       ;
         this.file               = new File(inputPath)   ;
         this.compilation        = null                  ;
         this.lastCompletedPhase = null                  ;
-
-    }
-
-    /// --------------------
-    /// java.lang.Comparable
-
-    /**
-     * <p>Returns an {@link Integer} value corresponding to the comparison of the {@link ProcessJSourceFile}'s
-     * most recent completed {@link Phase}.</p>
-     * @param that the object to be compared.
-     * @return {@link Integer} value corresponding to the comparison of the {@link ProcessJSourceFile}'s
-     * most recent completed {@link Phase}.
-     * @since 0.1.0
-     */
-    @Override
-    public final int compareTo(final ProcessJSourceFile that) {
-
-        // Return the result; null condition is handled further down
-        return this.lastCompletedPhase.compareTo((that != null) ? that.lastCompletedPhase : null);
 
     }
 
@@ -103,7 +73,6 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
 
         if(phase != null) {
 
-            // TODO: Make sure that the last completed phase isn't set to a value less than the current
             // Update the set & the last completed phase
             this.completedPhases.add(phase.getClass());
             this.lastCompletedPhase = phase;
@@ -120,22 +89,6 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
     public final void setCompilation(final Compilation compilation) {
 
         this.compilation = compilation;
-
-    }
-
-    /**
-     * <p>Aggregates the {@link List} of paths into the {@link ProcessJSourceFile}'s import file list.</p>
-     * @param paths The {@link List} of {@link String} paths to aggregate.
-     * @since 0.1.0
-     */
-    public final void addImport(final List<String> paths) {
-
-        // If the specified collection is valid, add all non-existent paths
-        if(paths != null)
-            this.importFiles.addAll(
-                    paths.stream()
-                            .filter(this.importSet::add)
-                            .toList());
 
     }
 
@@ -163,19 +116,6 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
     }
 
     /**
-     * <p>Returns a flag indicating if the {@link ProcessJSourceFile} has resolved import file paths. This returns
-     * true if the compilation does not have any {@link org.processj.ast.Import} statements defined or if the
-     * {@link ProcessJSourceFile#importFiles} field is not empty.</p>
-     * @return Flag indicating if the {@link ProcessJSourceFile} has resolved import file paths.
-     * @since 0.1.0
-     */
-    public final boolean hasResolvedImports() {
-
-        return !this.compilation.definesImports() || !this.importFiles.isEmpty();
-
-    }
-
-    /**
      * <p>Returns the name corresponding to the {@link ProcessJSourceFile}.</p>
      * @return {@link String} value of the name corresponding to the {@link ProcessJSourceFile}.
      * @since 0.1.0
@@ -187,6 +127,17 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
     }
 
     /**
+     * <p>Returns the path corresponding to the {@link ProcessJSourceFile}.</p>
+     * @return {@link String} value of the path corresponding to the {@link ProcessJSourceFile}.
+     * @since 0.1.0
+     */
+    public final String getPath() {
+
+        return this.file.getPath();
+
+    }
+
+    /**
      * <p>Retrieves {@link java.io.FileReader} corresponding with the {@link ProcessJSourceFile}.</p>
      * @return {@link java.io.FileReader} containing the contents of the {@link ProcessJSourceFile}.
      * @throws IOException if the {@link FileReader} failed to open the file.
@@ -194,7 +145,7 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
      */
     public final FileReader getCorrespondingFileReader() throws IOException {
 
-        return new FileReader(this.file.getAbsolutePath());
+        return new FileReader(this.file.getPath());
 
     }
 
@@ -218,37 +169,6 @@ public class ProcessJSourceFile implements Comparable<ProcessJSourceFile> {
     public final Phase getLastCompletedPhase() {
 
         return this.lastCompletedPhase;
-
-    }
-
-    /**
-     * <p>Returns the set of import file paths corresponding to the {@link ProcessJSourceFile}.</p>
-     * @return {@link List} containing all the import file paths.
-     * @since 0.1.0
-     */
-    public final List<String> getImportFiles() {
-
-        return this.importFiles;
-
-    }
-
-    /// ---------------------
-    /// Functional Interfaces
-
-    /**
-     * <p>Defines a functional interface for a method to be specified to the {@link ProcessJSourceFile} class that
-     * provides {@link Integer} values that correspond with a {@link Phase}'s order to operate on or validate
-     * a {@link ProcessJSourceFile}.</p>
-     * @see Phase
-     * @see ProcessJSourceFile
-     * @author Carlos L. Cuenca
-     * @version 1.0.0
-     * @since 0.1.0
-     */
-    @FunctionalInterface
-    public interface Order {
-
-        Integer RequestFor(final Class<? extends Phase> phase);
 
     }
 

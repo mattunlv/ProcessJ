@@ -1,12 +1,8 @@
 package org.processj.phases;
 
 import org.processj.Phase;
-import org.processj.ast.Modifier;
 import org.processj.ast.ProcTypeDecl;
 import org.processj.ast.Type;
-import org.processj.utilities.PJBugManager;
-import org.processj.utilities.PJMessage;
-import org.processj.utilities.VisitorMessageNumber;
 
 public class TypeChecker extends Phase {
 
@@ -16,22 +12,16 @@ public class TypeChecker extends Phase {
      *
      * @param listener The {@link Listener} to bind to the {@link Phase}.
      */
-    public TypeChecker(Listener listener) {
+    public TypeChecker(Phase.Listener listener) {
         super(listener);
-    }
-
-    @Override
-    protected void executePhase() throws Error {
-
     }
 
     @Override
     public Void visitProcTypeDecl(final ProcTypeDecl procedureTypeDeclaration) throws Phase.Error {
 
         // TODO: Originally Error Code 205
-        if(procedureTypeDeclaration.isDeclaredMobile() && !procedureTypeDeclaration.returnType().isVoidType())
+        if(procedureTypeDeclaration.isMobile() && !procedureTypeDeclaration.getReturnType().isVoidType())
             throw new MobileVoidReturnTypeNotSpecified(this, procedureTypeDeclaration);
-
 
         return null;
 

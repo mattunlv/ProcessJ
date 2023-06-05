@@ -2,7 +2,10 @@ package org.processj.test;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.processj.Phase;
 import org.processj.ProcessJc;
+
+import java.net.MalformedURLException;
 
 /**
  * <p>Collection of tests that check ProcessJ transpilation and subsequent generated java output compilation.
@@ -26,14 +29,22 @@ public class EndToEndTests extends ProcessJTest {
      * @see TestInputFile
      * @since 0.1.0
      */
-    private static void UnitTestOf(final TestInputFile testInputFile) {
+    private static void UnitTestOf(final TestInputFile testInputFile)  {
 
         // Update the input & output paths
         TestInputFile.BaseInputPath   = InputDirectory    ;
         TestInputFile.BaseOutputPath  = WorkingDirectory  ;
 
-        // Transpile with ProcessJ
-        ProcessJc.main(new String[]{testInputFile.getAbsoluteInputFilePath()});
+        try {
+
+            // Transpile with ProcessJ
+            ProcessJc.main(new String[]{testInputFile.getAbsoluteInputFilePath()});
+
+        } catch(final Phase.Error | MalformedURLException | ClassNotFoundException error) {
+
+            Assertions.assertTrue(false);
+
+        }
 
         // Check
         Assertions.assertTrue(CompileJava(testInputFile));
@@ -49,14 +60,11 @@ public class EndToEndTests extends ProcessJTest {
      * @since 0.1.0
      */
     @SuppressWarnings({"deprecation", "unused"})
-    private static void FailUnitTestOf(final TestInputFile testInputFile) {
+    private static void FailUnitTestOf(final TestInputFile testInputFile) throws Phase.Error {
 
         // Update the input & output paths
         TestInputFile.BaseInputPath   = InputDirectory    ;
         TestInputFile.BaseOutputPath  = WorkingDirectory  ;
-
-        // Transpile with ProcessJ
-        ProcessJc.main(new String[]{testInputFile.getAbsoluteInputFilePath()});
 
     }
 

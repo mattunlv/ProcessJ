@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class ChannelEndType extends Type {
@@ -15,7 +16,7 @@ public class ChannelEndType extends Type {
     /// --------------
     /// Private Fields
 
-    private final Type  componentType       ;
+    private Type  componentType       ;
     private final int   shared              ;
     private final int   end                 ;
 
@@ -73,7 +74,7 @@ public class ChannelEndType extends Type {
      * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) {
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
         return visitor.visitChannelEndType(this);
 
@@ -146,6 +147,13 @@ public class ChannelEndType extends Type {
     public final boolean typeAssignmentCompatible(final Type that) {
 
         return this.equals(that);
+
+    }
+
+    public final void setComponentType(final Type componentType) {
+
+        this.componentType = componentType;
+        this.children[0] = componentType;
 
     }
 

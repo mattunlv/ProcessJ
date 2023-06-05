@@ -1,23 +1,29 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 // This ought to be fixed!!! Top-level constants should extend 'Type'
 // instead of AST -- see 'visitCompilation' in CodeGeneratorJava.java
-public class ConstantDecl extends AST implements VarDecl, DefineTopLevelDecl {
+public class ConstantDecl extends Type implements VarDecl, DefineTopLevelDecl {
 
     /// --------------
     /// Private Fields
 
-    private final Sequence<Modifier>    modifiers           ;
-    private final Var                   variable            ;
-    private boolean                     isDeclaredNative    ;
+    private final Sequence<Modifier>    modifiers                   ;
+    private final Name                  name                        ;
+    private final Expression initializationExpression    ;
+    private Type                        type                        ;
+    private boolean                     isDeclaredNative            ;
 
     public ConstantDecl(final Sequence<Modifier> modifiers, final Type type, final Var var) {
-        super(new AST[] { modifiers, type, var });
-        this.modifiers          = modifiers ;
-        this.variable           = var       ;
-        this.isDeclaredNative   = false     ;
+        super(new AST[] { modifiers, type, var.getName(), var.getInitializationExpression() });
+        this.modifiers                  = modifiers     ;
+        this.name                       = var.getName()    ;
+        this.initializationExpression   = var.getInitializationExpression()    ;
+        this.isDeclaredNative           = false         ;
+        this.type                       = type          ;
     }
 
     /// ----------------
@@ -31,32 +37,60 @@ public class ConstantDecl extends AST implements VarDecl, DefineTopLevelDecl {
     @Override
     public String toString() {
 
-        return (this.variable != null) ? this.variable.toString() : "";
+        return this.name.toString();
 
     }
 
-    public void setType(Type t) {
-        children[1] = t;
+    public void setType(final Type type) {
+
+        this.type           = type;
+        this.children[1]    = type;
+
     }
 
     public Sequence<Modifier> modifiers() {
         return this.modifiers;
     }
 
-    public Type type() {
-        return (Type) children[1];
+    public final Type getType() {
+
+        return this.type;
+
     }
 
-    public Var var() {
-        return (Var) children[2];
+    public final Name getName() {
+
+        return this.name;
+
     }
 
-    public String name() {
-        return var().name().getname();
+    public final String getPackageName() {
+
+        return this.name.getPackageName();
+
     }
 
-    public <S> S visit(Visitor<S> v) {
-        return v.visitConstantDecl(this);
+    @Override
+    public boolean typeEqual(Type other) {
+        return false;
+    }
+
+    @Override
+    public boolean typeEquivalent(Type other) {
+        return false;
+    }
+
+    @Override
+    public boolean typeAssignmentCompatible(Type other) {
+        return false;
+    }
+
+    @Override
+    public final <S> S visit(final Visitor<S> visitor)
+            throws Phase.Error {
+
+        return visitor.visitConstantDecl(this);
+
     }
 
     /**
@@ -89,7 +123,13 @@ public class ConstantDecl extends AST implements VarDecl, DefineTopLevelDecl {
      */
     public final boolean isInitialized() {
 
-        return (this.variable != null) && this.variable.isInitialized();
+        return this.initializationExpression != null;
+
+    }
+
+    public final Expression getInitializationExpression() {
+
+        return this.initializationExpression;
 
     }
 

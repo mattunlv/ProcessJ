@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class ChannelType extends Type {
@@ -75,7 +76,7 @@ public class ChannelType extends Type {
      * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) {
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
         return visitor.visitChannelType(this);
 
@@ -142,6 +143,13 @@ public class ChannelType extends Type {
     public final String modString() {
 
         return modSyms[shared];
+
+    }
+
+    public final void setComponentType(final Type componentType) {
+
+        this.componentType = componentType;
+        this.children[0] = componentType;
 
     }
 

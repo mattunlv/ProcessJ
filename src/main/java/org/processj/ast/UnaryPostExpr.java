@@ -1,5 +1,7 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class UnaryPostExpr extends Expression {
@@ -21,7 +23,7 @@ public class UnaryPostExpr extends Expression {
         return opSyms[kind];
     }
 
-    public Expression expr() {
+    public Expression getExpression() {
         return (Expression) children[0];
     }
 
@@ -30,10 +32,10 @@ public class UnaryPostExpr extends Expression {
     }
 
     public String toString() {
-        return expr().toString() + opSyms[kind];
+        return getExpression().toString() + opSyms[kind];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitUnaryPostExpr(this);
     }
 }

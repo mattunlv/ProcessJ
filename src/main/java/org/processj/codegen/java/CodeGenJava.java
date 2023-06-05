@@ -9,73 +9,15 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
+import org.processj.ast.*;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.alt.AltStat;
+import org.processj.ast.expression.*;
 import org.processj.runtime.*;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
-import org.processj.ast.AST;
-import org.processj.ast.AltCase;
-import org.processj.ast.AltStat;
-import org.processj.ast.ArrayAccessExpr;
-import org.processj.ast.ArrayLiteral;
-import org.processj.ast.ArrayType;
-import org.processj.ast.Assignment;
-import org.processj.ast.BinaryExpr;
-import org.processj.ast.Block;
-import org.processj.ast.BreakStat;
-import org.processj.ast.CastExpr;
-import org.processj.ast.ChannelEndExpr;
-import org.processj.ast.ChannelEndType;
-import org.processj.ast.ChannelReadExpr;
-import org.processj.ast.ChannelType;
-import org.processj.ast.ChannelWriteStat;
-import org.processj.ast.Compilation;
-import org.processj.ast.ConstantDecl;
-import org.processj.ast.ContinueStat;
-import org.processj.ast.DoStat;
-import org.processj.ast.ExprStat;
-import org.processj.ast.Expression;
-import org.processj.ast.ForStat;
-import org.processj.ast.IfStat;
-import org.processj.ast.Import;
-import org.processj.ast.Invocation;
-import org.processj.ast.Literal;
-import org.processj.ast.LocalDecl;
-import org.processj.ast.Modifier;
-import org.processj.ast.Name;
-import org.processj.ast.NameExpr;
-import org.processj.ast.NamedType;
-import org.processj.ast.NewArray;
-import org.processj.ast.ParBlock;
-import org.processj.ast.ParamDecl;
-import org.processj.ast.PrimitiveLiteral;
-import org.processj.ast.PrimitiveType;
-import org.processj.ast.ProcTypeDecl;
-import org.processj.ast.ProtocolCase;
-import org.processj.ast.ProtocolLiteral;
-import org.processj.ast.ProtocolTypeDecl;
-import org.processj.ast.RecordAccess;
-import org.processj.ast.RecordLiteral;
-import org.processj.ast.RecordMember;
-import org.processj.ast.RecordMemberLiteral;
-import org.processj.ast.RecordTypeDecl;
-import org.processj.ast.ReturnStat;
-import org.processj.ast.Sequence;
-import org.processj.ast.SkipStat;
-import org.processj.ast.Statement;
-import org.processj.ast.SwitchGroup;
-import org.processj.ast.SwitchLabel;
-import org.processj.ast.SwitchStat;
-import org.processj.ast.SyncStat;
-import org.processj.ast.Ternary;
-import org.processj.ast.TimeoutStat;
-import org.processj.ast.Token;
-import org.processj.ast.Type;
-import org.processj.ast.UnaryPostExpr;
-import org.processj.ast.UnaryPreExpr;
-import org.processj.ast.Var;
-import org.processj.ast.WhileStat;
 import org.processj.codegen.Helper;
 import org.processj.codegen.Tag;
 import org.processj.utilities.Log;
@@ -91,7 +33,7 @@ import org.processj.utilities.Visitor;
  * @version 06/10/2018
  * @since 1.2
  */
-public class CodeGenJava extends Visitor<Object> {
+public class CodeGenJava implements Visitor<Object> {
 
     /** String template file locator */
     private final String STGRAMMAR_FILE = "src/main/resources/stringtemplates/java/grammarTemplatesJava.stg";
@@ -246,7 +188,7 @@ public class CodeGenJava extends Visitor<Object> {
      * @return A text generated after evaluating this compilation unit.
      */
     @Override
-    public Object visitCompilation(Compilation co) {
+    public Object visitCompilation(Compilation co) throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         Log.log(co, "Visiting a Compilation");
 
         currentCompilation = co;
@@ -257,25 +199,39 @@ public class CodeGenJava extends Visitor<Object> {
         // Reference to all remaining types
         ArrayList<String> body = new ArrayList<>();
         // Holds all top-level declarations
-        Sequence<Type> typeDecls = co.typeDecls();
+        Sequence<Type> typeDecls = co.getTypeDeclarations();
         // Package name for this source file
-        String packagename = co.packageNoName();
+        String packagename = co.getPackageName();
 
-        for (Import im : co.imports()) {
+        for (Import im : co.getImports()) {
             if (im != null)
-                importFiles.add((String) im.visit(this));
+                try {
+                    importFiles.add((String) im.visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
         }
 
         for (AST decl : typeDecls) {
             if (decl instanceof Type) {
                 // Collect procedures, records, protocols, external types, etc.
-                String t = (String) ((Type) decl).visit(this);
+                String t = null;
+                try {
+                    t = (String) ((Type) decl).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (t != null)
                     body.add(t);
             } else if (decl instanceof ConstantDecl) {
                 // Iterate over remaining declarations, which is anything that
                 // comes after top-level declarations
-                String cd = (String) ((ConstantDecl) decl).visit(this);
+                String cd = null;
+                try {
+                    cd = (String) ((ConstantDecl) decl).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (cd != null)
                     body.add(cd);
             }
@@ -303,7 +259,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitProcTypeDecl(ProcTypeDecl pd) {
+    public Object visitProcTypeDecl(ProcTypeDecl pd) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(pd, "Visiting a ProcTypeDecl (" + pd + ")");
 
         ST stProcTypeDecl = null;
@@ -328,7 +284,12 @@ public class CodeGenJava extends Visitor<Object> {
             // Create an instance for such anonymous procedure
             stProcTypeDecl = stGroup.getInstanceOf("AnonymousProcess2");
             // Statements that appear in the procedure being executed
-            String[] body = (String[]) pd.body().visit(this);
+            String[] body = new String[0];
+            try {
+                body = (String[]) pd.getBody().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             stProcTypeDecl.add("parBlock", currentParBlock);
             stProcTypeDecl.add("syncBody", body);
             stProcTypeDecl.add("isPar", inParFor);
@@ -353,7 +314,7 @@ public class CodeGenJava extends Visitor<Object> {
             // Restore global variables for a new PJProcess class
             resetGlobals();
             // Formal parameters that must be passed to the procedure
-            Sequence<ParamDecl> formals = pd.formalParams();
+            Sequence<ParamDecl> formals = pd.getParameters();
             // Do we have any parameters?
             if (formals != null && formals.size() > 0) {
                 // Iterate through and visit every parameter declaration.
@@ -361,20 +322,38 @@ public class CodeGenJava extends Visitor<Object> {
                 // a list of comma-separated arguments. Note that we ignored
                 // the value returned by this visitor
                 for (int i = 0; i < formals.size(); ++i)
-                    formals.child(i).visit(this);
+                    try {
+                        formals.child(i).visit(this);
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
             }
             // Visit all declarations that appear in the procedure
             String[] body = null;
-            if (pd.body() != null)
-                body = (String[]) pd.body().visit(this);
+            if (pd.getBody() != null)
+                try {
+                    body = (String[]) pd.getBody().visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             // Retrieve the modifier(s) attached to the invoked procedure such
             // as private, public, protected, etc.
-            String[] modifiers = (String[]) pd.modifiers().visit(this);
+            String[] modifiers = new String[0];
+            try {
+                modifiers = (String[]) pd.modifiers().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             // Grab the return type of the invoked procedure
-            String procType = (String) pd.returnType().visit(this);
+            String procType = null;
+            try {
+                procType = (String) pd.getReturnType().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             // The procedure's annotation determines if we have a yielding procedure
             // or a Java method (a non-yielding procedure)
-            boolean doesProcYield = Helper.doesProcYield(pd);
+            boolean doesProcYield = pd.doesYield();
             // Set the template to the correct instance value and then initialize
             // its attributes
             if (doesProcYield) {
@@ -443,15 +422,25 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitBinaryExpr(BinaryExpr be) {
+    public Object visitBinaryExpr(BinaryExpr be) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(be, "Visiting a BinaryExpr");
 
         ST stBinaryExpr = stGroup.getInstanceOf("BinaryExpr");
         String op = be.opString();
-        String lhs = (String) be.left().visit(this);
+        String lhs = null;
+        try {
+            lhs = (String) be.left().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         lhs = lhs.replace(DELIMITER, "");
         lhs = be.left().hasParens ? "(" + lhs + ")" : lhs;
-        String rhs = (String) be.right().visit(this);
+        String rhs = null;
+        try {
+            rhs = (String) be.right().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         rhs = be.right().hasParens ? "(" + rhs + ")" : rhs;
         rhs = rhs.replace(DELIMITER, "");
 
@@ -463,7 +452,7 @@ public class CodeGenJava extends Visitor<Object> {
                         && ((NameExpr) be.right()).myDecl instanceof LocalDecl)) {
             LocalDecl ld1 = (LocalDecl) ((NameExpr) be.left()).myDecl;
             LocalDecl ld2 = (LocalDecl) ((NameExpr) be.right()).myDecl;
-            if (ld1.type().isStringType() && ld2.type().isStringType()) {
+            if (ld1.getType().isStringType() && ld2.getType().isStringType()) {
                 stBinaryExpr = stGroup.getInstanceOf("StringCompare");
                 stBinaryExpr.add("str1", lhs);
                 stBinaryExpr.add("str2", rhs);
@@ -503,17 +492,26 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitWhileStat(WhileStat ws) {
+    public Object visitWhileStat(WhileStat ws) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ws, "Visiting a WhileStat");
 
         ST stWhileStat = stGroup.getInstanceOf("WhileStat");
         String[] stats = null;
         String expr = null;
 
-        if (ws.expr() != null)
-            expr = ((String) ws.expr().visit(this));
-        if (ws.stat() != null) {
-            Object o = ws.stat().visit(this);
+        if (ws.getEvaluationExpression() != null)
+            try {
+                expr = ((String) ws.getEvaluationExpression().visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+        if (ws.getStatement() != null) {
+            Object o = null;
+            try {
+                o = ws.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             if (o instanceof String) {
                 stats = new String[] { (String) o };
             } else {
@@ -528,17 +526,26 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitDoStat(DoStat ds) {
+    public Object visitDoStat(DoStat ds) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ds, "Visiting a DoStat");
 
         ST stDoStat = stGroup.getInstanceOf("DoStat");
         String[] stats = null;
         String expr = null;
 
-        if (ds.expr() != null)
-            expr = ((String) ds.expr().visit(this));
-        if (ds.stat() != null) {
-            Object o = ds.stat().visit(this);
+        if (ds.getEvaluationExpression() != null)
+            try {
+                expr = ((String) ds.getEvaluationExpression().visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+        if (ds.getStatement() != null) {
+            Object o = null;
+            try {
+                o = ds.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             if (o instanceof String) {
                 stats = new String[] { (String) o };
             } else {
@@ -553,7 +560,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitForStat(ForStat fs) {
+    public Object visitForStat(ForStat fs) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(fs, "Visiting a ForStat");
 
         ST stForStat = stGroup.getInstanceOf("ParForStat");
@@ -565,22 +572,39 @@ public class CodeGenJava extends Visitor<Object> {
         boolean preParFor = inParFor;
         inParFor = fs.isPar() || preParFor;
 
-        if (fs.init() != null) {
+        if (fs.getInitializationExpression() != null) {
             init = new ArrayList<>();
-            for (Statement st : fs.init())
-                init.add(((String) st.visit(this)).replace(DELIMITER, ""));
+            for (Statement st : fs.getInitializationExpression())
+                try {
+                    init.add(((String) st.visit(this)).replace(DELIMITER, ""));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
         }
-        if (fs.expr() != null)
-            expr = (String) fs.expr().visit(this);
-        if (fs.incr() != null) {
+        if (fs.getEvaluationExpression() != null)
+            try {
+                expr = (String) fs.getEvaluationExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+        if (fs.getIncrementExpression() != null) {
             incr = new ArrayList<>();
-            for (Statement st : fs.incr())
-                incr.add(((String) st.visit(this)).replace(DELIMITER, ""));
+            for (Statement st : fs.getIncrementExpression())
+                try {
+                    incr.add(((String) st.visit(this)).replace(DELIMITER, ""));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
         }
 
         if (!fs.isPar()) {
-            if (fs.stats() != null) {
-                Object o = fs.stats().visit(this);
+            if (fs.getStatement() != null) {
+                Object o = null;
+                try {
+                    o = fs.getStatement().visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (o instanceof String) {
                     stats = new String[] { (String) o };
                 } else {
@@ -610,16 +634,20 @@ public class CodeGenJava extends Visitor<Object> {
 
         // Rendered the value of each statement
         ArrayList<String> stmts = new ArrayList<String>();
-        if (fs.stats() != null) {
-            if (!(fs.stats() instanceof ForStat)) {
-                Sequence<Expression> se = fs.barriers();
+        if (fs.getStatement() != null) {
+            if (!(fs.getStatement() instanceof ForStat)) {
+                Sequence<Expression> se = fs.getBarrierExpressions();
                 if (se != null) {
                     barriers = new ArrayList<>();
                     for (Expression e : se)
-                        barriers.add((String) e.visit(this));
+                        try {
+                            barriers.add((String) e.visit(this));
+                        } catch (org.processj.Phase.Error error) {
+                            throw new RuntimeException(error);
+                        }
                 }
-                if (fs.stats() instanceof Block) {
-                    Block bl = (Block) fs.stats();
+                if (fs.getStatement() instanceof Block) {
+                    Block bl = (Block) fs.getStatement();
                     for (Statement st : bl.stats()) {
                         // An expression is any valid unit of code that resolves to a value,
                         // that is, it can be a combination of variables, operations and values
@@ -635,16 +663,32 @@ public class CodeGenJava extends Visitor<Object> {
                             // @Override public synchronized void run() { ... }
                             // @Override public finalize() { ... }
                             // }.schedule();
-                            if (Helper.doesProcYield(in.targetProc))
-                                stmts.add((String) in.visit(this));
+                            if (in.targetProc.doesYield())
+                                try {
+                                    stmts.add((String) in.visit(this));
+                                } catch (org.processj.Phase.Error error) {
+                                    throw new RuntimeException(error);
+                                }
                             else // Otherwise, the invocation is made through a static Java method
-                                stmts.add((String) createAnonymousProcTypeDecl(st).visit(this));
+                                try {
+                                    stmts.add((String) createAnonymousProcTypeDecl(st).visit(this));
+                                } catch (org.processj.Phase.Error error) {
+                                    throw new RuntimeException(error);
+                                }
                         } else
-                            stmts.add((String) createAnonymousProcTypeDecl(st).visit(this));
+                            try {
+                                stmts.add((String) createAnonymousProcTypeDecl(st).visit(this));
+                            } catch (org.processj.Phase.Error error) {
+                                throw new RuntimeException(error);
+                            }
                     }
                 }
             } else
-                stmts.add((String) fs.stats().visit(this));
+                try {
+                    stmts.add((String) fs.getStatement().visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
         }
 
         stForStat.add("init", init);
@@ -663,13 +707,28 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitTernary(Ternary te) {
+    public Object visitTernary(Ternary te) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(te, "Visiting a Ternary");
 
         ST stTernary = stGroup.getInstanceOf("Ternary");
-        String expr = (String) te.expr().visit(this);
-        String trueBranch = (String) te.trueBranch().visit(this);
-        String falseBranch = (String) te.falseBranch().visit(this);
+        String expr = null;
+        try {
+            expr = (String) te.getEvaluationExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        String trueBranch = null;
+        try {
+            trueBranch = (String) te.thenPart().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        String falseBranch = null;
+        try {
+            falseBranch = (String) te.elsePart().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         stTernary.add("expr", expr);
         stTernary.add("trueBranch", trueBranch);
         stTernary.add("falseBranch", falseBranch);
@@ -678,14 +737,18 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitContinueStat(ContinueStat cs) {
+    public Object visitContinueStat(ContinueStat cs) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(cs, "Visiting a ContinueStat");
 
         ST stContinueStat = stGroup.getInstanceOf("ContinueStat");
         String name = null;
         // If target isn't null, we have a label to jump to
         if (cs.target() != null) {
-            name = (String) cs.target().visit(this);
+            try {
+                name = (String) cs.target().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             stContinueStat.add("name", name);
         }
 
@@ -693,7 +756,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitIfStat(IfStat is) {
+    public Object visitIfStat(IfStat is) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(is, "Visiting a IfStat");
 
         ST stIfStat = stGroup.getInstanceOf("IfStat");
@@ -703,21 +766,43 @@ public class CodeGenJava extends Visitor<Object> {
         String condExpr = null;
         // We either have an if-statement _or_ a loop construct that
         // has been re-written as an if-statement
-        if (is.expr() != null)
-            condExpr = (String) is.expr().visit(this);
-        if (is.thenpart() != null) {
-            if (is.thenpart() instanceof Block)
-                thenStats = (String[]) is.thenpart().visit(this);
+        if (is.evaluationExpression() != null)
+            try {
+                condExpr = (String) is.evaluationExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+        if (is.getThenPart() != null) {
+            if (is.getThenPart() instanceof Block)
+                try {
+                    thenStats = (String[]) is.getThenPart().visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             else {
-                String stat = (String) is.thenpart().visit(this);
+                String stat = null;
+                try {
+                    stat = (String) is.getThenPart().visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 thenStats = new String[] { stat };
             }
         }
-        if (is.elsepart() != null) {
-            if (is.elsepart() instanceof Block)
-                thenParts = (String[]) is.elsepart().visit(this);
+        if (is.getElsePart() != null) {
+            if (is.getElsePart() instanceof Block)
+                try {
+                    thenParts = (String[]) is.getElsePart().visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             else {
-                String stat = (String) is.elsepart().visit(this);
+                String stat = null;
+                try {
+                    stat = (String) is.getElsePart().visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 thenParts = new String[] { stat };
             }
         }
@@ -730,7 +815,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitAssignment(Assignment as) {
+    public Object visitAssignment(Assignment as) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(as, "Visiting an Assignment");
 
         ST stVar = stGroup.getInstanceOf("Var");
@@ -741,7 +826,11 @@ public class CodeGenJava extends Visitor<Object> {
         String type = null;
 
         if (as.left() != null) { // Not a protocol or record
-            lhs = (String) as.left().visit(this);
+            try {
+                lhs = (String) as.left().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             // Unfortunately, a declaration of for an array of channel reads must be
             // of the form 'PJOne2OneChannel<?>[]...' due to the way inheritance is
             // done in Java. Thus we need need to cast - unnecessarily - the returned
@@ -752,7 +841,11 @@ public class CodeGenJava extends Visitor<Object> {
                 else if (as.left().type instanceof ProtocolTypeDecl)
                     type = PJProtocolCase.class.getSimpleName();
                 else
-                    type = (String) as.left().type.visit(this);
+                    try {
+                        type = (String) as.left().type.visit(this);
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
             }
         }
 
@@ -761,7 +854,11 @@ public class CodeGenJava extends Visitor<Object> {
         else if (as.right() instanceof ChannelReadExpr)
             return createChannelReadExpr(lhs, type, op, ((ChannelReadExpr) as.right()));
         else if (as.right() != null) {
-            rhs = (String) as.right().visit(this);
+            try {
+                rhs = (String) as.right().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             rhs = rhs.replace(DELIMITER, "");
         }
 
@@ -773,20 +870,27 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitParamDecl(ParamDecl pd) {
-        Log.log(pd, "Visiting a ParamDecl (" + pd.type() + " " + pd.paramName().getname() + ")");
+    public Object visitParamDecl(ParamDecl pd) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+        Log.log(pd, "Visiting a ParamDecl (" + pd.getType() + " " + pd + ")");
 
         // Grab the type and name of a variable declaration
-        String name = (String) pd.paramName().visit(this);
-        String type = (String) pd.type().visit(this);
+        // TODO: Originally pd.getName().visit(this)
+        String name = pd.getName();
+
+        String type = null;
+        try {
+            type = (String) pd.getType().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         // Silly fix for channel types
-        if (pd.type() instanceof ChannelType || pd.type() instanceof ChannelEndType)
+        if (pd.getType() instanceof ChannelType || pd.getType() instanceof ChannelEndType)
             type = PJChannel.class.getSimpleName() + type.substring(type.indexOf("<"), type.length());
-        else if (pd.type() instanceof RecordTypeDecl)
-            type = pd.type().toString();
-        else if (pd.type() instanceof ProtocolTypeDecl)
-            type = pd.type().toString();
+        else if (pd.getType() instanceof RecordTypeDecl)
+            type = pd.getType().toString();
+        else if (pd.getType() instanceof ProtocolTypeDecl)
+            type = pd.getType().toString();
 
         // Create a tag for this parameter and then add it to the collection
         // of parameters for reference
@@ -802,8 +906,8 @@ public class CodeGenJava extends Visitor<Object> {
     String newChanArrayName = null;
 
     @Override
-    public Object visitLocalDecl(LocalDecl ld) {
-        Log.log(ld, "Visting a LocalDecl (" + ld.type() + " " + ld.var().name().getname() + ")");
+    public Object visitLocalDecl(LocalDecl ld) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+        Log.log(ld, "Visting a LocalDecl (" + ld.getType() + " " + ld + ")");
 
         // We could have the following targets:
         // 1.) T x; // A declaration
@@ -813,15 +917,20 @@ public class CodeGenJava extends Visitor<Object> {
         // 5.) T x = read(); // A Java method that returns a value
         // 6.) T x = a + b; // A binary expression
         // 7.) T x = a = b ...; // A complex assignment statement
-        String name = ld.var().name().getname();
-        String type = (String) ld.type().visit(this);
+        String name = ld.toString();
+        String type = null;
+        try {
+            type = (String) ld.getType().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         String val = null;
-        boolean isConstant = ld.isConst();
+        boolean isConstant = ld.isConstant();
 
         // Is it a protocol or a record type?
-        if (ld.type() instanceof RecordTypeDecl)
-            type = ld.type().toString();
-        if (ld.type() instanceof ProtocolTypeDecl)
+        if (ld.getType() instanceof RecordTypeDecl)
+            type = ld.getType().toString();
+        if (ld.getType() instanceof ProtocolTypeDecl)
             type = PJProtocolCase.class.getSimpleName();
         // Update the type for record and protocol types
         String chanType = type; // TODO: is this needed?
@@ -842,30 +951,42 @@ public class CodeGenJava extends Visitor<Object> {
         paramToVarNames.put(name, newName);
 
         // This variable could be initialized, e.g. through an assignment operator
-        Expression expr = ld.var().init();
+        Expression expr = ld.getInitializationExpression();
         // Visit the expressions associated with this variable
         if (expr != null) {
-            if (ld.type() instanceof PrimitiveType)
-                val = (String) expr.visit(this);
-            else if (ld.type() instanceof RecordTypeDecl || ld.type() instanceof ProtocolTypeDecl)
-                val = (String) expr.visit(this);
-            else if (ld.type() instanceof ArrayType) {
+            if (ld.getType() instanceof PrimitiveType)
+                try {
+                    val = (String) expr.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
+            else if (ld.getType() instanceof RecordTypeDecl || ld.getType() instanceof ProtocolTypeDecl)
+                try {
+                    val = (String) expr.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
+            else if (ld.getType() instanceof ArrayType) {
                 newChanArrayName = newName;
-                val = (String) expr.visit(this);
+                try {
+                    val = (String) expr.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 newChanArrayName = null;
             }
         }
 
         // Is it a barrier declaration? If so, we must generate code
         // that creates a barrier object
-        if (ld.type().isBarrierType() && expr == null) {
+        if (ld.getType().isBarrierType() && expr == null) {
             ST stBarrierDecl = stGroup.getInstanceOf("BarrierDecl");
             val = stBarrierDecl.render();
         }
         // Is it a simple declaration for a channel type? If so, and since
         // channels cannot be created using the operator 'new', we generate
         // code to create a channel object
-        if (ld.type() instanceof ChannelType && expr == null) {
+        if (ld.getType() instanceof ChannelType && expr == null) {
             ST stChannelDecl = stGroup.getInstanceOf("ChannelDecl");
             stChannelDecl.add("type", chanType);
             val = stChannelDecl.render();
@@ -874,12 +995,12 @@ public class CodeGenJava extends Visitor<Object> {
         // in which it was declared, we return iff this local variable
         // is not initialized
         if (expr == null) {
-            if (!ld.type().isBarrierType() && (ld.type() instanceof PrimitiveType || (ld.type() instanceof ArrayType) || // Could be an
+            if (!ld.getType().isBarrierType() && (ld.getType() instanceof PrimitiveType || (ld.getType() instanceof ArrayType) || // Could be an
                                                                                                          // uninitialized
                                                                                                          // array
                                                                                                          // declaration
-                    ld.type() instanceof RecordTypeDecl || // Could be a record or protocol declaration
-                    ld.type() instanceof ProtocolTypeDecl)) // The 'null' value is used to removed empty
+                    ld.getType() instanceof RecordTypeDecl || // Could be a record or protocol declaration
+                    ld.getType() instanceof ProtocolTypeDecl)) // The 'null' value is used to removed empty
                 return null; // sequences in the generated code
         }
 
@@ -908,32 +1029,40 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitExprStat(ExprStat es) {
+    public Object visitExprStat(ExprStat es) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(es, "Visiting an ExprStat");
 
-        return es.expr().visit(this);
+        try {
+            return es.expr().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     @Override
-    public Object visitName(Name na) {
-        Log.log(na, "Visiting a Name (" + na.getname() + ")");
+    public Object visitName(Name na) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+        Log.log(na, "Visiting a Name (" + na + ")");
 
         // TODO: Used to be paramsForAnon
-        return paramToVarNames.getOrDefault(na.getname(), na.getname());
+        return paramToVarNames.getOrDefault(na.getName(), na.getName());
 
     }
 
     @Override
-    public Object visitNameExpr(NameExpr ne) {
-        Log.log(ne, "Visiting a NameExpr (" + ne.name().getname() + ")");
+    public Object visitNameExpr(NameExpr ne) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+        Log.log(ne, "Visiting a NameExpr (" + ne + ")");
 
-        return ne.name().visit(this);
+        try {
+            return ne.getName().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     // This visit method is no longer needed. All NamedType are
     // resolved by the ResolveNamedType visitor.
     @Override
-    public Object visitNamedType(NamedType nt) {
+    public Object visitNamedType(NamedType nt) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
 
         Log.log(nt, "Visiting a NamedType (" + nt + ")");
 
@@ -948,14 +1077,14 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitNewArray(NewArray ne) {
+    public Object visitNewArray(NewArray ne) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ne, "Visiting a NewArray");
 
         return createNewArray(null, ne);
     }
 
     @Override
-    public Object visitPrimitiveType(PrimitiveType py) {
+    public Object visitPrimitiveType(PrimitiveType py) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(py, "Visiting a Primitive Type (" + py + ")");
 
         // ProcessJ primitive types that do not translate directly
@@ -972,7 +1101,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitPrimitiveLiteral(PrimitiveLiteral li) {
+    public Object visitPrimitiveLiteral(PrimitiveLiteral li) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(li, "Visiting a Primitive Literal (" + li.getText() + ")");
 
         ST stPrimitiveLiteral = stGroup.getInstanceOf("PrimitiveLiteral");
@@ -984,7 +1113,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitChannelType(ChannelType ct) {
+    public Object visitChannelType(ChannelType ct) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ct, "Visiting a ChannelType (" + ct + ")");
 
         // Channel class type
@@ -1011,16 +1140,21 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitChannelEndExpr(ChannelEndExpr ce) {
+    public Object visitChannelEndExpr(ChannelEndExpr ce) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ce, "Visiting a ChannelEndExpr (" + (ce.isRead() ? "read" : "write") + ")");
 
-        String channel = (String) ce.channel().visit(this);
+        String channel = null;
+        try {
+            channel = (String) ce.getChannelType().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         return channel;
     }
 
     @Override
-    public Object visitChannelEndType(ChannelEndType ct) {
+    public Object visitChannelEndType(ChannelEndType ct) throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         Log.log(ct, "Visiting a ChannelEndType (" + ct + ")");
 
         // Channel class type
@@ -1042,17 +1176,27 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitChannelWriteStat(ChannelWriteStat cw) {
+    public Object visitChannelWriteStat(ChannelWriteStat cw) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(cw, "Visiting a ChannelWriteStat");
 
         ST stChanWriteStat = stGroup.getInstanceOf("ChanWriteStat");
         // 'c.write(x)' is a channel-end expression, where 'c' is the
         // writing end of the channel
-        Expression chanExpr = cw.channel();
+        Expression chanExpr = cw.getTargetExpression();
         // 'c' is the name of the channel
-        String chanWriteName = (String) chanExpr.visit(this);
+        String chanWriteName = null;
+        try {
+            chanWriteName = (String) chanExpr.visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         // Expression sent through channel
-        String expr = (String) cw.expr().visit(this);
+        String expr = null;
+        try {
+            expr = (String) cw.getWriteExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         expr = expr.replace(DELIMITER, "");
         // The value one is for the 'runLabel'
         int countLabel = 1;
@@ -1076,15 +1220,20 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitChannelReadExpr(ChannelReadExpr cr) {
+    public Object visitChannelReadExpr(ChannelReadExpr cr) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(cr, "Visiting a ChannelReadExpr");
 
         ST stChannelReadExpr = stGroup.getInstanceOf("ChannelReadExpr");
         // 'c.read()' is a channel-end expression, where 'c' is the reading
         // end of the channel
-        Expression chanExpr = cr.channel();
+        Expression chanExpr = cr.getExpression();
         // 'c' is the name of the channel
-        String chanEndName = (String) chanExpr.visit(this);
+        String chanEndName = null;
+        try {
+            chanEndName = (String) chanExpr.visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         stChannelReadExpr.add("chanName", chanEndName);
         // One for the 'label' and one for the 'read' operation
         int countLabel = 2;
@@ -1099,36 +1248,22 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitVar(Var va) {
-        Log.log(va, "Visiting a Var (" + va.name().getname() + ")");
-
-        ST stVar = stGroup.getInstanceOf("Var");
-        // Returned values for name and expression (if any)
-        String name = (String) va.name().visit(this);
-        String exprStr = null;
-        // This variable could be initialized, e.g. through an assignment
-        // operator
-        Expression expr = va.init();
-        // Visit the expressions associated with this variable
-        if (expr != null) {
-            // This is safe for when our target is not too complicated, e.g.
-            // initializing variables with primitives or string literals
-            exprStr = (String) expr.visit(this);
-            stVar.add("val", exprStr);
-        }
-
-        stVar.add("name", name);
-
-        return stVar.render();
-    }
-
-    @Override
-    public Object visitArrayAccessExpr(ArrayAccessExpr ae) {
+    public Object visitArrayAccessExpr(ArrayAccessExpr ae) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ae, "Visiting an ArrayAccessExpr");
 
         ST stArrayAccessExpr = stGroup.getInstanceOf("ArrayAccessExpr");
-        String name = (String) ae.targetExpression().visit(this);
-        String index = (String) ae.indexExpression().visit(this);
+        String name = null;
+        try {
+            name = (String) ae.targetExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        String index = null;
+        try {
+            index = (String) ae.indexExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         stArrayAccessExpr.add("name", name);
         stArrayAccessExpr.add("index", index);
@@ -1138,7 +1273,7 @@ public class CodeGenJava extends Visitor<Object> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object visitArrayLiteral(ArrayLiteral al) {
+    public Object visitArrayLiteral(ArrayLiteral al) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(al, "Visiting an ArrayLiteral");
 
         // Is the array initialize at compile time? If so, create a list
@@ -1148,21 +1283,35 @@ public class CodeGenJava extends Visitor<Object> {
             // The following extends naturally to two-dimensional, and
             // even higher-dimensional arrays -- but they are not used
             // very often in practice
-            String[] vals = (String[]) al.elements().visit(this);
+            String[] vals = new String[0];
+            try {
+                vals = (String[]) al.elements().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             return Arrays.asList(vals).toString().replace("[", " { ").replace("]", " } ");
         }
 
-        return al.elements().visit(this);
+        try {
+            return al.elements().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     @Override
-    public Object visitArrayType(ArrayType at) {
+    public Object visitArrayType(ArrayType at) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
 
         Log.log(at, "Visiting an ArrayType (" + at + ")");
 
         final Type componentType = at.getComponentType();
 
-        String type = (String) componentType.visit(this);
+        String type = null;
+        try {
+            type = (String) componentType.visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         if ((componentType instanceof ChannelType) || (componentType instanceof ChannelEndType))
             type = type.substring(0, type.indexOf("<"));// + "<?>";
@@ -1178,7 +1327,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitModifier(Modifier mo) {
+    public Object visitModifier(Modifier mo) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(mo, "Visiting a Modifier (" + mo + ")");
 
         // Type of modifiers: public, protected, private, etc.
@@ -1186,20 +1335,25 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitBlock(Block bl) {
+    public Object visitBlock(Block bl) throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         Log.log(bl, "Visiting a Block");
 
         // The scope in which declarations appear, starting with their
         // own initializers and including any further declarations like
         // invocations or sequence of statements
-        String[] stats = (String[]) bl.stats().visit(this);
+        String[] stats = new String[0];
+        try {
+            stats = (String[]) bl.stats().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         return stats;
     }
 
     @Override
     @SuppressWarnings("rawtypes")
-    public Object visitSequence(Sequence se) {
+    public Object visitSequence(Sequence se) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(se, "Visiting a Sequence");
 
         // Sequence of statements enclosed in a block-stmt
@@ -1207,7 +1361,12 @@ public class CodeGenJava extends Visitor<Object> {
         // Iterate through every statement
         for (int i = 0; i < se.size(); ++i) {
             if (se.child(i) != null) {
-                Object stats = se.child(i).visit(this);
+                Object stats = null;
+                try {
+                    stats = se.child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (stats == null)
                     continue;
                 // These are either
@@ -1226,19 +1385,23 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitBreakStat(BreakStat bs) {
+    public Object visitBreakStat(BreakStat bs) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(bs, "Visiting a BreakStat");
 
         ST stBreakStat = stGroup.getInstanceOf("BreakStat");
         // No parse-tree for 'break'
         if (bs.target() != null)
-            stBreakStat.add("name", bs.target().visit(this));
+            try {
+                stBreakStat.add("name", bs.target().visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         return stBreakStat.render();
     }
 
     @Override
-    public Object visitSwitchLabel(SwitchLabel sl) {
+    public Object visitSwitchLabel(SwitchLabel sl) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(sl, "Visiting a SwitchLabel");
 
         ST stSwitchLabel = stGroup.getInstanceOf("SwitchLabel");
@@ -1246,7 +1409,11 @@ public class CodeGenJava extends Visitor<Object> {
         // This could be a default label, in which case, expr() would be null
         String label = null;
         if (!sl.isDefault())
-            label = (String) sl.expr().visit(this);
+            try {
+                label = (String) sl.getExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         if (isProtocolCase) {
             // The protocol tag currently being used
             currentProtocolTag = label;
@@ -1259,19 +1426,28 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitSwitchGroup(SwitchGroup sg) {
+    public Object visitSwitchGroup(SwitchGroup sg) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(sg, "Visit a SwitchGroup");
 
         ST stSwitchGroup = stGroup.getInstanceOf("SwitchGroup");
 
         ArrayList<String> labels = new ArrayList<>();
-        for (SwitchLabel sl : sg.labels())
-            labels.add((String) sl.visit(this));
+        for (SwitchLabel sl : sg.getLabels())
+            try {
+                labels.add((String) sl.visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         ArrayList<String> stats = new ArrayList<>();
-        for (Statement st : sg.statements()) {
+        for (Statement st : sg.getStatements()) {
             if (st != null) {
-                Object stmt = st.visit(this);
+                Object stmt = null;
+                try {
+                    stmt = st.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (stmt instanceof String[])
                     stats.addAll(Arrays.asList((String[]) stmt));
                 else
@@ -1286,19 +1462,28 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitSwitchStat(SwitchStat st) {
+    public Object visitSwitchStat(SwitchStat st) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(st, "Visiting a SwitchStat");
 
         ST stSwitchStat = stGroup.getInstanceOf("SwitchStat");
         // Is this a protocol tag?
-        if (st.expr().type instanceof ProtocolTypeDecl)
+        if (st.getEvaluationExpression().type instanceof ProtocolTypeDecl)
             isProtocolCase = true;
 
-        String expr = (String) st.expr().visit(this);
+        String expr = null;
+        try {
+            expr = (String) st.getEvaluationExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         ArrayList<String> switchGroup = new ArrayList<>();
 
         for (SwitchGroup sg : st.switchBlocks())
-            switchGroup.add((String) sg.visit(this));
+            try {
+                switchGroup.add((String) sg.visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         stSwitchStat.add("tag", isProtocolCase);
         stSwitchStat.add("expr", expr);
@@ -1311,13 +1496,23 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitCastExpr(CastExpr ce) {
+    public Object visitCastExpr(CastExpr ce) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ce, "Visiting a CastExpr");
 
         ST stCastExpr = stGroup.getInstanceOf("CastExpr");
         // This result in (TYPE)(EXPR)
-        String type = (String) ce.type().visit(this);
-        String expr = (String) ce.expr().visit(this);
+        String type = null;
+        try {
+            type = (String) ce.type().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        String expr = null;
+        try {
+            expr = (String) ce.getExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         stCastExpr.add("type", type);
         stCastExpr.add("expr", expr);
@@ -1327,21 +1522,25 @@ public class CodeGenJava extends Visitor<Object> {
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Object visitInvocation(Invocation in) {
+    public Object visitInvocation(Invocation in) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
 
         // We ignore any GOTO or LABEL invocation since they are only needed
         // for the __asm__ bytecode rewrite
         if (in.ignore) {
-            Log.log(in, "Visiting a " + in.procedureName().getname());
+            Log.log(in, "Visiting a " + in);
             ST stIgnore = stGroup.getInstanceOf("InvocationIgnore");
-            stIgnore.add("name", in.procedureName().visit(this));
-            stIgnore.add("var", in.params().visit(this));
+            stIgnore.add("name", paramToVarNames.getOrDefault(in.getProcedureName(), in.getProcedureName()));
+            try {
+                stIgnore.add("var", in.getParameters().visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             return stIgnore.render();
         }
         // <--
         // Check if the invocation is either a 'sync' or a 'fork'
-        if (in.procedureName().simplename().equals("sync") || in.procedureName().simplename().equals("fork")) {
-            Log.log(in, "Visiting Invocation (" + in.procedureName().simplename() + ")");
+        if (in.getProcedureName().equals("sync") || in.getProcedureName().equals("fork")) {
+            Log.log(in, "Visiting Invocation (" + in + ")");
             // TODO:
         }
         // -->
@@ -1355,12 +1554,12 @@ public class CodeGenJava extends Visitor<Object> {
         // come from a different file and maybe package
         if (currentCompilation.fileName.equals(pd.myCompilation.fileName)) {
             String name = pdName + hashSignature(pd);
-            if (Helper.doesProcYield(pd))
+            if (pd.doesYield())
                 name = Helper.makeVariableName(name, 0, Tag.PROCEDURE_NAME);
             else
                 name = Helper.makeVariableName(name, 0, Tag.METHOD_NAME);
             pdName = pd.myCompilation.fileNoExtension() + "." + name;
-        } else if (pd.isNative) {
+        } else if (pd.isNative()) {
             // Make the package visible on import by using the qualified
             // name of the class the procedure belongs to and the name of
             // the directory the procedure's class belongs to, e.g.
@@ -1368,28 +1567,37 @@ public class CodeGenJava extends Visitor<Object> {
             // 1.) 'std' is the name of the package,
             // 2.) 'io' is the name of the class/file,
             // 3.) 'println' is the method declared in the class
-            pdName = pd.filename + "." + pdName;
+            pdName = pd.getPackageName() + "." + pdName;
         } else
             ; // TODO: This procedure is called from another package
 
         // These are the formal parameters of the procedure/method being invoked
         // which are specified by a list of comma-separated arguments
-        Sequence<Expression> parameters = in.params();
-        String[] paramsList = (String[]) parameters.visit(this);
+        Sequence<Expression> parameters = in.getParameters();
+        String[] paramsList = new String[0];
+        try {
+            paramsList = (String[]) parameters.visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         if (paramsList != null)
             for (int i = 0; i < paramsList.length; ++i)
                 paramsList[i] = paramsList[i].replace(DELIMITER, "");
 
         // For an invocation of a procedure that yields and one which
         // is not inside par-block, we wrap the procedure in a par-block
-        if (Helper.doesProcYield(pd) && currentParBlock == null) {
-            return (new ParBlock(new Sequence(new ExprStat(in)), // Statements
-                    new Sequence())) // Barriers
-                            .visit(this); // Return a procedure wrapped in a par-block
+        if (pd.doesYield() && currentParBlock == null) {
+            try {
+                return (new ParBlock(new Sequence(new ExprStat(in)), // Statements
+                        new Sequence())) // Barriers
+                                .visit(this); // Return a procedure wrapped in a par-block
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         }
 
         // Does this procedure org.processj.yield?
-        if (Helper.doesProcYield(pd)) {
+        if (pd.doesYield()) {
             stInvocation = stGroup.getInstanceOf("InvocationProcType");
             stInvocation.add("parBlock", currentParBlock);
             // <--
@@ -1409,18 +1617,17 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitImport(Import im) {
+    public Object visitImport(Import im) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(im, "Visiting an import statement (" + im + ")");
 
         ST stImport = stGroup.getInstanceOf("Import");
-        stImport = stGroup.getInstanceOf("Import");
         stImport.add("package", im.toString());
 
         return stImport.render();
     }
 
     @Override
-    public Object visitProtocolTypeDecl(ProtocolTypeDecl pd) {
+    public Object visitProtocolTypeDecl(ProtocolTypeDecl pd) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(pd, "Visiting a ProtocolTypeDecl (" + pd + ")");
 
         ST stProtocolClass = stGroup.getInstanceOf("ProtocolClass");
@@ -1430,15 +1637,19 @@ public class CodeGenJava extends Visitor<Object> {
         ArrayList<String> body = new ArrayList<>();
 
         for (Modifier m : pd.modifiers())
-            modifiers.add((String) m.visit(this));
+            try {
+                modifiers.add((String) m.visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         currentProtocol = name;
         // We use tags to associate parent and child protocols
         if (pd.extend().size() > 0) {
             for (Name n : pd.extend()) {
-                ProtocolTypeDecl ptd = (ProtocolTypeDecl) topLvlDecls.get(n.getname());
+                ProtocolTypeDecl ptd = (ProtocolTypeDecl) topLvlDecls.get(n.toString());
                 for (ProtocolCase pc : ptd.body())
-                    protocolNameToProtocolTag.put(String.format("%s.%s", pd, pc.name().getname()),
+                    protocolNameToProtocolTag.put(String.format("%s.%s", pd, pc),
                             ptd.toString());
             }
         }
@@ -1446,7 +1657,11 @@ public class CodeGenJava extends Visitor<Object> {
         // The scope in which all protocol members appear
         if (pd.body() != null)
             for (ProtocolCase pc : pd.body())
-                body.add((String) pc.visit(this));
+                try {
+                    body.add((String) pc.visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
 
         stProtocolClass.add("name", name);
         stProtocolClass.add("modifiers", modifiers);
@@ -1456,20 +1671,29 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitProtocolCase(ProtocolCase pc) {
-        Log.log(pc, "Visiting a ProtocolCase (" + pc.name().getname() + ")");
+    public Object visitProtocolCase(ProtocolCase pc) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+        Log.log(pc, "Visiting a ProtocolCase (" + pc + ")");
 
         ST stProtocolType = stGroup.getInstanceOf("ProtocolType");
         // Since we are keeping the name of a tag as is, this (in theory)
         // shouldn't cause any name collision
-        String protocName = (String) pc.name().visit(this);
+        String protocName = null;
+        try {
+            protocName = (String) pc.name().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         // This shouldn't create name collision problems even if we
         // use the same visitor for protocols and records
         recordMemberToField.clear();
 
         // The scope in which all members of this tag appeared
         for (RecordMember rm : pc.body())
-            rm.visit(this);
+            try {
+                rm.visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         // The list of fields passed to the constructor of the static
         // class that the record belongs to
@@ -1483,12 +1707,18 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitProtocolLiteral(ProtocolLiteral pl) {
-        Log.log(pl, "Visiting a ProtocolLiteral (" + pl.name().getname() + ")");
+    public Object visitProtocolLiteral(ProtocolLiteral pl) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+        Log.log(pl, "Visiting a ProtocolLiteral (" + pl + ")");
 
         ST stProtocolLiteral = stGroup.getInstanceOf("ProtocolLiteral");
-        String type = (String) pl.name().visit(this);
-        String tag = (String) pl.tag().visit(this);
+        // TODO: Originally pl.name().visit(this);
+        String type = pl.toString();
+        String tag = null;
+        try {
+            tag = (String) pl.getTag().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         // This map is used to determine the order in which values are
         // used with the constructor of the class associated with this
@@ -1501,7 +1731,7 @@ public class CodeGenJava extends Visitor<Object> {
             ProtocolCase target = pt.getCase(tag);
             // Now that we have the target tag, iterate over all of its members
             for (RecordMember rm : target.body()) {
-                String name = rm.name().getname();
+                String name = rm.toString();
                 members.put(name, null);
             }
         }
@@ -1511,9 +1741,14 @@ public class CodeGenJava extends Visitor<Object> {
         // value assigned to VAR. Instead of parsing the string, we
         // are going to grab the values assigned to each protocol
         // member, one by one, while traversing the AST
-        for (RecordMemberLiteral rm : pl.expressions()) {
-            String lhs = rm.name().getname();
-            String expr = (String) rm.expr().visit(this);
+        for (RecordMemberLiteral rm : pl.getExpressions()) {
+            String lhs = rm.toString();
+            String expr = null;
+            try {
+                expr = (String) rm.expr().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             if (members.put(lhs, expr) == null)
                 Log.log(pl, "> Initializing '" + lhs + "' with '" + expr + "'");
         }
@@ -1526,7 +1761,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitRecordTypeDecl(RecordTypeDecl rt) {
+    public Object visitRecordTypeDecl(RecordTypeDecl rt) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(rt, "Visiting a RecordTypeDecl (" + rt + ")");
 
         ST stRecordType = stGroup.getInstanceOf("RecordType");
@@ -1536,14 +1771,22 @@ public class CodeGenJava extends Visitor<Object> {
         ArrayList<String> modifiers = new ArrayList<>();
 
         for (Modifier m : rt.modifiers())
-            modifiers.add((String) m.visit(this));
+            try {
+                modifiers.add((String) m.visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         // Remove fields from previous record
         recordMemberToField.clear();
 
         // The scope in which all members appeared in a record
-        for (RecordMember rm : rt.body())
-            rm.visit(this);
+        for (RecordMember rm : rt.getBody())
+            try {
+                rm.visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         // The list of fields which should be passed to the constructor
         // of the static class that the record belongs to
@@ -1554,9 +1797,9 @@ public class CodeGenJava extends Visitor<Object> {
 
         ArrayList<String> extend = new ArrayList<>();
         extend.add(recName);
-        if (rt.extend().size() > 0)
-            for (Name n : rt.extend())
-                extend.add(n.getname());
+        if (rt.getExtends().size() > 0)
+            for (Name n : rt.getExtends())
+                extend.add(n.toString());
 
         stRecordType.add("extend", extend);
         stRecordType.add("name", recName);
@@ -1566,16 +1809,21 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitRecordMember(RecordMember rm) {
-        Log.log(rm, "Visiting a RecordMember (" + rm.type() + " " + rm.name().getname() + ")");
+    public Object visitRecordMember(RecordMember rm) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+        Log.log(rm, "Visiting a RecordMember (" + rm.getType() + " " + rm + ")");
 
-        String name = rm.name().getname();
-        String type = (String) rm.type().visit(this);
+        String name = rm.toString();
+        String type = null;
+        try {
+            type = (String) rm.getType().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         // Check if the type is a record or protocol type
-        if (rm.type() instanceof RecordTypeDecl)
-            type = rm.type().toString();
-        else if (rm.type() instanceof ProtocolTypeDecl)
+        if (rm.getType() instanceof RecordTypeDecl)
+            type = rm.getType().toString();
+        else if (rm.getType() instanceof ProtocolTypeDecl)
             type = PJProtocolCase.class.getSimpleName();
 
         // Add this field to the collection of record members for reference
@@ -1587,11 +1835,16 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitRecordLiteral(RecordLiteral rl) {
-        Log.log(rl, "Visiting a RecordLiteral (" + rl.name().getname() + ")");
+    public Object visitRecordLiteral(RecordLiteral rl) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+        Log.log(rl, "Visiting a RecordLiteral (" + rl + ")");
 
         ST stRecordListeral = stGroup.getInstanceOf("RecordLiteral");
-        String type = (String) rl.name().visit(this);
+        String type = null;
+        try {
+            type = (String) rl.getName().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         // This map is used to determine the order in which values
         // are passed to the constructor of the class associated
@@ -1600,8 +1853,8 @@ public class CodeGenJava extends Visitor<Object> {
         RecordTypeDecl rt = (RecordTypeDecl) topLvlDecls.get(type);
 
         if (rt != null)
-            for (RecordMember rm : rt.body()) {
-                String name = rm.name().getname();
+            for (RecordMember rm : rt.getBody()) {
+                String name = rm.toString();
                 members.put(name, null);
             }
 
@@ -1610,9 +1863,14 @@ public class CodeGenJava extends Visitor<Object> {
         // assigned to VAR. Instead of parsing the string, we are going
         // to grab the values assigned to each record member, one by one,
         // while traversing the AST
-        for (RecordMemberLiteral rm : rl.members()) {
-            String lhs = rm.name().getname();
-            String expr = (String) rm.expr().visit(this);
+        for (RecordMemberLiteral rm : rl.getRecordMemberLiterals()) {
+            String lhs = rm.toString();
+            String expr = null;
+            try {
+                expr = (String) rm.expr().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             if (members.put(lhs, expr) == null)
                 Log.log(rl, "> Initializing '" + lhs + "' with '" + expr + "'");
         }
@@ -1624,14 +1882,19 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitRecordAccess(RecordAccess ra) {
+    public Object visitRecordAccess(RecordAccess ra) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ra, "Visiting a RecordAccess (" + ra + ")");
 
         ST stAccessor = stGroup.getInstanceOf("RecordAccessor");
 
         if (ra.record().type instanceof RecordTypeDecl) {
-            String name = (String) ra.record().visit(this);
-            String field = ra.field().getname();
+            String name = null;
+            try {
+                name = (String) ra.record().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+            String field = ra.field().toString();
             stAccessor.add("name", name);
             stAccessor.add("member", field);
         } else if (ra.record().type instanceof ProtocolTypeDecl) {
@@ -1639,8 +1902,13 @@ public class CodeGenJava extends Visitor<Object> {
             ProtocolTypeDecl pt = (ProtocolTypeDecl) ra.record().type;
             // TODO: Used to be paramToAnonVar
             String protocName = paramToVarNames.getOrDefault(pt.toString(), pt.toString());
-            String name = (String) ra.record().visit(this); // Reference to inner class type
-            String field = ra.field().getname(); // Field in inner class
+            String name = null; // Reference to inner class type
+            try {
+                name = (String) ra.record().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+            String field = ra.toString(); // Field in inner class
 
             // Cast a protocol to a super-type if needed
             String key = String.format("%s.%s", protocName, currentProtocolTag);
@@ -1656,7 +1924,12 @@ public class CodeGenJava extends Visitor<Object> {
         // i.e. it has no concept of objects either. Arrays and strings are
         // therefore treated as primitive data types
         else {
-            String name = (String) ra.record().visit(this);
+            String name = null;
+            try {
+                name = (String) ra.record().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             stAccessor.add("name", name);
             // Call the appropriate method to retrieve the number of characters
             // in a string or the number of elements in an N-dimensional array
@@ -1670,7 +1943,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitParBlock(ParBlock pb) {
+    public Object visitParBlock(ParBlock pb) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(pb, "Visiting a ParBlock with " + pb.stats().size() + " statements.");
 
         // Don't generate code for an empty par statement
@@ -1696,8 +1969,13 @@ public class CodeGenJava extends Visitor<Object> {
         if (pb.barriers().size() > 0) {
             HashMap<String, Integer> parBarries = new HashMap<>();
             for (Expression e : pb.barriers()) {
-                String name = (String) e.visit(this);
-                parBarries.put(name, pb.enrolls.get(((NameExpr) e).name().getname()));
+                String name = null;
+                try {
+                    name = (String) e.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
+                parBarries.put(name, pb.enrolls.get(((NameExpr) e).toString()));
             }
             stParBlock.add("barrier", parBarries.keySet());
             stParBlock.add("enrollees", parBarries.values());
@@ -1714,7 +1992,11 @@ public class CodeGenJava extends Visitor<Object> {
             if (se != null) {
                 barriers = new ArrayList<>();
                 for (Expression e : se)
-                    barriers.add((String) e.visit(this));
+                    try {
+                        barriers.add((String) e.visit(this));
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
             }
             // -->
             // An expression is any valid unit of code that resolves to a value,
@@ -1731,12 +2013,24 @@ public class CodeGenJava extends Visitor<Object> {
                 // @Override public synchronized void run() { ... }
                 // @Override public finalize() { ... }
                 // }.schedule();
-                if (Helper.doesProcYield(in.targetProc))
-                    stmts.add((String) in.visit(this));
+                if (in.targetProc.doesYield())
+                    try {
+                        stmts.add((String) in.visit(this));
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                 else // Otherwise, the invocation is made through a static Java method
-                    stmts.add((String) createAnonymousProcTypeDecl(st).visit(this));
+                    try {
+                        stmts.add((String) createAnonymousProcTypeDecl(st).visit(this));
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
             } else
-                stmts.add((String) createAnonymousProcTypeDecl(st).visit(this));
+                try {
+                    stmts.add((String) createAnonymousProcTypeDecl(st).visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
         }
         stParBlock.add("body", stmts);
         // Restore the par-block
@@ -1748,12 +2042,22 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitTimeoutStat(TimeoutStat ts) {
+    public Object visitTimeoutStat(TimeoutStat ts) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ts, "Visiting a TimeoutStat");
 
         ST stTimeoutStat = stGroup.getInstanceOf("TimeoutStat");
-        String timer = (String) ts.timer().visit(this);
-        String delay = (String) ts.delay().visit(this);
+        String timer = null;
+        try {
+            timer = (String) ts.getTimerExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        String delay = null;
+        try {
+            delay = (String) ts.getDelayExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         stTimeoutStat.add("name", timer);
         stTimeoutStat.add("delay", delay);
@@ -1766,11 +2070,16 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitSyncStat(SyncStat st) {
+    public Object visitSyncStat(SyncStat st) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(st, "Visiting a SyncStat");
 
         ST stSyncStat = stGroup.getInstanceOf("SyncStat");
-        String barrier = (String) st.barrier().visit(this);
+        String barrier = null;
+        try {
+            barrier = (String) st.barrier().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         stSyncStat.add("barrier", barrier);
 
         // Increment the jump label and add it to the switch-stmt list
@@ -1781,11 +2090,16 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitUnaryPostExpr(UnaryPostExpr ue) {
+    public Object visitUnaryPostExpr(UnaryPostExpr ue) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ue, "Visiting a UnaryPostExpr (" + ue.opString() + ")");
 
         ST stUnaryPostExpr = stGroup.getInstanceOf("UnaryPostExpr");
-        String operand = (String) ue.expr().visit(this);
+        String operand = null;
+        try {
+            operand = (String) ue.getExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         String op = ue.opString();
 
         stUnaryPostExpr.add("operand", operand);
@@ -1795,11 +2109,16 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitUnaryPreExpr(UnaryPreExpr ue) {
+    public Object visitUnaryPreExpr(UnaryPreExpr ue) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ue, "Visiting a UnaryPreExpr (" + ue.opString() + ")");
 
         ST stUnaryPreExpr = stGroup.getInstanceOf("UnaryPreExpr");
-        String operand = (String) ue.expr().visit(this);
+        String operand = null;
+        try {
+            operand = (String) ue.expr().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         String op = ue.opString();
 
         stUnaryPreExpr.add("operand", operand);
@@ -1809,14 +2128,24 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitAltCase(AltCase ac) {
+    public Object visitAltCase(AltCase ac) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(ac, "Visiting an AltCase");
 
         ST stAltCase = stGroup.getInstanceOf("AltCase");
-        Statement stat = ac.guard().guard();
+        Statement stat = ac.getGuard().getStatement();
 //        String guard = (String) stat.visit(this);
-        String guard = stat instanceof TimeoutStat ? null : (String) stat.visit(this);
-        String[] stats = (String[]) ac.stat().visit(this);
+        String guard = null;
+        try {
+            guard = stat instanceof TimeoutStat ? null : (String) stat.visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        String[] stats = new String[0];
+        try {
+            stats = (String[]) ac.getStatement().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         // <--
         if (!indexSetOfAltCase.isEmpty()) {
             ST stRepLocalVars = stGroup.getInstanceOf("RepLocalVars");
@@ -1832,14 +2161,36 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitConstantDecl(ConstantDecl cd) {
-        Log.log(cd, "Visting ConstantDecl (" + cd.type() + " " + cd.var().name().getname() + ")");
+    public Object visitConstantDecl(final ConstantDecl cd) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
+
+        Log.log(cd, "Visiting ConstantDecl (" + cd.getType() + " " + cd + ")");
 
         ST stConstantDecl = stGroup.getInstanceOf("ConstantDecl");
-        stConstantDecl.add("type", cd.type().visit(this));
-        stConstantDecl.add("var", cd.var().visit(this));
+        try {
+            stConstantDecl.add("type", cd.getType().visit(this));
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+
+        ST stVar = stGroup.getInstanceOf("Var")
+                // Returned values for name and expression (if any)
+                .add("name", paramToVarNames.getOrDefault(cd.toString(), cd.toString()));
+
+        // This variable could be initialized, e.g. through an assignment
+        // operator. Visit the expressions associated with this variable
+        // This is safe for when our target is not too complicated, e.g.
+        // initializing variables with primitives or string literals
+        if(cd.isInitialized())
+            try {
+                stVar.add("val", cd.getInitializationExpression().visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+
+        stConstantDecl.add("var", stVar.render());
 
         return stConstantDecl.render();
+
     }
 
     /** List of replicated alt loops */
@@ -1856,7 +2207,7 @@ public class CodeGenJava extends Visitor<Object> {
     int objectGuardID;
 
     @Override
-    public Object visitAltStat(AltStat as) {
+    public Object visitAltStat(AltStat as) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(as, "Visiting an AltStat");
         
         arrayOfReplicatedAltLoop = new ArrayList<>();
@@ -1880,7 +2231,7 @@ public class CodeGenJava extends Visitor<Object> {
         // Added: 06/02/2022 -- Rewrite for replicated atls
         // This is where we handle the generated code for RepAlts; note that
         // a dynamic alt is one that contains a replicated Alt
-        if (as.isReplicated() || as.isDynamic()) {
+        if (as.isReplicated()) {
             Log.log(as, "Visiting a Dynamic or Replicated Alt");
             // This queue contains the number of cases found in the alt stmt
             ArrayDeque<Integer> queue = new ArrayDeque<>();
@@ -1896,7 +2247,7 @@ public class CodeGenJava extends Visitor<Object> {
             // Rewrite guards that are not part of an altStat
             for (int i = 0; i < reAltCase.size(); ++i) {
                 AltCase ac = reAltCase.child(i);
-                if (!ac.isAltStat())
+                if (!ac.isNestedAltStatement())
                     reAltCase.set(i, createDynamicAltStat(ac));
             }
             int childIndex = 0;
@@ -1904,10 +2255,10 @@ public class CodeGenJava extends Visitor<Object> {
 //                System.err.println("[" + altCaseIndex + "]");
                 AltCase ac = reAltCase.child(childIndex);
                 ac.setCaseNumber(altCaseIndex);
-                if (ac.isAltStat()) {
-                    ST stForStat = (ST) createAltForStat((AltStat) ((Block) ac.stat()).stats().child(0));
+                if (ac.isNestedAltStatement()) {
+                    ST stForStat = (ST) createAltForStat((AltStat) ((Block) ac.getStatement()).stats().child(0));
                     arrayOfReplicatedAltLoop.add(stForStat);
-                    AltStat as2 = (AltStat) ((Block) ac.stat()).stats().child(0);
+                    AltStat as2 = (AltStat) ((Block) ac.getStatement()).stats().child(0);
                     reAltCase = as2.body();
 //                    altCaseIndex = 0;
                     childIndex = 0;
@@ -1928,21 +2279,33 @@ public class CodeGenJava extends Visitor<Object> {
 //                    System.err.println("---- visiting a Guard");
                     // Set the boolean guards
                     String bguard = "";
-                    if (ac.precondition() == null)
+                    if (ac.getPreconditionExpression() == null)
                         bguard = String.valueOf(true);
-                    else if (ac.precondition() instanceof Literal)
-                        bguard = (String) ac.precondition().visit(this);
+                    else if (ac.getPreconditionExpression() instanceof Literal)
+                        try {
+                            bguard = (String) ac.getPreconditionExpression().visit(this);
+                        } catch (org.processj.Phase.Error error) {
+                            throw new RuntimeException(error);
+                        }
                     else {
                         // This is for expressions that evaluate to a boolean value.
                         // Such expressions become local variables (or, in our case, fields)
                         Name n = new Name("btemp");
                         LocalDecl ld = new LocalDecl(new PrimitiveType(PrimitiveType.BooleanKind),
-                                new Var(n, ac.precondition()), false /* not constant */);
-                        listOfReplicatedAltLocals.add((String) ld.visit(this));
-                        bguard = (String) n.visit(this);
+                                new Var(n, ac.getPreconditionExpression()), false /* not constant */);
+                        try {
+                            listOfReplicatedAltLocals.add((String) ld.visit(this));
+                        } catch (org.processj.Phase.Error error) {
+                            throw new RuntimeException(error);
+                        }
+                        try {
+                            bguard = (String) n.visit(this);
+                        } catch (org.processj.Phase.Error error) {
+                            throw new RuntimeException(error);
+                        }
                     }
 
-                    Statement stat = ac.guard().guard();
+                    Statement stat = ac.getGuard().getStatement();
                     // TODO: What if the expression is not an array??
                     // Is it just a channel read expression?
                     if (stat instanceof ExprStat) {
@@ -1954,7 +2317,11 @@ public class CodeGenJava extends Visitor<Object> {
                             // store each object guard with its correct index (or position)
                             ST stRepAltObjectGuard = stGroup.getInstanceOf("RepAltObjectGuards");
                             stRepAltObjectGuard.add("objectGuards", "repAltObjectGuards");
-                            stRepAltObjectGuard.add("objectValue", (String) cr.channel().visit(this));
+                            try {
+                                stRepAltObjectGuard.add("objectValue", (String) cr.getExpression().visit(this));
+                            } catch (org.processj.Phase.Error error) {
+                                throw new RuntimeException(error);
+                            }
                             stRepAltObjectGuard.add("booleanGuards", "repAltBooleanGuards");
                             stRepAltObjectGuard.add("booleanValue", bguard);
                             // Set the number of loops, the index set, and the case number
@@ -1981,10 +2348,22 @@ public class CodeGenJava extends Visitor<Object> {
 //                        stTimeout.add("name", ts.timer().visit(this));
 //                        stTimeout.add("delay", ts.delay().visit(this));
 //                        listOfReplicatedAltLocals.add(stTimeout.render());
-                        listOfReplicatedAltLocals.add((String) ts.visit(this));
-                        listOfReplicatedObjectGuards.add((String) ts.timer().visit(this));
+                        try {
+                            listOfReplicatedAltLocals.add((String) ts.visit(this));
+                        } catch (org.processj.Phase.Error error) {
+                            throw new RuntimeException(error);
+                        }
+                        try {
+                            listOfReplicatedObjectGuards.add((String) ts.getTimerExpression().visit(this));
+                        } catch (org.processj.Phase.Error error) {
+                            throw new RuntimeException(error);
+                        }
                     }
-                    listOfReplicatedAltCases.add((String) ac.visit(this));
+                    try {
+                        listOfReplicatedAltCases.add((String) ac.visit(this));
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                     // *************************************
                     // *************************************
                     if (!queue.isEmpty()) {
@@ -2004,8 +2383,12 @@ public class CodeGenJava extends Visitor<Object> {
             // I don't think this is needed anymore, but we will leave it here for legacy
             // code
             Name n = new Name("index" + (++indexForAltStat));
-            new LocalDecl(new PrimitiveType(PrimitiveType.IntKind), new Var(n, null), false /* not constant */)
-                    .visit(this);
+            try {
+                new LocalDecl(new PrimitiveType(PrimitiveType.IntKind), new Var(n, null), false /* not constant */)
+                        .visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             // Create a tag for this local alt declaration
             String newName = Helper.makeVariableName("alt", ++localDecID, Tag.LOCAL_NAME);
             localToFields.put(newName, "PJAlt");
@@ -2024,7 +2407,11 @@ public class CodeGenJava extends Visitor<Object> {
             stReplicatedAltStat.add("initForStmt", listOfReplicatedAltLoops);
             stReplicatedAltStat.add("jump", ++jumpLabel);
             stReplicatedAltStat.add("cases", listOfReplicatedAltCases);
-            stReplicatedAltStat.add("index", n.visit(this));
+            try {
+                stReplicatedAltStat.add("index", n.visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
             // Add the jump label to the switch-stmt list
             switchCases.add(renderSwitchCase(jumpLabel));
@@ -2054,18 +2441,30 @@ public class CodeGenJava extends Visitor<Object> {
         // Set boolean guards
         for (int i = 0; i < cases.size(); ++i) {
             AltCase ac = cases.child(i);
-            if (ac.precondition() == null)
+            if (ac.getPreconditionExpression() == null)
                 bguards.add(String.valueOf(true));
-            else if (ac.precondition() instanceof Literal)
-                bguards.add((String) ac.precondition().visit(this));
+            else if (ac.getPreconditionExpression() instanceof Literal)
+                try {
+                    bguards.add((String) ac.getPreconditionExpression().visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             else {
                 // This is for expressions that evaluate to a boolean value.
                 // Such expressions become local variables (or, in our case, fields)
                 Name n = new Name("btemp");
                 LocalDecl ld = new LocalDecl(new PrimitiveType(PrimitiveType.BooleanKind),
-                        new Var(n, ac.precondition()), false /* not constant */);
-                blocals.add((String) ld.visit(this));
-                bguards.add((String) n.visit(this));
+                        new Var(n, ac.getPreconditionExpression()), false /* not constant */);
+                try {
+                    blocals.add((String) ld.visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
+                try {
+                    bguards.add((String) n.visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             }
         }
         stBooleanGuards.add("constants", bguards);
@@ -2081,14 +2480,18 @@ public class CodeGenJava extends Visitor<Object> {
         // Visit all guards
         for (int i = 0; i < cases.size(); ++i) {
             AltCase ac = cases.child(i);
-            Statement stat = ac.guard().guard();
+            Statement stat = ac.getGuard().getStatement();
             // Channel read expression?
             if (stat instanceof ExprStat) {
                 Expression e = ((ExprStat) stat).expr();
                 ChannelReadExpr cr = null;
                 if (e instanceof Assignment)
                     cr = (ChannelReadExpr) ((Assignment) e).right();
-                guards.add((String) cr.channel().visit(this));
+                try {
+                    guards.add((String) cr.getExpression().visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             }
             // Skip statement?
             else if (stat instanceof SkipStat)
@@ -2101,10 +2504,22 @@ public class CodeGenJava extends Visitor<Object> {
 //                stTimeout.add("name", ts.timer().visit(this));
 //                stTimeout.add("delay", ts.delay().visit(this));
 //                tlocals.add(stTimeout.render());
-                tlocals.add((String) ts.visit(this));
-                guards.add((String) ts.timer().visit(this));
+                try {
+                    tlocals.add((String) ts.visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
+                try {
+                    guards.add((String) ts.getTimerExpression().visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             }
-            altCases.add((String) ac.visit(this));
+            try {
+                altCases.add((String) ac.visit(this));
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         }
         stTimerLocals.add("timers", tlocals);
         stObjectGuards.add("guards", guards);
@@ -2116,7 +2531,11 @@ public class CodeGenJava extends Visitor<Object> {
         // <--
         // This is needed because of the StackMapTable for the generated Java bytecode
         Name n = new Name("index");
-        new LocalDecl(new PrimitiveType(PrimitiveType.IntKind), new Var(n, null), false /* not constant */).visit(this);
+        try {
+            new LocalDecl(new PrimitiveType(PrimitiveType.IntKind), new Var(n, null), false /* not constant */).visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         // Create a tag for this local alt declaration
         String newName = Helper.makeVariableName("alt", ++localDecID, Tag.LOCAL_NAME);
         localToFields.put(newName, "PJAlt");
@@ -2132,7 +2551,11 @@ public class CodeGenJava extends Visitor<Object> {
         stAltStat.add("guards", "objectGuards" + objectGuardID);
         stAltStat.add("jump", ++jumpLabel);
         stAltStat.add("cases", altCases);
-        stAltStat.add("index", n.visit(this));
+        try {
+            stAltStat.add("index", n.visit(this));
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         //
         stAltStat.add("readyID", readyID);
@@ -2147,27 +2570,39 @@ public class CodeGenJava extends Visitor<Object> {
         return stAltStat.render();
     }
 
-    private Object createAltForStat(AltStat as) {
+    private Object createAltForStat(AltStat as) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(as.line + ": Creating a ForStat for a replicated Alt");
 
         ST stForStat = stGroup.getInstanceOf("ForStat");
         ArrayList<String> init = null; // Initialization part
         ArrayList<String> incr = null; // Step counter
         String expr = null; // Conditional expression
-        if (as.init() != null) {
+        if (as.initializationStatements() != null) {
             init = new ArrayList<>();
-            for (Statement st : as.init())
-                init.add(((String) st.visit(this)).replace(DELIMITER, ""));
+            for (Statement st : as.initializationStatements())
+                try {
+                    init.add(((String) st.visit(this)).replace(DELIMITER, ""));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             // Collect all local variables that pertain to the replicated alt
             for (String str : init)
                 indexSetOfAltCase.add(str.substring(0, str.indexOf("=")).trim());
         }
-        if (as.expr() != null)
-            expr = (String) as.expr().visit(this);
-        if (as.incr() != null) {
+        if (as.evaluationExpression() != null)
+            try {
+                expr = (String) as.evaluationExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+        if (as.getIncrementStatements() != null) {
             incr = new ArrayList<>();
-            for (Statement st : as.incr())
-                incr.add(((String) st.visit(this)).replace(DELIMITER, ""));
+            for (Statement st : as.getIncrementStatements())
+                try {
+                    incr.add(((String) st.visit(this)).replace(DELIMITER, ""));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
         }
         stForStat.add("init", init);
         stForStat.add("expr", expr);
@@ -2176,14 +2611,18 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @Override
-    public Object visitReturnStat(ReturnStat rs) {
+    public Object visitReturnStat(ReturnStat rs) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         Log.log(rs, "Visiting a ReturnStat");
 
         ST stReturnStat = stGroup.getInstanceOf("ReturnStat");
         String expr = "";
 
-        if (rs.expr() != null)
-            expr = (String) rs.expr().visit(this);
+        if (rs.getExpression() != null)
+            try {
+                expr = (String) rs.getExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         // This removes the extra ";" for invocation calls
         expr = expr.replace(DELIMITER, "");
@@ -2201,7 +2640,7 @@ public class CodeGenJava extends Visitor<Object> {
      * @param t The specified primitive type or user-defined type.
      * @return The type parameter delimited by angle brackets.
      */
-    private String getChannelType(Type t) {
+    private String getChannelType(Type t)  throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         String baseType = null;
         if (t instanceof RecordTypeDecl) {
             baseType = t.toString();
@@ -2211,14 +2650,18 @@ public class CodeGenJava extends Visitor<Object> {
             // This is needed because we can only have wrapper class
             baseType = Helper.getWrapperType(t);
         } else if (t instanceof ArrayType) {
-            baseType = (String) t.visit(this);
+            try {
+                baseType = (String) t.visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         }
 
         return baseType;
     }
 
     // This is used for newly-created processes
-    private void resetGlobals() {
+    private void resetGlobals() throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         parDecID = 0;
         varDecID = 0;
         localDecID = 0;
@@ -2236,7 +2679,7 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     // Returns a string representation of a jump label
-    private String renderSwitchCase(int jump) {
+    private String renderSwitchCase(int jump) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         ST stSwitchCase = stGroup.getInstanceOf("SwitchCase");
 
         stSwitchCase.add("jump", jump);
@@ -2251,7 +2694,7 @@ public class CodeGenJava extends Visitor<Object> {
      * @return An 'anonymous' procedure.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private ProcTypeDecl createAnonymousProcTypeDecl(Statement st) {
+    private ProcTypeDecl createAnonymousProcTypeDecl(Statement st) throws SymbolMap.Context.ContextDoesNotDefineScopeException  {
         return new ProcTypeDecl(new Sequence(), // Modifiers
                 null, // Return type
                 new Name("Anonymous"), // Procedure name
@@ -2263,14 +2706,18 @@ public class CodeGenJava extends Visitor<Object> {
 
     int index = 0;
 
-    private Tuple<?> createLocalDeclForLoop(String dims) {
+    private Tuple<?> createLocalDeclForLoop(String dims)  throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         final String localDeclName = Helper.makeVariableName("loop", index++, Tag.LOCAL_NAME).replace("_ld$", "");
         Name n = new Name(localDeclName);
         NameExpr ne = new NameExpr(n);
         PrimitiveLiteral pl = new PrimitiveLiteral(new Token(0, "0", 0, 0, 0), 4 /* kind */);
         LocalDecl ld = new LocalDecl(new PrimitiveType(PrimitiveType.IntKind), new Var(n, null),
                 false /* not constant */);
-        ld.visit(this);
+        try {
+            ld.visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         BinaryExpr be = new BinaryExpr(ne, new NameExpr(new Name(dims)), BinaryExpr.LT);
         ExprStat es = new ExprStat(new UnaryPreExpr(ne, UnaryPreExpr.PLUSPLUS));
         Sequence<Statement> init = new Sequence<>();
@@ -2281,12 +2728,22 @@ public class CodeGenJava extends Visitor<Object> {
     }
 
     @SuppressWarnings("unchecked")
-    private Object createNewArray(String lhs, NewArray na) {
+    private Object createNewArray(String lhs, NewArray na) throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         Log.log(na.line + ": Creating a New Array");
 
         ST stNewArray = stGroup.getInstanceOf("NewArray");
-        String[] dims = (String[]) na.dimsExpr().visit(this);
-        String type = (String) na.baseType().visit(this);
+        String[] dims = new String[0];
+        try {
+            dims = (String[]) na.getBracketExpressions().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        String type = null;
+        try {
+            type = (String) na.getComponentType().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
 //        System.out.println(">> " + type);
 //        String chanType = type;
@@ -2294,19 +2751,23 @@ public class CodeGenJava extends Visitor<Object> {
 
         // This is done so that we can instantiate arrays of channel types
         // whose types are generic
-        if (na.baseType() instanceof ChannelType || na.baseType() instanceof ChannelEndType) {
+        if (na.getComponentType() instanceof ChannelType || na.getComponentType() instanceof ChannelEndType) {
             type = type.substring(0, type.indexOf("<"));// + "<?>";
             isChannelType = true;
         }
 
         ST stNewArrayLiteral = stGroup.getInstanceOf("NewArrayLiteral");
-        if (na.init() != null) {
+        if (na.getInitializationExpression() != null) {
             ArrayList<String> inits = new ArrayList<>();
-            Sequence<Expression> seq = (Sequence<Expression>) na.init().elements();
+            Sequence<Expression> seq = (Sequence<Expression>) na.getInitializationExpression().elements();
             for (Expression e : seq) {
                 if (e instanceof ArrayLiteral)
                     isArrayLiteral = true;
-                inits.add((String) e.visit(this));
+                try {
+                    inits.add((String) e.visit(this));
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             }
             stNewArrayLiteral.add("dim", String.join("", Collections.nCopies(((ArrayType) na.type).getDepth(), "[]")));
             stNewArrayLiteral.add("vals", inits);
@@ -2329,7 +2790,11 @@ public class CodeGenJava extends Visitor<Object> {
           stCreateArray.add("name", newChanArrayName);
           stCreateArray.add("newArray", stNewArray.render());
           stCreateArray.add("type", type);
-          stCreateArray.add("chanType", na.baseType().visit(this)); // this may be removed????
+          try {
+              stCreateArray.add("chanType", na.getComponentType().visit(this)); // this may be removed????
+          } catch (org.processj.Phase.Error error) {
+              throw new RuntimeException(error);
+          }
           stCreateArray.add("brackets", String.join("", Collections.nCopies(((ArrayType) na.type).getDepth(), "[]")));
           stCreateArray.add("dims", dims.length);
 //      System.out.println("> " + stCreateArray.render());
@@ -2341,15 +2806,20 @@ public class CodeGenJava extends Visitor<Object> {
         return stNewArray.render();
     }
 
-    private Object createChannelReadExpr(String lhs, String type, String op, ChannelReadExpr cr) {
+    private Object createChannelReadExpr(String lhs, String type, String op, ChannelReadExpr cr) throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         Log.log(cr, "Creating Channel Read Expression");
 
         ST stChannelReadExpr = stGroup.getInstanceOf("ChannelReadExpr");
         // 'c.read()' is a channel-end expression, where 'c' is the
         // reading end of a channel
-        Expression chanExpr = cr.channel();
+        Expression chanExpr = cr.getExpression();
         // 'c' is the name of the channel
-        String chanEndName = (String) chanExpr.visit(this);
+        String chanEndName = null;
+        try {
+            chanEndName = (String) chanExpr.visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         // Is it a timer read expression?
         if (chanExpr.type.isTimerType()) {
@@ -2367,8 +2837,13 @@ public class CodeGenJava extends Visitor<Object> {
         }
 
         // Do we have an extended rendezvous?
-        if (cr.extRV() != null) {
-            Object o = cr.extRV().visit(this);
+        if (cr.getExtendedRendezvous() != null) {
+            Object o = null;
+            try {
+                o = cr.getExtendedRendezvous().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             ST stBlockRV = stGroup.getInstanceOf("BlockRV");
             stBlockRV.add("block", o);
             stChannelReadExpr.add("extendRv", stBlockRV.render());
@@ -2389,13 +2864,17 @@ public class CodeGenJava extends Visitor<Object> {
         return stChannelReadExpr.render();
     }
 
-    public AltCase createDynamicAltStat(AltCase ac) {
+    public AltCase createDynamicAltStat(AltCase ac) throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         Name n = new Name("tmp_i");
         NameExpr ne = new NameExpr(n);
         PrimitiveLiteral pl = new PrimitiveLiteral(new Token(0, "0", 0, 0, 0), 4 /* kind */);
         LocalDecl ld = new LocalDecl(new PrimitiveType(PrimitiveType.IntKind), new Var(n, null),
                 false /* not constant */);
-        ld.visit(this);
+        try {
+            ld.visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         PrimitiveLiteral pl2 = new PrimitiveLiteral(new Token(0, "1", 0, 0, 0), 4 /* kind */);
         BinaryExpr be = new BinaryExpr(ne, pl2, BinaryExpr.LT);
         ExprStat es = new ExprStat(new UnaryPreExpr(ne, UnaryPreExpr.PLUSPLUS));
@@ -2406,9 +2885,9 @@ public class CodeGenJava extends Visitor<Object> {
         Sequence<AltCase> body = new Sequence<>();
         body.append(ac);
         AltStat as = new AltStat(init, be, incr, body, false);
-        as.dynamic = true;
-        ac = new AltCase(null, null, new Block(new Sequence<Statement>(as)));
-        ac.isAltStat = true;
+        as.setReplicated(true);
+        ac = new AltCase(null, null, new Block(new Sequence<>(as)));
+        ac.setNestedAltStatement();
         return ac;
     }
 

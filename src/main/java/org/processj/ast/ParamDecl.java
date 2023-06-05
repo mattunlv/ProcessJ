@@ -1,44 +1,78 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class ParamDecl extends AST implements VarDecl {
 
-    boolean constant;
+    /// --------------
+    /// Private Fields
 
-    public ParamDecl(Type type, Name name, boolean constant) {
+    private final boolean isConstant;
+    private final Name name ;
+    private Type type;
+
+    /// ------------
+    /// Constructors
+
+    public ParamDecl(final Type type, final Name name, boolean isConstant) {
         super(new AST[] { type, name });
 
-        this.constant = constant;
+        this.isConstant = isConstant;
+        this.type       = type      ;
+        this.name       = name      ;
 
     }
 
-    public boolean isConstant() {
-        return constant;
+    @Override
+    public final String toString() {
+
+        return this.name.toString();
+
     }
 
-    public Type type() {
-        return (Type) children[0];
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+
+        return visitor.visitParamDecl(this);
+
     }
 
-    public Name paramName() {
-        return (Name) children[1];
+    public final boolean isConstant() {
+
+        return isConstant;
+
     }
 
-    public void setType(Type t) {
-        children[0] = t;
+    public final Type getType() {
+
+        return this.type;
+
     }
 
-    public String name() {
-        return paramName().getname();
+    public final String getPackageName() {
+
+        return this.name.getPackageName();
+
     }
 
-    public String toString() {
-        return "ParamDecl (Type:" + type() + " " + "Name:" + name() + ")";
+    public final String getName() {
+
+        return this.name.getName();
+
     }
 
-    public <S> S visit(Visitor<S> v) {
-        return v.visitParamDecl(this);
+    public final int getDepth() {
+
+        return this.name.getDepth();
+
+    }
+
+    public final void setType(Type t) {
+
+        this.type           = t;
+        this.children[0]    = t;
+
     }
 
 }

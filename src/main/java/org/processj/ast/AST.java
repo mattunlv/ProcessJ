@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.syntax.NodeCtx;
 import org.processj.utilities.Log;
 import org.processj.utilities.Visitor;
@@ -52,6 +53,15 @@ public abstract class AST {
         this.nchildren  = (children != null) ? children.length : 0  ;
         this.line       = GetLineStartFrom(children);
         this.charBegin  = GetCharBeginFrom(children);
+
+    }
+
+    public AST(final AST[] children, final Token token) {
+
+        this.children   = children                                  ;
+        this.nchildren  = (children != null) ? children.length : 0  ;
+        this.line       = token.line                                ;
+        this.charBegin  = token.start                               ;
 
     }
 
@@ -152,9 +162,10 @@ public abstract class AST {
     /* **                                                       ** */
     /* *********************************************************** */
 
-    public abstract <T> T visit(Visitor<T> v);
+    public abstract <T> T visit(Visitor<T> v) throws Phase.Error;
 
-    public <T> T visit(final IVisitor<T> visitor) {
+    public <T> T visit(final IVisitor<T> visitor) throws Phase.Error,
+            SymbolMap.Context.ContextDoesNotDefineScopeException {
 
         // Attempt to
         try {
@@ -183,10 +194,10 @@ public abstract class AST {
     /**
      * Visit all children of this node from left to right. Usually called from within a visitor
      */
-    public <T extends Object> T visitChildren(Visitor<T> v) {
-        for (int c = 0; c < nchildren; c++) {
-            if (children[c] != null)
-                children[c].visit(v);
+    public <T> T visitChildren(Visitor<T> v) throws Phase.Error {
+        for(int c = 0; c < nchildren; c++) {
+            if(children[c] != null) children[c].visit(v);
+
         }
         return null;
     }

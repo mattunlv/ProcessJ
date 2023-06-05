@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.Set;
 
 import org.processj.ast.*;
-import org.processj.printers.PrettyPrinter;
+import org.processj.ast.expression.Expression;
+import org.processj.utilities.printers.PrettyPrinter;
 import org.processj.utilities.Log;
 import org.processj.utilities.Pair;
 import org.processj.utilities.Visitor;
@@ -14,7 +15,7 @@ import org.processj.utilities.Visitor;
  * @author ben
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ParBlockRewrite extends Visitor<Pair<Sequence, Sequence>> {
+public class ParBlockRewrite implements Visitor<Pair<Sequence, Sequence>> {
 
     ArrayList<Expression> barriers = new ArrayList<>();
     
@@ -22,17 +23,17 @@ public class ParBlockRewrite extends Visitor<Pair<Sequence, Sequence>> {
     
     private void andEnroll(HashMap<String, Integer> hm, Expression e) {
         if (hm.isEmpty())
-            hm.put(((NameExpr) e).name().getname(), 1);
+            hm.put(((NameExpr) e).toString(), 1);
         else {
             Set<String> set = hm.keySet();
             for (String e1 : set) {
-                String e2 = ((NameExpr) e).name().getname();
+                String e2 = ((NameExpr) e).toString();
                 if (e1.equals(e2)) {
                     hm.put(e1, hm.get(e1) + 1);
                     return;
                 }
             }
-            hm.put(((NameExpr) e).name().getname(), 1);
+            hm.put(((NameExpr) e).toString(), 1);
         }
     }
 
@@ -42,7 +43,7 @@ public class ParBlockRewrite extends Visitor<Pair<Sequence, Sequence>> {
             for (int i = 0; !found && i < se.size(); ++i) {
                 NameExpr ne1 = (NameExpr) se.child(i);
                 NameExpr ne2 = (NameExpr) e;
-                if (ne1.name().getname().equals(ne2.name().getname()))
+                if (ne1.toString().equals(ne2.toString()))
                     found = true;
             }
             if (!found)
@@ -59,7 +60,11 @@ public class ParBlockRewrite extends Visitor<Pair<Sequence, Sequence>> {
 
     public Pair<Sequence, Sequence> visitProcTypeDecl(ProcTypeDecl pd) {
         Log.log(pd, "Visiting a ProcTypeDecl");
-        pd.body().visit(this);
+        try {
+            pd.getBody().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         return null;
     }
     
@@ -70,12 +75,21 @@ public class ParBlockRewrite extends Visitor<Pair<Sequence, Sequence>> {
             if (se.child(i) instanceof ParBlock) {
                 HashMap<String, Integer> prevEnrolls = enrolls;
                 enrolls = new HashMap<>();
-                Pair<Sequence, Sequence> p = se.child(i).visit(this);
+                Pair<Sequence, Sequence> p = null;
+                try {
+                    p = se.child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (p != null) {
                     ParBlock par = new ParBlock(p.getFirst(), p.getSecond());
                     par.enrolls = enrolls;
                     if (Log.doLog)
-                        par.visit(new PrettyPrinter());
+                        try {
+                            par.visit(new PrettyPrinter());
+                        } catch (org.processj.Phase.Error error) {
+                            throw new RuntimeException(error);
+                        }
                     se.set(i, par);
                 }
                 enrolls = prevEnrolls;
@@ -96,7 +110,12 @@ public class ParBlockRewrite extends Visitor<Pair<Sequence, Sequence>> {
         Sequence<Statement> statements = pb.stats();
         for (Statement st : statements) {
             if (st instanceof ParBlock) {
-                Pair<Sequence, Sequence> p = (Pair<Sequence, Sequence>) st.visit(this);
+                Pair<Sequence, Sequence> p = null;
+                try {
+                    p = (Pair<Sequence, Sequence>) st.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 if (p.getFirst().size() > 0)
                     stmts.merge(p.getFirst());
                 if (p.getSecond().size() > 0) {

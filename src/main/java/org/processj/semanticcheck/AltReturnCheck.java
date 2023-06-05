@@ -1,7 +1,8 @@
 package org.processj.semanticcheck;
 
-import org.processj.ast.AltCase;
-import org.processj.ast.AltStat;
+import org.processj.Phase;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.alt.AltStat;
 import org.processj.ast.Block;
 import org.processj.ast.DoStat;
 import org.processj.ast.ForStat;
@@ -12,32 +13,49 @@ import org.processj.ast.Statement;
 import org.processj.ast.WhileStat;
 import org.processj.utilities.PJBugManager;
 import org.processj.utilities.PJMessage;
-import org.processj.utilities.Visitor;
 import org.processj.utilities.VisitorMessageNumber;
 
-public class AltReturnCheck extends Visitor<Object> {
+public class AltReturnCheck extends Phase {
     
     boolean inAltStat = false;
-    
+
+    /**
+     * <p>Initializes the {@link Phase} to its' default state with the specified {@link Listener}.</p>
+     *
+     * @param listener The {@link Listener} to bind to the {@link Phase}.
+     * @since 0.1.0
+     */
+    public AltReturnCheck(Phase.Listener listener) {
+        super(listener);
+    }
+
     @Override
-    public Object visitAltStat(AltStat as) {
+    public final Void visitAltStat(AltStat as) {
         inAltStat = true;
         Sequence<AltCase> se = as.body();
         if (se != null)
             for (AltCase ac : se)
-                ac.visit(this);
+                try {
+                    ac.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
         return null;
     }
     
     @Override
-    public Object visitAltCase(AltCase ac) {
-        if (ac.stat() != null)
-            ac.stat().visit(this);
+    public final Void visitAltCase(AltCase ac) {
+        if (ac.getStatement() != null)
+            try {
+                ac.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return null;
     }
     
     @Override
-    public Object visitReturnStat(ReturnStat rs) {
+    public final Void visitReturnStat(ReturnStat rs) {
         if (inAltStat) {
             PJBugManager.INSTANCE.reportMessage(
                     new PJMessage.Builder()
@@ -49,39 +67,63 @@ public class AltReturnCheck extends Visitor<Object> {
     }
     
     @Override
-    public Object visitBlock(Block b) {
+    public final Void visitBlock(Block b) {
         for (Statement st : b.stats())
-            st.visit(this);
+            try {
+                st.visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return null;
     }
     
     @Override
-    public Object visitWhileStat(WhileStat ws) {
-        if (ws.stat() != null)
-            ws.stat().visit(this);
+    public final Void visitWhileStat(WhileStat ws) {
+        if (ws.getStatement() != null)
+            try {
+                ws.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return null;
     }
     
     @Override
-    public Object visitDoStat(DoStat ds) {
-        if (ds.stat() != null)
-            ds.stat().visit(this);
+    public final Void visitDoStat(DoStat ds) {
+        if (ds.getStatement() != null)
+            try {
+                ds.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return null;
     }
     
     @Override
-    public Object visitForStat(ForStat fs) {
-        if (fs.stats() != null)
-            fs.stats().visit(this);
+    public final Void visitForStat(ForStat fs) {
+        if (fs.getStatement() != null)
+            try {
+                fs.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return null;
     }
     
     @Override
-    public Object visitIfStat(IfStat is) {
-        if (is.thenpart() != null)
-            is.thenpart().visit(this);
-        if (is.elsepart() != null)
-            is.elsepart().visit(this);
+    public final Void visitIfStat(IfStat is) {
+        if (is.getThenPart() != null)
+            try {
+                is.getThenPart().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+        if (is.getElsePart() != null)
+            try {
+                is.getElsePart().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return null;
     }
 }

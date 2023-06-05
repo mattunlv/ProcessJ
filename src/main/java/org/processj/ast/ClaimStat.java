@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 // 4/19/16: the 'channels' Sequence ONLY holds one channel.
@@ -19,7 +20,7 @@ public class ClaimStat extends Statement {
         return (Statement) children[1];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitClaimStat(this);
     }
 }

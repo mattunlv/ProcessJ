@@ -16,6 +16,7 @@ import java.util.Hashtable;
  * methods with the same name but with different signatures.
  */
 public class SymbolTable implements DefineTopLevelDecl {
+
     // This hook is used to hold on the global type table
     // and to transport the closest table from TopLevelDecls.
     public static SymbolTable hook = null;
@@ -24,9 +25,10 @@ public class SymbolTable implements DefineTopLevelDecl {
     public boolean isMobileProcedure = false;
 
     // link to symbol table for enclosing scope (always null for the main file)
-    private SymbolTable parent = null;
+    private SymbolTable enclosingScope;
+
     // link to the symbol table for the nearest import statement
-    private SymbolTable importParent = null; 
+    private SymbolTable importParent;
     
     // The name of the symbol table -- if any is given.
     private String name;
@@ -39,24 +41,20 @@ public class SymbolTable implements DefineTopLevelDecl {
     }
 
     public SymbolTable(String name) {
-        this.parent = null;
+        this.enclosingScope = SymbolTable.hook;
         this.importParent = null;
         this.name = name;
-        this.entries = new Hashtable<String, Object>();
+        this.entries = new Hashtable<>();
     }
 
-    public SymbolTable(SymbolTable parent, String name) {
+    public SymbolTable(SymbolTable enclosingScope, String name) {
         this(name);
-        this.parent = parent;
+        this.enclosingScope = enclosingScope;
     }
 
-    public SymbolTable(SymbolTable parent) {
-        this(parent, "<anonymous>");
-        this.parent = parent;
-    }
-
-    public void setParent(SymbolTable st) {
-        this.parent = st;
+    public SymbolTable(SymbolTable enclosingScope) {
+        this(enclosingScope, "<anonymous>");
+        this.enclosingScope = enclosingScope;
     }
 
     // Delete an entry from the symbol table.
@@ -65,8 +63,8 @@ public class SymbolTable implements DefineTopLevelDecl {
     }
 
     // Get the parent table of this table. 
-    public SymbolTable getParent() {
-        return parent;
+    public SymbolTable getEnclosingScope() {
+        return enclosingScope;
     }
 
     public void setImportParent(SymbolTable st) {
@@ -101,10 +99,10 @@ public class SymbolTable implements DefineTopLevelDecl {
         Object result = entries.get(name);
         if (result != null)
             return result;
-        if (parent == null) {
+        if (enclosingScope == null) {
             return null;
         }
-        return parent.get(name);
+        return enclosingScope.get(name);
     }
 
     public Object getIncludeImports(String name) {
@@ -123,14 +121,14 @@ public class SymbolTable implements DefineTopLevelDecl {
 
     public String toString() {
         String s = "SymbolTable:" + name + "\n";
-        if (parent != null)
-            s = "\n" + parent.toString();
+        if (enclosingScope != null)
+            s = "\n" + enclosingScope.toString();
         return s + " -> " + entries.toString();
     }
 
     public void print(String indent) {
-        if (parent != null) {
-            parent.print(indent + "  ");
+        if (enclosingScope != null) {
+            enclosingScope.print(indent + "  ");
             Log.log(indent + "-->");
         }
         Enumeration<String> col = entries.keys();
@@ -172,7 +170,7 @@ public class SymbolTable implements DefineTopLevelDecl {
      * @return the current scope's parent scope.
      */
     public SymbolTable closeScope() {
-        return parent;
+        return enclosingScope;
     }
 
     // result of the -sts compiler flag
@@ -183,9 +181,9 @@ public class SymbolTable implements DefineTopLevelDecl {
             Object o2 = entries.get((String) o);
             Log.log("  [*] " + ((String) o) + " == " + o2);
         }
-        Log.log(indent + "parent.......: " + (parent == null ? "--//" : ""));
-        if (parent != null)
-            parent.printStructure(indent + "|  ");
+        Log.log(indent + "parent.......: " + (enclosingScope == null ? "--//" : ""));
+        if (enclosingScope != null)
+            enclosingScope.printStructure(indent + "|  ");
         Log.log(indent + "importParent.: " + (importParent == null ? "--//" : ""));
         if (importParent != null)
             importParent.printStructure(indent + "|  ");

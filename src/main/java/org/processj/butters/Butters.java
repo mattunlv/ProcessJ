@@ -149,7 +149,7 @@ public class Butters {
     public static void decodePragmas(Compilation c) throws ClassNotFoundException, MalformedURLException {
         LibInfo lib = new LibInfo();
         for (Pragma p : c.getPragmas()) {
-            String name = p.getName().getname();
+            String name = p.toString();
             String value = p.getValue();
             if ( value==null ) {
                 // TODO: error out!!??
@@ -169,7 +169,7 @@ public class Butters {
                 lib.setFile(value);
             }
         }
-        lib.setPackage(c.packageName);
+        lib.setPackage(c.getPackageName());
         // Read the 'Xxx.class' file
         readMyJRE(lib, lib.getNativelib());
         LibWriter lw = new LibWriter(lib);

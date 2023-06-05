@@ -1,27 +1,36 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
-public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
+public class RecordTypeDecl extends Type implements DefineTopLevelDecl, SymbolMap.Context {
 
     /// --------------
     /// Private Fields
 
     /**
-     * <p>{@link String} value of the {@link RecordTypeDecl}'s name.</p>
+     * <p>{@link Name} value of the {@link RecordTypeDecl}'s name.</p>
      */
-    private final String name;
+    private final Name name;
+    private SymbolMap scope;
+    private final Sequence<Type> extendTypes;
+    private final Sequence<Name> extend;
+    private final Sequence<RecordMember> recordMembers;
 
     /// ------------
     /// Constructors
 
     public RecordTypeDecl(Sequence<Modifier> modifiers, Name name, 
-                          Sequence<AST> extend, Annotations annotations,
+                          Sequence<Name> extend, Annotations annotations,
                           Sequence<RecordMember> body) {
         super(name);
         nchildren = 5;
         children = new AST[] { modifiers, name, extend, annotations, body };
-        this.name = (name != null) ? name.toString() : "";
+        this.name = name;
+        this.scope = null;
+        this.extendTypes = new Sequence<>();
+        this.extend = extend;
+        this.recordMembers = body;
     }
 
     /// ----------------
@@ -50,7 +59,7 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
     @Override
     public final String toString() {
 
-        return this.name;
+        return this.name.toString();
 
     }
 
@@ -65,9 +74,18 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
      * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) {
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
-        return visitor.visitRecordTypeDecl(this);
+        // Open the scope
+        final SymbolMap scope = this.openScope(visitor.getScope());
+
+        // Visit
+        S result = visitor.visitRecordTypeDecl(this);
+
+        // Close the scope
+        visitor.setScope(scope.getEnclosingScope());
+
+        return result;
 
     }
 
@@ -86,6 +104,62 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
 
     }
 
+    public final void setTypeForEachExtend(final TypeReturnCallback typeReturnCallback) {
+
+        if((this.extend != null) && (typeReturnCallback != null)) {
+
+            // Clear the extend Types
+            this.extendTypes.clear();
+
+            // Append the results
+            this.extend.forEach(name -> {
+
+                Type type;
+
+                try {
+
+                    type = typeReturnCallback.Invoke(name);
+
+                } catch (final Phase.Error phaseError) {
+
+                    type = new ErrorType();
+
+                }
+
+                this.extendTypes.append(type);
+
+            });
+
+        }
+
+    }
+
+    public final void setTypeForEachRecordMember(final TypeReturnCallback typeReturnCallback){
+
+        if((this.recordMembers != null) && (typeReturnCallback != null)) {
+
+            this.recordMembers.forEach(recordMember -> {
+
+                Type type;
+
+                try {
+
+                    type = typeReturnCallback.Invoke(recordMember.getName());
+
+                } catch (final Phase.Error phaseError) {
+
+                    type = new ErrorType();
+
+                }
+
+                recordMember.setType(type);
+
+            });
+
+        }
+
+    }
+
     // *************************************************************************
     // ** Accessor Methods
 
@@ -93,15 +167,15 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
         return (Sequence<Modifier>) children[0];
     }
 
-    public Sequence<Name> extend() {
+    public Sequence<Name> getExtends() {
         return (Sequence<Name>) children[2];
     }
 
-    public Annotations annotations() {
+    public Annotations getAnnotations() {
         return (Annotations) children[3];
     }
 
-    public Sequence<RecordMember> body() {
+    public Sequence<RecordMember> getBody() {
         return (Sequence<RecordMember>) children[4];
     }
 
@@ -109,8 +183,8 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
     // ** Misc. Methods
 
     public RecordMember getMember(String name) {
-        for (RecordMember rm : body())
-            if (rm.name().getname().equals(name))
+        for (RecordMember rm : getBody())
+            if (rm.getName().getName().equals(name))
                 return rm;
         return null;
     }
@@ -119,7 +193,7 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
         if (typeEqual(rt))
             return true;
         boolean b = false;
-        for (Name n : extend())
+        for (Name n : getExtends())
             b = ((RecordTypeDecl) n.myDecl).extendsRecord(rt) || b;
         return b;
     }
@@ -149,4 +223,12 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl {
         RecordTypeDecl rt = (RecordTypeDecl) t;
         return rt.extendsRecord(this);
     }
+
+    @FunctionalInterface
+    public interface TypeReturnCallback {
+
+        Type Invoke(final Name name) throws Phase.Error;
+
+    }
+
 }

@@ -2,6 +2,8 @@ package org.processj.ast;
 
 import java.math.BigDecimal;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class UnaryPreExpr extends Expression {
@@ -27,7 +29,7 @@ public class UnaryPreExpr extends Expression {
         return (Expression) children[0];
     }
 
-    public int op() {
+    public int getOperator() {
         return kind;
     }
 
@@ -58,7 +60,7 @@ public class UnaryPreExpr extends Expression {
         return null;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitUnaryPreExpr(this);
     }
 }

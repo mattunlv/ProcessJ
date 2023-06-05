@@ -1,7 +1,11 @@
 package org.processj.rewriters;
 
 import org.processj.ast.*;
-import org.processj.printers.*;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.alt.AltStat;
+import org.processj.ast.alt.Guard;
+import org.processj.ast.expression.*;
+import org.processj.utilities.printers.PrettyPrinter;
 
 /**
  * The purpose of this rewriter is to lift yielding Channel Read Expressions out
@@ -86,16 +90,6 @@ public class ChannelReadRewrite {
     //
     // if @0 is empty, then @1 is the entire result.
     // if @1 is null, then no expression was returned.
-
-    private void print(String msg, AST node) {
-        System.out.println(msg + ":");
-        node.visit(new org.processj.printers.ParseTreePrinter());
-        node.visit(new org.processj.printers.PrettyPrinter());
-        System.out.println();
-        System.out.println(msg + "--- DONE ---");
-        System.out.println();
-        System.out.println();
-    }
 
     public AST go(AST a) {
         if (a instanceof AltCase) {
@@ -190,7 +184,7 @@ public class ChannelReadRewrite {
                     System.out.println("Assignment (Case 1B)");
                     // seq2 == [ [ ... ], <e> ]
                     Sequence se = (Sequence) (seq2.child(0)); // [ ... ]
-                    Assignment as2 = new Assignment(as.left(), (Expression) seq2.child(1), as.op()); // v = <e>
+                    Assignment as2 = new Assignment(as.left(), (Expression) seq2.child(1), as.getOperator()); // v = <e>
                     Sequence retSeq = new Sequence(se); // [ [ ... ] ]
                     retSeq.append(as2); // [ [ ... ], v = <e> ]
                     return retSeq;
@@ -275,12 +269,12 @@ public class ChannelReadRewrite {
             System.out.println("CastExpr");
             CastExpr ce = (CastExpr) a;
             Sequence s = new Sequence();
-            if (ce.expr().doesYield()) { // rewrite the expression
+            if (ce.getExpression().doesYield()) { // rewrite the expression
                 String t = nextTemp();
                 // T t;
-                LocalDecl ld = makeLocalDecl(ce.expr().type, t);
+                LocalDecl ld = makeLocalDecl(ce.getExpression().type, t);
                 // t = e;
-                Sequence se = (Sequence) go(new ExprStat(makeAssignment(t, ce.expr())));
+                Sequence se = (Sequence) go(new ExprStat(makeAssignment(t, ce.getExpression())));
                 s.append(ld);
                 s.merge(se.child(0));
                 Sequence re = new Sequence(s);
@@ -302,19 +296,19 @@ public class ChannelReadRewrite {
             // checker
             // e.read()
             ChannelReadExpr cre = (ChannelReadExpr) a;
-            if (cre.channel().doesYield()) {
+            if (cre.getExpression().doesYield()) {
                 // the channel expression is another channel read.
                 String t = nextTemp();
                 // T t;
-                LocalDecl ld = makeLocalDecl(cre.channel().type, t);
+                LocalDecl ld = makeLocalDecl(cre.getExpression().type, t);
                 // t = e;
-                Sequence se = (Sequence) go(new ExprStat(makeAssignment(t, cre.channel())));
+                Sequence se = (Sequence) go(new ExprStat(makeAssignment(t, cre.getExpression())));
                 Sequence se2 = new Sequence(ld);
                 se2.merge(se.child(0));
                 Sequence ret = new Sequence(se2);
                 Block extRev = null;
-                if (cre.extRV() != null) {
-                    Sequence extRevSeq = (Sequence) go(cre.extRV());
+                if (cre.getExtendedRendezvous() != null) {
+                    Sequence extRevSeq = (Sequence) go(cre.getExtendedRendezvous());
                     extRev = (Block) ((Sequence) ((Sequence) extRevSeq.child(0))).child(0);
                 }
                 ret.append(new ChannelReadExpr(new NameExpr(new Name(t)), extRev));
@@ -329,30 +323,30 @@ public class ChannelReadRewrite {
             ChannelWriteStat cws = (ChannelWriteStat) a;
             // e1 yields, e2 does not
             Sequence ret;
-            if (cws.channel().doesYield() && !cws.expr().doesYield()) {
+            if (cws.getTargetExpression().doesYield() && !cws.getWriteExpression().doesYield()) {
                 // make [ [ T t; <t = e1>; t.write(e2); ], null ]
                 String t = nextTemp();
                 // T t;
-                LocalDecl ld = makeLocalDecl(cws.channel().type, t);
+                LocalDecl ld = makeLocalDecl(cws.getTargetExpression().type, t);
                 // t = e;
-                Sequence se = (Sequence) go(new ExprStat(makeAssignment(t, cws.channel())));
+                Sequence se = (Sequence) go(new ExprStat(makeAssignment(t, cws.getTargetExpression())));
                 Sequence s = new Sequence(ld);
                 s.merge(se.child(0));
                 ret = new Sequence(s);
-            } else if (cws.expr().doesYield()) {
+            } else if (cws.getWriteExpression().doesYield()) {
                 // make [ [ T1 t1; <t1 = e1>; T2 t2; <t2 = e2>; t1.write(t2); ], null ]
                 String t1 = nextTemp();
                 // T1 t1;
-                LocalDecl ld1 = makeLocalDecl(cws.channel().type, t1);
+                LocalDecl ld1 = makeLocalDecl(cws.getTargetExpression().type, t1);
                 // t1 = e1;
-                Sequence se = (Sequence) go(new ExprStat(makeAssignment(t1, cws.channel())));
+                Sequence se = (Sequence) go(new ExprStat(makeAssignment(t1, cws.getTargetExpression())));
                 Sequence s = new Sequence(ld1);
                 s.merge(se.child(0));
                 String t2 = nextTemp();
                 // T2 t2;
-                LocalDecl ld2 = makeLocalDecl(cws.expr().type, t2);
+                LocalDecl ld2 = makeLocalDecl(cws.getWriteExpression().type, t2);
                 // t2 = e2;
-                Sequence se2 = (Sequence) go(new ExprStat(makeAssignment(t2, cws.expr())));
+                Sequence se2 = (Sequence) go(new ExprStat(makeAssignment(t2, cws.getWriteExpression())));
                 s.append(ld2);
                 s.merge(se2.child(0));
                 s.append(new ChannelWriteStat(new NameExpr(new Name(t1)), new NameExpr(new Name(t2))));
@@ -365,8 +359,8 @@ public class ChannelReadRewrite {
         } else if (a instanceof Compilation) {
             System.out.println("Compilation");
             Compilation c = (Compilation) a;
-            for (int i = 0; i < c.typeDecls().size(); i++) {
-                go(c.typeDecls().child(i));
+            for (int i = 0; i < c.getTypeDeclarations().size(); i++) {
+                go(c.getTypeDeclarations().child(i));
             }
             return a;
         } else if (a instanceof ConstantDecl) { // const ???
@@ -399,25 +393,25 @@ public class ChannelReadRewrite {
             System.out.println("IfStat");
             IfStat is = (IfStat) a;
             Sequence seq2 = new Sequence();
-            if (is.expr().doesYield()) { // the expression on the if org.processj.yield.
+            if (is.evaluationExpression().doesYield()) { // the expression on the if org.processj.yield.
                 String t = nextTemp();
                 // T t; (T is the type of the expression)
-                LocalDecl ld = makeLocalDecl(is.expr().type, t);
+                LocalDecl ld = makeLocalDecl(is.evaluationExpression().type, t);
                 seq2.append(ld);
                 // t = e;
-                Sequence s = (Sequence) go(new ExprStat(makeAssignment(t, is.expr())));
+                Sequence s = (Sequence) go(new ExprStat(makeAssignment(t, is.evaluationExpression())));
                 seq2.merge(s.child(0)); // [ T t; <t = e>; ]
                 is.children[0] = new NameExpr(new Name(t));
             }
             tempCounter--;
-            Sequence s = (Sequence) go(is.thenpart());
+            Sequence s = (Sequence) go(is.getThenPart());
             if (((Sequence) s.child(0)).size() > 1) {
                 Sequence ss = (Sequence) s.child(0);
                 is.children[1] = new Block(ss);
             } else
                 is.children[1] = ((Sequence) ((Sequence) s.child(0))).child(0);
-            if (is.elsepart() != null) {
-                s = (Sequence) go(is.elsepart());
+            if (is.getElsePart() != null) {
+                s = (Sequence) go(is.getElsePart());
                 if (((Sequence) s.child(0)).size() > 1) {
                     Sequence ss = (Sequence) s.child(0);
                     is.children[2] = new Block(ss);
@@ -439,9 +433,9 @@ public class ChannelReadRewrite {
             // because it may have side effects.
             // iterate the parameters backwards:
             Sequence ret = new Sequence();
-            for (int i = in.params().size() - 1; i >= 0; i--) {
+            for (int i = in.getParameters().size() - 1; i >= 0; i--) {
                 System.out.println("Parameter #" + i);
-                Expression e = in.params().child(i);
+                Expression e = in.getParameters().child(i);
                 if (yields || e.doesYield()) {
                     yields = true;
                     if (e.doesYield()) { // e has a channel read in it
@@ -454,7 +448,7 @@ public class ChannelReadRewrite {
                         Sequence s = (Sequence) go(new ExprStat(makeAssignment(t, e))); // [ [ T t; <t = e>; ], null ]
                         s2.merge(s.child(0));
                         ret = s2.merge(ret);
-                        in.params().set(i, new NameExpr(new Name(t)));
+                        in.getParameters().set(i, new NameExpr(new Name(t)));
                     } else { // e doesn't org.processj.yield so just make t = e;
                         Sequence s2 = new Sequence();
                         String t = nextTemp();
@@ -466,7 +460,7 @@ public class ChannelReadRewrite {
                         Sequence s = new Sequence(new ExprStat(makeAssignment(t, e))); // [ t = e; ]
                         s2.merge(s.child(0));
                         ret = s2.merge(ret);
-                        in.params().set(i, new NameExpr(new Name(t)));
+                        in.getParameters().set(i, new NameExpr(new Name(t)));
                     }
                 }
             }
@@ -481,7 +475,7 @@ public class ChannelReadRewrite {
             // T t = e => T t; <t = e>; < > means rewritten;
             // TODO: not finished.
             LocalDecl ld = (LocalDecl) a;
-            if (ld.var().init() == null || (ld.var().init() != null && !ld.var().init().doesYield())) {
+            if (!ld.isInitialized() || !ld.getInitializationExpression().doesYield()) {
                 System.out.println("LocalDecl (Case 1)");
                 // T t; or T t = e where e does not org.processj.yield.
                 Sequence retSeq = new Sequence(new Sequence(a)); // [ [ T t ] ] or [ [ T t = e ] ]
@@ -490,8 +484,8 @@ public class ChannelReadRewrite {
             } else {
                 // T t = e where e yields.
                 System.out.println("LocalDecl (Case 2)");
-                Sequence s = new Sequence(makeLocalDecl(ld.type(), ld.var().name().getname())); // [ T t; ]
-                Sequence seq1 = (Sequence) go(new ExprStat(makeAssignment(ld.var().name().getname(), ld.var().init()))); // [
+                Sequence s = new Sequence(makeLocalDecl(ld.getType(), ld.toString())); // [ T t; ]
+                Sequence seq1 = (Sequence) go(new ExprStat(makeAssignment(ld.toString(), ld.getInitializationExpression()))); // [
                                                                                                                             // [
                                                                                                                             // <t
                                                                                                                             // =
@@ -537,7 +531,7 @@ public class ChannelReadRewrite {
             System.out.println("ProcTypeDecl");
             // For a procedure just handle the body (it is a sequence)
             ProcTypeDecl pd = (ProcTypeDecl) a;
-            Sequence s = (Sequence) go(pd.body());
+            Sequence s = (Sequence) go(pd.getBody());
             System.out.println(s);
             pd.children[6] = ((Sequence) s.child(0)).child(0);
             return pd;
@@ -580,7 +574,11 @@ public class ChannelReadRewrite {
                 // appropriate node.
                 Sequence s = (Sequence) seq2.child(0); // [ <Si>; ]
                 retSeq.merge(s); // [ <S0>; ... <Si>; ]
-                retSeq.visit(new PrettyPrinter());
+                try {
+                    retSeq.visit(new PrettyPrinter());
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 // }
             }
             return retSeq;
@@ -600,15 +598,15 @@ public class ChannelReadRewrite {
             for (int i = 0; i < ss.switchBlocks().size(); i++) {
                 go(ss.switchBlocks().child(i));
             }
-            if (ss.expr().doesYield()) {
+            if (ss.getEvaluationExpression().doesYield()) {
                 // make [ [ T t; <t = e> ], switch(t) { <...> } ]
                 Sequence s2 = new Sequence(); // [ ]
                 String t = nextTemp();
                 // T t;
-                LocalDecl ld = makeLocalDecl(ss.expr().type, t); // T t;
+                LocalDecl ld = makeLocalDecl(ss.getEvaluationExpression().type, t); // T t;
                 s2.append(ld); // [ T t; ]
                 // t = e;
-                Sequence s = (Sequence) go(new ExprStat(makeAssignment(t, ss.expr()))); // [ [<t = e>; ], null ]
+                Sequence s = (Sequence) go(new ExprStat(makeAssignment(t, ss.getEvaluationExpression()))); // [ [<t = e>; ], null ]
                 s2.merge(s.child(0)); // [ T t; <t = e>; ]
                 Sequence ret = new Sequence(s2);
                 ss.children[0] = new NameExpr(new Name(t));
@@ -634,11 +632,11 @@ public class ChannelReadRewrite {
             return a;
         } else if (a instanceof TimeoutStat) {
             TimeoutStat ts = (TimeoutStat) a;
-            if (ts.timer().doesYield()) {
+            if (ts.getTimerExpression().doesYield()) {
                 ;// CompilerErrorManager.INSTANCE.reportMessage(new
                     // ProcessJMessage.Builder().addError(VisitorMessageNumber.REWRITE_1001));
             }
-            if (!ts.delay().doesYield()) {
+            if (!ts.getDelayExpression().doesYield()) {
                 // make [ [ ts ], null ]
                 Sequence ret = new Sequence(new Sequence(ts));
                 ret.append(null);
@@ -653,7 +651,7 @@ public class ChannelReadRewrite {
             }
         } else if (a instanceof UnaryPostExpr) {
             UnaryPostExpr upe = (UnaryPostExpr) a;
-            if (upe.expr().doesYield()) {
+            if (upe.getExpression().doesYield()) {
                 ;// Error.addError(upe, "Unary Post-Expressions cannot have channel reads",
                     // 0000);
             }

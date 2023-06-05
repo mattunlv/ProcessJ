@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class QualifiedName extends AST {
@@ -27,7 +28,7 @@ public class QualifiedName extends AST {
     }
 
     @Override
-    public <T extends Object> T visit(Visitor<T> v) {
+    public <T extends Object> T visit(Visitor<T> v) throws Phase.Error {
         v.visitQualifiedName(this);
         return null;
     }

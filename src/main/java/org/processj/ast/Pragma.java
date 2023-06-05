@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 /**
@@ -74,7 +75,7 @@ public class Pragma extends AST {
     @Override
     public final String toString() {
 
-        return this.getName().getname().toUpperCase();
+        return this.name.getName().toUpperCase();
 
     }
 
@@ -89,7 +90,7 @@ public class Pragma extends AST {
      * @param <S> Parametric type parameter.
      */
     @Override
-    public <S> S visit(final Visitor<S> visitor) {
+    public <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
         return visitor.visitPragma(this);
 
@@ -97,17 +98,6 @@ public class Pragma extends AST {
 
     /// --------------
     /// Public Methods
-
-    /**
-     * <p>Returns the {@link Name} instance corresponding with the {@link Pragma}.</p>
-     * @return {@link Name} instance corresponding with the {@link Pragma}.
-     * @since 0.1.0
-     */
-    public Name getName() {
-
-        return this.name;
-
-    }
 
     /**
      * <p>Returns the {@link String} literal value specified with the {@link Pragma}.</p>

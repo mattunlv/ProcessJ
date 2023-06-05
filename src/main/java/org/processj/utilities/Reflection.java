@@ -1,6 +1,7 @@
 package org.processj.utilities;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 public class Reflection {
@@ -66,6 +67,72 @@ public class Reflection {
 
         // Return the result
         return result;
+
+    }
+
+    public static <Type> boolean DoesDeclareField(final Type instance, final String fieldName) {
+
+        boolean doesDeclareField = true;
+
+        try {
+
+            instance.getClass().getDeclaredField(fieldName);
+
+        } catch(final NoSuchFieldException noSuchFieldException) {
+
+            doesDeclareField = false;
+
+        }
+
+        return doesDeclareField;
+
+    }
+
+    public static <Type> Object GetFieldValue(final Type instance, final String fieldName) {
+
+        // Initialize the result
+        Object result;
+
+        try {
+
+            // Retrieve the field
+            final Field field = instance.getClass().getDeclaredField(fieldName);
+
+            // Set accessible
+            field.setAccessible(true);
+
+            // Update the result
+            result = field.get(instance);
+
+        } catch(final NoSuchFieldException | IllegalAccessException exception) {
+
+            result = null;
+
+        }
+
+        // Return the field instance
+        return result;
+
+    }
+
+    public static <Type> void SetFieldValueOf(final Type instance, final String fieldName, final Object value) {
+
+        try {
+
+            // Retrieve the field
+            final Field field = instance.getClass().getDeclaredField(fieldName);
+
+            // Set accessible
+            field.setAccessible(true);
+
+            // Set the value
+            field.set(instance, value);
+
+        } catch(final NoSuchFieldException | IllegalAccessException exception) {
+
+            // Ignore
+
+        }
 
     }
 

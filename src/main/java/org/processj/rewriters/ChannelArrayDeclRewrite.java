@@ -1,6 +1,9 @@
 package org.processj.rewriters;
 
 import org.processj.ast.*;
+import org.processj.ast.expression.Assignment;
+import org.processj.ast.expression.BinaryExpr;
+import org.processj.ast.expression.Expression;
 import org.processj.codegen.Helper;
 import org.processj.codegen.Tag;
 import org.processj.utilities.Tuple;
@@ -11,7 +14,7 @@ public class ChannelArrayDeclRewrite {
         if ( a instanceof ProcTypeDecl ) {
             // Rewrite the body
             ProcTypeDecl pd = (ProcTypeDecl) a;
-            go(pd.body());
+            go(pd.getBody());
         } else if ( a instanceof Sequence ) { 
             Sequence<?> seq = (Sequence<?>) a;
             for (int i = 0; i < seq.size(); ++i) {
@@ -22,12 +25,12 @@ public class ChannelArrayDeclRewrite {
                         if ( b != null ) go(b.stats());
                     } else if ( stat instanceof LocalDecl ) {
                         LocalDecl ld = (LocalDecl) stat;
-                        if ( ld.type() instanceof ArrayType ) {
-                            ArrayType type = (ArrayType) ld.type();
+                        if ( ld.getType() instanceof ArrayType ) {
+                            ArrayType type = (ArrayType) ld.getType();
                             if((type.getComponentType() instanceof ChannelType)
                                     || (type.getComponentType() instanceof ChannelEndType) ) {
                                 // Rewrite the local declaration 
-                                System.out.println(">>>>>>>> " + ld.name());
+                                System.out.println(">>>>>>>> " + ld);
                             }
                         }
                     }

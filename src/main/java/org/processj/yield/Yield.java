@@ -1,14 +1,15 @@
 package org.processj.yield;
 
-import org.processj.ast.AltCase;
-import org.processj.ast.AltStat;
+import org.processj.Phase;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.alt.AltStat;
 import org.processj.ast.Annotation;
 import org.processj.ast.Annotations;
-import org.processj.ast.ArrayAccessExpr;
-import org.processj.ast.ArrayLiteral;
+import org.processj.ast.expression.ArrayAccessExpr;
+import org.processj.ast.expression.ArrayLiteral;
 import org.processj.ast.ArrayType;
-import org.processj.ast.Assignment;
-import org.processj.ast.BinaryExpr;
+import org.processj.ast.expression.Assignment;
+import org.processj.ast.expression.BinaryExpr;
 import org.processj.ast.Block;
 import org.processj.ast.BreakStat;
 import org.processj.ast.CastExpr;
@@ -26,7 +27,7 @@ import org.processj.ast.ErrorType;
 import org.processj.ast.ExprStat;
 import org.processj.ast.ExternType;
 import org.processj.ast.ForStat;
-import org.processj.ast.Guard;
+import org.processj.ast.alt.Guard;
 import org.processj.ast.IfStat;
 import org.processj.ast.ImplicitImport;
 import org.processj.ast.Import;
@@ -65,7 +66,6 @@ import org.processj.ast.Ternary;
 import org.processj.ast.TimeoutStat;
 import org.processj.ast.UnaryPostExpr;
 import org.processj.ast.UnaryPreExpr;
-import org.processj.ast.Var;
 import org.processj.ast.WhileStat;
 import org.processj.utilities.Log;
 import org.processj.utilities.Visitor;
@@ -77,7 +77,7 @@ import org.processj.utilities.Visitor;
  * @author Matt Pedersen
  */
 
-public class Yield extends Visitor<Boolean> {
+public class Yield implements Visitor<Boolean> {
 
     protected boolean debug;
     private static final Boolean TRUE = true;
@@ -111,19 +111,26 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitArrayAccessExpr(ArrayAccessExpr ae) {
         Log.log("visiting an ArrayAccessExpr");
-        return ae.targetExpression().visit(this) || ae.indexExpression().visit(this);
+        try {
+            return ae.targetExpression().visit(this) || ae.indexExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitArrayLiteral(ArrayLiteral al) {
         Log.log("visiting an ArrayLiteral");
+
         boolean b = false;
-        for (int i = 0; i < al.elements().size(); i++) {
-            if (al.elements().child(i) != null) {
-                boolean bb = al.elements().child(i).visit(this);
-                b = b || bb;
+        for(int i = 0; i < al.elements().size(); i++)
+            try {
+                b |= (al.elements().child(i) != null) && al.elements().child(i).visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
             }
-        }
+
         return b;
+
     }
 
     public Boolean visitArrayType(ArrayType at) {
@@ -133,12 +140,20 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitAssignment(Assignment as) {
         Log.log("visiting an Assignment");
-        return as.left().visit(this) || as.right().visit(this);
+        try {
+            return as.left().visit(this) || as.right().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitBinaryExpr(BinaryExpr be) {
         Log.log("visiting a BinaryExpr");
-        return be.left().visit(this) || be.right().visit(this);
+        try {
+            return be.left().visit(this) || be.right().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitBlock(Block bl) {
@@ -147,7 +162,11 @@ public class Yield extends Visitor<Boolean> {
         for (int i = 0; i < bl.stats().size(); i++) {
             boolean bb;
             if (bl.stats().child(i) != null) {
-                bb = bl.stats().child(i).visit(this);
+                try {
+                    bb = bl.stats().child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 b = b || bb;
             }
         }
@@ -161,7 +180,11 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitCastExpr(CastExpr ce) {
         Log.log("visiting a CastExpr");
-        return ce.expr().visit(this);
+        try {
+            return ce.getExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitChannelType(ChannelType ct) {
@@ -171,7 +194,11 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitChannelEndExpr(ChannelEndExpr ce) {
         Log.log("visiting a ChannelEndExpr");
-        return ce.channel().visit(this);
+        try {
+            return ce.getChannelType().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitChannelEndType(ChannelEndType ct) {
@@ -194,9 +221,9 @@ public class Yield extends Visitor<Boolean> {
         return TRUE;
     }
 
-    public Boolean visitCompilation(Compilation co) {
+    public Boolean visitCompilation(Compilation co) throws Phase.Error {
         Log.log("visiting a Compilation");
-        super.visitCompilation(co);
+        Visitor.super.visitCompilation(co);
         return FALSE;
     }
 
@@ -212,8 +239,18 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitDoStat(DoStat ds) {
         Log.log("visiting a DoStat");
-        boolean b1 = ds.expr().visit(this);
-        boolean b2 = ds.stat().visit(this);
+        boolean b1 = false;
+        try {
+            b1 = ds.getEvaluationExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        boolean b2 = false;
+        try {
+            b2 = ds.getStatement().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         return b1 || b2;
     }
 
@@ -224,7 +261,11 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitExprStat(ExprStat es) {
         Log.log("visiting an ExprStat");
-        return es.expr().visit(this);
+        try {
+            return es.expr().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitExternType(ExternType et) {
@@ -235,20 +276,40 @@ public class Yield extends Visitor<Boolean> {
     public Boolean visitForStat(ForStat fs) {
         Log.log("visiting a ForStat");
         boolean b = false;
-        if (fs.init() != null) {
-            boolean bb = fs.init().visit(this);
+        if (fs.getInitializationExpression() != null) {
+            boolean bb = false;
+            try {
+                bb = fs.getInitializationExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             b = b || bb;
         }
-        if (fs.expr() != null) {
-            boolean bb = fs.expr().visit(this);
+        if (fs.getEvaluationExpression() != null) {
+            boolean bb = false;
+            try {
+                bb = fs.getEvaluationExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             b = b || bb;
         }
-        if (fs.incr() != null) {
-            boolean bb = fs.incr().visit(this);
+        if (fs.getIncrementExpression() != null) {
+            boolean bb = false;
+            try {
+                bb = fs.getIncrementExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             b = b || bb;
         }
-        if (fs.stats() != null) {
-            boolean bb = fs.stats().visit(this);
+        if (fs.getStatement() != null) {
+            boolean bb = false;
+            try {
+                bb = fs.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             b = b || bb;
         }
         return b;
@@ -261,9 +322,19 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitIfStat(IfStat is) {
         Log.log("visiting an IfStat");
-        boolean b = is.expr().visit(this) || is.thenpart().visit(this);
-        if (is.elsepart() != null) {
-            boolean bb = is.elsepart().visit(this);
+        boolean b = false;
+        try {
+            b = is.evaluationExpression().visit(this) || is.getThenPart().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        if (is.getElsePart() != null) {
+            boolean bb = false;
+            try {
+                bb = is.getElsePart().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             b = b || bb;
         }
         return b;
@@ -281,7 +352,11 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitInvocation(Invocation in) {
         Log.log("visiting a Invocation");
-        return in.params().visit(this);
+        try {
+            return in.getParameters().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitLocalDecl(LocalDecl ld) {
@@ -312,9 +387,17 @@ public class Yield extends Visitor<Boolean> {
     public Boolean visitNewArray(NewArray ne) {
         Log.log("visiting a NewArray");
         boolean b = false;
-        b = ne.dimsExpr().visit(this);
-        if (ne.init() != null)
-            b = b || ne.init().visit(this);
+        try {
+            b = ne.getBracketExpressions().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        if (ne.getInitializationExpression() != null)
+            try {
+                b = b || ne.getInitializationExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return b;
     }
 
@@ -327,7 +410,7 @@ public class Yield extends Visitor<Boolean> {
         Log.log("visiting a ParamDecl");
         // If a formal parameter is a channel-end type, a barrier, or a timer,
         // then the procedure must org.processj.yield
-        return pd.type() instanceof ChannelEndType || pd.type().isBarrierType() || pd.type().isTimerType();
+        return pd.getType() instanceof ChannelEndType || pd.getType().isBarrierType() || pd.getType().isTimerType();
     }
 
     public Boolean visitParBlock(ParBlock pb) {
@@ -351,28 +434,39 @@ public class Yield extends Visitor<Boolean> {
     }
 
     public Boolean visitProcTypeDecl(ProcTypeDecl pd) {
+
         Log.log("visiting a ProcTypeDecl");
-        boolean b = pd.body().visit(this);
-        for (int i = 0; i < pd.formalParams().size(); ++i) {
-            boolean yield = pd.formalParams().child(i).visit(this);
-            if (yield) {
-                b = b || yield;
-                break;
+
+        boolean b = false;
+        try {
+            b = pd.getBody().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+
+        for(int i = 0; !b && (i < pd.getParameters().size()); ++i)
+            try {
+                b = pd.getParameters().child(i).visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
             }
-        }
-        if (!pd.annotations().isDefined("yield") && b) {
-            pd.annotations().add("yield", "true");
-            Log.log("  Setting [org.processj.yield=true] for " + pd + ".");
-        } else if (pd.toString().equals("main")) {
-            pd.annotations().add("yield", "true");
+
+        if(b || pd.toString().equals("main")) {
+            pd.setYields();
             Log.log("  Setting [org.processj.yield=true] for " + pd + ".");
         }
+
         return FALSE;
+
     }
 
     public Boolean visitProtocolLiteral(ProtocolLiteral pl) {
         Log.log("visiting a ProtocolLiteral");
-        return pl.expressions().visit(this);
+        try {
+            return pl.getExpressions().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitProtocolCase(ProtocolCase pc) {
@@ -392,12 +486,20 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitRecordAccess(RecordAccess ra) {
         Log.log("visiting a RecordAccess");
-        return ra.record().visit(this);
+        try {
+            return ra.record().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitRecordLiteral(RecordLiteral rl) {
         Log.log("visiting a RecordLiteral");
-        return rl.members().visit(this);
+        try {
+            return rl.getRecordMemberLiterals().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitRecordMember(RecordMember rm) {
@@ -412,8 +514,12 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitReturnStat(ReturnStat rs) {
         Log.log("visiting a ReturnStat");
-        if (rs.expr() != null)
-            return rs.expr().visit(this);
+        if(rs.getExpression() != null)
+            try {
+                return rs.getExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         else
             return FALSE;
     }
@@ -423,7 +529,12 @@ public class Yield extends Visitor<Boolean> {
         boolean b = false;
         for (int i = 0; i < se.size(); i++) {
             if (se.child(i) != null) {
-                boolean bb = se.child(i).visit(this);
+                boolean bb = false;
+                try {
+                    bb = se.child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 b = b || bb;
             }
         }
@@ -447,7 +558,11 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitSwitchGroup(SwitchGroup sg) {
         Log.log("visiting a SwitchGroup");
-        return sg.statements().visit(this);
+        try {
+            return sg.getStatements().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitSwitchLabel(SwitchLabel sl) {
@@ -457,7 +572,11 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitSwitchStat(SwitchStat st) {
         Log.log("visiting a SwitchBlock");
-        return st.switchBlocks().visit(this);
+        try {
+            return st.switchBlocks().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitSyncStat(SyncStat st) {
@@ -467,7 +586,11 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitTernary(Ternary te) {
         Log.log("visiting a Ternary");
-        return te.expr().visit(this) || te.trueBranch().visit(this) || te.falseBranch().visit(this);
+        try {
+            return te.getEvaluationExpression().visit(this) || te.thenPart().visit(this) || te.elsePart().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitTimeoutStat(TimeoutStat ts) {
@@ -477,24 +600,28 @@ public class Yield extends Visitor<Boolean> {
 
     public Boolean visitUnaryPostExpr(UnaryPostExpr up) {
         Log.log("visiting a UnaryPostExpr");
-        return up.expr().visit(this);
+        try {
+            return up.getExpression().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitUnaryPreExpr(UnaryPreExpr up) {
         Log.log("visiting a UnaryPreExpr");
-        return up.expr().visit(this);
-    }
-
-    public Boolean visitVar(Var va) {
-        Log.log("visiting a Var");
-        if (va.init() != null)
-            return va.init().visit(this);
-        else
-            return FALSE;
+        try {
+            return up.expr().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitWhileStat(WhileStat ws) {
         Log.log("visiting a WhileStat");
-        return ws.expr().visit(this) || (ws.stat() == null ? false : ws.stat().visit(this));
+        try {
+            return ws.getEvaluationExpression().visit(this) || (ws.getStatement() == null ? false : ws.getStatement().visit(this));
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 }

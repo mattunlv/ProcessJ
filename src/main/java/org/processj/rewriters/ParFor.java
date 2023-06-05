@@ -1,10 +1,12 @@
 package org.processj.rewriters;
 
+import org.processj.ast.expression.Assignment;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 import org.processj.ast.*;
 import java.util.ArrayList;
 
-public class ParFor extends Visitor<AST> {
+public class ParFor implements Visitor<AST> {
 
     private boolean inParFor = false;
     private ForStat currentParFor = null;
@@ -16,9 +18,21 @@ public class ParFor extends Visitor<AST> {
             boolean oldInParFor = inParFor;
             inParFor = true;
             fs.vars = new ArrayList<Expression>();
-            fs.expr().visit(this);
-            fs.incr().visit(this);
-            fs.stats().visit(this);
+            try {
+                fs.getEvaluationExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+            try {
+                fs.getIncrementExpression().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+            try {
+                fs.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             currentParFor = oldForStat;
             inParFor = oldInParFor;
         }
@@ -29,13 +43,17 @@ public class ParFor extends Visitor<AST> {
         if (inParFor) {
             currentParFor.vars.add(as.left());
         }
-        as.right().visit(this);
+        try {
+            as.right().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         return null;
     }
 
     public AST visitUnaryPreExpr(UnaryPreExpr up) {
         if (inParFor) {
-            if (up.op() == UnaryPreExpr.PLUSPLUS || up.op() == UnaryPreExpr.MINUSMINUS) {
+            if (up.getOperator() == UnaryPreExpr.PLUSPLUS || up.getOperator() == UnaryPreExpr.MINUSMINUS) {
                 currentParFor.vars.add(up.expr());
             }
         }
@@ -45,7 +63,7 @@ public class ParFor extends Visitor<AST> {
     public AST visitUnaryPostExpr(UnaryPostExpr up) {
         if (inParFor) {
             if (up.op() == UnaryPreExpr.PLUSPLUS || up.op() == UnaryPreExpr.MINUSMINUS) {
-                currentParFor.vars.add(up.expr());
+                currentParFor.vars.add(up.getExpression());
             }
         }
         return null;

@@ -3,37 +3,29 @@ package org.processj;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.processj.ast.AST;
 import org.processj.ast.Compilation;
+import org.processj.ast.SymbolMap;
 import org.processj.butters.Butters;
 import org.processj.codegen.Helper;
 import org.processj.codegen.java.CodeGenJava;
 import org.processj.codegen.cpp.CodeGenCPP;
-import org.processj.library.Library;
-import org.processj.namechecker.ResolveImports;
-import org.processj.parser.Parser;
-import org.processj.printers.ParseTreePrinter;
-import org.processj.rewriters.CastRewrite;
+import org.processj.phases.*;
+import org.processj.utilities.*;
+import org.processj.utilities.printers.ParseTreePrinter;
 import org.processj.rewriters.IOCallsRewrite;
-import org.processj.lexer.Lexer;
-import org.processj.utilities.PJBugManager;
-import org.processj.utilities.ConfigFileReader;
-import org.processj.utilities.Language;
-import org.processj.utilities.Log;
-import org.processj.utilities.Settings;
-import org.processj.utilities.SymbolTable;
-import org.processj.utilities.VisitorMessageNumber;
 
 /**
  * ProcessJ compiler.
  *
  * @author ben
  */
-public class ProcessJc {
+public class ProcessJc extends Phases.Executor {
 
     // Kinds of available options for the ProcessJ compiler
     public static enum OptionType {
@@ -101,312 +93,212 @@ public class ProcessJc {
     private String[] args = null;
     private Properties config = ConfigFileReader.openConfiguration();
 
+
+    /// ----------------------
+    /// Private Static Methods
+
     /**
      * Program execution begins here.
      *
      * @param args
      *          A vector of command arguments passed to the compiler.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Phase.Error, MalformedURLException, ClassNotFoundException {
+
         // Send frequency file over HTTP to the ProcessJ server but
         // only if the size of the error file is 1MB or more.
         // Otherwise, we ignore the request made by the compiler
-//        FrequencyFileProcessing.updateFrequency();
+        // FrequencyFileProcessing.updateFrequency();
         ProcessJc pJc = new ProcessJc(args);
-        // Do we have any arguments??
-        if(args.length == 2) { // @0: -include, @1: path
 
+        // Do we have any arguments??
+        if(args.length == 2) // @0: -include, @1: path
             PJBugManager.ReportErrorAndExitWithUsage(VisitorMessageNumber.RESOLVE_IMPORTS_100);
 
-        }
-
-        if(pJc.help) {
-
+        else if(pJc.help) {
             printUsage();
 
             // TODO: Remove this, this is bad form
             return;
 
         }
-        if ( pJc.version ) {
+
+        // Dump log messages if true
+        if(pJc.visitAll)
+            Log.startLogging();
+
+        if(pJc.version)
             pJc.version();
-        }
-        // TODO: This emits a null pointer exception
-        //Settings.includeDir = pJc.include;
-        AST root = null;
 
         // Process Butters source file, one by one
-        if ( pJc.install ) {
+        else if(pJc.install) {
+
             // Process nativelib
-            if ( pJc.nativelib ) {
-                File inFile = new File(pJc.pjfile);
-                Lexer s = null;
-                Parser p = null;
-                try {
-                    String absoluteFilePath = inFile.getAbsolutePath();
-                    // Set the package and filename
-                    PJBugManager.INSTANCE.setFileName(absoluteFilePath);
-                    PJBugManager.INSTANCE.setPackageName(absoluteFilePath);
-                    s = new Lexer(new java.io.FileReader(absoluteFilePath));
-                    p = new Parser(s);
-                } catch(Exception e) {
+            if(pJc.nativelib) {
 
-                    PJBugManager.ReportMessageAndExit(e.getMessage());
+                final Compilation compilation = pJc.getPreliminaryCompilationFor(pJc.pjfile);
 
-                }
-                try {
-                    java_cup.runtime.Symbol r = ((Parser) p).parse();
-                    root = (AST) r.value;
-                    Compilation c = ((Compilation) root);
-                    // This is needed in order to resolve the name of the package
-                    // the user-defined or native org.processj.library belongs to
-                    if ( c.getPackageName()!=null ) {
-                        c.packageName = ResolveImports.packageNameToString(c.getPackageName());
-                    }
-                    Butters.decodePragmas(c);
-                    System.out.println("** LIBRARY COMPLITED SUCCESSFULLY **");
-                } catch (Exception e) {
+                Butters.decodePragmas(compilation);
 
-                    //e.printStackTrace
-                    PJBugManager.ReportMessageAndExit(e.getMessage());
+                System.out.println("** LIBRARY COMPLETED SUCCESSFULLY **");
 
-                }
-            } else if ( pJc.userlib ){
+            } else if(pJc.userlib){
+
                 // TODO: move files to the correct directory??
+
             } else {
 
                 PJBugManager.ReportMessageAndExit("Must specify if the org.processj.library is 'native' or 'user-defined'");
 
             }
-        }
-        if(pJc.userlib || pJc.nativelib) {
 
+        } else if(pJc.userlib || pJc.nativelib)
             PJBugManager.ReportMessageAndExit("Missing command '-install'");
 
-        }
+        AST root = null;
+
+        final Phase.Listener listener = new Phase.Listener();
+
         // Process source file, one by one
-        for(String f : pJc.inputFiles) {
-            File inFile = new File(f);
-            Lexer s = null;
-            Parser p = null;
-            try {
-                String absoluteFilePath = inFile.getAbsolutePath();
-                // Set the package and filename
-                PJBugManager.INSTANCE.setFileName(absoluteFilePath);
-                PJBugManager.INSTANCE.setPackageName(absoluteFilePath);
-                s = new Lexer(new java.io.FileReader(absoluteFilePath));
-                p = new Parser(s);
-            } catch (Exception e) {
-                PJBugManager.ReportMessageAndExit(e.getMessage());
-            }
+        for(final String filePath: pJc.inputFiles) {
 
-            try {
-                java_cup.runtime.Symbol r = ((Parser) p).parse();
-                root = (AST) r.value;
-                //TODO: handle org.processj.syntax error!!
-            } catch (Exception e) {
-                PJBugManager.ReportMessageAndExit(e.getMessage());
-            }
-
-            // Cast the result from the parse to a Compilation -- this is
-            // the root of the tree
-            Compilation c = (Compilation) root;
-            // Set the absolute path, file, and package name from where this
-            // compilation is created
-            System.out.println("-- Setting absolute path, file and package name for '" + inFile.getName() + "'.");
-            c.fileName = inFile.getName();
-            // The parent's path of the compiled file
-            String parentPath = inFile.getAbsolutePath();
-            // The parent's absolute path of the compiled file
-            c.path = parentPath.substring(0, parentPath.lastIndexOf(File.separator));
-            // A package declaration is optional -- this can be null
-            if(c.getPackageName()   != null) {
-                c.packageName = ResolveImports.packageNameToString(c.getPackageName());
-            }
-            // Decode pragmas -- these are used for generating stubs from libraries.
-            // No regular program would have them
-            Library.decodePragmas(c);
-            Library.generateLibraries(c);
-
-            // This table will hold all the top level types
-            SymbolTable globalTypeTable = new SymbolTable("Main file: " + PJBugManager.INSTANCE.getFileName());
-
-            // Dump log messages if true
-            if(pJc.visitAll) {
-                Log.startLogging();
-            }
+            // Retrieve this file's Compilation; Important that from here on out the path returned by
+            // the ProcessJSource file is used since all the SymbolPaths were checked and it could have a different
+            // prefix than the one specified
+            final ProcessJSourceFile    processJSourceFile = Request.Open(filePath);
+            final Compilation           compilation        = pJc.getPreliminaryCompilationFor(processJSourceFile.getPath());
 
             // Dump generated AST
-            if(pJc.showTree) {
-                c.visit(new ParseTreePrinter());
-            }
+            if(pJc.showTree) compilation.visit(new ParseTreePrinter());
 
-            SymbolTable.hook = null;
+            // Set the absolute path, file, and package name from where this
+            System.out.println("Completing: '" + filePath + "'.");
 
-            // Visit import declarations
-            if(pJc.showMessage)
-                System.out.println("-- Resolving imports.");
-            c.visit(new org.processj.namechecker.ResolveImports<>(globalTypeTable));
-            globalTypeTable.printStructure("");
+            // Resolve Imports, Names, & check Types
+            new ResolveImports(listener).execute(processJSourceFile);
+            new NameChecker(listener).execute(processJSourceFile);
+            new TypeChecker(listener).execute(processJSourceFile);
 
-            // Visit top-level declarations
-            if(pJc.showMessage)
-                System.out.println("-- Declaring Top Level Declarations.");
-            c.visit(new org.processj.namechecker.TopLevelDecls<>(globalTypeTable));
+            try {
 
-            // Visit and re-construct record types correctly
-            if ( pJc.showMessage )
-                System.out.println("-- Reconstructing records.");
-            c.visit(new org.processj.rewriters.RecordRewrite(globalTypeTable));
+                // Visit and re-construct record types correctly
+                if (pJc.showMessage)
+                    System.out.println("-- Reconstructing records.");
+                compilation.visit(new RecordRewrite(listener));
 
-            // Visit and re-construct protocol types correctly
-            if ( pJc.showMessage )
-                System.out.println("-- Reconstructing protocols.");
-            c.visit(new org.processj.rewriters.ProtocolRewrite(globalTypeTable));
+                // Visit and re-construct protocol types correctly
+                if (pJc.showMessage)
+                    System.out.println("-- Reconstructing protocols.");
+                compilation.visit(new ProtocolRewrite(listener));
 
-            // Visit and re-construct if-stmt, while-stmt, for-stmt, and do-stmt
-            if ( pJc.showMessage )
-                System.out.println("-- Reconstructing statements.");
-            c.visit(new org.processj.rewriters.StatementRewrite());
+                // Visit cast-rewrite
+                if (pJc.showMessage)
+                    System.out.println("-- Rewriting cast-expressions.");
+                compilation.visit(new CastRewrite(listener));
 
-            // Visit and resolve import for top-level declarations
-            if ( pJc.showMessage )
-                System.out.println("-- Checking native Top Level Declarations.");
-            c.visit(new org.processj.namechecker.ResolveNativeImports());
+                // Visit a switch statement case
+                if (pJc.showMessage)
+                    System.out.println("-- Checking break for protocols.");
+                compilation.visit(new org.processj.rewriters.SwitchStmtRewrite());
 
-            // Visit and resolve types from imported packages
-            if ( pJc.showMessage )
-                System.out.println("-- Resolving imported types.");
-            c.visit(new org.processj.namechecker.ResolvePackageTypes());
+                if (pJc.showMessage)
+                    System.out.println("-- Checking return statements in alts");
+                compilation.visit(new org.processj.semanticcheck.AltReturnCheck(listener));
 
-            // Visit name checker
-            if ( pJc.showMessage )
-                System.out.println("-- Checking name usage.");
-            c.visit(new org.processj.namechecker.NameChecker<AST>(globalTypeTable));
+                // Visit org.processj.reachability
+                if (pJc.showMessage)
+                    System.out.println("-- Computing org.processj.reachability.");
+                compilation.visit(new org.processj.reachability.Reachability());
 
-            // Visit and re-construct array types correctly
-            if ( pJc.showMessage )
-                System.out.println("-- Reconstructing array types.");
-            root.visit(new org.processj.namechecker.ArrayTypeConstructor());
-
-            // Visit and re-construct array literals
-            if ( pJc.showMessage )
-                System.out.println("-- Reconstructing array literals.");
-            c.visit(new org.processj.rewriters.ArraysRewrite());
-
-            // Visit resolve named type
-            if ( pJc.showMessage )
-                System.out.println("-- Resolving named type.");
-            c.visit(new org.processj.typechecker.ResolveNamedType(globalTypeTable));
-
-            // Visit type checker
-            if ( pJc.showMessage )
-                System.out.println("-- Checking types.");
-            c.visit(new org.processj.typechecker.TypeChecker(globalTypeTable));
-
-            // Visit a switch statement case
-            if ( pJc.showMessage )
-                System.out.println("-- Checking break for protocols.");
-            c.visit(new org.processj.rewriters.SwitchStmtRewrite());
-
-            // Visit cast-rewrite
-            if ( pJc.showMessage )
-                System.out.println("-- Rewriting cast-expressions.");
-            c.visit(new CastRewrite());
-            
-            if ( pJc.showMessage )
-                System.out.println("-- Checking return statements in alts");
-            c.visit(new org.processj.semanticcheck.AltReturnCheck());
-
-            // Visit org.processj.reachability
-            if ( pJc.showMessage )
-                System.out.println("-- Computing org.processj.reachability.");
-            c.visit(new org.processj.reachability.Reachability());
-
-            // Visit parallel usage
-            if ( pJc.showMessage )
-                System.out.println("-- Performing parallel usage check.");
+                // Visit parallel usage
+                if (pJc.showMessage)
+                    System.out.println("-- Performing parallel usage check.");
 //            c.visit(new org.processj.parallel_usage_check.ParallelUsageCheck());
 
-            // Visit org.processj.yield
-            if ( pJc.showMessage )
-                System.out.println("-- Annotating procedures that may issue a org.processj.yield call.");
-            c.visit(new org.processj.yield.Yield());
-            
-            if ( pJc.showMessage )
-                System.out.println("-- Marking yielding statements and expressions.");
-            c.visit(new org.processj.rewriters.Yield());
-            
-            if ( pJc.showMessage )
-                System.out.println("-- Checking literal inits are free of channel communication.");
-            c.visit(new org.processj.semanticcheck.LiteralInits());
-            
-            if ( pJc.showMessage )
-                System.out.println("-- Checking replicated Alt inits.");
-            c.visit(new org.processj.semanticcheck.ReplicatedAlts());
-            
-            if ( pJc.showMessage )
-                System.out.println("-- Rewriting infinite loops.");
-            new org.processj.rewriters.InfiniteLoopRewrite().go(c);
-            
-            // <--
-            System.out.println("-- Rewriting channel arrays local decls");
+                // Visit org.processj.yield
+                if (pJc.showMessage)
+                    System.out.println("-- Annotating procedures that may issue a org.processj.yield call.");
+                compilation.visit(new org.processj.yield.Yield());
+
+                if (pJc.showMessage)
+                    System.out.println("-- Marking yielding statements and expressions.");
+                compilation.visit(new org.processj.rewriters.Yield());
+
+                if (pJc.showMessage)
+                    System.out.println("-- Checking literal inits are free of channel communication.");
+                compilation.visit(new org.processj.semanticcheck.LiteralInits());
+
+                if (pJc.showMessage)
+                    System.out.println("-- Checking replicated Alt inits.");
+                compilation.visit(new org.processj.semanticcheck.ReplicatedAlts());
+
+                if (pJc.showMessage)
+                    System.out.println("-- Rewriting infinite loops.");
+                new org.processj.rewriters.InfiniteLoopRewrite().go(compilation);
+
+                // <--
+                System.out.println("-- Rewriting channel arrays local decls");
 //            new org.processj.rewriters.ChannelArrayDeclRewrite().go(c);
-            // -->
-            
-            if ( pJc.showMessage )
-                System.out.println("-- Rewriting loops.");
-            c.visit(new org.processj.rewriters.UnrollLoopRewrite());
-            
-            if ( pJc.showMessage )
-                System.out.println("-- Performing alt statement usage check.");
-            c.visit(new org.processj.rewriters.AltStatRewrite());
+                // -->
+
+                if (pJc.showMessage)
+                    System.out.println("-- Rewriting loops.");
+                compilation.visit(new org.processj.rewriters.UnrollLoopRewrite());
+
+                if (pJc.showMessage)
+                    System.out.println("-- Performing alt statement usage check.");
+                compilation.visit(new org.processj.rewriters.AltStatRewrite());
 
 //            Log.doLog = true;
-            if ( pJc.showMessage )
-                System.out.println("-- Rewriting yielding expressions.");
-            c.visit(new org.processj.rewriters.ChannelRead());
+                if (pJc.showMessage)
+                    System.out.println("-- Rewriting yielding expressions.");
+                compilation.visit(new org.processj.rewriters.ChannelRead());
 //            Log.doLog = false;
-            if ( pJc.showMessage )
-                System.out.println("-- Rewriting parblocks statements");
-            c.visit(new org.processj.rewriters.ParBlockRewrite());
+                if (pJc.showMessage)
+                    System.out.println("-- Rewriting parblocks statements");
+                compilation.visit(new org.processj.rewriters.ParBlockRewrite());
 
-            //System.out.println("Lets reprint it all");
-            //c.visit(new org.processj.printers.ParseTreePrinter());
-            //c.visit(new org.processj.printers.PrettyPrinter());
-            if ( pJc.showMessage )
-                System.out.println("-- Checking break and continue labels.");
-            new org.processj.semanticcheck.LabeledBreakContinueCheck().go(c);
+                //System.out.println("Lets reprint it all");
+                //c.visit(new org.processj.printers.ParseTreePrinter());
+                //c.visit(new org.processj.printers.PrettyPrinter());
+                if (pJc.showMessage)
+                    System.out.println("-- Checking break and continue labels.");
+                new org.processj.semanticcheck.LabeledBreakContinueCheck().go(compilation);
 
-            if ( pJc.showMessage )
-                System.out.println("-- Collecting left-hand sides for par for code generation.");
-            c.visit(new org.processj.rewriters.ParFor());
-            
-            // Terminate if we have any errors
-            if(PJBugManager.INSTANCE.getErrorCount() > 0) {
-                PJBugManager.ReportMessageAndExit("Errors: " + PJBugManager.INSTANCE.getErrorCount());
-            }
+                if (pJc.showMessage)
+                    System.out.println("-- Collecting left-hand sides for par for code generation.");
+                compilation.visit(new org.processj.rewriters.ParFor());
 
-            // If we're generating C++ code, we need to rewrite print/println statements
-            if (pJc.target/*Settings.language*/ == Language.CPLUS) {
-                System.out.println("-- Rewriting calls to print() and println().");
-                c.visit(new IOCallsRewrite());
-            }
-            
-            // Run the code generator for the known (specified) target language
-            if (pJc.target == Language.CPLUS || pJc.target == Language.JVM/*Settings.language==pJc.target*/ )
-                if (pJc.target == Language.JVM/*Settings.language == Language.JVM*/) {
-                    pJc.generateCodeJava(c, inFile, globalTypeTable);
-                } else if (pJc.target == Language.CPLUS/*Settings.language == Language.CPLUS*/) {
-                    Log.startLogging();
-                    pJc.generateCodeCPP(c, inFile, globalTypeTable);
+                // Terminate if we have any errors
+                if (PJBugManager.INSTANCE.getErrorCount() > 0) {
+                    PJBugManager.ReportMessageAndExit("Errors: " + PJBugManager.INSTANCE.getErrorCount());
                 }
-            else {
-                // Unknown target language so abort/terminate program
-                PJBugManager.ReportMessageAndExit("Invalid target language!");
-            }
 
-            System.out.println("** COMPILATION COMPLITED SUCCESSFULLY **");
+                // If we're generating C++ code, we need to rewrite print/println statements
+                if (pJc.target/*Settings.language*/ == Language.CPLUS) {
+                    System.out.println("-- Rewriting calls to print() and println().");
+                    compilation.visit(new IOCallsRewrite());
+                }
+
+                // Run the code generator for the known (specified) target language
+                if (pJc.target == Language.CPLUS || pJc.target == Language.JVM/*Settings.language==pJc.target*/)
+                    if (pJc.target == Language.JVM/*Settings.language == Language.JVM*/) {
+                        //pJc.generateCodeJava(compilation, inFile, globalTypeTable);
+                    } else if (pJc.target == Language.CPLUS/*Settings.language == Language.CPLUS*/) {
+                        Log.startLogging();
+                        //pJc.generateCodeCPP(compilation, inFile, globalTypeTable);
+                    } else {
+                        // Unknown target language so abort/terminate program
+                        PJBugManager.ReportMessageAndExit("Invalid target language!");
+                    }
+            } catch (SymbolMap.Context.ContextDoesNotDefineScopeException contextDoesNotDefineScopeException) {
+
+                // Ignore
+
+            } catch (Phase.Error error) {
+                throw new RuntimeException(error);
+            }
+            System.out.println("** COMPILATION COMPLETED SUCCESSFULLY **");
         }
     }
 
@@ -434,7 +326,12 @@ public class ProcessJc {
         codeGen.sourceProgam(c.fileNoExtension());
         // Visit this compilation unit and recursively build the program
         // after returning strings rendered by the string template
-        String code = (String) c.visit(codeGen);
+        String code = null;
+        try {
+            code = (String) c.visit(codeGen);
+        } catch (Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         // Write the output to a file
         Helper.writeToFile(code, c.fileNoExtension(), codeGen.workingDir(), ".java");
     }
@@ -444,7 +341,12 @@ public class ProcessJc {
         CodeGenCPP codeGen = new CodeGenCPP(s);
         codeGen.setWorkingDir(p.getProperty("workingdir"));
         // codeGen.sourceProgam(c.fileNoExtension());
-        String code = (String) c.visit(codeGen);
+        String code = null;
+        try {
+            code = (String) c.visit(codeGen);
+        } catch (Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         Helper.writeToFile(code, c.fileNoExtension(), codeGen.getWorkingDir(), ".cpp");
     }
 

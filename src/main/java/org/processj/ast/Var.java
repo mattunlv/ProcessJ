@@ -1,5 +1,7 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class Var extends AST {
@@ -8,29 +10,16 @@ public class Var extends AST {
     /// Private Fields
 
     private final Expression initializationExpression   ;
-    private final Name       name                       ;
-    private final String     nameLiteral                ;
+    private final Name          name                       ;
 
-    public VarDecl myDecl = null;
-
-    /* Note init() can return null */
-
-    public Var(Name name, Expression init) {
-        super(name);
-        nchildren = 2;
-        children = new AST[] { name, init };
+    public Var(final Name name, final Expression init) {
+        super(new AST[] { name, init });
         this.initializationExpression   = init;
         this.name                       = name;
-        this.nameLiteral                = (name != null) ? name.getname() : "";
     }
 
-    public Var(Name name) {
-        super(name);
-        nchildren = 2;
-        children = new AST[] { name, null };
-        this.initializationExpression = null;
-        this.name                     = name;
-        this.nameLiteral              = (name != null) ? name.getname() : "";
+    public Var(final Name name) {
+        this(name, null);
     }
 
     /// ----------------
@@ -44,30 +33,22 @@ public class Var extends AST {
     @Override
     public String toString() {
 
-        return this.nameLiteral;
+        return this.name.toString();
 
     }
 
-    public Name name() {
+    public final Name getName() {
         return this.name;
     }
 
-    public Expression init() {
+    public final Expression getInitializationExpression() {
         return this.initializationExpression;
     }
 
-    public <S> S visit(final Visitor<S> visitor) {
+    @Override
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+
         return visitor.visitVar(this);
-    }
-
-    /**
-     * <p>Returns a flag indicating if the {@link Var} is initialized.</p>
-     * @return flag indicating if the {@link Var} is initialized.
-     * @since 0.1.0
-     */
-    public final boolean isInitialized() {
-
-        return this.initializationExpression != null;
 
     }
 

@@ -1,6 +1,13 @@
 package org.processj.ast;
 
 import org.processj.Phase;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.alt.AltStat;
+import org.processj.ast.alt.Guard;
+import org.processj.ast.expression.ArrayAccessExpr;
+import org.processj.ast.expression.ArrayLiteral;
+import org.processj.ast.expression.Assignment;
+import org.processj.ast.expression.BinaryExpr;
 
 /**
  * Abstract class for the visitor pattern. This abstract class
@@ -11,77 +18,81 @@ import org.processj.Phase;
  */
 public interface IVisitor<T> {
 
-    default T visitAnnotation(Annotation at) {
+    SymbolMap getScope();
+
+    void setScope(final SymbolMap symbolMap);
+
+    default T visitAnnotation(Annotation at) throws Phase.Error {
         return null;
     }
 
-    default T visitAnnotations(Annotations as) {
+    default T visitAnnotations(Annotations as) throws Phase.Error {
         return null;
     }
 
-    default T visitAltCase(AltCase ac) { return null; }
+    default T visitAltCase(AltCase ac) throws Phase.Error { return null; }
 
-    default T visitAltStat(AltStat as) {
+    default T visitAltStat(AltStat as) throws Phase.Error {
         return null;
     }
 
-    default T visitArrayAccessExpr(ArrayAccessExpr ae) {
+    default T visitArrayAccessExpr(ArrayAccessExpr ae) throws Phase.Error {
         return null;
     }
 
-    default T visitArrayLiteral(ArrayLiteral al) {
+    default T visitArrayLiteral(ArrayLiteral al) throws Phase.Error {
         return null;
     }
 
-    default T visitArrayType(ArrayType at) {
+    default T visitArrayType(ArrayType at) throws Phase.Error {
         return null;
     }
 
-    default T visitAssignment(Assignment as) {
+    default T visitAssignment(Assignment as) throws Phase.Error {
         return null;
     }
 
-    default T visitBinaryExpr(BinaryExpr be) {
+    default T visitBinaryExpr(BinaryExpr be) throws Phase.Error {
         return null;
     }
 
-    default T visitBlock(Block bl) {
+    default T visitBlock(Block bl) throws Phase.Error {
         return null;
     }
 
-    default T visitBreakStat(BreakStat bs) {
+    default T visitBreakStat(BreakStat bs) throws Phase.Error {
         return null;
     }
 
-    default T visitCastExpr(CastExpr ce) {
+    default T visitCastExpr(CastExpr ce) throws Phase.Error {
         return null;
     }
 
-    default T visitChannelType(ChannelType ct) {
+    default T visitChannelType(ChannelType ct) throws Phase.Error {
         return null;
     }
 
-    default T visitChannelEndExpr(ChannelEndExpr ce) {
+    default T visitChannelEndExpr(ChannelEndExpr ce) throws Phase.Error {
         return null;
     }
 
-    default T visitChannelEndType(ChannelEndType ct) {
+    default T visitChannelEndType(ChannelEndType ct) throws Phase.Error {
         return null;
     }
 
-    default T visitChannelReadExpr(ChannelReadExpr cr) {
+    default T visitChannelReadExpr(ChannelReadExpr cr) throws Phase.Error {
         return null;
     }
 
-    default T visitChannelWriteStat(ChannelWriteStat cw) {
+    default T visitChannelWriteStat(ChannelWriteStat cw) throws Phase.Error {
         return null;
     }
 
-    default T visitClaimStat(ClaimStat cs) {
+    default T visitClaimStat(ClaimStat cs) throws Phase.Error {
         return null;
     }
 
-    default T visitCompilation(Compilation co) {
+    default T visitCompilation(Compilation co) throws Phase.Error {
         return null;
     }
 
@@ -89,39 +100,39 @@ public interface IVisitor<T> {
         return null;
     }
 
-    default T visitContinueStat(ContinueStat cs) {
+    default T visitContinueStat(ContinueStat cs) throws Phase.Error {
         return null;
     }
 
-    default T visitDoStat(DoStat ds) {
+    default T visitDoStat(DoStat ds) throws Phase.Error {
         return null;
     }
 
-    default T visitErrorType(ErrorType et) {
+    default T visitErrorType(ErrorType et) throws Phase.Error {
         return null;
     }
 
-    default T visitExprStat(ExprStat es) {
+    default T visitExprStat(ExprStat es) throws Phase.Error {
         return null;
     }
 
-    default T visitExternType(ExternType et) {
+    default T visitExternType(ExternType et) throws Phase.Error {
         return null;
     }
 
-    default T visitForStat(ForStat fs) {
+    default T visitForStat(ForStat fs) throws Phase.Error {
         return null;
     }
 
-    default T visitGuard(Guard gu) {
+    default T visitGuard(Guard gu) throws Phase.Error {
         return null;
     }
 
-    default T visitIfStat(IfStat is) {
+    default T visitIfStat(IfStat is) throws Phase.Error {
         return null;
     }
 
-    default T visitImplicitImport(ImplicitImport ii) {
+    default T visitImplicitImport(ImplicitImport ii) throws Phase.Error {
         return null;
     }
 
@@ -129,19 +140,19 @@ public interface IVisitor<T> {
         return null;
     }
 
-    default T visitInvocation(Invocation in) {
+    default T visitInvocation(Invocation in) throws Phase.Error {
         return null;
     }
 
-    default T visitLocalDecl(LocalDecl ld) {
+    default T visitLocalDecl(LocalDecl ld) throws Phase.Error {
         return null;
     }
 
-    default T visitModifier(Modifier mo) {
+    default T visitModifier(Modifier mo) throws Phase.Error {
         return null;
     }
 
-    default T visitName(Name na) {
+    default T visitName(Name na) throws Phase.Error {
         return null;
     }
 
@@ -149,47 +160,50 @@ public interface IVisitor<T> {
         return null;
     }
 
-    default T visitNameExpr(NameExpr ne) {
+    default T visitNameExpr(NameExpr ne) throws Phase.Error {
         return null;
     }
 
-    default T visitNewArray(NewArray ne) {
+    default T visitNewArray(NewArray ne) throws Phase.Error {
         return null;
     }
 
-    default T visitNewMobile(NewMobile nm) {
+    default T visitNewMobile(NewMobile nm) throws Phase.Error {
         return null;
     }
 
-    default T visitParamDecl(ParamDecl pd) {
+    default T visitParamDecl(ParamDecl pd) throws Phase.Error {
         return null;
     }
 
-    default T visitParBlock(ParBlock pb) {
+    default T visitParBlock(ParBlock pb) throws Phase.Error {
         return null;
     }
 
-    default T visitPragma(Pragma pr) {
+    default T visitPragma(Pragma pr) throws Phase.Error {
         return null;
     }
 
-    default T visitPrimitiveLiteral(PrimitiveLiteral li) {
+    default T visitPrimitiveLiteral(PrimitiveLiteral li) throws Phase.Error {
         return null;
     }
 
-    default T visitPrimitiveType(PrimitiveType py) {
+    default T visitPrimitiveType(PrimitiveType py) throws Phase.Error {
         return null;
     }
 
     default T visitProcTypeDecl(ProcTypeDecl pd) throws Phase.Error {
+
         return null;
+
+
     }
 
     default T visitProtocolLiteral(ProtocolLiteral pl) throws Phase.Error {
         return null;
     }
 
-    default T visitProtocolCase(ProtocolCase pc) {
+    default T visitProtocolCase(ProtocolCase pc) throws Phase.Error {
         return null;
     }
 
@@ -197,23 +211,23 @@ public interface IVisitor<T> {
         return null;
     }
 
-    default T visitQualifiedName(QualifiedName qn) {
+    default T visitQualifiedName(QualifiedName qn) throws Phase.Error {
         return null;
     }
 
-    default T visitRecordAccess(RecordAccess ra) {
+    default T visitRecordAccess(RecordAccess ra) throws Phase.Error {
         return null;
     }
 
-    default T visitRecordMemberLiteral(RecordMemberLiteral rm) {
+    default T visitRecordMemberLiteral(RecordMemberLiteral rm) throws Phase.Error {
         return null;
     }
 
-    default T visitRecordLiteral(RecordLiteral rl) {
+    default T visitRecordLiteral(RecordLiteral rl) throws Phase.Error {
         return null;
     }
 
-    default T visitRecordMember(RecordMember rm) {
+    default T visitRecordMember(RecordMember rm) throws Phase.Error {
         return null;
     }
 
@@ -221,61 +235,61 @@ public interface IVisitor<T> {
         return null;
     }
 
-    default T visitReturnStat(ReturnStat rs) {
+    default T visitReturnStat(ReturnStat rs) throws Phase.Error {
         return null;
     }
 
-    default T visitSequence(Sequence se) { return null; }
+    default T visitSequence(Sequence se) throws Phase.Error { return null; }
 
-    default T visitSkipStat(SkipStat ss) {
+    default T visitSkipStat(SkipStat ss) throws Phase.Error {
         return null;
     }
 
-    default T visitStopStat(StopStat ss) {
+    default T visitStopStat(StopStat ss) throws Phase.Error {
         return null;
     }
 
-    default T visitSuspendStat(SuspendStat ss) {
+    default T visitSuspendStat(SuspendStat ss) throws Phase.Error {
         return null;
     }
 
-    default T visitSwitchGroup(SwitchGroup sg) {
+    default T visitSwitchGroup(SwitchGroup sg) throws Phase.Error {
         return null;
     }
 
-    default T visitSwitchLabel(SwitchLabel sl) {
+    default T visitSwitchLabel(SwitchLabel sl) throws Phase.Error {
         return null;
     }
 
-    default T visitSwitchStat(SwitchStat st) {
+    default T visitSwitchStat(SwitchStat st) throws Phase.Error {
         return null;
     }
 
-    default T visitSyncStat(SyncStat st) {
+    default T visitSyncStat(SyncStat st) throws Phase.Error {
         return null;
     }
 
-    default T visitTernary(Ternary te) {
+    default T visitTernary(Ternary te) throws Phase.Error {
         return null;
     }
 
-    default T visitTimeoutStat(TimeoutStat ts) {
+    default T visitTimeoutStat(TimeoutStat ts) throws Phase.Error {
         return null;
     }
 
-    default T visitUnaryPostExpr(UnaryPostExpr up) {
+    default T visitUnaryPostExpr(UnaryPostExpr up) throws Phase.Error {
         return null;
     }
 
-    default T visitUnaryPreExpr(UnaryPreExpr up) {
+    default T visitUnaryPreExpr(UnaryPreExpr up) throws Phase.Error {
         return null;
     }
 
-    default T visitVar(Var va) {
+    default T visitVar(Var va) throws Phase.Error {
         return null;
     }
 
-    default T visitWhileStat(WhileStat ws) {
+    default T visitWhileStat(WhileStat ws) throws Phase.Error {
         return null;
     }
 

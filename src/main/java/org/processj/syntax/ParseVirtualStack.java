@@ -6,6 +6,7 @@
 package org.processj.syntax;
 
 import org.processj.ast.*;
+import org.processj.ast.expression.Expression;
 
 import java.util.Stack;
 

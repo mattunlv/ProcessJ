@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 /**
@@ -18,52 +19,98 @@ public class Name extends AST {
     /// --------------
     /// Private Fields
 
-    private final Sequence<Name> packageAccess;
+    /**
+     * <p>{@link String} value of the fully-qualified package name.</p>
+     */
+    private final String    packageName ;
 
-    public AST myDecl; // used for places in the the grammar where a Name is used (e.g., in extends of protocols) instead of a NameExpr.
+    /**
+     * <p>{@link String} value of the {@link Name}.</p>
+     */
+    private String          name        ;
 
-    private String id;
-    private int arrayDepth; // somewhat of a hack - we keep track of whether this name is an id in a variable declaration with [] on.
+    /**
+     * <p>Integer value of the amount of brackets appended to the right of the {@link Name}.</p>
+     */
+    private int             arrayDepth  ;
 
-    // points to what ever packageAccess() resolved to.
-    public DefineTopLevelDecl resolvedPackageAccess = null;
-    // the package hierarchy caused to be loaded because of the packageAccess
-    public Compilation c = null;
+    // TODO: Remove me
+    public AST myDecl;
 
-    // a string with "."s that determines the package / in which this name was declared (if any) -- only useful for invocations for now.
-    public String packagePrefix;
+    /// ------------
+    /// Constructors
 
-    public Name(Token p_id) {
-        super(p_id);
-        nchildren = 1;
-        this.id = p_id.lexeme;
-        this.arrayDepth = 0;
-        children = new AST[] { new Sequence() };
-        this.packageAccess = (Sequence<Name>) this.children[0];
-    }
-
-    public Name(String name) {
+    public Name(final String name) {
         super(0, 0);
-        nchildren = 1;
-        this.id = name;
-        this.arrayDepth = 0;
-        children = new AST[] { new Sequence() };
-        this.packageAccess = (Sequence<Name>) this.children[0];
+
+        this.name           = (name != null) ? name : ""    ;
+        this.packageName    = ""                            ;
+        this.arrayDepth     = 0                             ;
+
     }
 
-    public Name(Name n, int arrayDepth) {
-        super(new AST[] { new Sequence() });
-        this.id = n.getname();
-        this.arrayDepth = arrayDepth;
-        this.packageAccess = (Sequence<Name>) this.children[0];
+    public Name(final Name name, final int arrayDepth) {
+        super(name.line, name.charBegin);
+
+        this.name           = name.getName()        ;
+        this.packageName    = name.getPackageName() ;
+        this.arrayDepth     = arrayDepth            ;
+
     }
 
-    public Name(Token p_id, Sequence<Name> package_access) {
-        super(new AST[] { package_access });
-        this.id = p_id.lexeme;
-        this.arrayDepth = 0;
-        this.packageAccess = package_access;
+    public Name(final Token token, final Sequence<Name> packageName) {
+        super(token.line, token.start);
+
+        this.name           = token.lexeme                                   ;
+        this.packageName    = packageName.synthesizeStringWith(".") ;
+        this.arrayDepth     = 0                                              ;
+
     }
+
+    public Name(final Token token) {
+        super(token.line, token.start);
+
+        this.name           = token.lexeme  ;
+        this.packageName    = ""            ;
+        this.arrayDepth     = 0             ;
+
+    }
+
+    /// ----------------
+    /// java.lang.Object
+
+    /**
+     * <p>Returns a literal {@link String} representation of the {@link Name} including a prefixed package name
+     * if it is specified.</p>
+     * @return Literal {@link String} representation of the {@link Name}.
+     * @since 0.1.0
+     */
+    @Override
+    public final String toString() {
+
+        return ((this.specifiesPackage()) ? this.packageName + "::" : "") + this.name;
+
+    }
+    
+    /// --------------------
+    /// org.processj.ast.AST
+
+    /**
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link Name}.
+     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitName(Name)} method.</p>
+     * @param visitor The {@link Visitor} to dispatch.
+     * @return Type result of the visitation.
+     * @param <S> Parametric type parameter.
+     */
+    @Override
+    public final <S> S visit(Visitor<S> visitor) throws Phase.Error {
+
+        return visitor.visitName(this);
+
+    }
+
+    /// --------------
+    /// Public Methods
 
     /**
      * <p>Returns a flag indicating if the {@link Name} is prefixed with a fully-qualified package name.</p>
@@ -72,54 +119,54 @@ public class Name extends AST {
      */
     public final boolean specifiesPackage() {
 
-        return !this.packageAccess.isEmpty();
+        return !this.packageName.isEmpty() && !this.packageName.isBlank();
 
     }
 
-    public Sequence<Name> packageAccess() {
-        return (Sequence<Name>) children[0];
-    }
+    /**
+     * <p>Returns the integer value of the amount of square brackets appended to the right of the {@link Name}.</p>
+     * @return Integer value of the amount of square brackets appended to the right of the {@link Name}.
+     * @since 0.1.0
+     */
+    public final int getDepth() {
 
-    public String getname() {
-        return this.toString(); //this.id;  // TODO: changed back to full name
-    }
-
-    public String simplename() {
-        return this.id;
-    }
-
-    public boolean isSimple() {
-        return packageAccess().size() == 0;
-    }
-
-    public void setName(String na) {
-        id = na;
-    }
-
-    public String toString() {
-        String s = "";
-        if (packageAccess() != null) {
-            int size = packageAccess().children.size();
-            for (int i = 0; i < size; i++) {
-                s = s + packageAccess().child(i);
-                if (i != size - 1)
-                    s = s + ".";
-                else
-                    s = s + "::";
-            }
-        }
-        return s + this.id;
-    }
-
-    public int getArrayDepth() {
         return this.arrayDepth;
+
     }
 
-    public void setArrayDepth(int d) {
-        this.arrayDepth = d;
+    /**
+     * <p>Returns the {@link String} value of the fully-qualified package name if the {@link Name} specifies it.</p>
+     * @return {@link String} value of the fully-qualified package name if the {@link Name} specifies it.
+     * @since 0.1.0
+     */
+    public final String getPackageName() {
+
+        return this.packageName;
+
     }
 
-    public <S> S visit(Visitor<S> v) {
-        return v.visitName(this);
+    /**
+     * <p>Returns the {@link String} value of the name; the {@link String} value is equal to {@link Name#toString()}
+     * if a fully-qualified package name is not specified.</p>
+     * @return {@link String} value of the {@link Name}.
+     * @since 0.1.0
+     */
+    public final String getName() {
+
+        return this.name;
+
     }
+
+    public final void setDepth(final int depth) {
+
+        this.arrayDepth = depth;
+
+    }
+
+    public final void setName(final String name) {
+
+        this.name = (name != null) ? name : "";
+
+    }
+
 }

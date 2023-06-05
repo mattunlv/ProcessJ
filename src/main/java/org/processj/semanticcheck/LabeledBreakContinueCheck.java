@@ -9,16 +9,11 @@ import java.util.HashSet;
  * This check is concerned with labelled break and continue statements like:
  *
  * break inner;
- *
  * and
- * 
  * continue outer;
- *
  * It performs a simple check that no labels are reused, and that any label
  * referred to is in scope.
- *
  * Errors generated in this file:
- *
  * XXX - Undefined break label '...' (or not in scope)
  * XXX - Undefined continue label '...' (or not in scope)
  * XXX - Label '...' already in use.
@@ -30,7 +25,7 @@ public class LabeledBreakContinueCheck {
         if (a instanceof BreakStat) {
             BreakStat bs = (BreakStat) a;
             if (bs.target() != null) {
-                String target = bs.target().getname();
+                String target = bs.target().toString();
                 if(!hs.contains(target)) {
 
                     // TODO: Proper error
@@ -41,7 +36,7 @@ public class LabeledBreakContinueCheck {
         } else if (a instanceof ContinueStat) {
             ContinueStat cs = (ContinueStat) a;
             if (cs.target() != null) {
-                String target = cs.target().getname();
+                String target = cs.target().toString();
                 if(!hs.contains(target)) {
                     // TODO: Proper Error
                     PJBugManager.ReportMessageAndExit("Undefined continue label '" + target + "' (or not in scope).");

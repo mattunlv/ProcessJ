@@ -1,19 +1,16 @@
 
 package org.processj.typechecker;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Set;
+import java.util.List;
 
+import org.processj.Phase;
 import org.processj.ast.*;
-import org.processj.utilities.Error;
+import org.processj.ast.alt.AltCase;
+import org.processj.ast.expression.*;
 import org.processj.utilities.Log;
-import org.processj.utilities.SymbolTable;
-import org.processj.utilities.Visitor;
-import org.processj.utilities.PJMessage;
-import org.processj.utilities.PJBugManager;
-import org.processj.utilities.MessageType;
-import org.processj.utilities.VisitorMessageNumber;
 
 /**
  * 
@@ -21,12 +18,7 @@ import org.processj.utilities.VisitorMessageNumber;
  * @version 02/10/2019
  * @since 1.2
  */
-public class TypeChecker extends Visitor<Type> {
-    // The top level symbol table.
-    private SymbolTable topLevelDecls = null;
-
-    // The procedure currently being type checked.
-    private ProcTypeDecl currentProcedure = null;
+public class TypeChecker extends Phase {
 
     // Contains the protocol name and the corresponding tags currently switched on.
     Hashtable<String, ProtocolCase> protocolTagsSwitchedOn = new Hashtable<String, ProtocolCase>();
@@ -34,731 +26,1312 @@ public class TypeChecker extends Visitor<Type> {
     // Set of nested protocols in nested switch statements
     HashSet<String> protocolsSwitchedOn = new HashSet<String>();
 
-    Set<DefineTopLevelDecl> visited = new HashSet<>();
-
-    public TypeChecker(SymbolTable topLevelDecls) {
-        debug = true; // TODO: WHAT DOES THIS DO?
-        this.topLevelDecls = topLevelDecls;
-
-        Log.log("======================================");
-        Log.log("*       T Y P E   C H E C K E R      *");
-        Log.log("======================================");
+    public TypeChecker(final Phase.Listener listener) {
+        super(listener);
     }
 
-    // ConstantDecl -- ??
-    // LocalDecl
-    // ParamDecl - nothing to do
-
-    // Import - nothing to do
-    // Pragma - nothing to do
-    // AltStat - Nothing to do
-    // ExprStat - nothing to do
     // ContinueStat - nothing to do here, but further checks are needed. TODO
     // ParBlock - nothing to do
     // SkipStat - nothing to do
     // StopStat - nothing to do
-
     // ProtocolCase - nothing to do.
     // SwitchGroup -- nothing to do - handled in SwitchStat
     // SwitchLabel -- nothing to do - handled in SwitchStat
 
-    // Guard -- Nothing to do
-    // Modifier - nothing to do
-    // Name - nothing to do
-    // Compilation -- Probably nothing to
+    /// ----------------------------------------------------------------------------------------------------------- ///
+    /// Top Level Declarations                                                                                      ///
+    /// ----------------------------------------------------------------------------------------------------------- ///
 
-    // Sequence - nothing to do
-
-
-    // Alt Case
-    //
-    // Syntax: (Expr) && Guard : Statement
-    //
-    // Expr must be Boolean and Guard and Statement must be visited
-    //
-    // Boolean?(T(expr))
+    /**
+     * <p>Verifies that the {@link ConstantDecl}'s {@link Type} is assignment compatible with the {@link ConstantDecl}'s
+     * initialization {@link Expression} if it has one. Otherwise, this passes through.</p>
+     * @param constantDeclaration The {@link ConstantDecl} to check.
+     * @see ConstantDecl
+     * @see Expression
+     * @see Type
+     * @since 0.1.0
+     */
     @Override
-    public Type visitAltCase(AltCase ac) {
+    public final Void visitConstantDecl(final ConstantDecl constantDeclaration) throws Phase.Error {
 
-        Log.log(ac.line + ": Visiting an alt case.");
+        Log.log(constantDeclaration.line + ": Visiting a ConstantDeclaration (" + constantDeclaration + ").");
 
-        // Check the pre-condition if there is one.
-        if(ac.precondition() != null) {
-            Type t = ac.precondition().visit(this);
-            // if (!t.isBooleanType())
-            // CompilerMessageManager.INSTANCE.reportMessage(new PJMessage.Builder()
-            // .addAST(ac)
-            // .addError(VisitorMessageNumber.TYPE_CHECKER_660)
-            // TODO REMOVE COMMENT
-            // .addArguments(t.typeName())
-            // .build(), MessageType.PRINT_CONTINUE);
+        // Retrieve the declared Type
+        final Type declaredType = constantDeclaration.getType();
+
+        // Assert the Type is not a Procedure Type
+        if(declaredType instanceof ProcTypeDecl)
+            throw new ConstantDeclaredAsProcedureException(this, constantDeclaration).commit();
+
+        // If we have something to check
+        if(constantDeclaration.isInitialized()) {
+
+            // Resolve the initialization Expression
+            constantDeclaration.getInitializationExpression().visit(this);
+
+            // Initialize a handle to the initialization Expression's Type
+            final Type initializedType = constantDeclaration.getInitializationExpression().getType();
+
+            // Assert the right hand side Type & left hand side Type are assignment compatible
+            if(!declaredType.typeAssignmentCompatible(initializedType))
+                throw new DeclaredTypeNotAssignmentCompatibleException(this, initializedType, declaredType).commit();
+
         }
-
-	    // guard is only null if the case is a nested alt.
-	    if(ac.guard() != null) ac.guard().visit(this);
-
-        ac.stat().visit(this);
 
         return null;
 
     }
 
-    // Syntax: Expr.write(Expr)
     @Override
-    public Type visitChannelWriteStat(ChannelWriteStat cw) {
-        Log.log(cw.line + ": Visiting a channel write stat.");
-        Type t = resolve(cw.channel().visit(this));
+    public final Void visitProcTypeDecl(final ProcTypeDecl procedureTypeDeclaration) throws Phase.Error {
 
-        // Check that the expression is of channel end type or channel type.
-        if(!(t instanceof ChannelEndType || t instanceof ChannelType)) {
-            // !!Error.error(cw, "Cannot write to a non-channel end.", false, 3023);
+        Log.log(procedureTypeDeclaration.line + ": Visiting a Procedure Type Declaration '"
+                + procedureTypeDeclaration + "'.");
+
+        // ReturnType should already be bound
+        // ParamDeclarations should already be bound
+        // Implements list should already be bound
+
+        // TODO: Maybe check implements list?
+        procedureTypeDeclaration.getBody().visit(this);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitProtocolTypeDecl(final ProtocolTypeDecl protocolTypeDeclaration) throws Phase.Error {
+
+        // TODO: Maybe check extend Types?
+        protocolTypeDeclaration.body().visit(this);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitRecordTypeDecl(final RecordTypeDecl recordTypeDeclaration) throws Phase.Error {
+
+        // TODO: Maybe check extends Types?
+        recordTypeDeclaration.getBody().visit(this);
+
+        return null;
+
+    }
+
+    /**
+     * <p>Verifies that the {@link LocalDecl}'s {@link Type} is assignment compatible with the {@link LocalDecl}'s
+     * initialization {@link Expression} if it has one. Otherwise, this passes through.</p>
+     * @param localDecl The {@link LocalDecl} to check.
+     * @see LocalDecl
+     * @see Expression
+     * @see Type
+     * @since 0.1.0
+     */
+    @Override
+    public final Void visitLocalDecl(final LocalDecl localDecl) throws Phase.Error {
+
+        Log.log(localDecl.line + ": Visiting a LocalDecl (" + localDecl + ").");
+
+        // If we have something to check
+        if(localDecl.isInitialized()) {
+
+            // Visit the initialization expression first
+            localDecl.getInitializationExpression().visit(this);
+
+            // Initialize a handle to each Type
+            final Type declaredType     = localDecl.getType();
+            final Type initializedType  = localDecl.getInitializationExpression().getType();
+
+            if(!declaredType.typeAssignmentCompatible(initializedType))
+                throw new DeclaredTypeNotAssignmentCompatibleException(this, initializedType, declaredType).commit();
+
         }
+
+        return null;
+
+    }
+
+    /**
+     * <p>Verifies that the {@link AltCase}'s precondition resolves to a boolean {@link Type}, if the
+     * {@link org.processj.ast.alt.Guard} is an input {@link org.processj.ast.alt.Guard} that it resolves correctly
+     * for both sides of the {@link Assignment} {@link Expression} or if it's a {@link TimeoutStat} that the timer
+     * {@link Expression} is a Timer type and the delay {@link Expression} resolves to an integral {@link Type};
+     * lastly it recurs down on the contained {@link Statement}.</p>
+     * @param altCase The {@link AltCase} to check.
+     * @see AltCase
+     * @see org.processj.ast.alt.Guard
+     * @see Expression
+     * @see Type
+     * @since 0.1.0
+     */
+    @Override
+    public final Void visitAltCase(final AltCase altCase) throws Phase.Error {
+
+        // Alt Case -> Syntax: (Expr) && Guard : Statement => Boolean?(T(expr))
+        // Three possibilities for this: Assignment, TimeoutStatement, & Skip Statement
+        // Expr must be Boolean and Guard and Statement must be visited
+        Log.log(altCase.line + ": Visiting an alt case.");
+
+        // If the AltCase defines a Boolean Precondition
+        if(altCase.definesPrecondition()) {
+
+            // Retrieve a handle to the Precondition
+            final Expression precondition = altCase.getPreconditionExpression();
+
+            // Resolve the precondition
+            precondition.visit(this);
+
+            // If the precondition's Type is not Boolean
+            if(!(precondition.getType()).isBooleanType())
+                throw new AltCasePreconditionNotBoundToBooleanType(this, altCase);
+
+        }
+
+        // It's possible we may have a null guard;
+        // TODO: Verify no null guards reach this point
+        if(altCase.definesGuard()) altCase.getGuard().visit(this);
+
+        // Lastly, recur on the Statement
+        altCase.getStatement().visit(this);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitChannelWriteStat(final ChannelWriteStat channelWriteStat) throws Phase.Error {
+
+        // TODO: A Channel Write Statement looks like an Invocation. Shouldn't
+        // TODO: Resolve the ChannelEndType here instead of the Parse Phase?
+        Log.log(channelWriteStat.line + ": Visiting a Channel Write Statement.");
+
+        // Some sort of Name Expression should resolve to a Channel End Type either from
+        // a primary expression or direct expression
+        // Initialize a handle to the target & write Expressions
+        final Expression targetExpression   = channelWriteStat.getTargetExpression()  ;
+        final Expression writeExpression    = channelWriteStat.getWriteExpression()   ;
+
+        // Bind the Target Expression first
+        targetExpression.visit(this);
+
+        // Assert that the Type bound to the Expression is a Channel End Type
+        if(!(targetExpression.getType() instanceof ChannelEndType))
+            throw new WriteToNonChannelEndTypeException(this, channelWriteStat).commit();
 
         // Visit the expression being written.
-        cw.expr().visit(this);
-        return null;
-    }
-
-    // Syntax: do Stat while Expr
-    @Override
-    public Type visitDoStat(DoStat ds) {
-        Log.log(ds.line + ": Visiting a do statement");
-
-        Type eType = resolve(ds.expr().visit(this));
-
-        // The expression must be of Boolean type.
-        if (!eType.isBooleanType()) {
-            // !! Error.addError(ds, "Non boolean Expression found as test in
-            // do-statement.", 3024);
-        }
-
-        // Type check the statement of the do statement;
-        if (ds.stat() != null) {
-            ds.stat().visit(this);
-        }
+        channelWriteStat.getWriteExpression().visit(this);
 
         return null;
+
     }
 
     @Override
-    public Type visitForStat(ForStat fs) {
-        Log.log(fs.line + ": Visiting a for statement");
+    public final Void visitDoStat(final DoStat doStatement) throws Phase.Error {
+
+        Log.log(doStatement.line + ": Visiting a do statement");
+
+        // Resolve the evaluation Expression
+        doStatement.getEvaluationExpression().visit(this);
+
+        // Initialize a handle to the do statement's evaluation Expression's Type
+        final Type type = doStatement.getEvaluationExpression().getType();
+
+        // Assert the evaluation Expression is bound to a boolean Type
+        if(!type.isBooleanType())
+            throw new ControlEvaluationExpressionNonBooleanTypeException(this, type);
+
+        // Recur on the body
+        if(doStatement.definesStatement()) doStatement.getStatement().visit(this);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitIfStat(final IfStat ifStatement) throws Phase.Error {
+
+        Log.log(ifStatement.line + ": Visiting a if statement");
+
+        // Resolve the evaluation Expression
+        ifStatement.evaluationExpression().visit(this);
+
+        // Initialize a handle to the do statement's evaluation Expression's Type
+        final Type type = ifStatement.evaluationExpression().getType();
+
+        // Assert that it's a boolean Type
+        if(!ifStatement.evaluationExpression().getType().isBooleanType())
+            throw new ControlEvaluationExpressionNonBooleanTypeException(this, type).commit();
+
+        // If the if statement defines a then part
+        if(ifStatement.definesThenPart()) ifStatement.getThenPart().visit(this);
+
+        // If the if statement defines an else part
+        if(ifStatement.definesElsePart()) ifStatement.getElsePart().visit(this);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitWhileStat(final WhileStat whileStatement) throws Phase.Error {
+
+        Log.log(whileStatement.line + ": Visiting a while statement");
+
+        // Resolve the evaluation Expression
+        whileStatement.getEvaluationExpression().visit(this);
+
+        // Initialize a handle to the evaluation expression's Type
+        final Type type = whileStatement.getEvaluationExpression().getType();
+
+        // Assert the evaluation Expression is bound to a boolean Type
+        if(!type.isBooleanType())
+            throw new ControlEvaluationExpressionNonBooleanTypeException(this, type).commit();
+
+        // Recur on the body
+        if(whileStatement.definesStatement()) whileStatement.getStatement().visit(this);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitForStat(final ForStat forStatement) throws Phase.Error {
+
+        Log.log(forStatement.line + ": Visiting a for statement");
 
         // A non-par for loop cannot enroll on anything.
-        if (fs.barriers().size() > 0 || fs.isPar()) {
-            // !! Error.error(..."Process already enrolled on barriers (a non-par for loop
-            // cannot enroll on barriers)");
-        }
+        if(forStatement.getBarrierExpressions().size() > 0 || forStatement.isPar())
+            throw new ProcessEnrolledOnBarriersException(this, forStatement).commit();
 
-        int i = 0;
         // Check that all the barrier expressions are of barrier type.
-        for (Expression e : fs.barriers()) {
-            Type t = resolve(e.visit(this));
-            if (!t.isBarrierType()) {
-                // !!Error.addError(fs.barriers().child(i), "Barrier type expected, found '" + t
-                // + "'.", 3025);
+        for(final Expression barrierExpression: forStatement.getBarrierExpressions()) {
+
+            // Resolve the Barrier Expression
+            barrierExpression.visit(this);
+
+            // Retrieve the Type
+            final Type type = barrierExpression.getType();
+
+            // Assert it's a barrier Type
+            if(!barrierExpression.getType().isBarrierType())
+                throw new ExpectedBarrierTypeException(this, type).commit();
+
+        }
+
+        // Resolve the initialization Expression, if any.
+        if(forStatement.definesInitializationExpression())
+            forStatement.getInitializationExpression().visit(this);
+
+        if(forStatement.definesIncrement())
+            forStatement.getIncrementExpression().visit(this);
+
+        if(forStatement.definesEvaluationExpression()) {
+
+            // Resolve the evaluation Expression
+            forStatement.getEvaluationExpression().visit(this);
+
+            // Retrieve the Type
+            final Type type = forStatement.getEvaluationExpression().getType();
+
+            // Assert the Expression is bound to a boolean Type
+            if(!type.isBooleanType())
+                throw new ControlEvaluationExpressionNonBooleanTypeException(this, type).commit();
+
+        }
+
+        // Recur on the statement
+        if(forStatement.definesStatement())
+            forStatement.getStatement().visit(this);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitReturnStat(final ReturnStat returnStatement) throws Phase.Error {
+
+        Log.log(returnStatement.line + ": visiting a return statement");
+
+        // Initialize a handle to the current Context
+        final SymbolMap.Context context = this.getScope().getContext();
+
+        // Assert the Context is a Procedure Type
+        if(!(context instanceof ProcTypeDecl))
+            throw new InvalidReturnStatementContextException(this, context).commit();
+
+        // Otherwise, initialize a handle to its return Type
+        final Type returnType = ((ProcTypeDecl) context).getReturnType();
+
+        // Assert that the return Type is void and the return statement doesn't define an Expression
+        if(returnType.isVoidType() && (returnStatement.getExpression() != null))
+            throw new VoidProcedureReturnTypeException(this, context);
+
+        // Assert that the return Type is not void and the return statement does define an Expression
+        if(!returnType.isVoidType() && returnStatement.getExpression() == null)
+            throw new ProcedureReturnsVoidException(this, returnType).commit();
+
+        // Resolve the Return Type's Expression
+        returnStatement.getExpression().visit(this);
+
+        // Initialize a handle to the Expression's Type
+        final Type type = returnStatement.getExpression().getType();
+
+        // Assert the Return Type is assignment Compatible with the Return Statement's
+        if(!returnType.typeAssignmentCompatible(type))
+            throw new IncompatibleReturnTypeException(this, returnType, type).commit();
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitSwitchGroup(final SwitchGroup switchGroup) throws Phase.Error {
+
+        Log.log(switchGroup.line + ": Visiting SwitchGroup (" + switchGroup + ").");
+
+        // Resolve the labels first to mark ourselves
+        switchGroup.getLabels().visit(this);
+
+        // Now the statements
+        switchGroup.getStatements().visit(this);
+
+        // Initialize a handle to the Context
+        final SymbolMap.Context context = this.getScope().getContext();
+
+        // Assert the Context is a SwitchStatement
+        if(!(context instanceof SwitchStat))
+            throw new InvalidSwitchLabelContextException(this, context);
+
+        // Initialize a handle to the evaluation Expression's Type
+        final Type type = ((SwitchStat) context).getEvaluationExpression().getType();
+
+        // If the evaluation Expression's Type is a Protocol Type so we can remove ourselves
+        if(type instanceof ProtocolTypeDecl)
+            this.protocolTagsSwitchedOn.remove(((ProtocolTypeDecl) type).toString());
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitSwitchLabel(final SwitchLabel switchLabel) throws Phase.Error {
+
+        // TODO: We migrated NameChecker Error 421 here, but we're already checking for that in SwitchStat
+        Log.log(switchLabel.line + ": Visiting SwitchLabel (" + switchLabel.getExpression() + ").");
+
+        // Initialize a handle to the Context
+        final SymbolMap.Context context = this.getScope().getContext();
+
+        // Assert the Context is a SwitchStatement
+        if(!(context instanceof SwitchStat))
+            throw new InvalidSwitchLabelContextException(this, context);
+
+        // We only check on non-default labels
+        if(!switchLabel.isDefault()) {
+
+            // Initialize a handle to the Evaluation Expression & its Type
+            final Expression evaluationExpression   = ((SwitchStat) context).getEvaluationExpression();
+            final Type       type                   = evaluationExpression.getType();
+
+            // If the Evaluation Expression is bound to an integral or String Type
+            if(type.isIntegralType() || type.isStringType()) {
+
+                // Resolve the Switch Label's Expression
+                switchLabel.getExpression().visit(this);
+
+                // Initialize a handle to the Type
+                final Type switchLabelType = switchLabel.getExpression().getType();
+
+                // Assert the constant Expression's Type is assignable to the Evaluation Expression's Type
+                if(!(type.typeAssignmentCompatible(switchLabelType)))
+                    throw new InvalidSwitchLabelExpressionTypeException(
+                            this, evaluationExpression, switchLabelType, type).commit();
+
+            // Otherwise, the Evaluation Expression should be a Protocol Type
+            } else if(switchLabel.getExpression() instanceof NameExpr) {
+
+                // Initialize a handle to the Tag
+                // TODO: We should probably use properly qualified names here - what if there are two different protocols named the same ?
+                final String            tag                     = switchLabel.getExpression().toString();
+                final ProtocolTypeDecl  protocolTypeDeclaration = (ProtocolTypeDecl) type;
+                final ProtocolCase      protocolCase            = protocolTypeDeclaration.getCase(tag);
+
+                // Assert a valid Protocol Case
+                if(protocolCase == null)
+                    throw new UndefinedTagException(this, tag, protocolTypeDeclaration).commit();
+
+                // Aggregate to the switched protocol tags
+                this.protocolTagsSwitchedOn.put(protocolTypeDeclaration.toString(), protocolCase);
+
+            // TODO: This is most likely dead code since Protocol Types for evaluation Expressions are checked above.
+            // TODO: Test for this to make sure we don't or do arrive here
+            } else throw
+                    new SwitchLabelExpressionNotProtocolTagException(this, switchLabel.getExpression()).commit();
+
+        }
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitSwitchStat(final SwitchStat switchStatement) throws Phase.Error {
+
+        // Resolve the evaluation Expression
+        switchStatement.getEvaluationExpression().visit(this);
+
+        // Initialize a handle to the evaluation Expression's Type
+        final Type type = switchStatement.getEvaluationExpression().getType();
+
+        // Assert the evaluation Expression's bound Type is an integral, string, or Protocol Type (Switch on Tag)
+        // TODO: This checks for Error 421
+        if(!(type instanceof ProtocolTypeDecl || type.isIntegralType() || type.isStringType()))
+            throw new InvalidSwitchStatementExpressionTypeException(this, type).commit();
+
+        // Protocol Type; Check for illegally nested Switch Statements
+        // TODO: Should we do this in with SymbolMap.Context instead?
+        if(type instanceof ProtocolTypeDecl) {
+
+            // Assert we haven't already switched on the current Protocol
+            if(this.protocolsSwitchedOn.contains(type.toString()))
+                throw new IllegalNestedSwitchInProtocolException(this, (ProtocolTypeDecl) type).commit();
+
+            // Aggregate the Protocol Name
+            this.protocolsSwitchedOn.add(type.toString());
+
+        }
+
+        // Resolve the children
+        switchStatement.switchBlocks().visit(this);
+
+        // Remove the Protocol Type, if any
+        if(this.protocolsSwitchedOn.contains(type.toString())) this.protocolsSwitchedOn.remove(type.toString());
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitSuspendStat(final SuspendStat suspendStatement) throws Phase.Error {
+
+        Log.log(suspendStatement.line + ": Visiting a suspend statement.");
+
+        // Initialize a handle to the current Context
+        final SymbolMap.Context context = this.getScope().getContext();
+
+        // Assert the Context is a Procedure
+        if(!(context instanceof ProcTypeDecl))
+            throw new InvalidSuspendStatementContextException(this, context).commit();
+
+        if(!((ProcTypeDecl) context).isMobile())
+            throw new SuspendInNonMobileProcedureException(this, context).commit();
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitSyncStat(final SyncStat syncStatement) throws Phase.Error {
+
+        // Resolve the barrier expression
+        syncStatement.barrier().visit(this);
+
+        // Initialize a handle to the barrier Expression's Type
+        final Type type = syncStatement.barrier().getType();
+
+        // Assert the Expression is bound to a Barrier Type
+        if(!type.isBarrierType())
+            throw new InvalidSynchronizationExpressionTypeException(this, type).commit();
+
+        return null;
+
+    }
+
+    /**
+     * <p>Verifies that the {@link TimeoutStat}'s timer {@link Expression} is a primitive timer {@link Type} & that
+     * the delay {@link Expression} is an integral {@link Type}.</p>
+     * @param timeoutStatement The {@link TimeoutStat} to verify.
+     * @since 0.1.0
+     */
+    @Override
+    public final Void visitTimeoutStat(final TimeoutStat timeoutStatement) throws Phase.Error {
+
+        Log.log(timeoutStatement.line + ": visiting a timeout statement.");
+
+        // Retrieve a handle to the timer & delay expressions
+        final Expression timerExpression = timeoutStatement.getTimerExpression();
+        final Expression delayExpression = timeoutStatement.getDelayExpression();
+
+        // Resolve the timer Expression first
+        timerExpression.visit(this);
+
+        // Initialize a handle to the timer & delay Types
+        final Type timerType = timerExpression.getType();
+        final Type delayType = timerExpression.getType();
+
+        // Assert that the timer Expression is a Timer Type
+        if(!timerType.isTimerType())
+            throw new InvalidTimeoutTargetTypeException(this, timerType).commit();
+
+        // Resolve the delay Expression
+        delayExpression.visit(this);
+
+        // Assert that the delay Expression is an integral type
+        if(!delayType.isIntegralType())
+            throw new InvalidTimeoutDelayTypeException(this, delayType).commit();
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitInvocation(final Invocation invocation) throws Phase.Error {
+
+        Log.log(invocation.line + ": visiting invocation (" + invocation+ ")");
+
+        // Invocation Parameter Types should be bound already, attempt to retrieve the aggregated results
+        final List<Object>          candidates = this.getScope().get(invocation.getProcedureName());
+        final List<ProcTypeDecl>    compatible = new ArrayList<>();
+
+        // Aggregate all valid results
+        candidates.forEach(result -> { if(result instanceof SymbolMap)
+            { aggregateAssignmentCompatible((SymbolMap) result, invocation, compatible); }});
+
+        FancyPrint(invocation, compatible, 1, 1);
+
+        // Assert we have at least one candidate
+        if(compatible.size() == 0)
+            throw new NoCandidateForInvocationFoundException(this, invocation).commit();
+
+        // Attempt to resolve a Candidate
+        final ProcTypeDecl candidate = Candidate(compatible);
+
+        // Assert the candidate was resolved
+        if(candidate == null)
+            throw new AmbiguousInvocationException(this, invocation).commit();
+
+        // Bind the Type
+        invocation.setType(candidate.getReturnType());
+
+        Log.log(invocation.line + ": invocation has type: " + invocation.getType());
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitNewArray(final NewArray newArray) throws Phase.Error {
+
+        Log.log(newArray.line + ": Visiting a NewArray " + newArray.getBracketExpressions().size() + " " + newArray.dims().size());
+
+        // Resolve the bracket Expressions
+        newArray.getBracketExpressions().visit(this);
+
+        // Assert each bracket Expression is an integral Type
+        newArray.forEachBracketExpression(expression -> {
+
+            // Assert the Expression is bound to an integral Type
+            if(!expression.getType().isIntegralType())
+                throw new InvalidArrayDimensionTypeException(this, expression);
+
+        });
+
+        // Initialize a handle to the depth & the synthesized ArrayType
+        final int       depth     = newArray.getDepth();
+        final ArrayType arrayType = new ArrayType(newArray.getComponentType(), depth);
+
+        // If the New Array Expression is defined with an initializer with a depth greater
+        // than 0; no error otherwise since any array can hold an empty array.
+        if(newArray.definesLiteralExpression() && (newArray.getInitializationExpression().getDepth() > 0)) {
+
+            // Initialize a handle to the ArrayLiteral Expression & the Synthesized Array Type
+            final ArrayLiteral arrayLiteral = newArray.getInitializationExpression();
+
+            // Iterate through each Expression contained in the ArrayLiteral Expression
+            for(final Expression expression: arrayLiteral.getExpressions()) {
+
+                // Resolve the Expression
+                expression.visit(this);
+
+                // Initialize a handle to the Expression's Type
+                final Type type = expression.getType();
+
+                // Assert an ArrayType is bound to the Expression
+                if(!(type instanceof ArrayType))
+                    throw new TypeNotAssignmentCompatibleException(this, expression, arrayType);
+
+                // Assert assignment compatibility
+                if(!arrayType.typeAssignmentCompatible(type))
+                    throw new TypeNotAssignmentCompatibleException(this, expression, arrayType);
+
             }
-            i++;
-        }
 
-        if (fs.init() != null)
-            fs.init().visit(this);
-        if (fs.incr() != null)
-            fs.incr().visit(this);
-        if (fs.expr() != null) {
-            Type eType = resolve(fs.expr().visit(this));
-
-            if (!eType.isBooleanType()) {
-                // !!Error.addError(fs, "Non-boolean expression found in for-statement.", 3026);
-            }
-        }
-        if (fs.stats() != null)
-            fs.stats().visit(this);
-
-        return null;
-    }
-
-    // Syntax: if (Expr) Statement
-    // if (Expr) Statement else Statement
-    @Override
-    public Type visitIfStat(IfStat is) {
-        Log.log(is.line + ": Visiting a if statement");
-
-        Type eType = resolve(is.expr().visit(this));
-
-        if (!eType.isBooleanType()) {
-            // !!Error.addError(is, "Non-boolean expression found as test in if-statement.",
-            // 3027);
-        }
-        if (is.thenpart() != null)
-            is.thenpart().visit(this);
-        if (is.elsepart() != null)
-            is.elsepart().visit(this);
-
-        return null;
-    }
-
-    @Override
-    public Type visitReturnStat(ReturnStat rs) {
-        Log.log(rs.line + ": visiting a return statement");
-
-        Type returnType = resolve(currentProcedure.returnType());
-
-        // Check if the return type is void; if it is rs.expr() should be null.
-        // Check if the return type is not voidl if it is not rs.expr() should not be
-        // null.
-        if (returnType instanceof PrimitiveType) {
-            PrimitiveType pt = (PrimitiveType) returnType;
-            if (pt.isVoidType() && rs.expr() != null)
-                Error.addError(rs, "Procedure return type is void; return statement cannot return a value.", 3040);
-            if (!pt.isVoidType() && rs.expr() == null)
-                Error.addError(rs, "Procedure return type is '" + pt + "' but procedure return type is void.", 3041);
-            if (pt.isVoidType() && rs.expr() == null)
-                return null;
-        }
-
-        Type eType = resolve(rs.expr().visit(this));
-        if (!returnType.typeAssignmentCompatible(eType))
-            Error.addError(rs, "Incompatible type in return statement.", 3042);
-
-        return null;
-    }
-
-    @Override
-    public Type visitSuspendStat(SuspendStat ss) {
-        Log.log(ss.line + ": Visiting a suspend stat.");
-        if (!Modifier.hasModifierSet(currentProcedure.modifiers(), Modifier.MOBILE))
-            Error.addError(ss, "Non-mobile procedure cannot suspend.", 3043);
-        return null;
-    }
-
-    @Override
-    public Type visitSwitchStat(SwitchStat ss) {
-        Type exprType = resolve(ss.expr().visit(this));
-
-        // The switch expression must be integral, string or a protocol type (we then
-        // switch on the tag).
-        if (!(exprType instanceof ProtocolTypeDecl || exprType.isIntegralType() || exprType.isStringType()))
-            Error.addError(ss, "Illegal type '" + exprType + "' in expression in switch statement.", 0000);
-
-        // String and Intergral types.
-        if (exprType.isIntegralType() || exprType.isStringType()) {
-            for (SwitchGroup sg : ss.switchBlocks()) {
-                // For each Switch Group, cycle through the Switch Labels and check they are
-                // assignment compatible with ...
-                for (SwitchLabel sl : sg.labels()) {
-                    if (!sl.isDefault()) {
-                        // Get the type of the (constant expression)
-                        if (exprType.isStringType() || exprType.isIntegralType()) {
-                            // For string and Integral types, the constant expression must be assignable
-                            // to the type of the switching expression.
-                            Type labelType = resolve(sl.expr().visit(this));
-                            // System.out.println("Type of tag " + sl.expr() + " is " + labelType);
-
-                            if (!exprType.typeAssignmentCompatible(labelType))
-                                Error.addError(ss,
-                                        "Switch label '" + sl.expr() + "' of type '" + labelType
-                                                + "' not compatible with switch expression's type '" + exprType + "'.",
-                                        0000);
-                            // sg.statements().visit(this);
-                        }
-                    }
-                    sg.statements().visit(this);
-                }
-            }
-        } else { // Protocol Type.
-            // Get the name of the protocol.
-            String protocolName = exprType.toString();
-
-            if (protocolsSwitchedOn.contains(protocolName))
-                Error.addError(ss, "Illegally nested switch on protocol '" + protocolName + "'.", 0000);
-            else
-                protocolsSwitchedOn.add(protocolName);
-
-            // System.out.println("protocolsSwitchedOn before visiting body: " +
-            // protocolsSwitchedOn.toString());
-
-            // Cycle through the SwitchGroups one at a time.
-            for (SwitchGroup sg : ss.switchBlocks()) {
-                // For each Switch Group, cycle through the Switch Labels and check they are
-                // assignment compatible with ...
-                // System.out.println("-- New Group --");
-                for (SwitchLabel sl : sg.labels()) {
-                    if (!sl.isDefault()) {
-                        // The label must ne a name.
-                        if (!(sl.expr() instanceof NameExpr))
-                            Error.addError(sl, "Switch label '" + sl.expr() + "' is not a protocol tag.", 0000);
-
-                        // Get the name of the tag.
-                        // TODO: We should probably use properly qualified names here - what if there
-                        // are two different protocols named the same ?
-                        String tag = ((NameExpr) sl.expr()).name().getname();
-                        // System.out.println("Processing tag: " + tag);
-                        // System.out.println(protocolTagsSwitchedOn.toString());
-
-                        ProtocolTypeDecl ptd = (ProtocolTypeDecl) exprType;
-                        ProtocolCase pc = ptd.getCase(tag);
-
-                        if (pc == null)
-                            Error.addError(sl, "Tag '" + tag + "' is not found in protocol '" + protocolName + "'.",
-                                    0000);
-                        else {
-                            // System.out.println("pc is not null: " + pc.name().getname());
-                            // System.out.println("Fields: ");
-                            // for (RecordMember rm : pc.body()) {
-                            // System.out.println(" " + rm.name().getname());
-                            // }
-
-                            // System.out.println(protocolTagsSwitchedOn.toString());
-
-                            // insert into protocol Cases Swithced on
-                            // visit the body.
-                            protocolTagsSwitchedOn.put(protocolName, pc); // TODO: perhaps a hash table here isn't a
-                            // good idea - something in reverse order may
-                            // be what we need.
-                        }
-                        // System.out.println("ABOUT TO VISIT STATEMENTS");
-                    }
-                    sg.statements().visit(this);
-                    if (!sl.isDefault())
-                        protocolTagsSwitchedOn.remove(protocolName);
-                }
-            }
-            // remove from protocol Cases Switched on
-            protocolsSwitchedOn.remove(protocolName);
-            // System.out.println("protocolsSwitchedOn after evaluating body: " +
-            // protocolsSwitchedOn);
-        }
-        return null;
-    }
-
-    @Override
-    public Type visitSyncStat(SyncStat ss) {
-        Type t = ss.barrier().visit(this);
-        if (!t.isBarrierType())
-            Error.addError(ss, "Cannot sync on anything but a barrier type", 0000);
-
-        return null;
-    }
-
-    @Override
-    public Type visitTimeoutStat(TimeoutStat ts) {
-        Log.log(ts.line + ": visiting a timeout statement.");
-        Type dType = resolve(ts.delay().visit(this));
-        if (!dType.isIntegralType())
-            Error.error(ts, "Invalid type (" + dType + ") in timeout statement, integral type required.",
-                    false, 3049);
-        Type eType = resolve(ts.timer().visit(this));
-        if (!eType.isTimerType())
-            Error.error(ts, "Timer type required in timeout statement - found " + eType + ".", false, 3050);
-        return null;
-    }
-
-    @Override
-    public Type visitWhileStat(WhileStat ws) {
-        Log.log(ws.line + ": Visiting a while statement");
-        Type eType = resolve(ws.expr().visit(this));
-
-        if (!eType.isBooleanType())
-            Error.error(ws, "Non-Boolean Expression found as test in while-statement.", false, 3059);
-        if (ws.stat() != null)
-            ws.stat().visit(this);
-        return null;
-    }
-
-    @Override
-    public Type visitProcTypeDecl(ProcTypeDecl pd) {
-
-        if(this.visited.add(pd)) {
-
-            Log.log(pd.line + ": visiting a procedure type declaration (" + pd + ").");
-            currentProcedure = pd;
-            super.visitProcTypeDecl(pd);
+            // Bind the ArrayLiteral's Type
+            arrayLiteral.setType(arrayType);
 
         }
 
+        // Bind the ArrayType
+        newArray.setType(arrayType);
+
+        Log.log(newArray.line + ": NewArray type is " + newArray.getType());
+
         return null;
+
     }
 
     @Override
-    public Type visitProtocolTypeDecl(ProtocolTypeDecl pt) {
+    public final Void visitTernary(Ternary ternaryExpression) throws Phase.Error {
+        // e ? t : f
+        // Primitive?(Type(t)) & Primitive?(Type(f)) & (Type(t) :=T Type(f) || Type(f)
+        // :=T Type(t)) =>
+        // Type(e ? t : f) = ceiling(Type(t), Type(f))
+        Log.log(ternaryExpression.line + ": Visiting a ternary expression");
 
-        if(this.visited.add(pt)) {
+        // Resolve the Expression's Type
+        ternaryExpression.getEvaluationExpression().visit(this);
 
-            Log.log(pt.line + ": Visiting a protocol type decl.");
-            pt.visitChildren(this);
-            Log.log(pt.line + ": Protocol type decl has type: " + pt);
+        // Initialize a handle to the Expression's Type
+        final Type expressionType = ternaryExpression.getEvaluationExpression().getType();
 
-        }
+        // Assert that the Expression is bound to a boolean Type
+        // Error 3070
+        if(!expressionType.isBooleanType())
+            throw new ControlEvaluationExpressionNonBooleanTypeException(this, expressionType).commit();
 
-        return pt;
-    }
+        // Resolve the then & else branches
+        ternaryExpression.thenPart().visit(this);
+        ternaryExpression.elsePart().visit(this);
 
-    @Override
-    public Type visitRecordTypeDecl(RecordTypeDecl rt) {
+        // Initialize a handle to the then & else part
+        final Type thenType  = ternaryExpression.thenPart().getType();
+        final Type elseType  = ternaryExpression.elsePart().getType();
 
-        if(this.visited.add(rt)) {
+        // TODO: Watch out for ArrayType, ProtocolType, & RecordTypes
+        // TODO: Error 3071 & 3072
+        // Assert the then part is assignment compatible with the else part
+        if(!thenType.typeAssignmentCompatible(elseType)) {
 
-            Log.log(rt.line + ": Visiting a record type decl.");
-            rt.visitChildren(this);
-            Log.log(rt.line + ": Record type decl has type: " + rt);
+            // Assert the else part is assignment compatible with the then part
+            if(!elseType.typeAssignmentCompatible(thenType))
+                throw new TypeNotAssignmentCompatibleException(this, ternaryExpression.thenPart(), elseType).commit();
 
-        }
-        return rt;
-    }
+            // Bind the Type
+            ternaryExpression.setType(elseType);
 
-    /// ------------------------------------------------------------------------------------------- ///
-    /// Expressions
-    /// ------------------------------------------------------------------------------------------- ///
-
-    // ArrayAccessExpr
-    //
-    // Syntax: Expr1[Expr2]
-    //
-    // Expr1 must be array type and Expr2 my be integer.
-    //
-    // Array?(T(Expr1)) /\ Integer?(T(Expr2))
-    //
-    // If T(Expr1) = Array(BaseType) => T(Expr1[Expr2]) := BaseType
-    @Override
-    public Type visitArrayAccessExpr(final ArrayAccessExpr arrayAccessExpression) {
-
-        Log.log(arrayAccessExpression.line + ": Visiting ArrayAccessExpr");
-
-        Type targetType = resolve(arrayAccessExpression.targetExpression().visit(this));
-
-        if(targetType instanceof ArrayType) {
-
-            // Initialize a handle to the ArrayType
-            final ArrayType arrayType = (ArrayType) targetType;
-
-            // Initialize a handle to the resultant Type
-            Type resultantType = arrayType.getComponentType();
-
-            // Check for a depth greater than 1 in order to construct a new ArrayType
-            if(arrayType.getDepth() > 1)
-                resultantType = new ArrayType(arrayType.getComponentType(), arrayType.getDepth() - 1);
-
-            // Set the Type
-            arrayAccessExpression.setType(resultantType);
-
-            Log.log(arrayAccessExpression.line + ": ArrayAccessExpr has type " + arrayAccessExpression.type);
-
-            Type indexType = resolve(arrayAccessExpression.indexExpression().visit(this));
-
-            // This error does not create an error type cause the baseType() is
-            // still the array expression's type.
-            if(!indexType.isIntegerType())
-                PJBugManager.INSTANCE.reportMessageAndExit(new PJMessage.Builder()
-                        .addAST(arrayAccessExpression)
-                        .addError(VisitorMessageNumber.TYPE_CHECKER_655)
-                        .addArguments(indexType.toString())
-                        .build(), MessageType.PRINT_CONTINUE);
-
+        // Assert the else part is assignment compatible with the then part
         } else {
 
-            arrayAccessExpression.type = new ErrorType();
-            // CompilerMessageManager.INSTANCE.reportMessage(new PJMessage.Builder()
-            // .addAST(ae)
-            // .addError(VisitorMessageNumber.TYPE_CHECKER_661)
-            // TODO: REMOVE COMMENT
-            // .addArguments(t.typeName())
-            // .build(), MessageType.PRINT_CONTINUE);
+            // Assert the then part is assignment compatible with the else part
+            if(!thenType.typeAssignmentCompatible(elseType))
+                throw new TypeNotAssignmentCompatibleException(this, ternaryExpression.elsePart(), thenType).commit();
+
+            // Bind the Type
+            ternaryExpression.setType(thenType);
 
         }
 
-        Log.log(arrayAccessExpression.line + ": Array Expression has type: " + arrayAccessExpression.type);
+        Log.log(ternaryExpression.line + ": Ternary has type: " + ternaryExpression.type);
 
-        return arrayAccessExpression.type;
+        return null;
 
     }
 
-    // Assignment
-    //
-    // Syntax: Name <op> Expr [ shoreted to v <op> e below ]
-    // where op is one of =, +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
-    //
-    // = : (v := e)
-    //
-    // T(v) :=T T(e)
-    // T(v = e) := T(v)
-    // (Some variables are not assingable: channels, barriers, more ??)
-    // TODO: RECORDS and PROTOCOLS
-    //
-    // +=, -=, *=, /=, %= : ( v ?= e) [ ? is one of {+,-,*,/,%} ]
-    //
-    // (op = + /\ String?(T(v)) /\
-    // (Numeric?(T(e)) \/ Boolean?(T(e)) \/ String?(T(e) \/
-    // Char?(T(e)))) \/
-    // (op != + /\ (T(v) :=T T(e)))
-    //
-    //
     @Override
-    public Type visitAssignment(Assignment as) {
-        Log.log(as.line + ": Visiting an assignment");
-        as.type = null; // gets set to ErrorType if an error happens.
+    public final Void visitAssignment(final Assignment assignment) throws Phase.Error {
+        // Assignment
+        //
+        // Syntax: Name <op> Expr [ shoreted to v <op> e below ]
+        // where op is one of =, +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
+        //
+        // = : (v := e)
+        //
+        // T(v) :=T T(e)
+        // T(v = e) := T(v)
+        // (Some variables are not assignable: channels, barriers, more ??)
+        // TODO: RECORDS and PROTOCOLS
+        //
+        // +=, -=, *=, /=, %= : ( v ?= e) [ ? is one of {+,-,*,/,%} ]
+        //
+        // (op = + /\ String?(T(v)) /\
+        // (Numeric?(T(e)) \/ Boolean?(T(e)) \/ String?(T(e) \/
+        // Char?(T(e)))) \/
+        // (op != + /\ (T(v) :=T T(e)))
+        //
+        //
+        Log.log(assignment.line + ": Visiting an assignment");
 
-        Type vType = resolve(as.left().visit(this));
-        Type eType = resolve(as.right().visit(this));
+        // Resolve both sides
+        assignment.left().visit(this);
+        assignment.right().visit(this);
 
-        // Handle error types in operands
-        if ((vType instanceof ErrorType) || (eType instanceof ErrorType)) {
-            as.type = new ErrorType();
-            Log.log(as.line + ": Array ExpressionAssignment has type: " + as.type);
-            return as.type;
-        }
+        // Initialize a handle to each side's Type
+        final Type leftType     = assignment.left().getType();
+        final Type rightType    = assignment.right().getType();
 
-        /**
-         * Note: as.left() should be of NameExpr or RecordAccess or ArrayAccessExpr
-         * class!
-         */
-        // TODO: Check the implementation of Assignable.
-        if(!vType.assignable())
-            PJBugManager.INSTANCE.reportMessageAndExit(new PJMessage.Builder()
-                    .addAST(as)
-                    .addError(VisitorMessageNumber.TYPE_CHECKER_630)
-                    .build(), MessageType.PRINT_CONTINUE);
+        // Assert the left hand side is assignable
+        // TODO: Error 630
+        if(!leftType.assignable())
+            throw new TypeNotAssignmentCompatibleException(this, assignment.left(), rightType).commit();
 
-        // Now switch on the operators
-        switch (as.op()) {
+        // Resolve the Operators
+        switch(assignment.getOperator()) {
+
             case Assignment.EQ: {
-                // =
-                if (!vType.typeAssignmentCompatible(eType)) {
-                    as.type = new ErrorType();
-                    PJBugManager.INSTANCE.reportMessageAndExit(new PJMessage.Builder()
-                            .addAST(as)
-                            .addError(VisitorMessageNumber.TYPE_CHECKER_601)
-                            .addArguments(eType.toString(), vType.toString())
-                            .build(), MessageType.PRINT_CONTINUE);
-                }
+
+                if(!leftType.typeAssignmentCompatible(rightType))
+                    throw new TypeNotAssignmentCompatibleException(this, assignment.left(), rightType);
+
+            } break;
+
+            case Assignment.PLUSEQ: {
+
+                if(leftType.isStringType()
+                        && !rightType.isNumericType()
+                        && !rightType.isBooleanType()
+                        && !rightType.isCharType()
+                        && !rightType.isStringType())
+                    throw new TypeNotAssignmentCompatibleException(this, assignment.left(), rightType).commit();
+
                 break;
+
             }
             case Assignment.MULTEQ:
             case Assignment.DIVEQ:
             case Assignment.MODEQ:
-            case Assignment.PLUSEQ:
-            case Assignment.MINUSEQ:
-                // *=, /=, %=, +=, -=
+            case Assignment.MINUSEQ: {
 
-                // String += Primitive Type is OK
-                if (as.op() == Assignment.PLUSEQ && vType.isStringType()
-                        && (eType.isNumericType() || eType.isBooleanType() || eType.isStringType() || eType.isCharType()))
-                    break; // type will be set below.
-                else if (!vType.typeAssignmentCompatible(eType)) {
-                    // Left-hand side is not assignment compatible with the right-hand side.
-                    as.type = new ErrorType();
-                    PJBugManager.INSTANCE.reportMessageAndExit(new PJMessage.Builder()
-                            .addAST(as)
-                            .addError(VisitorMessageNumber.TYPE_CHECKER_600)
-                            .addArguments(eType.toString(), vType.toString())
-                            .build(), MessageType.PRINT_CONTINUE);
-                }
-                break;
+                if(!leftType.typeAssignmentCompatible(rightType))
+                    throw new TypeNotAssignmentCompatibleException(this, assignment.left(), rightType).commit();
+
+            } break;
+
             case Assignment.LSHIFTEQ:
             case Assignment.RSHIFTEQ:
-            case Assignment.RRSHIFTEQ:
-                // <<=, >>=, >>>=
-                if (!vType.isIntegralType()) {
-                    as.type = new ErrorType();
-                    PJBugManager.INSTANCE.reportMessageAndExit(new PJMessage.Builder()
-                            .addAST(as)
-                            .addError(VisitorMessageNumber.TYPE_CHECKER_604)
-                            .addArguments(as.opString())
-                            .build(), MessageType.PRINT_CONTINUE);
-                }
-                if (!eType.isIntegralType()) {
-                    as.type = new ErrorType();
-                    PJBugManager.INSTANCE.reportMessageAndExit(new PJMessage.Builder()
-                            .addAST(as)
-                            .addError(VisitorMessageNumber.TYPE_CHECKER_605)
-                            .addArguments(as.opString())
-                            .build(), MessageType.PRINT_CONTINUE);
-                }
-                break;
+            case Assignment.RRSHIFTEQ: {
+
+                if(!leftType.isIntegralType())
+                    throw new LeftSideOfShiftNotIntegralOrBoolean(this, leftType);
+
+                if(!rightType.isIntegralType())
+                    throw new RightSideOfShiftNotIntegralOrBoolean(this, rightType);
+
+            } break;
+
             case Assignment.ANDEQ:
             case Assignment.OREQ:
-            case Assignment.XOREQ:
-                // &=, |=, %=
-                if (!((vType.isIntegralType() && eType.isIntegralType())
-                        || (vType.isBooleanType() && eType.isBooleanType()))) {
-                    as.type = new ErrorType();
-                    // --Error.addError(as, "Both right and left-hand-side operands of operator '" +
-                    // as.opString() + "' must be either of boolean or integral type.", 3009);
-                }
-                break;
+            case Assignment.XOREQ: {
+
+                // TODO: Error 3009
+                if(!(leftType.isIntegralType() && rightType.isIntegralType())
+                        || (leftType.isBooleanType() && rightType.isBooleanType()))
+                    throw new CompoundBitwiseTypesNotIntegralOrBoolean(this, leftType, rightType).commit();
+
+            } break;
+
         }
 
-        // If we made it this far and as.type hasn't been set to be an error type, then
-        // the type of the assignment expression is that of the left-hand side (vType)
-        if (as.type == null)
-            as.type = vType;
+        // Bind the Assignment Expression's Type to the Left hand side's Type
+        assignment.setType(leftType);
 
-        Log.log(as.line + ": Assignment has type: " + as.type);
-        return as.type;
+        Log.log(assignment.line + ": Assignment has type: " + assignment.getType());
+
+        return null;
+
     }
 
-    // Syntax: Expr1 <op> Expr2
     @Override
-    public Type visitBinaryExpr(BinaryExpr be) {
-        Log.log(be.line + ": Visiting a Binary Expression");
+    public final Void visitBinaryExpr(final BinaryExpr binaryExpression) throws Phase.Error {
+        Log.log(binaryExpression.line + ": Visiting a Binary Expression");
 
-        Type lType = resolve(be.left().visit(this));
-        Type rType = resolve(be.right().visit(this));
-        String op = be.opString();
+        // Resolve the left & right hand sides
+        binaryExpression.left().visit(this);
+        binaryExpression.right().visit(this);
 
-        // Handle errors from type checking operands
-        if (lType instanceof ErrorType || rType instanceof ErrorType) {
-            be.type = new ErrorType();
-            Log.log(be.line + ": Binary Expression has type: " + be.type);
-            return be.type;
-        }
+        final Type leftType   = binaryExpression.left().getType();
+        final Type rightType  = binaryExpression.right().getType();
 
-        switch (be.op()) {
-            // < > <= >= : Type can be Integer only.
+        final Type resultType;
+
+        switch (binaryExpression.op()) {
+
             case BinaryExpr.LT:
             case BinaryExpr.GT:
             case BinaryExpr.LTEQ:
             case BinaryExpr.GTEQ: {
-                if (lType.isNumericType() && rType.isNumericType()) {
-                    be.type = new PrimitiveType(PrimitiveType.BooleanKind);
-                } else {
-                    be.type = new ErrorType();
-                    // !!Error.addError(be, "Operator '" + op + "' requires operands of numeric
-                    // type.", 3010);
-                }
-                break;
-            }
-            // == != : Type can be anything but void.
+
+                if(!leftType.isNumericType() && !rightType.isNumericType())
+                    throw new RelationalOperatorRequiresNumericTypeException(this, leftType, rightType).commit();
+
+                // Update the result type
+                resultType = new PrimitiveType(PrimitiveType.BooleanKind);
+
+            } break;
+
             case BinaryExpr.EQEQ:
             case BinaryExpr.NOTEQ: {
 
                 // TODO: barriers, timers, procs, records and protocols
-                // Funny issues with inheritance for records and protocols.
-                // should they then get a namedType as a type?
-                // extern types cannot be compared at all!
+                // Assert the Types are equal or any combination of numeric Types
+                if(!((leftType.typeEqual(rightType)) || (leftType.isNumericType() && rightType.isNumericType())))
+                    throw (leftType.isVoidType() || rightType.isVoidType())
+                            ? new VoidTypeUsedInLogicalComparisonException(this, leftType, rightType).commit()
+                            : new LogicalComparisonTypeMismatchException(this, leftType, rightType).commit();
 
-                if (lType.typeEqual(rType))
-                    if (lType.isVoidType()) {
-                        be.type = new ErrorType();
-                        // !!Error.addError(be, "Void type cannot be used here.", 3011);
-                    } else
-                        be.type = new PrimitiveType(PrimitiveType.BooleanKind);
-                else if (lType.isNumericType() && rType.isNumericType())
-                    // Any two numeric types can be compared.
-                    be.type = new PrimitiveType(PrimitiveType.BooleanKind);
-                else {
-                    be.type = new ErrorType();
-                    // !!Error.addError(be, "Operator '" + op + "' requires operands of the same
-                    // type.", 3012);
-                }
-                break;
-            }
-            // && || : Type can be Boolean only.
+                // Update the result Type
+                resultType = new PrimitiveType(PrimitiveType.BooleanKind);
+
+            } break;
+
             case BinaryExpr.ANDAND:
             case BinaryExpr.OROR: {
-                if (lType.isBooleanType() && rType.isBooleanType())
-                    be.type = lType;
-                else {
-                    be.type = new ErrorType();
-                    // !!Error.addError(be, "Operator '" + op + "' requires operands of boolean
-                    // type.", 3013);
-                }
-                break;
-            }
-            // & | ^ : Type can be Boolean or Integral.
+
+                if(!leftType.isBooleanType() || rightType.isBooleanType())
+                    throw new LogicalComparisonNotBooleanTypeException(this, leftType, rightType).commit();
+
+                // Update the result Type
+                resultType = new PrimitiveType(PrimitiveType.BooleanKind);
+
+            } break;
+
             case BinaryExpr.AND:
             case BinaryExpr.OR:
             case BinaryExpr.XOR: {
-                if (lType.isBooleanType() && rType.isBooleanType())
-                    be.type = lType;
-                else if (lType.isIntegralType() && rType.isIntegralType()) {
-                    be.type = ((PrimitiveType) lType).typeCeiling((PrimitiveType) rType);
 
-                    // Promote byte, short, and char to int.
-                    if (be.type.isByteType() || be.type.isShortType() || be.type.isCharType())
-                        be.type = new PrimitiveType(PrimitiveType.IntKind);
+                if(leftType.isBooleanType() && rightType.isBooleanType())
+                    resultType = new PrimitiveType(PrimitiveType.BooleanKind);
 
-                } else {
-                    be.type = new ErrorType();
-                    // !!Error.addError(be, "Operator '" + op + "' requires both operands of either
-                    // integral or boolean type.", 3014);
-                }
-                break;
-            }
+                else if(leftType.isIntegralType() && rightType.isIntegralType())
+                    resultType = leftType;
+
+                else
+                    throw new BinaryBitwiseTypesNotIntegralOrBoolean(this, leftType, rightType).commit();
+
+            } break;
+
             // + - * / % : Type must be numeric
-            case BinaryExpr.PLUS:
+            case BinaryExpr.PLUS: {
+
+                if(leftType.isStringType()
+                    && !rightType.isNumericType()
+                    && !rightType.isBooleanType()
+                    && !rightType.isStringType()
+                    && !rightType.isCharType())
+                    throw new TypeNotAssignableException(this, binaryExpression.left(), rightType).commit();
+
+                else if(rightType.isStringType()
+                    && !leftType.isNumericType()
+                    && !leftType.isBooleanType()
+                    && !leftType.isStringType()
+                    && !leftType.isCharType())
+                    throw new TypeNotAssignableException(this, binaryExpression.right(), leftType).commit();
+
+            }
             case BinaryExpr.MINUS:
             case BinaryExpr.MULT:
             case BinaryExpr.DIV:
             case BinaryExpr.MOD: {
-                if (lType.isNumericType() && rType.isNumericType()) {
-                    be.type = ((PrimitiveType) lType).typeCeiling((PrimitiveType) rType);
 
-                    // Promote byte, short, and char to int.
-                    if (be.type.isByteType() || be.type.isShortType() || be.type.isCharType())
-                        be.type = new PrimitiveType(PrimitiveType.IntKind);
-                } else if ((lType.isStringType()
-                        && (rType.isNumericType() || rType.isBooleanType() || rType.isStringType()))
-                        || (rType.isStringType()
-                        && (lType.isNumericType() || lType.isBooleanType() || lType.isStringType())))
-                    be.type = new PrimitiveType(PrimitiveType.StringKind);
-                else {
-                    be.type = new ErrorType();
-                    // !!Error.addError(be, "Operator '" + op + "' requires operands of numeric type
-                    // or string/boolean, string/numeric, or string/string type.", 3015);
-                }
-                break;
-            }
-            // << >> >>>:
+                if(!leftType.isNumericType() || !rightType.isNumericType())
+                    throw new ArithmeticOperatorRequiresNumericTypeException(this, leftType, rightType).commit();
+
+                // Update the result Type
+                resultType = leftType;
+
+            } break;
+
             case BinaryExpr.LSHIFT:
             case BinaryExpr.RSHIFT:
             case BinaryExpr.RRSHIFT: {
-                if (!lType.isIntegralType()) {
-                    be.type = new ErrorType();
-                    // !!Error.addError(be, "Operator '" + op + "' requires left operand of integral
-                    // type.", 3016);
-                } else if (!rType.isIntegralType()) {
-                    be.type = new ErrorType();
-                    // !!be.type = Error.addError(be, "Operator '" + op + "' requires right operand
-                    // of integral type.", 3017);
-                } else {
-                    be.type = lType;
-                    if (be.type.isByteType() || be.type.isShortType() || be.type.isCharType())
-                        be.type = new PrimitiveType(PrimitiveType.IntKind);
-                }
-                break;
-            }
-            default: {
-                be.type = new ErrorType();
-                // !!Error.addError(be, "Unknown operator '" + op + "'.", 3018);
-            }
+
+                if(!leftType.isIntegralType())
+                    throw new LeftSideOfShiftNotIntegralOrBoolean(this, leftType);
+
+                if(!rightType.isIntegralType())
+                    throw new RightSideOfShiftNotIntegralOrBoolean(this, rightType);
+
+                // Update the result type
+                resultType = leftType;
+
+            } break;
+
+            default: resultType = new ErrorType();
+
         }
-        Log.log(be.line + ": Binary Expression has type: " + be.type);
-        return be.type;
+
+        if(!resultType.isBooleanType()) {
+
+            // Retrieve the Type ceiling
+            Type ceiling = ((PrimitiveType) leftType).typeCeiling((PrimitiveType) rightType);
+
+            // Promote if necessary
+            if (ceiling.isByteType() || ceiling.isShortType() || ceiling.isCharType())
+                ceiling = new PrimitiveType(PrimitiveType.IntKind);
+
+            // Bind the Type
+            binaryExpression.setType(ceiling);
+
+        } else binaryExpression.setType(resultType);
+
+        Log.log(binaryExpression.line + ": Binary Expression has type: " + binaryExpression.getType());
+
+        return null;
+
     }
 
-    // Syntax: (Type)Expr
     @Override
-    public Type visitCastExpr(CastExpr ce) {
-        Log.log(ce.line + ": Visiting a cast expression");
+    public final Void visitUnaryPostExpr(final UnaryPostExpr unaryPostExpression) throws Phase.Error {
 
-        Type exprType = resolve(ce.expr().visit(this));
-        Type castType = resolve(ce.type());
+        Log.log(unaryPostExpression.line + ": Visiting a unary post expression");
 
-        // Handle errors here
-        if (exprType instanceof ErrorType || castType instanceof ErrorType) {
-            ce.type = new ErrorType();
-            return ce.type;
+        // Resolve the Expression
+        unaryPostExpression.getExpression().visit(this);
+
+        // Retrieve a handle to the type
+        final Type expressionType = unaryPostExpression.getExpression().getType();
+
+        // Assert the expression is bound to a numeric Type
+        if(!expressionType.isNumericType())
+            throw new InvalidUnaryOperandException(this, unaryPostExpression, unaryPostExpression.opString()).commit();
+
+        // TODO: what about protocol ?? Must be inside the appropriate case.protocol access
+        if(!(unaryPostExpression.getExpression() instanceof NameExpr)
+                && !(unaryPostExpression.getExpression() instanceof RecordAccess)
+                && !(unaryPostExpression.getExpression() instanceof ArrayAccessExpr))
+            throw new InvalidLiteralUnaryOperandException(this, unaryPostExpression).commit();
+
+        // Bind the Type
+        unaryPostExpression.setType(expressionType);
+
+        Log.log(unaryPostExpression.line + ": Unary Post Expression has type: " + expressionType);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitUnaryPreExpr(final UnaryPreExpr unaryPreExpression) throws Phase.Error {
+
+        Log.log(unaryPreExpression.line + ": Visiting a unary pre expression");
+
+        // Resolve the Expression
+        unaryPreExpression.expr().visit(this);
+
+        // Initialize a handle to the Expression's Type
+        final Type expressionType = unaryPreExpression.getType();
+
+        switch(unaryPreExpression.getOperator()) {
+
+            case UnaryPreExpr.PLUS:
+            case UnaryPreExpr.MINUS:
+
+                // TODO: Error 3052
+                if(!expressionType.isNumericType())
+                    throw new InvalidUnaryOperandException(
+                            this, unaryPreExpression, unaryPreExpression.opString()).commit();
+
+                break;
+
+            case UnaryPreExpr.NOT:
+
+                // TODO: Error 3053
+                if(!expressionType.isBooleanType())
+                    throw new InvalidUnaryOperandException(
+                            this, unaryPreExpression, unaryPreExpression.opString()).commit();
+
+                break;
+
+            case UnaryPreExpr.COMP:
+
+                // TODO: Error 3054
+                if(!expressionType.isIntegralType())
+                    throw new InvalidUnaryOperandException(
+                            this, unaryPreExpression, unaryPreExpression.opString()).commit();
+
+                break;
+
+            case UnaryPreExpr.PLUSPLUS:
+            case UnaryPreExpr.MINUSMINUS:
+
+                // TODO: protocol access Error 3057
+                if(!(unaryPreExpression.expr() instanceof NameExpr)
+                        && !(unaryPreExpression.expr() instanceof RecordAccess)
+                        && !(unaryPreExpression.expr() instanceof ArrayAccessExpr))
+                    throw new InvalidLiteralUnaryOperandException(this, unaryPreExpression).commit();
+
+                // TODO: Error 3057
+                if (!expressionType.isNumericType())
+                    throw new InvalidUnaryOperandException(this, unaryPreExpression, unaryPreExpression.opString()).commit();
+
+                break;
+
         }
 
-        if (exprType.isNumericType() && castType.isNumericType()) {
+        // Bind the Type
+        unaryPreExpression.setType(expressionType);
+
+        Log.log(unaryPreExpression.line + ": Unary Pre Expression has type: " + expressionType);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitChannelEndExpr(final ChannelEndExpr channelEndExpression) throws Phase.Error {
+
+        Log.log(channelEndExpression.line + ": Visiting a channel end expression.");
+
+        // Resolve the Channel Type
+        channelEndExpression.getChannelType().visit(this);
+
+        // Initialize a handle to the Channel Type
+        final Type type = channelEndExpression.getType();
+
+        // Expression must be of ChannelType type.
+        if(!(type instanceof ChannelType))
+            throw new ChannelEndExpressionBoundToNonChannelTypeException(this, channelEndExpression).commit();
+
+        // Retrieve a handle to the Channel Type & its' end
+        final ChannelType   channelType = (ChannelType) type;
+        final int           end         = (channelEndExpression.isRead()
+                ? ChannelEndType.READ_END : ChannelEndType.WRITE_END);
+
+        Type synthesized = new ErrorType();
+
+        // TODO: Redo; make it a little more accessible
+        // Channel has no shared ends.
+        if(channelType.isShared() == ChannelType.NOT_SHARED)
+            synthesized = new ChannelEndType(ChannelEndType.NOT_SHARED, channelType.getComponentType(), end);
+
+        // Channel has both ends shared, create a shared ChannelEndType.
+        else if (channelType.isShared() == ChannelType.SHARED_READ_WRITE)
+            synthesized = new ChannelEndType(ChannelEndType.SHARED, channelType.getComponentType(), end);
+
+        // Channel has read end shared; if .read then create a shared channel end, otherwise create a non-shared one.
+        else if (channelType.isShared() == ChannelType.SHARED_READ) {
+
+            final int share = (channelEndExpression.isRead() && (channelType.isShared() == ChannelType.SHARED_READ))
+                    ? ChannelEndType.SHARED : ChannelType.NOT_SHARED;
+
+            // Set the Synthesized Type
+            synthesized = new ChannelEndType(share, channelType.getComponentType(), end);
+
+        } else if(channelType.isShared() == ChannelType.SHARED_WRITE) {
+
+            final int share = (channelEndExpression.isWrite() && (channelType.isShared() == ChannelType.SHARED_WRITE))
+                    ? ChannelEndType.SHARED : ChannelType.NOT_SHARED;
+
+            // Set the Synthesized Type
+            synthesized = new ChannelEndType(share, channelType.getComponentType(), end);
+
+        }
+
+        // Bind the Type
+        channelEndExpression.setType(synthesized);
+
+        Log.log(channelEndExpression.line + ": Channel End Expr has type: " + channelEndExpression.getType());
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitChannelReadExpr(final ChannelReadExpr channelReadExpression) throws Phase.Error {
+
+        Log.log(channelReadExpression.line + ": Visiting a channel read expression.");
+
+        // Resolve the Channel Type
+        channelReadExpression.getExpression().visit(this);
+
+        // Initialize a handle to the Type
+        final Type type = channelReadExpression.getType();
+
+        // Assert the ChannelReadExpression is bound to the appropriate Type
+        if(!(type.isTimerType() || type instanceof ChannelEndType || type instanceof ChannelType))
+            throw new InvalidChannelReadExpressionTypeException(this, channelReadExpression).commit();
+
+        if(type instanceof ChannelEndType)
+            channelReadExpression.setType(((ChannelEndType) type).getComponentType());
+
+        else if(type instanceof ChannelType)
+            channelReadExpression.setType(((ChannelType) type).getComponentType());
+
+        else channelReadExpression.setType(new PrimitiveType(PrimitiveType.LongKind));
+
+        // Assert the ChannelReadExpression defines an extended rendezvous
+        if(channelReadExpression.definesExtendedRendezvous()) {
+
+            // Assert that timer reads do not have an extended rendezvous.
+            if(type.isTimerType())
+                throw new TimerReadWithExtendedRendezvous(this, channelReadExpression).commit();
+
+            // Otherwise, resolve the extended rendezvous
+            channelReadExpression.getExtendedRendezvous().visit(this);
+
+        }
+
+        Log.log(channelReadExpression.line + ": Channel read expression has type: " + channelReadExpression.getType());
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitArrayAccessExpr(final ArrayAccessExpr arrayAccessExpression) throws Phase.Error {
+        // ArrayAccessExpr
+        // Syntax: Expr1[Expr2]
+        // Expr1 must be array type and Expr2 my be integer.
+        // Array?(T(Expr1)) /\ Integer?(T(Expr2))
+        // If T(Expr1) = Array(BaseType) => T(Expr1[Expr2]) := BaseType
+        Log.log(arrayAccessExpression.line + ": Visiting ArrayAccessExpr");
+
+        // Resolve the Target Expression
+        arrayAccessExpression.targetExpression().visit(this);
+
+        // Initialize a handle to the target Expression's Type
+        final Type targetType = arrayAccessExpression.targetExpression().getType();
+
+        // Assert the target type is an ArrayType
+        if(!(targetType instanceof ArrayType))
+            throw new InvalidArrayAccessTypeException(this, targetType).commit();
+
+        // Initialize a handle to the ArrayType
+        final ArrayType arrayType = (ArrayType) targetType;
+
+        // Initialize a handle to the component Type
+        Type resultantType = arrayType.getComponentType();
+
+        // Update the resultant Type if the depth is greater than 1
+        if(arrayType.getDepth() > 1)
+            resultantType = new ArrayType(arrayType.getComponentType(), arrayType.getDepth() - 1);
+
+        // Set the Type
+        arrayAccessExpression.setType(resultantType);
+
+        Log.log(arrayAccessExpression.line + ": ArrayAccessExpr has type " + arrayAccessExpression.type);
+
+        // Resolve the index Type
+        arrayAccessExpression.indexExpression().visit(this);
+
+        // Initialize a handle to the Index Type
+        Type indexType = arrayAccessExpression.indexExpression().getType();
+
+        // This error does not create an error type cause the baseType() is still the array expression's type.
+        // TODO: Error 655
+        if(!indexType.isIntegerType())
+            throw new InvalidArrayDimensionTypeException(this, arrayAccessExpression).commit();
+
+        Log.log(arrayAccessExpression.line + ": Array Expression has type: " + arrayAccessExpression.type);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitRecordAccess(final RecordAccess recordAccessExpression) throws Phase.Error {
+
+        Log.log(recordAccessExpression.line + ": visiting a record access expression (" + recordAccessExpression.field() + ")");
+
+        // Resolve the Record
+        recordAccessExpression.record().visit(this);
+
+        // Initialize a handle to the Type
+        final Type type = recordAccessExpression.getType();
+
+        // TODO: size of strings.... size()? size? or length? for now: size()
+
+        if((type instanceof ArrayType) && recordAccessExpression.field().toString().equals("size")) {
+
+            recordAccessExpression.setType(new PrimitiveType(PrimitiveType.IntKind));
+            recordAccessExpression.isArraySize = true;
+
+        } else if(type.isStringType() && recordAccessExpression.field().toString().equals("length")) {
+
+            recordAccessExpression.setType(new PrimitiveType(PrimitiveType.LongKind));
+            recordAccessExpression.isStringLength = true;
+
+        } else {
+
+            // Assert the Type is a Record Type Declaration
+            if(type instanceof RecordTypeDecl) {
+
+                // Find the field and make the type of the record access equal to the field. TODO: test inheritence here
+                final RecordMember recordMember =
+                        ((RecordTypeDecl) type).getMember(recordAccessExpression.field().toString());
+
+                // TODO: Error 3062
+                if(recordMember == null)
+                    throw new UndefinedSymbolException(this, recordAccessExpression).commit();
+
+                // Bind the Type
+                recordAccessExpression.setType(recordMember.getType());
+
+            // Otherwise, it's Protocol Type
+            } else {
+
+                final ProtocolTypeDecl protocolTypeDeclaration = (ProtocolTypeDecl) type;
+
+                // TODO: Error Format: "Illegal access to non-switched protocol type '" + protocolTypeDeclaration + "'."
+                if(!protocolsSwitchedOn.contains(protocolTypeDeclaration.toString()))
+                    throw new IllegalNestedSwitchInProtocolException(this, protocolTypeDeclaration).commit();
+
+                final ProtocolCase protocolCase = protocolTagsSwitchedOn.get(protocolTypeDeclaration.toString());
+                final String fieldName = recordAccessExpression.field().toString();
+
+                boolean found = false;
+
+                if(protocolCase != null)
+                    for(RecordMember recordMember: protocolCase.body())
+                        if(recordMember.getName().toString().equals(fieldName)) {
+
+                            recordAccessExpression.setType(recordMember.getType());
+                            found = true;
+
+                        }
+
+                // TODO: Error 3073
+                // TODO: Format: "Unknown field reference '" + fieldName + "' in protocol tag '"
+                //                            + protocolTypeDeclaration + "' in protocol '" + protocolTypeDeclaration + "'."
+                if(!found)
+                    throw new UndefinedSymbolException(this, recordAccessExpression).commit();
+
+            }
+
+        }
+
+        Log.log(recordAccessExpression.line + ": record access expression has type: " + recordAccessExpression.type);
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitCastExpr(CastExpr ce) throws Phase.Error {
+
+        Log.log(ce.line + ": Visiting a cast expression");
+
+        // Resolve the expression
+        ce.getExpression().visit(this);
+
+        // Initialize a handle to the expression & cast Type
+        final Type expressionType   = ce.getExpression().getType();
+        final Type castType         = ce.type();
+
+        if(expressionType.isNumericType() && castType.isNumericType()) {
+
             ce.type = castType;
-        } else if (exprType instanceof ProtocolTypeDecl && castType instanceof ProtocolTypeDecl) {
+
+        } else if (expressionType instanceof ProtocolTypeDecl && castType instanceof ProtocolTypeDecl) {
 
             // TODO: finish this
-        } else if (exprType instanceof RecordTypeDecl && castType instanceof RecordTypeDecl) {
+
+        } else if (expressionType instanceof RecordTypeDecl && castType instanceof RecordTypeDecl) {
+
             // TODO: finish this
+
         } else {
+
             // Turns out that casts like this are illegal:
             // int a[][];
             // double b[][];
@@ -766,723 +1339,3085 @@ public class TypeChecker extends Visitor<Type> {
             // b = (double[][])a;
             ce.type = new ErrorType();
             // !!Error: Illegal cast of value of type exprType to castType.
+
         }
 
         Log.log(ce.line + ": Cast Expression has type: " + ce.type);
-        return ce.type;
-    }
-
-    @Override
-    public Type visitParamDecl(final ParamDecl parameterDeclaration) {
-
-        System.out.println("Visiting ParamDecl: " + parameterDeclaration);
-
-        return super.visitParamDecl(parameterDeclaration);
-
-    }
-
-    // Syntax: Expr.read or Expr.write
-    @Override
-    public Type visitChannelEndExpr(ChannelEndExpr ce) {
-        Log.log(ce.line + ": Visiting a channel end expression.");
-
-        Type t = resolve(ce.channel().visit(this));
-
-        // Handle error types.
-        if (t instanceof ErrorType) {
-            ce.type = t;
-            Log.log(ce.line + ": Channel End Expr has type: " + ce.type);
-            return ce.type;
-        }
-
-        // Expression must be of ChannelType type.
-        if (!(t instanceof ChannelType)) {
-            ce.type = new ErrorType();
-            // !!Error.addError(ce, "Channel end expression requires channel type.", 3019);
-            Log.log(ce.line + ": Channel End Expr has type: " + ce.type);
-            return ce.type;
-        }
-
-        // Now create a ChannelEndType based on the sharing attibutes of the channel
-        // type.
-        ChannelType ct = (ChannelType) t;
-        int end = (ce.isRead() ? ChannelEndType.READ_END : ChannelEndType.WRITE_END);
-
-        // Channel has no shared ends.
-        if (ct.isShared() == ChannelType.NOT_SHARED)
-            ce.type = new ChannelEndType(ChannelEndType.NOT_SHARED, ct.getComponentType(), end);
-
-            // Channel has both ends shared, create a shared ChannelEndType.
-        else if (ct.isShared() == ChannelType.SHARED_READ_WRITE)
-            ce.type = new ChannelEndType(ChannelEndType.SHARED, ct.getComponentType(), end);
-
-            // Channel has read end shared; if .read then create a shared channel end,
-            // otherwise create a non-shared one.
-        else if (ct.isShared() == ChannelType.SHARED_READ)
-            ce.type = new ChannelEndType((ce.isRead() && ct.isShared() == ChannelType.SHARED_READ) ? ChannelEndType.SHARED
-                    : ChannelType.NOT_SHARED, ct.getComponentType(), end);
-
-            // Channel has write end shared; if .write then create a shared chanenl end,
-            // otherwise create a non-shared one.
-        else if (ct.isShared() == ChannelType.SHARED_WRITE)
-            ce.type = new ChannelEndType(
-                    (ce.isWrite() && ct.isShared() == ChannelType.SHARED_WRITE) ? ChannelEndType.SHARED
-                            : ChannelType.NOT_SHARED,
-                    ct.getComponentType(), end);
-
-        else {
-            // Techinically we should never be able to reach this code.
-            ce.type = new ErrorType();
-            // !!Error.addError(ce, "Unknown sharing status for channel end expression.",
-            // 3020);
-        }
-
-        Log.log(ce.line + ": Channel End Expr has type: " + ce.type);
-        return ce.type;
-
-    }
-
-    // Syntax: Expr.read()
-    // Expr.read({...})
-    @Override
-    public Type visitChannelReadExpr(ChannelReadExpr cr) {
-        Log.log(cr.line + ": Visiting a channel read expression.");
-
-        // TODO: targetType MAY be a channelType:
-
-        // For ease of use, the following code should be legal:
-        // chan<int> c;
-        // c.read();
-
-        // Only channel ends, timers, and channels [see above] can be read.
-        Type targetType = resolve(cr.channel().visit(this));
-        if (!(targetType instanceof ChannelEndType || targetType.isTimerType() || targetType instanceof ChannelType)) {
-            cr.type = new ErrorType();
-            // Error.addError(cr, "Channel or Timer type required in channel/timer read.",
-            // 3021);
-            Log.log(cr.line + ": Channel read expression has type: " + cr.type);
-            return cr.type;
-        }
-
-        // Construct the appropriate type depending on what is being read.
-        if (targetType instanceof ChannelEndType) {
-            ChannelEndType cet = (ChannelEndType) targetType;
-            cr.type = cet.getComponentType();
-        } else if (targetType instanceof ChannelType) {
-            cr.type = ((ChannelType) targetType).getComponentType();
-        } else {
-            // Must be a time type, and timer read() returns values of type long.
-            cr.type = new PrimitiveType(PrimitiveType.LongKind);
-        }
-
-        // Check that timer reads do not have an extended rendez-vous.
-        if (targetType.isTimerType() && cr.extRV() != null) {
-            // Don't generate an error type, just produce an error and keep going.
-            // !!Error.addError(cr, "Timer read cannot have extended rendez-vous block.",
-            // 3022);
-        }
-
-        // If there is an extended rendez-vous block and we are not reading from a
-        // timer, check it.
-        if (cr.extRV() != null && !targetType.isTimerType()) {
-            cr.extRV().visit(this);
-        }
-
-        Log.log(cr.line + ": Channel read expression has type: " + cr.type);
-        return cr.type;
-    }
-
-    @Override
-    public Type visitInvocation(Invocation in) {
-
-        Log.log(in.line + ": visiting invocation (" + in.procedureName() + ")");
-
-        in.params().visit(this);
-
-        // id::f(...)
-        // id.id::f(...)
-        // ...
-        // id.id....id::f(...)
-        // should be looked up directly in the appropriate symbol table and candidates
-        // should only be taken from there.
-
-        // TODO: this should be redone!!!
-        boolean firstTable = true;
-        SymbolTable st = topLevelDecls;
-        Sequence<ProcTypeDecl> candidateProcs = new Sequence<ProcTypeDecl>();
-
-        // Find all possible candidate procedures.
-        // This should be procedures of the right name and the right number of
-        // paremeters from:
-        // - The top level symbol table (the one associated with the file passed to the
-        // compiler.
-        // - The symbol tables of any files imported by the top level file, but NOT what
-        // they import.
-        while(st != null) {
-            SymbolTable procs = (SymbolTable) st.getShallow(in.procedureName().getname());
-            if(procs != null) {
-                for(Object pd: procs.entries.values().toArray()) {
-                    ProcTypeDecl ptd = (ProcTypeDecl) pd;
-                    if(ptd.formalParams().size() == in.params().size()) {
-                        // TODO: this should store this somewhere
-                        boolean candidate = true;
-                        Log.log(" checking if Assignment Compatible proc: " + ptd + " ( " + ptd.getSignature()
-                                + " ) ");
-                        for (int i = 0; i < in.params().size(); i++) {
-
-                            ptd.formalParams().child(i).visit(this);
-                            in.params().child(i).visit(this);
-
-                            candidate &= ptd.formalParams().child(i).type()
-                                    .typeAssignmentCompatible(in.params().child(i).type);
-
-                            //candidate = candidate && resolve(ptd.formalParams().child(i).type())
-                                    //.typeAssignmentCompatible(resolve(in.params().child(i).type));
-                        }
-                        System.out.println("Here");
-                        if (candidate) {
-                            // System.out.println("Candidate kept");
-                            candidateProcs.append(ptd);
-                            Log.log("Possible proc: " + ptd + " " + ptd.formalParams());
-                        } else
-                            System.out.println("Candidate thrown away");
-                    }
-
-                }
-            }
-
-            if (firstTable)
-                st = st.getImportParent();
-            else
-                st = st.getParent();
-            firstTable = false;
-        }
-
-        Log.log("Found these candidates: ");
-        Log.log("| " + candidateProcs.size() + " candidate(s) were found:");
-        for (int i = 0; i < candidateProcs.size(); i++) {
-            ProcTypeDecl pd = candidateProcs.child(i);
-            Log.logNoNewline("|   " + in.procedureName().getname() + "(");
-            Log.logNoNewline(pd.getSignature());
-            Log.log(" )");
-        }
-
-        Log.log("" + candidateProcs.size());
-        int noCandidates = candidateProcs.size();
-
-        if (noCandidates == 0) {
-            Error.error(in, "No suitable procedure found.", false, 3037);
-            return null;
-        } else if (noCandidates > 1) {
-            // Iterate through the list of potential candidates
-            for (int i = 0; i < candidateProcs.size(); i++) {
-                // Take the i'th one out
-                ProcTypeDecl ptd1 = candidateProcs.child(i);
-
-                // Tf this proc has been removed - continue.
-                if (ptd1 == null)
-                    continue;
-                // Temporarily remove ptd from candidateprocs so we
-                // don't find it again in the next loop
-                candidateProcs.set(i, null);
-                // compare to all other candidates ptd2.
-                for (int j = 0; j < candidateProcs.size(); j++) {
-                    ProcTypeDecl ptd2 = candidateProcs.child(j);
-                    // if the proc was already removed - continue on
-                    if (ptd2 == null)
-                        continue;
-                    //
-                    boolean candidate = true;
-                    // grab all the parameters of ptd1 and ptd2
-                    Sequence<ParamDecl> ptd1Params = ptd1.formalParams();
-                    Sequence<ParamDecl> ptd2Params = ptd2.formalParams();
-
-                    // now check is ptd2[k] :> ptd1[k] for all k. If it does remove ptd2.
-                    // check each parameter in turn
-                    for (int k = 0; k < ptd1Params.nchildren; k++) {
-                        candidate = candidate && (resolve(((ParamDecl) ptd2Params.child(k)).type()))
-                                .typeAssignmentCompatible(resolve(((ParamDecl) ptd1Params.child(k)).type()));
-
-                        if (!candidate)
-                            break;
-                    }
-                    if (candidate) {
-                        // ptd1 is more specialized than ptd2, so throw ptd2 away.
-                        Log.logNoNewline("|   " + in.procedureName().getname() + "(");
-                        Log.logNoNewline(ptd2.getSignature());
-                        Log.logNoNewline(" ) is less specialized than " + in.procedureName().getname() + "(");
-                        Log.logNoNewline(ptd1.getSignature());
-                        Log.log(" ) and is thus thrown away!");
-                        // Remove ptd2
-                        candidateProcs.set(j, null);
-                        noCandidates--;
-                    }
-                }
-                // now put ptd1 back in to candidateProcs
-                candidateProcs.set(i, ptd1);
-            }
-        }
-        if (noCandidates != 1) {
-            // we found more than one!
-            Log.log("| " + candidateProcs.size() + " candidate(s) were found:");
-            for (int i = 0; i < candidateProcs.size(); i++) {
-                ProcTypeDecl pd = candidateProcs.child(i);
-                if (pd != null) {
-                    Log.logNoNewline("|   " + in.procedureName().getname() + "(");
-                    Log.logNoNewline(pd.getSignature());
-                    Log.log(" )");
-                }
-            }
-            Error.addError(in, "Found more than one candidate - cannot chose between them!", 3038);
-            return null;
-        } else {
-            // we found just one!
-            Log.log("| We were left with exactly one candidate to call!");
-            Log.log("+------------- End of findMethod --------------");
-            for (int i = 0; i < candidateProcs.size(); i++)
-                if (candidateProcs.child(i) != null) {
-                    in.targetProc = candidateProcs.child(i);
-                    in.type = in.targetProc.returnType();
-                }
-        }
-        Log.log("myPackage: " + in.targetProc.myPackage);
-        Log.log(in.line + ": invocation has type: " + in.type);
-        return in.type;
-    }
-
-    @Override
-    public Type visitNameExpr(NameExpr ne) {
-
-        Log.log(ne.line + ": Visiting a Name Expression (" + ne.name().getname() + ").");
-
-        if (ne.myDecl instanceof LocalDecl || ne.myDecl instanceof ParamDecl || ne.myDecl instanceof ConstantDecl) {
-            // TODO: what about ConstantDecls ???
-            // TODO: don't think a resolve is needed here
-            ne.type = resolve(((VarDecl) ne.myDecl).type());
-        } else
-            ne.type = Error.addError(ne, "Unknown name expression '" + ne.name().getname() + "'.", 3029);
-
-        Log.log(ne.line + ": Name Expression (" + ne.name().getname() + ") has type: " + ne.type);
-        return ne.type;
-
-    }
-
-    @Override
-    public Type visitNewArray(NewArray ne) {
-        Log.log(ne.line + ": Visiting a NewArray " + ne.dimsExpr().size() + " " + ne.dims().size());
-
-        // check that each dimension is of integer type
-        for (Expression exp : ne.dimsExpr()) {
-            Type dimT = resolve(exp.visit(this));
-            if (!dimT.isIntegralType())
-                Error.addError(exp, "Array dimension must be of integral type.", 3031);
-        }
-        // if there is an initializer, then make sure it is of proper and equal depth.
-        ne.type = new ArrayType(ne.baseType(), ne.dims().size() + ne.dimsExpr().size());
-        if (ne.init() != null) {
-            // The elements of ne.init() get visited in the last line of
-            // arrayAssignmentCompatible.
-            if (!arrayAssignmentCompatible(ne.type, ne.init()))
-                Error.addError(ne, "Array Initializer is not compatible with type '" + ne.type + "'.", 3032);
-            ne.init().type = ne.type;
-        }
-        Log.log(ne.line + ": NewArray type is " + ne.type);
-        return ne.type;
-    }
-
-    @Override
-    public Type visitRecordAccess(RecordAccess ra) {
-        Log.log(ra.line + ": visiting a record access expression (" + ra.field().getname() + ")");
-        Type tType = resolve(ra.record().visit(this));
-        tType = tType.visit(this);
-
-        // TODO: size of strings.... size()? size? or length? for now: size() -> see
-        // visitInvocation
-
-        // Array lengths can be accessed through a length 'field'.
-        if ((tType instanceof ArrayType) && ra.field().getname().equals("size")) {
-            ra.type = new PrimitiveType(PrimitiveType.IntKind);
-            ra.isArraySize = true;
-            Log.log(ra.line + ": Array size expression has type: " + ra.type);
-            return ra.type;
-        }
-
-        if (tType.isStringType() && ra.field().getname().equals("length")) {
-            ra.type = new PrimitiveType(PrimitiveType.LongKind); // TODO: should this be long ???
-            ra.isStringLength = true;
-            Log.log(ra.line + ": string length expression has type: " + ra.type);
-            return ra.type;
-        } else {
-            if (!(tType instanceof RecordTypeDecl || tType instanceof ProtocolTypeDecl)) {
-                ra.type = Error.addError(ra,
-                        "Request for member '" + ra.field().getname() + "' in something not a record or protocol type.",
-                        3061);
-                return ra.type;
-            }
-            // tType can be a record and it can be a protocol:
-            if (tType instanceof RecordTypeDecl) {
-                // Find the field and make the type of the record access equal to the field.
-                // TODO: test inheritence here
-                RecordMember rm = ((RecordTypeDecl) tType).getMember(ra.field().getname());
-
-                if (rm == null) {
-                    ra.type = Error.addError(ra, "Record type '" + tType
-                            + "' has no member '" + ra.field().getname() + "'.", 3062);
-                    return ra.type;
-                }
-                // System.out.println("RM.type: " + rm.type());
-
-                Type rmt = resolve(rm.type());
-                ra.type = rmt;
-            } else {
-                // Must be a protocol type.
-                //
-                // switch statements cannot be nested on the same protocol!
-                // Keep a hashtable of the protocols we have switched on - and their tags!
-                //
-                // | protocol Name | -> ProtocolCase
-                //
-                // We have <expr>.<field> that means a field <field> in the tag associated with
-                // the type of <expr>.
-
-                ProtocolTypeDecl pt = (ProtocolTypeDecl) tType;
-
-                if (!protocolsSwitchedOn.contains(pt.toString())) {
-                    Error.addError(pt, "Illegal access to non-switched protocol type '" + pt + "'.", 0000);
-                    ra.type = new ErrorType();
-                    Log.log(ra.line + ": record access expression has type: " + ra.type);
-                    return ra.type;
-                }
-                // Lookup the appropriate ProtocolCase associated with the protocol's name in
-                // protocolTagsSwitchedOn
-
-                // System.out.println("HashSet: "+protocolsSwitchedOn);
-
-                // System.out.println("[RecordAccess]: " + pt.name().getname());
-                ProtocolCase pc = protocolTagsSwitchedOn.get(pt.toString());
-
-                // System.out.println("[RecordAccess]: Found protocol tag: " +
-                // pc.name().getname());
-
-                String fieldName = ra.field().getname();
-                // there better be a field in pc that has that name!
-                boolean found = false;
-
-                if (pc != null)
-                    for (RecordMember rm : pc.body()) {
-                        Log.log("Looking at field " + rm.name().getname());
-                        if (rm.name().getname().equals(fieldName)) {
-                            // yep we found it; now set the type
-                            // System.out.println("FOUND IT - it is type " + rm.type());
-                            Type rmt = resolve(rm.type());
-                            ra.type = rmt;
-                            found = true;
-                            break;
-                        }
-                    }
-                if (!found) {
-                    Error.addError(ra, "Unknown field reference '" + fieldName + "' in protocol tag '"
-                            + pt + "' in protocol '" + pt + "'.", 3073);
-                    ra.type = new ErrorType();
-                }
-            }
-        }
-        Log.log(ra.line + ": record access expression has type: " + ra.type);
-        return ra.type;
-    }
-
-    @Override
-    public Type visitTernary(Ternary te) {
-        Log.log(te.line + ": Visiting a ternary expression");
-
-        Type eType = resolve(te.expr().visit(this));
-        Type trueBranchType = te.trueBranch().visit(this);
-        Type falseBranchType = te.falseBranch().visit(this);
-
-        if (!eType.isBooleanType())
-            Error.addError(te, "Non-boolean Expression (" + eType + ") found as test in ternary expression.",
-                    3070);
-
-        // e ? t : f
-        // Primitive?(Type(t)) & Primitive?(Type(f)) & (Type(t) :=T Type(f) || Type(f)
-        // :=T Type(t)) =>
-        // Type(e ? t : f) = ceiling(Type(t), Type(f))
-        if (trueBranchType instanceof PrimitiveType && falseBranchType instanceof PrimitiveType) {
-            if (falseBranchType.typeAssignmentCompatible(trueBranchType)
-                    || trueBranchType.typeAssignmentCompatible(falseBranchType))
-                te.type = ((PrimitiveType) trueBranchType).typeCeiling((PrimitiveType) falseBranchType);
-            else
-                Error.addError(te, "Both branches of a ternary expression must be of assignment compatible types.",
-                        3071);
-        } else if (trueBranchType instanceof ProtocolTypeDecl && falseBranchType instanceof ProtocolTypeDecl) {
-            te.type = null; // TODO
-        } else if (trueBranchType instanceof RecordTypeDecl && falseBranchType instanceof RecordTypeDecl) {
-            te.type = null; // TODO
-        } else if ((trueBranchType instanceof ArrayType) && (falseBranchType instanceof ArrayType)) {
-            te.type = null; // TODO
-            // if both are of primitive type they must be the same. if they are of record
-            // type or protocol type use the inheritance rules for those.
-        } else
-            Error.addError(te, "Both branches of a ternary expression must be of assignment compatible types.", 3072);
-
-        Log.log(te.line + ": Ternary has type: " + te.type);
-        return te.type;
-    }
-
-    @Override
-    public Type visitUnaryPostExpr(UnaryPostExpr up) {
-        Log.log(up.line + ": Visiting a unary post expression");
-        up.type = null;
-        Type eType = resolve(up.expr().visit(this));
-
-        // TODO: what about protocol ?? Must be inside the appropriate case.
-        if (up.expr() instanceof NameExpr || up.expr() instanceof RecordAccess
-                || up.expr() instanceof ArrayAccessExpr) {
-            if (!eType.isIntegralType() && !eType.isDoubleType() && !eType.isFloatType())
-                up.type = Error.addError(up,
-                        "Cannot apply operator '" + up.opString() + "' to something of type " + eType + ".",
-                        3051);
-        } else
-            up.type = Error.addError(up, "Variable expected, found value.", 3055);
-
-        // No errors found, set type.
-        if (up.type == null)
-            up.type = eType;
-
-        Log.log(up.line + ": Unary Post Expression has type: " + up.type);
-        return up.type;
-    }
-
-    @Override
-    public Type visitUnaryPreExpr(UnaryPreExpr up) {
-        Log.log(up.line + ": Visiting a unary pre expression");
-        up.type = null;
-        Type eType = resolve(up.expr().visit(this));
-
-        switch (up.op()) {
-            case UnaryPreExpr.PLUS:
-            case UnaryPreExpr.MINUS:
-                if (!eType.isNumericType())
-                    up.type = Error.addError(up,
-                            "Cannot apply operator '" + up.opString() + "' to something of type " + eType + ".",
-                            3052);
-                break;
-            case UnaryPreExpr.NOT:
-                if (!eType.isBooleanType())
-                    up.type = Error.addError(up, "Cannot apply operator '!' to something of type " + eType + ".",
-                            3053);
-                break;
-            case UnaryPreExpr.COMP:
-                if (!eType.isIntegralType())
-                    up.type = Error.addError(up, "Cannot apply operator '~' to something of type " + eType + ".",
-                            3054);
-                break;
-            case UnaryPreExpr.PLUSPLUS:
-            case UnaryPreExpr.MINUSMINUS:
-                // TODO: protocol access
-                if (!(up.expr() instanceof NameExpr) && !(up.expr() instanceof RecordAccess)
-                        && !(up.expr() instanceof ArrayAccessExpr))
-                    up.type = Error.addError(up, "Variable expected, found value.", 3057);
-
-                if (!eType.isNumericType() && up.type == null)
-                    up.type = Error.addError(up,
-                            "Cannot apply operator '" + up.opString() + "' to something of type " + eType + ".",
-                            3056);
-                break;
-        }
-        // No error was found, set type.
-        if (up.type == null)
-            up.type = eType;
-        Log.log(up.line + ": Unary Pre Expression has type: " + up.type);
-        return up.type;
-    }
-
-    // ArrayLiteral
-    //
-    // Syntax: { ... }
-    //
-    @Override
-    public Type visitArrayLiteral(ArrayLiteral al) {
-
-        Log.log(al.line + ": visiting an array literal.");
-
-        // Array Literals cannot appear without a 'new' keyword.
-//        CompilerErrorManager.INSTANCE.reportMessage(
-//                new ProcessJMessage.Builder().addAST(al).addError(VisitorMessageNumber.TYPE_CHECKER_656).build(),
-//                MessageType.PRINT_CONTINUE);
 
         return null;
 
     }
 
     @Override
-    public Type visitPrimitiveLiteral(PrimitiveLiteral pl) {
-        Log.log(pl.line + ": Visiting a Primitive Literal (" + pl.getText() + ")");
+    public final Void visitNameExpr(final NameExpr nameExpression) throws Phase.Error {
 
-        pl.type = new PrimitiveType(pl.getKind());
+        Log.log(nameExpression.line + ": Visiting a Name Expression (" + nameExpression + ").");
 
-        Log.log(pl.line + ": Primitive Literal has type: " + pl.type);
-        return pl.type;
+        // One of the few terminal points, attempt to retrieve the type from our current scope
+        final Object resolved = this.getScope().get(nameExpression.getName().getName(), nameExpression.getPackageName());
+
+        // Assert that our result is a Type
+        if(!(resolved instanceof Type))
+            throw new UndefinedSymbolException(this, nameExpression).commit();
+
+        // Otherwise, bind the Type
+        nameExpression.setType((Type) resolved);
+
+        Log.log(nameExpression.line + ": Name Expression (" + nameExpression + ") has type: " + nameExpression.type);
+
+        return null;
+
     }
 
     @Override
-    public Type visitProtocolLiteral(ProtocolLiteral pl) {
+    public final Void visitArrayLiteral(ArrayLiteral arrayLiteral) throws Phase.Error {
+
+        Log.log(arrayLiteral.line + ": visiting an array literal.");
+
+        return null;
+
+    }
+
+    @Override
+    public final Void visitProtocolLiteral(ProtocolLiteral pl) throws Phase.Error {
+
         Log.log(pl.line + ": Visiting a protocol literal");
 
-        pl.type = pl.myTypeDecl;
-        return pl.myTypeDecl;
+        // TODO: be careful here if a protocol type extends another protocol type, then the
+        // record literal must contains expressions for that part too!!!
 
-        // Validity of the tag was already checked in NameChecker.
+        return null;
 
-        // TODO: below code is incorrect as it does not take 'extends' into account
-
-        // Name{ tag: exp_1, exp_2, ... ,exp_n }
-        /*
-         * ProtocolCase pc = pl.myChosenCase; ProtocolTypeDecl pd = pl.myTypeDecl; if
-         * (pc.body().size() != pl.expressions().size()) Error.addError(pl,
-         * "Incorrect number of expressions in protocol literal '" + pd.name().getname()
-         * + "'.", 3033); for (int i = 0; i < pc.body().size(); i++) { Type eType =
-         * resolve(pl.expressions().child(i).visit(this)); Type vType =
-         * resolve(((RecordMember) pc.body().child(i)).type()); Name name =
-         * ((RecordMember) pc.body().child(i)).name(); if
-         * (!vType.typeAssignmentCompatible(eType)) Error.addError(pl,
-         * "Cannot assign value of type '" + eType + "' to protocol field '" +
-         * name.getname() + "' of type '" + vType + "'.", 3034); } Log.log(pl.line +
-         * ": protocol literal has type: " + pl.myTypeDecl); return pl.myTypeDecl;
-         */
     }
 
     @Override
-    public Type visitRecordLiteral(RecordLiteral rl) {
-        Log.log(rl.line + ": visiting a record literal (" + rl.name().getname() + ").");
-        RecordTypeDecl rt = rl.myTypeDecl;
+    public final Void visitRecordLiteral(RecordLiteral rl) throws Phase.Error {
+
+        Log.log(rl.line + ": visiting a record literal (" + rl + ").");
+        //RecordTypeDecl rt = rl.myTypeDecl;
 
         // TODO: be careful here if a record type extends another record type, then the
-        // record literal must contains
-        // expressions for that part too!!!
+        // record literal must contains expressions for that part too!!!
 
-        return rt;
-    }
-
-    /// ------------------------------------------------------------------------------------------- ///
-    /// Types                                                                                       ///
-    /// ------------------------------------------------------------------------------------------- ///
-
-    // ArrayType
-    //
-    // An ArrayType's type is itself.
-    @Override
-    public Type visitArrayType(ArrayType at) {
-        Log.log(at.line + ": Visiting an ArrayType");
-        Log.log(at.line + ": ArrayType has type " + at);
-        return at;
-    }
-
-    @Override
-    public Type visitChannelType(ChannelType ct) {
-        Log.log(ct.line + ": Visiting a channel type.");
-        ct.getComponentType().visit(this);
-        Log.log(ct.line + ": Channel type has type: " + ct);
-        return ct;
-    }
-
-    @Override
-    public Type visitChannelEndType(ChannelEndType ct) {
-        Log.log(ct.line + ": Visiting a channel end type.");
-        ct.getComponentType().visit(this);
-        Log.log(ct.line + ": Channel end type " + ct);
-        return ct;
-    }
-
-    @Override
-    public Type visitExternType(ExternType et) {
-        Log.log(et.line + ": Visiting an extern type");
-        Log.log(et.line + ": Extern type has type: " + et);
-        // The type of an external type is itself.
-        return et;
-    }
-
-    @Override
-    public Type visitPrimitiveType(PrimitiveType pt) {
-        Log.log(pt.line + ": Visiting a Primitive type.");
-        Log.log(pt.line + ": Primitive type has type: " + pt);
-        return pt;
-    }
-
-    @Override
-    public Type visitNamedType(NamedType namedType) {
-
-        // TODO: NamedType should already have a Type bound to it by now. Instead of searching scopes, to bind the Type
-        // TODO: The pointed Type's Compilation must already be checked or in progress; otherwise we will infinite loop
-
-
-        return namedType.getType();
-
-    }
-
-    @Override
-    public Type visitVar(Var va) {
-        Log.log(va.line + ": Visiting a var (" + va.name().getname() + ").");
-
-        if (va.init() != null) {
-
-            Type vType = resolve(va.myDecl.type());
-            Type iType = resolve(va.init().visit(this));
-
-            if(vType instanceof ErrorType || iType instanceof ErrorType)
-                return null;
-
-            if(!vType.typeAssignmentCompatible(iType))
-                Error.error(va, "Cannot assign value of type " + iType + " to variable of type "
-                        + vType + ".", false, 3058);
-        }
         return null;
-    }
-
-    public Type resolve(final Type type) {
-
-        Log.log("  > Resolve: " + type);
-
-        if(!(type instanceof NamedType))
-            Log.log("  > Nothing to resolve - type remains: " + type);
-
-        // A named type must resolve to an actual type; visit the NamedType to resolve it
-        return (type instanceof NamedType) ? type.visit(this) : type;
 
     }
 
-    public boolean arrayAssignmentCompatible(Type t, Expression e) {
-        if (t instanceof ArrayType && e instanceof ArrayLiteral) {
-            ArrayType at = (ArrayType) t;
-            e.type = at; // we don't know that this is the type - but if we make it through it will be!
-            ArrayLiteral al = (ArrayLiteral) e;
+    /// ------
+    /// Errors
 
-            // t is an array type i.e. XXXXXX[ ]
-            // e is an array literal, i.e., { }
-            if (al.elements().size() == 0) // the array literal is { }
-                return true; // any array variable can hold an empty array
-            // Now check that XXXXXX can hold value of the elements of al
-            // we have to make a new type: either the base type if |dims| = 1
-            boolean b = true;
-            for(int i = 0; i < al.elements().size(); i++) {
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an undefined Symbol.
+     * // TODO: Error 3029
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class UndefinedSymbolException extends Phase.Error {
 
+        /// ------------------------
+        /// Private Static Constants
 
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Constant '%s' declared as procedure type.";
 
-                if (at.getDepth() == 1)
-                    b = b && arrayAssignmentCompatible(at.getComponentType(), (Expression) al.elements().child(i));
-                else {
-                    ArrayType at1 = new ArrayType(at.getComponentType(), at.getDepth() - 1);
-                    b = b && arrayAssignmentCompatible(at1, (Expression) al.elements().child(i));
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link String} value of the undefined symbol.</p>
+         */
+        private final Expression expression;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.UndefinedSymbolException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected UndefinedSymbolException(final TypeChecker culpritInstance,
+                                           final Expression expression) {
+            super(culpritInstance);
+            this.expression = expression;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.expression);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a Constant Declaration specified
+     * as a procedure type declaration.
+     * // TODO: Error 3040
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class ConstantDeclaredAsProcedureException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Constant '%s' declared as procedure type.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link String} value of the undefined symbol.</p>
+         */
+        private final ConstantDecl constantDeclaration;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ConstantDeclaredAsProcedureException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected ConstantDeclaredAsProcedureException(final TypeChecker culpritInstance,
+                                                       final ConstantDecl constantDeclaration) {
+            super(culpritInstance);
+            this.constantDeclaration = constantDeclaration;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.constantDeclaration);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a Constant Declaration specified
+     * an assignment literal that is not assignment compatible with its declared Type.
+     * // TODO: Error 3058
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class DeclaredTypeNotAssignmentCompatibleException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Cannot assign value of type '%s' to variable of Type '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Type} value of the declared type.</p>
+         */
+        private final Type declaredType;
+
+        /**
+         * <p>The {@link Type} that was attempt to assign.</p>
+         */
+        private final Type assignmentType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link DeclaredTypeNotAssignmentCompatibleException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected DeclaredTypeNotAssignmentCompatibleException(final TypeChecker culpritInstance,
+                                                               final Type declaredType,
+                                                               final Type assignmentType) {
+            super(culpritInstance);
+            this.declaredType   = declaredType      ;
+            this.assignmentType = assignmentType    ;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.assignmentType, this.declaredType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link AltCase}'s precondition
+     * not bound to boolean {@link Type}.
+     * // TODO: Error 660
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class AltCasePreconditionNotBoundToBooleanType extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "AltCase Precondition must be a boolean Type.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link AltCase} with a non-boolean {@link Type} precondition.</p>
+         */
+        private final AltCase altCase;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ConstantDeclaredAsProcedureException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected AltCasePreconditionNotBoundToBooleanType(final TypeChecker culpritInstance,
+                                                           final AltCase altCase) {
+            super(culpritInstance);
+            this.altCase = altCase;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return Message;
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a Channel Write Statement bound
+     * to a non-channel end type..
+     * // TODO: Error 3023
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class WriteToNonChannelEndTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Cannot write to a non-channel end Type.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link ChannelWriteStat} bound to a  a non-{@link ChannelEndType}.</p>
+         */
+        private final ChannelWriteStat channelWriteStat;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ConstantDeclaredAsProcedureException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected WriteToNonChannelEndTypeException(final TypeChecker culpritInstance,
+                                                           final ChannelWriteStat channelWriteStat) {
+            super(culpritInstance);
+            this.channelWriteStat = channelWriteStat;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return Message;
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a Control {@link Statement}'s
+     * evaluation {@link Expression} bound to a non-boolean {@link Type}.
+     * // TODO: Error 3024
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class ControlEvaluationExpressionNonBooleanTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Control statement expression's Type is not bound to a boolean type.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link ChannelWriteStat} bound to a  a non-{@link ChannelEndType}.</p>
+         */
+        private final Type type;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ControlEvaluationExpressionNonBooleanTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected ControlEvaluationExpressionNonBooleanTypeException(final TypeChecker culpritInstance,
+                                                                    final Type type) {
+            super(culpritInstance);
+            this.type = type;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return Message;
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a non-par for loop enrolling
+     * on Barriers.</p>
+     * // TODO: Error 3026
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class ProcessEnrolledOnBarriersException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message
+                = "Process already enrolled on barriers (a non-par for loop cannot enroll on barriers).";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link ForStat} enrolled on addition barriers.</p>
+         */
+        private final Statement statement;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ProcessEnrolledOnBarriersException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected ProcessEnrolledOnBarriersException(final TypeChecker culpritInstance, final Statement statement) {
+            super(culpritInstance);
+            this.statement = statement;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return Message;
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a par for loop expecting a barrier
+     * type.</p>
+     * // TODO: Error 3025
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class ExpectedBarrierTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Barrier Type expected, found '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Type} bound to the barrier {@link Expression}.</p>
+         */
+        private final Type boundType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ProcessEnrolledOnBarriersException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected ExpectedBarrierTypeException(final TypeChecker culpritInstance, final Type boundType) {
+            super(culpritInstance);
+            this.boundType = boundType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.boundType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an improperly-placed return
+     * statement.</p>
+     * // TODO: Error 3027
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidReturnStatementContextException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Invalid return statement context '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link SymbolMap.Context} the {@link ReturnStat} appreared in.</p>
+         */
+        private final SymbolMap.Context returnStatementContext;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ProcessEnrolledOnBarriersException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidReturnStatementContextException(final TypeChecker culpritInstance,
+                                                         final SymbolMap.Context context) {
+            super(culpritInstance);
+            this.returnStatementContext = context;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.returnStatementContext);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an improperly-placed Switch
+     * label.</p>
+     * // TODO: Error 0000
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidSwitchLabelContextException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Invalid switch label context '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link SymbolMap.Context} the {@link SwitchLabel} appeared in.</p>
+         */
+        private final SymbolMap.Context switchLabelContext;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.InvalidSwitchLabelContextException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidSwitchLabelContextException(final TypeChecker culpritInstance,
+                                                     final SymbolMap.Context context) {
+            super(culpritInstance);
+            this.switchLabelContext = context;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.switchLabelContext);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an improperly-placed Suspend
+     * {@link Statement}.</p>
+     * // TODO: Error 3042
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidSuspendStatementContextException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Invalid suspend statement context '%s'; suspend statement in non-procedure type.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link SymbolMap.Context} the {@link SuspendStat} appeared in.</p>
+         */
+        private final SymbolMap.Context suspendStatementContext;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidSuspendStatementContextException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidSuspendStatementContextException(final TypeChecker culpritInstance,
+                                                          final SymbolMap.Context context) {
+            super(culpritInstance);
+            this.suspendStatementContext = context;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.suspendStatementContext);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a Procedure Type with a
+     * specified void return {@link Type} containing a return statement.</p>
+     * // TODO: Error 3040
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class VoidProcedureReturnTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Procedure return type is void; return statement cannot return a value.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link SymbolMap.Context} the {@link ReturnStat} appreared in.</p>
+         */
+        private final SymbolMap.Context returnStatementContext;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ProcessEnrolledOnBarriersException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected VoidProcedureReturnTypeException(final TypeChecker culpritInstance,
+                                                   final SymbolMap.Context context) {
+            super(culpritInstance);
+            this.returnStatementContext = context;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.returnStatementContext);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a Procedure Type not
+     * returning a value.</p>
+     * // TODO: Error 3040
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class ProcedureReturnsVoidException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Procedure return type is '%s' but procedure return type is void.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The Procedure's return {@link Type}.</p>
+         */
+        private final Type returnType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.ProcedureReturnsVoidException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected ProcedureReturnsVoidException(final TypeChecker culpritInstance,
+                                                final Type type) {
+            super(culpritInstance);
+            this.returnType = type;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.returnType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a Procedure Type with a mismatched
+     * return {@link Type}.</p>
+     * // TODO: Error 3042
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class IncompatibleReturnTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Incompatible type in return statement. Procedure marked to return '%s' but returns '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The Procedure's return {@link Type}.</p>
+         */
+        private final Type returnType;
+
+        /**
+         * <p>The actual bound {@link Type}.</p>
+         */
+        private final Type boundType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.IncompatibleReturnTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected IncompatibleReturnTypeException(final TypeChecker culpritInstance,
+                                                  final Type returnType,
+                                                  final Type type) {
+            super(culpritInstance);
+            this.returnType = returnType;
+            this.boundType  = type;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.returnType, this.boundType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link SwitchStat}'s evaluation
+     * {@link Expression} bound to an improper {@link Type}.</p>
+     * // TODO: Error 0000
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidSwitchStatementExpressionTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Illegal type '%s' in expression in switch statement.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The bound {@link Type}.</p>
+         */
+        private final Type boundType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.IncompatibleReturnTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidSwitchStatementExpressionTypeException(final TypeChecker culpritInstance,
+                                                                final Type type) {
+            super(culpritInstance);
+            this.boundType  = type;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.boundType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link SwitchLabel}'s
+     * {@link Expression}'s {@link Type} not assignable to the {@link SwitchStat}'s Evaluation {@link Expression}'s
+     * {@link Type}.</p>
+     * // TODO: Error 0000
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidSwitchLabelExpressionTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Switch label '%s' of type '%s' not compatible with switch expression's type '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link SwitchLabel}'s {@link Expression}.</p>
+         */
+        private final Expression switchLabelExpression;
+
+        /**
+         * <p>The {@link SwitchLabel}'s {@link Type}.</p>
+         */
+        private final Type labelType;
+
+        /**
+         * <p>The {@link SwitchStat}'s evaluation {@link Expression}'s {@link Type}.</p>
+         */
+        private final Type evaluationExpressionType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.InvalidSwitchLabelExpressionTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidSwitchLabelExpressionTypeException(final TypeChecker culpritInstance,
+                                                            final Expression switchLabelExpression,
+                                                            final Type labelType,
+                                                            final Type evaluationExpressionType) {
+            super(culpritInstance);
+            this.switchLabelExpression      = switchLabelExpression     ;
+            this.labelType                  = labelType                 ;
+            this.evaluationExpressionType   = evaluationExpressionType  ;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.switchLabelExpression, this.labelType, this.evaluationExpressionType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link SwitchLabel}'s
+     * {@link Expression}'s {@link Type} not a Protocol Tag.</p>
+     * // TODO: Error 0000
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class SwitchLabelExpressionNotProtocolTagException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Switch label '%s' is not a protocol tag.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link SwitchLabel}'s {@link Expression}.</p>
+         */
+        private final Expression labelExpression;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.InvalidSwitchLabelExpressionTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected SwitchLabelExpressionNotProtocolTagException(final TypeChecker culpritInstance,
+                                                               final Expression labelExpression) {
+            super(culpritInstance);
+
+            this.labelExpression = labelExpression;
+
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.labelExpression);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an attempt to access an undefined
+     * {@link ProtocolTypeDecl}'s Tag.</p>
+     * // TODO: Error 0000
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class UndefinedTagException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Tag '%s' is not found in protocol '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link String} value of the undefined {@link ProtocolTypeDecl}'s Tag.</p>
+         */
+        private final String tag;
+
+        /**
+         * <p>The {@link ProtocolTypeDecl} searched.</p>
+         */
+        private final ProtocolTypeDecl protocolTypeDeclaration;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.UndefinedTagException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected UndefinedTagException(final TypeChecker culpritInstance,
+                                        final String tag,
+                                        final ProtocolTypeDecl protocolTypeDeclaration) {
+            super(culpritInstance);
+
+            this.tag                        = tag                       ;
+            this.protocolTypeDeclaration    = protocolTypeDeclaration   ;
+
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.tag, this.protocolTypeDeclaration);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an illegally nested
+     * {@link SwitchStat} within a {@link ProtocolTypeDecl}.</p>
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class IllegalNestedSwitchInProtocolException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Illegally nested switch statement in Protocol '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link ProtocolTypeDecl} with an illegally nested {@link SwitchStat}.</p>
+         */
+        private final ProtocolTypeDecl protocolTypeDeclaration;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeChecker.UndefinedTagException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected IllegalNestedSwitchInProtocolException(final TypeChecker culpritInstance,
+                                                         final ProtocolTypeDecl protocolTypeDeclaration) {
+            super(culpritInstance);
+
+            this.protocolTypeDeclaration = protocolTypeDeclaration   ;
+
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.protocolTypeDeclaration);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an improperly-placed Suspend
+     * {@link Statement}, particularly within a non mobile procedure.</p>
+     * // TODO: Error 3043
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class SuspendInNonMobileProcedureException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Invalid suspend statement context '%s'; suspend statement in non-mobile procedure type.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link SymbolMap.Context} the {@link SuspendStat} appeared in.</p>
+         */
+        private final SymbolMap.Context suspendStatementContext;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link SuspendInNonMobileProcedureException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected SuspendInNonMobileProcedureException(final TypeChecker culpritInstance,
+                                                          final SymbolMap.Context context) {
+            super(culpritInstance);
+            this.suspendStatementContext = context;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.suspendStatementContext);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an improperly
+     * {@link Type}-bounded {@link SyncStat}.</p>
+     * // TODO: Error 0000
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidSynchronizationExpressionTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Synchronization statement can only bind to barrier types; found: '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Type} bound to the {@link SyncStat}.</p>
+         */
+        private final Type synchronizationExpressionType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidSynchronizationExpressionTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidSynchronizationExpressionTypeException(final TypeChecker culpritInstance,
+                                                                final Type synchronizationExpressionType) {
+            super(culpritInstance);
+            this.synchronizationExpressionType = synchronizationExpressionType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.synchronizationExpressionType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an improperly
+     * {@link Type}-bounded {@link TimeoutStat} target {@link Type}.</p>
+     * // TODO: Error 0000
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidTimeoutTargetTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Timeout statement can only bind to a timer; found: '%s'.";
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Type} bound to the {@link TimeoutStat}.</p>
+         */
+        private final Type timeoutTargetType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidTimeoutTargetTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidTimeoutTargetTypeException(final TypeChecker culpritInstance,
+                                                    final Type timeoutTargetType) {
+            super(culpritInstance);
+            this.timeoutTargetType = timeoutTargetType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.timeoutTargetType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an improperly
+     * {@link Type}-bounded {@link TimeoutStat} delay {@link Type}.</p>
+     * // TODO: Error 3049
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidTimeoutDelayTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Invalid delay type '%s' in timeout statement; timeout statement must specify an integral Type.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Type} bound to the {@link TimeoutStat} delay {@link Expression}.</p>
+         */
+        private final Type timeoutDelayType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidTimeoutDelayTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidTimeoutDelayTypeException(final TypeChecker culpritInstance,
+                                                    final Type timeoutDelayType) {
+            super(culpritInstance);
+            this.timeoutDelayType = timeoutDelayType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.timeoutDelayType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an improperly
+     * {@link Type}-bounded {@link Invocation}.</p>
+     * // TODO: Error 3052
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidInvocationTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Invalid invocation type for '%s'; found: '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Invocation} that attempted to resolve.</p>
+         */
+        private final Invocation invocation;
+
+        /**
+         * <p>The {@link Type} resolved from an {@link Invocation}'s name.</p>
+         */
+        private final Type resolvedType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidInvocationTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidInvocationTypeException(final TypeChecker culpritInstance,
+                                                   final Invocation invocation,
+                                                   final Type resolvedType) {
+            super(culpritInstance);
+            this.invocation   = invocation          ;
+            this.resolvedType = resolvedType    ;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.invocation, this.resolvedType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an invocation without
+     * any suitable candidates.</p>
+     * // TODO: Error 3037
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class NoCandidateForInvocationFoundException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "No suitable procedure found for '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Invocation} that attempted to resolve.</p>
+         */
+        private final Invocation invocation;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link NoCandidateForInvocationFoundException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected NoCandidateForInvocationFoundException(final TypeChecker culpritInstance,
+                                                        final Invocation invocation) {
+            super(culpritInstance);
+            this.invocation   = invocation          ;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.invocation);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an invocation that
+     * couldn't resolve to a {@link ProcTypeDecl}.</p>
+     * // TODO: Error 3038
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class AmbiguousInvocationException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Ambiguous invocation '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Invocation} that attempted to resolve.</p>
+         */
+        private final Invocation invocation;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link AmbiguousInvocationException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected AmbiguousInvocationException(final TypeChecker culpritInstance,
+                                               final Invocation invocation) {
+            super(culpritInstance);
+            this.invocation   = invocation          ;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.invocation);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an array dimension
+     * {@link Expression} binding to a non-integral {@link Type}.</p>
+     * // TODO: Error 3031
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidArrayDimensionTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Invalid type for array dimension expression '%s'; found: '%s'";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Expression} that did not bind to an Integral Type.</p>
+         */
+        private final Expression arrayDimensionExpression;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidArrayDimensionTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidArrayDimensionTypeException(final TypeChecker culpritInstance,
+                                                    final Expression arrayDimensionExpression) {
+            super(culpritInstance);
+            this.arrayDimensionExpression = arrayDimensionExpression;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.arrayDimensionExpression, this.arrayDimensionExpression.getType());
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link Type} not
+     * being assignment compatible with another.</p>
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class TypeNotAssignmentCompatibleException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Invalid type for expression '%s'; expected: '%s', but found '%s";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Expression} that did not bind to the expected {@link Type}.</p>
+         */
+        private final Expression expression;
+
+        /**
+         * <p>The {@link Type} that was expected</p>
+         */
+        private final Type       expectedType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeNotAssignmentCompatibleException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected TypeNotAssignmentCompatibleException(final TypeChecker culpritInstance,
+                                                       final Expression expression,
+                                                       final Type expectedType) {
+            super(culpritInstance);
+            this.expression     = expression;
+            this.expectedType = expectedType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.expression, this.expectedType, this.expression.getType());
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link Type} not
+     * being assignable.</p>
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class TypeNotAssignableException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Invalid assignment; '%s' is not assignable to '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Expression} that cannot be assigned.</p>
+         */
+        private final Expression expression     ;
+
+        /**
+         * <p>The {@link Type} that was expected</p>
+         */
+        private final Type       expectedType   ;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TypeNotAssignmentCompatibleException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected TypeNotAssignableException(final TypeChecker culpritInstance,
+                                             final Expression expression,
+                                             final Type expectedType) {
+            super(culpritInstance);
+            this.expression     = expression;
+            this.expectedType = expectedType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.expression, this.expectedType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link Type} used
+     * on the left hand side of a bit shift operator not bound to an integral {@link Type}.</p>
+     * // TODO: Error 604
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class LeftSideOfShiftNotIntegralOrBoolean extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Left hand side of shift operator must be an integral type; found '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Type} that was found.</p>
+         */
+        private final Type foundType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link LeftSideOfShiftNotIntegralOrBoolean}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected LeftSideOfShiftNotIntegralOrBoolean(final TypeChecker culpritInstance,
+                                                      final Type expectedType) {
+            super(culpritInstance);
+            this.foundType = expectedType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.foundType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link Type} used
+     * on the right hand side of a bit shift operator not bound to an integral {@link Type}.</p>
+     * // TODO: Error 605
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class RightSideOfShiftNotIntegralOrBoolean extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Right hand side of shift operator must be an integral type; found '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The {@link Type} that was found.</p>
+         */
+        private final Type foundType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link RightSideOfShiftNotIntegralOrBoolean}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected RightSideOfShiftNotIntegralOrBoolean(final TypeChecker culpritInstance,
+                                                       final Type foundType) {
+            super(culpritInstance);
+            this.foundType = foundType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.foundType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link Type} used
+     * on the right & left hand side of a bit shift operator not bound to an integral or boolean {@link Type}.</p>
+     * // TODO: Error 606
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class CompoundBitwiseTypesNotIntegralOrBoolean extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Right & left hand side of compound bitwise operator must be an integral or boolean type; found '%s' '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The left hand side {@link Type} that was found.</p>
+         */
+        private final Type leftType;
+
+        /**
+         * <p>The Right hand side {@link Type} that was found.</p>
+         */
+        private final Type rightType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link CompoundBitwiseTypesNotIntegralOrBoolean}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected CompoundBitwiseTypesNotIntegralOrBoolean(final TypeChecker culpritInstance,
+                                                           final Type leftType,
+                                                           final Type rightType) {
+            super(culpritInstance);
+            this.leftType = leftType;
+            this.rightType = rightType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.leftType, this.rightType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a relational
+     * {@link BinaryExpr} where either side does not have a numeric {@link Type} bound.</p>
+     * // TODO: Error 3010
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class RelationalOperatorRequiresNumericTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Relational Expression requires numeric types; found: '%s' and '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The left hand side {@link Type} that was found.</p>
+         */
+        private final Type leftType;
+
+        /**
+         * <p>The Right hand side {@link Type} that was found.</p>
+         */
+        private final Type rightType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link RelationalOperatorRequiresNumericTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected RelationalOperatorRequiresNumericTypeException(final TypeChecker culpritInstance,
+                                                                 final Type leftType,
+                                                                 final Type rightType) {
+            super(culpritInstance);
+            this.leftType = leftType;
+            this.rightType = rightType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.leftType, this.rightType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a logical
+     * {@link BinaryExpr} where either side has a void {@link Type} bound.</p>
+     * // TODO: Error 3011
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class VoidTypeUsedInLogicalComparisonException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Void used in logical binary comparison; found: '%s' and '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The left hand side {@link Type} that was found.</p>
+         */
+        private final Type leftType;
+
+        /**
+         * <p>The Right hand side {@link Type} that was found.</p>
+         */
+        private final Type rightType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link VoidTypeUsedInLogicalComparisonException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected VoidTypeUsedInLogicalComparisonException(final TypeChecker culpritInstance,
+                                                                 final Type leftType,
+                                                                 final Type rightType) {
+            super(culpritInstance);
+            this.leftType = leftType;
+            this.rightType = rightType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.leftType, this.rightType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a logical
+     * {@link BinaryExpr} where the left and right hand side {@link Type}s do not match.</p>
+     * // TODO: Error 3012
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class LogicalComparisonTypeMismatchException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Type mismatch in logical binary comparison; found: '%s' and '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The left hand side {@link Type} that was found.</p>
+         */
+        private final Type leftType;
+
+        /**
+         * <p>The Right hand side {@link Type} that was found.</p>
+         */
+        private final Type rightType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link LogicalComparisonTypeMismatchException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected LogicalComparisonTypeMismatchException(final TypeChecker culpritInstance,
+                                                         final Type leftType,
+                                                         final Type rightType) {
+            super(culpritInstance);
+            this.leftType = leftType;
+            this.rightType = rightType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.leftType, this.rightType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a logical
+     * {@link BinaryExpr} where the left and right hand side {@link Type}s are not bound to a boolean
+     * {@link Type}.</p>
+     * // TODO: Error 3013
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class LogicalComparisonNotBooleanTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Logical binary comparison requires boolean types; found: '%s' and '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The left hand side {@link Type} that was found.</p>
+         */
+        private final Type leftType;
+
+        /**
+         * <p>The Right hand side {@link Type} that was found.</p>
+         */
+        private final Type rightType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link LogicalComparisonNotBooleanTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected LogicalComparisonNotBooleanTypeException(final TypeChecker culpritInstance,
+                                                         final Type leftType,
+                                                         final Type rightType) {
+            super(culpritInstance);
+            this.leftType = leftType;
+            this.rightType = rightType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.leftType, this.rightType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link Type} used
+     * on the right & left hand side of a binary bitwise operator not bound to an integral or boolean {@link Type}.</p>
+     * // TODO: Error 606
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class BinaryBitwiseTypesNotIntegralOrBoolean extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Right & left hand side of binary bitwise operator must be an integral or boolean type; found '%s' '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The left hand side {@link Type} that was found.</p>
+         */
+        private final Type leftType;
+
+        /**
+         * <p>The Right hand side {@link Type} that was found.</p>
+         */
+        private final Type rightType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link BinaryBitwiseTypesNotIntegralOrBoolean}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected BinaryBitwiseTypesNotIntegralOrBoolean(final TypeChecker culpritInstance,
+                                                           final Type leftType,
+                                                           final Type rightType) {
+            super(culpritInstance);
+            this.leftType = leftType;
+            this.rightType = rightType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.leftType, this.rightType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a arithmetic
+     * {@link BinaryExpr} where either side does not have a numeric {@link Type} bound.</p>
+     * // TODO: Error 3015
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class ArithmeticOperatorRequiresNumericTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Arithmetic Expression requires numeric types; found: '%s' and '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The left hand side {@link Type} that was found.</p>
+         */
+        private final Type leftType;
+
+        /**
+         * <p>The Right hand side {@link Type} that was found.</p>
+         */
+        private final Type rightType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link ArithmeticOperatorRequiresNumericTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected ArithmeticOperatorRequiresNumericTypeException(final TypeChecker culpritInstance,
+                                                                 final Type leftType,
+                                                                 final Type rightType) {
+            super(culpritInstance);
+            this.leftType = leftType;
+            this.rightType = rightType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.leftType, this.rightType);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a arithmetic
+     * {@link UnaryPostExpr} with an invalid operand.</p>
+     * // TODO: Error 3051
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidUnaryOperandException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Cannot apply operator '%s' to something of type '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The invalid unary operand.</p>
+         */
+        private final Expression operand;
+
+        /**
+         * <p>{@link String} value of the Unary operator.</p>
+         */
+        private final String operator;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidUnaryOperandException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidUnaryOperandException(final TypeChecker culpritInstance,
+                                               final Expression operand,
+                                               final String operator) {
+            super(culpritInstance);
+            this.operand = operand;
+            this.operator = operator;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.operator, this.operand);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a arithmetic
+     * {@link UnaryPostExpr} with a Literal Operand.</p>
+     * // TODO: Error 3057
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidLiteralUnaryOperandException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message = "Non-literal expression expected; found: '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The invalid unary operand.</p>
+         */
+        private final Expression operand;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidLiteralUnaryOperandException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidLiteralUnaryOperandException(final TypeChecker culpritInstance,
+                                                      final Expression operand) {
+            super(culpritInstance);
+            this.operand = operand;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.operand);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of ChannelEndExpression
+     * bound to a non-{@link ChannelType}.</p>
+     * // TODO: Error 3019
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class ChannelEndExpressionBoundToNonChannelTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Channel End expression '%s' bound to a non-channel type; found: '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The mis-typed {@link ChannelEndExpr}.</p>
+         */
+        private final Expression channelEndExpression;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link ChannelEndExpressionBoundToNonChannelTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected ChannelEndExpressionBoundToNonChannelTypeException(final TypeChecker culpritInstance,
+                                                                    final ChannelEndExpr channelEndExpression) {
+            super(culpritInstance);
+            this.channelEndExpression = channelEndExpression;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.channelEndExpression, this.channelEndExpression.getType());
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a ChannelReadExpression
+     * bound to an invalid {@link Type}.</p>
+     * // TODO: Error 3019
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidChannelReadExpressionTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Invalid type for Channel Read Expression '%s'; found '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The mis-typed {@link ChannelReadExpr}.</p>
+         */
+        private final Expression channelReadExpression;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link ChannelEndExpressionBoundToNonChannelTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidChannelReadExpressionTypeException(final TypeChecker culpritInstance,
+                                                            final Expression channelReadExpression) {
+            super(culpritInstance);
+            this.channelReadExpression = channelReadExpression;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.channelReadExpression, this.channelReadExpression.getType());
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a ChannelReadExpression
+     * reading from a timer with a specified extended rendezvous.</p>
+     * TODO: Error 3022
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class TimerReadWithExtendedRendezvous extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Timer read expression '%s' cannot have extended rendez-vous block.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The mis-typed {@link ChannelReadExpr}.</p>
+         */
+        private final Expression channelReadExpression;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link TimerReadWithExtendedRendezvous}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected TimerReadWithExtendedRendezvous(final TypeChecker culpritInstance,
+                                                  final Expression channelReadExpression) {
+            super(culpritInstance);
+            this.channelReadExpression = channelReadExpression;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.channelReadExpression);
+
+        }
+
+    }
+
+    /**
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of an invalid ArrayAccessType.</p>
+     * TODO: Error 3022
+     * @see Phase
+     * @see org.processj.Phase.Error
+     * @version 1.0.0
+     * @since 0.1.0
+     */
+    private static class InvalidArrayAccessTypeException extends Phase.Error {
+
+        /// ------------------------
+        /// Private Static Constants
+
+        /**
+         * <p>Standard error message {@link String} for reporting.</p>
+         */
+        private final static String Message =
+                "Invalid array access type; found: '%s'.";
+
+        /// --------------
+        /// Private Fields
+
+        /**
+         * <p>The resolved {@link Type}.</p>
+         */
+        private final Type arrayAccessType;
+
+        /// ------------
+        /// Constructors
+
+        /**
+         * <p>Constructs the {@link InvalidArrayAccessTypeException}.</p>
+         * @param culpritInstance The {@link TypeChecker} instance that raised the error.
+         * @see Phase
+         * @see org.processj.Phase.Error
+         * @since 0.1.0
+         */
+        protected InvalidArrayAccessTypeException(final TypeChecker culpritInstance,
+                                                  final Type arrayAccessType) {
+            super(culpritInstance);
+            this.arrayAccessType = arrayAccessType;
+        }
+
+        /// -------------------
+        /// java.lang.Exception
+
+        /**
+         * <p>Returns a newly constructed message specifying the error.</p>
+         * @return {@link String} value of the error message.
+         * @since 0.1.0
+         */
+        @Override
+        public String getMessage() {
+
+            // Return the resultant error message
+            return String.format(Message, this.arrayAccessType);
+
+        }
+
+    }
+
+    // TODO: Remove These
+
+    private static boolean assertAssignmentCompatible(final ProcTypeDecl procedureTypeDeclaration,
+                                                      final Invocation invocation) {
+
+        // Assert they each have the same amount of parameters
+        boolean areAssignmentCompatible =
+                invocation.getParameterCount() == procedureTypeDeclaration.getParameterCount();
+
+        // Iterate while the invariant is true
+        for(int index = 0; areAssignmentCompatible && (index < invocation.getParameterCount()); index++) {
+
+            // Initialize a handle to the Procedure Type's Parameter Type
+            final Type parameterType    = procedureTypeDeclaration.getTypeForParameter(index);
+            final Type invocationType   = invocation.getTypeForParameter(index);
+
+            // Update the invariant
+            areAssignmentCompatible = ((parameterType != null) && (invocationType != null))
+                    && parameterType.typeAssignmentCompatible(invocationType);
+
+        }
+
+        // Return the result
+        return areAssignmentCompatible;
+
+    }
+
+    private static boolean assertTypeAssignmentCompatible(final ProcTypeDecl leftProcedure,
+                                                          final ProcTypeDecl rightProcedure) {
+
+        // Assert they each have the same amount of parameters
+        boolean areAssignmentCompatible =
+                rightProcedure.getParameterCount() == leftProcedure.getParameterCount();
+
+        // Iterate while the invariant is true
+        for(int index = 0; areAssignmentCompatible && (index < rightProcedure.getParameterCount()); index++) {
+
+            // Initialize a handle to the Procedure Type's Parameter Type
+            final Type leftType    = leftProcedure.getTypeForParameter(index);
+            final Type rightType   = rightProcedure.getTypeForParameter(index);
+
+            // Update the invariant
+            areAssignmentCompatible = ((leftType != null) && (rightType != null))
+                    && leftType.typeAssignmentCompatible(rightType);
+
+        }
+
+        // Return the result
+        return areAssignmentCompatible;
+
+    }
+
+    private static List<ProcTypeDecl> aggregateAssignmentCompatible(final SymbolMap symbolMap,
+                                                                    final Invocation invocation,
+                                                                    final List<ProcTypeDecl> result) {
+
+        // Iterate through the SymbolMap
+        symbolMap.forEachSymbol(symbol -> {
+
+            // Assert the Symbol is a Procedure Type Declaration & its assignment compatible
+            // with the specified Invocation
+            if((symbol instanceof ProcTypeDecl)
+                    && assertAssignmentCompatible((ProcTypeDecl) symbol, invocation))
+                result.add((ProcTypeDecl) symbol);
+
+        });
+
+        // Return the result
+        return result;
+
+    }
+    private static ProcTypeDecl Candidate(final List<ProcTypeDecl> candidates) {
+
+        int remaining = candidates.size();
+
+        for(int leftIndex = 0; leftIndex < candidates.size(); leftIndex++) {
+
+            ProcTypeDecl leftProcedure = candidates.get(leftIndex);
+
+            // If we should continue
+            if(leftProcedure != null) {
+
+                // Hide the current procedure
+                candidates.set(leftIndex, null);
+
+                // Iterate for the right hand side
+                for(int rightIndex = 0; rightIndex < candidates.size(); rightIndex++) {
+
+                    // Retrieve the right hand side
+                    ProcTypeDecl rightProcedure = candidates.get(rightIndex);
+
+                    // Assert if for all k, right[k] :> left[k]; Remove the right hand side
+                    if((rightProcedure != null) && (assertTypeAssignmentCompatible(leftProcedure, rightProcedure))) {
+
+                        candidates.set(rightIndex, null);
+
+                        remaining--;
+
+                    }
+
                 }
+
+                // Reset the left hand side
+                candidates.set(leftIndex, leftProcedure);
+
             }
-            return b;
-        } else if (t instanceof ArrayType && !(e instanceof ArrayLiteral))
-            Error.addError(t, "Cannot assign non-array to array type '" + t + "'", 3039);
-        else if (!(t instanceof ArrayType) && (e instanceof ArrayLiteral))
-            Error.addError(t,
-                    "Cannot assign value '" + e + "' to type '" + t + "'.",
-                    3030);
-        return t.typeAssignmentCompatible(e.visit(this));
+
+        }
+
+        ProcTypeDecl result = null;
+
+        if(remaining == 1) for(final ProcTypeDecl procedure: candidates)
+            if(procedure != null) {
+
+                result = procedure;
+                break;
+
+            }
+
+        return result;
+
     }
+
+    private static String Line(final char side, final char fill, final int length, final int leftPadding, final int rightPadding) {
+
+        return side + String.valueOf(fill).repeat(length + leftPadding + rightPadding) + side;
+
+    }
+
+    private static String Border(final int length, final int leftPadding, final int rightPadding) {
+
+        return Line('+', '-', length, leftPadding, rightPadding);
+
+    }
+
+    private static String Title(final String title, final char fill, final int leftPadding, final int rightPadding) {
+
+        final int trail = (title.length() + leftPadding + rightPadding) % 2;
+
+        return '+' + String.valueOf(fill).repeat(leftPadding) + title
+                + String.valueOf(fill).repeat( rightPadding + trail) + '+';
+
+    }
+
+    private static String Content(final String content, final char fill, final int leftPadding, final int rightPadding) {
+
+        final int trail = (content.length() + leftPadding + rightPadding) % 2;
+
+        return '|' + String.valueOf(fill).repeat(leftPadding) + content
+                + String.valueOf(fill).repeat( rightPadding + trail) + '|';
+
+    }
+
+    private static List<String> Signatures(final List<ProcTypeDecl> candidates) {
+
+        // Initialize the result
+        final List<String> signatures = new ArrayList<>();
+
+        // Collect the candidate signatures
+        candidates.forEach(candidate -> signatures.add(candidate.getSignature()));
+
+        // Return the result
+        return signatures;
+
+    }
+
+    private static int Longest(final List<String> list) {
+
+        int result = 0;
+
+        for(final String string: list)
+            result = Math.max(string.length(), result);
+
+        // Return the result
+        return result;
+
+    }
+
+    private static void FancyPrint(final Invocation invocation, final List<ProcTypeDecl> candidates,
+                                   final int leftPadding, final int rightPadding) {
+
+        final String title = "Candidates for '" + invocation.getProcedureName() + "': ";
+
+        // Retrieve the signatures & the longest string out of them and the title
+        final List<String>  signatures  = Signatures(candidates);
+        final int           longest     = Math.max(title.length(), Longest(signatures));
+        final int           trail       = (longest + leftPadding + rightPadding) % 2;
+
+        System.out.println(Border(longest + trail, leftPadding, rightPadding));
+        System.out.println(Line('+', ' ', longest + trail, leftPadding, rightPadding));
+        System.out.println(Title(title, ' ', leftPadding, rightPadding));
+        System.out.println(Line('+', ' ', longest + trail, leftPadding, rightPadding));
+        System.out.println(Border(longest + trail, leftPadding, rightPadding));
+        System.out.println(Line('|', ' ', longest + trail, leftPadding, rightPadding));
+
+        for(final String signature: signatures)
+            System.out.println(Content(signature, ' ', leftPadding, rightPadding));
+
+
+        System.out.println(Line('|', ' ', longest + trail, leftPadding, rightPadding));
+        System.out.println(Border(longest + trail, leftPadding, rightPadding));
+
+    }
+
 
 }

@@ -1,6 +1,7 @@
 package org.processj.reachability;
 
-import org.processj.ast.AltStat;
+import org.processj.Phase;
+import org.processj.ast.alt.AltStat;
 import org.processj.ast.Block;
 import org.processj.ast.BreakStat;
 import org.processj.ast.ChannelWriteStat;
@@ -34,7 +35,7 @@ import org.processj.utilities.VisitorMessageNumber;
  * i.e., never _always_ returns or breaks or continues.
  */
 
-public class Reachability extends Visitor<Boolean> {
+public class Reachability implements Visitor<Boolean> {
     boolean insideSwitch = false;
     LoopStatement loopConstruct = null;
     SwitchStat switchConstruct = null;
@@ -50,15 +51,15 @@ public class Reachability extends Visitor<Boolean> {
     public Boolean visitIfStat(IfStat is) {
         Log.log(is, "Visiting an if-Statement.");
         // if (true) S1 else S2 - S2 is unreachable
-        if (is.expr().isConstant() && ((Boolean) is.expr().constantValue())
-                && is.elsepart() != null)
+        if (is.evaluationExpression().isConstant() && ((Boolean) is.evaluationExpression().constantValue())
+                && is.getElsePart() != null)
             PJBugManager.INSTANCE.reportMessage(
                     new PJMessage.Builder()
                     .addAST(is)
                     .addError(VisitorMessageNumber.REACHABILITY_800)
                     .build());
         // if (false) S1 ... - S1 is unreachable
-        if (is.expr().isConstant() && (!(Boolean) is.expr().constantValue()))
+        if (is.evaluationExpression().isConstant() && (!(Boolean) is.evaluationExpression().constantValue()))
             PJBugManager.INSTANCE.reportMessage(
                     new PJMessage.Builder()
                     .addAST(is)
@@ -66,9 +67,17 @@ public class Reachability extends Visitor<Boolean> {
                     .build());
         boolean thenBranch = true;
         boolean elseBranch = true;
-        thenBranch = is.thenpart().visit(this);
-        if (is.elsepart() != null)
-            elseBranch = is.elsepart().visit(this);
+        try {
+            thenBranch = is.getThenPart().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        if (is.getElsePart() != null)
+            try {
+                elseBranch = is.getElsePart().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
         return thenBranch || elseBranch;
     }
 
@@ -78,14 +87,19 @@ public class Reachability extends Visitor<Boolean> {
         LoopStatement oldLoopConstruct = loopConstruct;
         loopConstruct = ws;
 
-        boolean b = ws.stat() != null ? ws.stat().visit(this) : true; // Only the compiler will know
-        if (ws.expr().isConstant() && ((Boolean) ws.expr().constantValue())
+        boolean b = false; // Only the compiler will know
+        try {
+            b = ws.getStatement() != null ? ws.getStatement().visit(this) : true;
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        if (ws.getEvaluationExpression().isConstant() && ((Boolean) ws.getEvaluationExpression().constantValue())
                 && ((b && // the statement can run to completion
                 !ws.hasBreak && !ws.hasReturn) // but has no breaks, so it will loop forever
                 || !b)) {
             PJBugManager.INSTANCE.reportMessage(
                     new PJMessage.Builder()
-                    .addAST(ws.expr())
+                    .addAST(ws.getEvaluationExpression())
                     .addError(VisitorMessageNumber.REACHABILITY_802)
                     .addCodeAnalysis("statement may not run to completion")
                     .build());
@@ -94,8 +108,8 @@ public class Reachability extends Visitor<Boolean> {
             return false;
         }
 
-        if (ws.expr() != null && ws.expr().isConstant()
-                && (!(Boolean) ws.expr().constantValue())) {
+        if (ws.getEvaluationExpression() != null && ws.getEvaluationExpression().isConstant()
+                && (!(Boolean) ws.getEvaluationExpression().constantValue())) {
             PJBugManager.INSTANCE.reportMessage(
                     new PJMessage.Builder()
                     .addAST(ws)
@@ -117,9 +131,14 @@ public class Reachability extends Visitor<Boolean> {
         LoopStatement oldLoopConstruct = loopConstruct;
         loopConstruct = ds;
 
-        boolean b = ds.stat().visit(this);
+        boolean b = false;
+        try {
+            b = ds.getStatement().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
-        if (ds.expr().isConstant() && ((Boolean) ds.expr().constantValue())
+        if (ds.getEvaluationExpression().isConstant() && ((Boolean) ds.getEvaluationExpression().constantValue())
                 && (b && // the statement can run to completion
                 !ds.hasBreak && !ds.hasReturn) || !b) { // but has no breaks, so it will loop forever
             loopConstruct = oldLoopConstruct;
@@ -135,9 +154,9 @@ public class Reachability extends Visitor<Boolean> {
         return true;
     }
 
-    public Boolean visitAltStat(AltStat as) {
+    public Boolean visitAltStat(AltStat as) throws Phase.Error {
         Log.log(as, "Visiting a alt statement.");
-        super.visitAltStat(as);
+        Visitor.super.visitAltStat(as);
         return true;
     }
 
@@ -149,7 +168,11 @@ public class Reachability extends Visitor<Boolean> {
         for (int i = 0; i < bl.stats().size(); i++) {
             if (bl.stats().child(i) != null) {
                 Log.log("visiting child: " + i);
-                b = bl.stats().child(i).visit(this);
+                try {
+                    b = bl.stats().child(i).visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 Log.log("visiting child: " + i + " done");
                 if (!b && bl.stats().size() - 1 > i) {
                     PJBugManager.INSTANCE.reportMessage(
@@ -174,8 +197,8 @@ public class Reachability extends Visitor<Boolean> {
         loopConstruct = fs;
 
         // for (....; false ; ....) S1
-        if (fs.expr() != null && fs.expr().isConstant()
-                && (!(Boolean) fs.expr().constantValue())) {
+        if (fs.getEvaluationExpression() != null && fs.getEvaluationExpression().isConstant()
+                && (!(Boolean) fs.getEvaluationExpression().constantValue())) {
             PJBugManager.INSTANCE.reportMessage(
                     new PJMessage.Builder()
                     .addAST(fs)
@@ -186,12 +209,16 @@ public class Reachability extends Visitor<Boolean> {
         }
 
         boolean b = true;
-        if (fs.stats() != null)
-            b = fs.stats().visit(this);
+        if (fs.getStatement() != null)
+            try {
+                b = fs.getStatement().visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
 
         // for (... ; true; ...) S1
-        if ((fs.expr() == null || (fs.expr().isConstant() && ((Boolean) fs
-                .expr().constantValue()))) && (b && // the statement can run to completion
+        if ((fs.getEvaluationExpression() == null || (fs.getEvaluationExpression().isConstant() && ((Boolean) fs
+                .getEvaluationExpression().constantValue()))) && (b && // the statement can run to completion
                 !fs.hasBreak && !fs.hasReturn) || !b) // but has no breaks, so it will loop forever
         {
             PJBugManager.INSTANCE.reportMessage(
@@ -285,7 +312,11 @@ public class Reachability extends Visitor<Boolean> {
                     .addError(VisitorMessageNumber.REACHABILITY_813)
                     .build());
         inParBlock = true;
-        pb.stats().visit(this);
+        try {
+            pb.stats().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         inParBlock = oldInParBlock;
         return true;
     }
@@ -323,7 +354,11 @@ public class Reachability extends Visitor<Boolean> {
     }
 
     public Boolean visitSwitchGroup(SwitchGroup sg) {
-        return new Block(sg.statements()).visit(this);
+        try {
+            return new Block(sg.getStatements()).visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
     }
 
     public Boolean visitSwitchStat(SwitchStat ss) {
@@ -332,7 +367,11 @@ public class Reachability extends Visitor<Boolean> {
         insideSwitch = true;
         SwitchStat oldSwitchConstruct = switchConstruct;
         switchConstruct = ss;
-        ss.switchBlocks().visit(this);
+        try {
+            ss.switchBlocks().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         // TODO finish this!
         insideSwitch = oldInsideSwitch;
         switchConstruct = oldSwitchConstruct;

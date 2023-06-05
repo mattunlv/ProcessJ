@@ -1,10 +1,14 @@
 package org.processj.rewriters;
 
 import org.processj.ast.*;
+import org.processj.ast.expression.Assignment;
+import org.processj.ast.expression.BinaryExpr;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
-import org.processj.printers.*;
+import org.processj.utilities.printers.ParseTreePrinter;
+import org.processj.utilities.printers.PrettyPrinter;
 
-public class Expr extends Visitor<AST> {
+public class Expr implements Visitor<AST> {
     private int tempCounter = 0;
     private String nextTemp() {
         return "temp" + tempCounter++;
@@ -40,18 +44,27 @@ public class Expr extends Visitor<AST> {
                     // temp1 = e1
                     ExprStat a1 = new ExprStat(new Assignment(new NameExpr(new Name(temp1)), left, Assignment.EQ));
                     // Rewrite 'temp1 = e1'
-                    Block b1 = (Block)a1.visit(this);
+                    Block b1 = null;
+                    try {
+                        b1 = (Block)a1.visit(this);
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                     // We got a block back that looks like { .... }
                     // Grab the statements from that block and merge them to 'se'
                     se.merge(b1.stats());
                     // append 'v = t1 <op> e2'
                     se.append(new ExprStat(new Assignment(as.left(),
-                                             new BinaryExpr(new NameExpr(new Name(temp1)), right, be.op()), as.op())));
+                                             new BinaryExpr(new NameExpr(new Name(temp1)), right, be.op()), as.getOperator())));
                     Block bl = new Block(se);
                     System.out.println("Result of rewriting (Binary expression, left org.processj.yield, right does not):");
-                    bl.visit(new ParseTreePrinter());
+
                     System.out.println("Pretty Printed:");
-                    bl.visit(new PrettyPrinter());
+                    try {
+                        bl.visit(new PrettyPrinter());
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                     System.out.println();
                     return bl;
                 } else if (left.doesYield() && right.doesYield()) {
@@ -72,7 +85,12 @@ public class Expr extends Visitor<AST> {
                     // temp1 = e1
                     ExprStat a1 = new ExprStat(new Assignment(new NameExpr(new Name(temp1)), left, Assignment.EQ));
                     // Rewrite 'temp1 = e1'
-                    Block b1 = (Block)a1.visit(this);
+                    Block b1 = null;
+                    try {
+                        b1 = (Block)a1.visit(this);
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                     // We got a block back that looks like { .... }
                     // Grab the statements from that block and merge them to 'se'
                     se.merge(b1.stats());
@@ -83,18 +101,27 @@ public class Expr extends Visitor<AST> {
                     // temp2 = e2
                     ExprStat a2 = new ExprStat(new Assignment(new NameExpr(new Name(temp2)), right, Assignment.EQ));
                     // Rewrite 'temp2 = e2'
-                    Block b2 = (Block)a2.visit(this);
+                    Block b2 = null;
+                    try {
+                        b2 = (Block)a2.visit(this);
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                     // We got a block back that looks like { .... }
                     // Grab the statements from that block and merge them to 'se'
                     se.merge(b2.stats());
                     // Append 'v = t1 <op> t2'
                     se.append(new ExprStat(new Assignment(as.left(),
-                                           new BinaryExpr(new NameExpr(new Name(temp1)), new NameExpr(new Name(temp2)), be.op()), as.op())));
+                                           new BinaryExpr(new NameExpr(new Name(temp1)), new NameExpr(new Name(temp2)), be.op()), as.getOperator())));
                     Block bl = new Block(se);
                     System.out.println("Result of rewriting (Binary expression, left org.processj.yield, right does not):");
-                    bl.visit(new ParseTreePrinter());
+
                     System.out.println("Pretty Printed:");
-                    bl.visit(new PrettyPrinter());
+                    try {
+                        bl.visit(new PrettyPrinter());
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                     System.out.println();
                     return bl;
                 } else {
@@ -111,18 +138,27 @@ public class Expr extends Visitor<AST> {
                     // temp2 = e2
                     ExprStat a2 = new ExprStat(new Assignment(new NameExpr(new Name(temp2)), right, Assignment.EQ));
                     // Rewrite 'temp2 = e2'
-                    Block b2 = (Block)a2.visit(this);
+                    Block b2 = null;
+                    try {
+                        b2 = (Block)a2.visit(this);
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                     // We got a block back that looks like { .... }
                     // Grab the statements from that block and merge them to 'se'
                     se.merge(b2.stats());
                     // append 'v = e1 <op> t2'
                     se.append(new ExprStat(new Assignment(as.left(),
-                                             new BinaryExpr(left,new NameExpr(new Name(temp2)), be.op()), as.op())));
+                                             new BinaryExpr(left,new NameExpr(new Name(temp2)), be.op()), as.getOperator())));
                     Block bl = new Block(se);
                     System.out.println("Result of rewriting (Binary expression, left org.processj.yield, right does not):");
-                    bl.visit(new ParseTreePrinter());
+
                     System.out.println("Pretty Printed:");
-                    bl.visit(new PrettyPrinter());
+                    try {
+                        bl.visit(new PrettyPrinter());
+                    } catch (org.processj.Phase.Error error) {
+                        throw new RuntimeException(error);
+                    }
                     System.out.println();
                     return bl;
                 }
@@ -142,17 +178,26 @@ public class Expr extends Visitor<AST> {
                 // temp = e
                 ExprStat a = new ExprStat(new Assignment(new NameExpr(new Name(temp)), expr, Assignment.EQ));
                 // Rewrite 'temp = e'
-                Block b = (Block)a.visit(this);
+                Block b = null;
+                try {
+                    b = (Block)a.visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 // We got a block back that looks like { .... }
                 // Grab the statements from that block and merge them to 'se'
                 se.merge(b.stats());
                 // append 'v = temp'
-                se.append(new ExprStat(new Assignment(as.left(), new UnaryPreExpr(new NameExpr(new Name(temp)), up.op()), as.op())));
+                se.append(new ExprStat(new Assignment(as.left(), new UnaryPreExpr(new NameExpr(new Name(temp)), up.getOperator()), as.getOperator())));
                 Block bl = new Block(se);
                 System.out.println("Result of rewriting (Unary Pre Expressions):");
-                bl.visit(new ParseTreePrinter());
+
                 System.out.println("Pretty Printed:");
-                bl.visit(new PrettyPrinter());
+                try {
+                    bl.visit(new PrettyPrinter());
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
                 System.out.println();
                 return bl;
             } else if (as.right() instanceof Invocation) {
@@ -166,9 +211,12 @@ public class Expr extends Visitor<AST> {
         } else {
             System.out.println("[Expr]: Right-hand side of expression is not yielding.");
             System.out.println("Result of rewriting:");
-            as.visit(new ParseTreePrinter());
             System.out.println("Pretty Printed:");
-            as.visit(new PrettyPrinter());
+            try {
+                as.visit(new PrettyPrinter());
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             return new Block(new Sequence(new ExprStat(as)));
         }
     }
@@ -176,9 +224,14 @@ public class Expr extends Visitor<AST> {
 
 
 
-    public AST visitExprStat(ExprStat es) {
+    public AST visitExprStat(ExprStat es) throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         System.out.println("[Expr]: Visiting an ExprStat");
-        Statement a = (Statement)es.expr().visit(this);
+        Statement a = null;
+        try {
+            a = (Statement)es.expr().visit(this);
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         if (a instanceof Block)
             return a;
         else
@@ -191,18 +244,35 @@ public class Expr extends Visitor<AST> {
     }
 
 
-    public AST visitBlock(Block bl) {
+    public AST visitBlock(Block bl) throws SymbolMap.Context.ContextDoesNotDefineScopeException {
         System.out.println("[Expr]: Visiting a Block");
         System.out.println("[Expr]: Block before of rewriting:");
-        bl.visit(new ParseTreePrinter());
+        try {
+            bl.visit(new ParseTreePrinter());
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         System.out.println("[Expr]: Block before rewriting:");
-        bl.visit(new PrettyPrinter());
+        try {
+            bl.visit(new PrettyPrinter());
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
 
         for (int i = 0; i<bl.stats().size(); i++) {
             AST s = bl.stats().child(i);
-            AST a = s.visit(this);
+            AST a = null;
+            try {
+                a = s.visit(this);
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             System.out.println("Result of rewriting this one statement:");
-            a.visit(new ParseTreePrinter());
+            try {
+                a.visit(new ParseTreePrinter());
+            } catch (org.processj.Phase.Error error) {
+                throw new RuntimeException(error);
+            }
             // Don't bother with the Block wrapper if there is only one statement.
             if (a instanceof Block && ((Block)a).stats().size() == 1)
                 bl.stats().set(i, ((Block)a).stats().child(0));
@@ -212,9 +282,17 @@ public class Expr extends Visitor<AST> {
         }
 
         System.out.println("Expr]: Block after rewriting:");
-        bl.visit(new ParseTreePrinter());
+        try {
+            bl.visit(new ParseTreePrinter());
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         System.out.println("Expr]: Block after rewriting:");
-        bl.visit(new PrettyPrinter());
+        try {
+            bl.visit(new PrettyPrinter());
+        } catch (org.processj.Phase.Error error) {
+            throw new RuntimeException(error);
+        }
         return bl;
     }
 

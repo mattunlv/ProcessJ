@@ -1,24 +1,47 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class RecordMember extends AST {
 
-    public RecordMember(Type type, Name name) {
-        super(type);
-        nchildren = 2;
-        children = new AST[] { type, name };
+    /// --------------
+    /// Private Fields
+
+    private Type type;
+    private Name name;
+
+    public RecordMember(final Type type, final Name name) {
+        super(new AST[] { type, name });
+
+        this.type = type;
+        this.name = name;
+
     }
 
-    public Type type() {
-        return (Type) children[0];
+    public final void setType(final Type type) {
+
+        this.type           = type;
+        this.children[0]    = type;
+
     }
 
-    public Name name() {
+    @Override
+    public final String toString() {
+
+        return this.name.toString();
+
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
+    public Name getName() {
         return (Name) children[1];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitRecordMember(this);
     }
 }

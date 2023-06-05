@@ -1,0 +1,52 @@
+
++ Deprecate ResolvePackageTypes; Consolidated with ResolveImports.java
+
+    - Requires same functionality as provided by ResolveImports
+    - Symbol resolution should be consistent Since ResolvePackageTypes processed Symbols further down the Compiler than
+        ResolveImports
+    - Separation of Concerns is roughly the same with the exception being that it adds the visitName & (possibly)
+        visitNamedType to ResolveImports
+
+
++ Deprecate ResolveNativeImports; Consolidated with Library.java
+
+    - ResolveNativeImports has limited functionality compared to Library.java that introduces errors.
+
+        1) It doesn't take into account NATIVELIB
+        2) Proper Pragma Validation isn't performed by visitProcDecl i.e. allows value passthrough if the visitation
+            is not invoked after Library
+        3) Repeat traversal; We can make (negligible) gains by migrating the logic to CheckProcedure since the same
+            checks need be done.
+
+    - ResolveNativeImports also only operates on One TopLevelDecl (ProcTypeDecl) & also depends on Import#getCompilations()
+        when no other class utilizes it.
+
+    - Removing ResolveNativeImports has allowed the PragmaValidation visitor to take care of marking ProcTypeDecls as
+    Native while performing the proper checks.
+    - Removing ResolveNativeImports has allowed removal of Import#addCompilation & Import#getCompilations thereby reducing
+    the amount of entry points that could cause extraneous errors.
+
+
++ Deprecate org.processj.codegen.Helper#doesProcYield(ProcTypeDecl)
+
+    This was in favor of introducing ProcTypeDecl#setYields & ProcTypeDecl#doesYield instance methods to avoid
+    unnecessarily exposing fields from ProcTypeDecl
+
++ Deprecate org.processj.namechecker.TopLevelDecls
+
+    The import sequence was inconsistent with imported compilations vs. the specified Compilations.
+    Furthermore, namechecking was done before other imports, when it is possible that they referenced each other.
+    Aggregating the TopLevelDeclarations into the current Compilation's SymbolTable is necessary before the NameChecking
+    Phase since the dependency network is constructed during imports and all tables must be prepared before the actual
+    namechecking
+
++ Deprecate org.processj.namechecker.ResolveNamedTypes
+
+    Besides the direct access of the children field (which should be private). NameChecking binds the types of many names
+    when resolving their visibility. This also includes cases where there are redundant imports, or package types
+    that exist along side their own package import. Additionally, NamedTypes must be resolved and replaced with their
+    actual type, and since the import phase aggregates the corresponding Compilations onto the Symbol Table, this is
+    a good point to resolve said types before Type checking
+
++ Record Rewrite & Protocol Rewrite Need be done after NameChecking since they may not resolve the complete or proper
+members

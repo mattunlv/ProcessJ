@@ -1,5 +1,7 @@
 package org.processj.ast;
 
+import org.processj.ast.expression.Expression;
+
 public abstract class Statement extends AST {
 
     // This sequence is used in the rewriting phase.                                                                                                                                                               

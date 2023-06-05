@@ -1,5 +1,7 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class ExprStat extends Statement {
@@ -13,7 +15,7 @@ public class ExprStat extends Statement {
         return (Expression) children[0];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitExprStat(this);
     }
 }

@@ -83,23 +83,6 @@ public class Helper {
     }
 
     /**
-     * Returns true if a procedure is capable of yielding or false
-     * otherwise. Note that 'yieldability' is determined by checking
-     * the procedure's annotation through its annotations() method.
-     *
-     * @param pd
-     *            The procure whose annotation is to be checked.
-     * @return true if the procedure can org.processj.yield or false otherwise.
-     */
-    public static boolean doesProcYield(final ProcTypeDecl pd) {
-        if (pd == null)
-            return false;
-
-        return pd.yields || (pd.annotations().isDefined("yield") &&
-               Boolean.valueOf(pd.annotations().get("yield")));
-    }
-
-    /**
      * Returns the wrapper class for the given class type.
      *
      * @param type

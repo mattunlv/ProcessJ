@@ -1,6 +1,7 @@
 package org.processj.test;
 
 import org.junit.jupiter.api.Assertions;
+import org.processj.Phases;
 import org.processj.ast.Compilation;
 import org.processj.lexer.Lexer;
 import org.processj.parser.Parser;
@@ -11,7 +12,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
-public class ProcessJTest {
+public class ProcessJTest extends Phases.Executor {
 
     /// --------------------------
     /// Protected Static Constants
@@ -269,6 +270,13 @@ public class ProcessJTest {
     protected final static TestInputFile Timer01
             = new TestInputFile("code/test/", "Timer01",
                         "pj", "java");
+
+    /// ------------
+    /// Import Tests
+
+    protected final static TestInputFile ImportsBatch1
+            = new TestInputFile("org/batch1/", "ruby",
+            "pj", "java");
 
     /// ----------------------
     /// Private Static Methods

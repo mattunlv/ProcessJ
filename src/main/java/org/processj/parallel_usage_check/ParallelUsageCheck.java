@@ -2,10 +2,11 @@ package org.processj.parallel_usage_check;
 
 import java.util.Hashtable;
 
+import org.processj.Phase;
 import org.processj.ast.AST;
-import org.processj.ast.AltStat;
-import org.processj.ast.ArrayAccessExpr;
-import org.processj.ast.Assignment;
+import org.processj.ast.alt.AltStat;
+import org.processj.ast.expression.ArrayAccessExpr;
+import org.processj.ast.expression.Assignment;
 import org.processj.ast.NameExpr;
 import org.processj.ast.ParBlock;
 import org.processj.ast.RecordAccess;
@@ -17,7 +18,7 @@ import org.processj.utilities.Log;
 import org.processj.utilities.Visitor;
 import org.processj.utilities.VisitorMessageNumber;
 
-public class ParallelUsageCheck extends Visitor<Object> {
+public class ParallelUsageCheck implements Visitor<Object> {
 
     private Hashtable<String, AST> readSet;
     private Hashtable<String, AST> writeSet;
@@ -30,7 +31,7 @@ public class ParallelUsageCheck extends Visitor<Object> {
         Log.logHeader("********************************************");
     }
 
-    public Object visitParBlock(ParBlock pb) {
+    public Object visitParBlock(ParBlock pb) throws Phase.Error {
         Log.log(pb, "Visiting a Par Block.");
         boolean oldInPar = inPar;
         inPar = true;
@@ -42,7 +43,7 @@ public class ParallelUsageCheck extends Visitor<Object> {
             writeSet = new Hashtable<String, AST>();
         }
 
-        super.visitParBlock(pb);
+        Visitor.super.visitParBlock(pb);
 
         inPar = oldInPar;
         return null;
@@ -84,7 +85,11 @@ public class ParallelUsageCheck extends Visitor<Object> {
                             .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_702)
                             .addArguments(name)
                             .build());
-                aae.indexExpression().visit(this);
+                try {
+                    aae.indexExpression().visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
             }
         }
         return null;
@@ -106,7 +111,7 @@ public class ParallelUsageCheck extends Visitor<Object> {
             // the left hand side must go into the read set!
             // can be NameExpr, ArrayAccessExpr, or RecordAccess
             if (as.left() instanceof NameExpr) {
-                String name = ((NameExpr) as.left()).name().getname();
+                String name = ((NameExpr) as.left()).toString();
                 if (writeSet.containsKey(name))
                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                                 .addAST(as)
@@ -157,7 +162,7 @@ public class ParallelUsageCheck extends Visitor<Object> {
         if (inPar) {
             Log.log(ne, "Visiting a NameExpr.");
             // This should only be reads!
-            String name = ne.name().getname();
+            String name = ne.toString();
             if (writeSet.containsKey(name))
                 PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                             .addAST(ne)
@@ -175,8 +180,8 @@ public class ParallelUsageCheck extends Visitor<Object> {
     public Object visitUnaryPostExpr(UnaryPostExpr up) {
         if (inPar) {
             Log.log(up, "Visiting a UnaryPostExpr.");
-            if (up.expr() instanceof NameExpr) {
-                String name = ((NameExpr) up.expr()).name().getname();
+            if (up.getExpression() instanceof NameExpr) {
+                String name = ((NameExpr) up.getExpression()).toString();
                 if (writeSet.containsKey(name))
                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                                 .addAST(up)
@@ -185,11 +190,11 @@ public class ParallelUsageCheck extends Visitor<Object> {
                                 .build());
                 else {
                     Log.log(up, "NameExpr: '" + name + "' is added to the write set.");
-                    writeSet.put(name, up.expr());
+                    writeSet.put(name, up.getExpression());
                 }
-            } else if (up.expr() instanceof RecordAccess) {
+            } else if (up.getExpression() instanceof RecordAccess) {
                 // TODO: the toString() of up.expr() if probably not complete
-                String name = up.expr().toString();
+                String name = up.getExpression().toString();
                 if (writeSet.containsKey(name))
                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                                 .addAST(up)
@@ -198,11 +203,11 @@ public class ParallelUsageCheck extends Visitor<Object> {
                                 .build());
                 else {
                     Log.log(up, "RecordAccess: '" + name + "' is added to the write set.");
-                    writeSet.put(name, up.expr());
+                    writeSet.put(name, up.getExpression());
                 }
-            } else if (up.expr() instanceof ArrayAccessExpr) {
+            } else if (up.getExpression() instanceof ArrayAccessExpr) {
                 // TODO: the toString() of up.expr() is probably not complete!
-                String name = up.expr().toString();
+                String name = up.getExpression().toString();
                 if (writeSet.containsKey(name))
                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                                 .addAST(up)
@@ -211,9 +216,9 @@ public class ParallelUsageCheck extends Visitor<Object> {
                                 .build());
                 else {
                     Log.log(up, "ArrayAccessExpr: '" + name + "' is added to the write set.");
-                    writeSet.put(name, up.expr());
+                    writeSet.put(name, up.getExpression());
                     PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                                .addAST(up.expr())
+                                .addAST(up.getExpression())
                                 .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_711)
                                 .addArguments(name)
                                 .build());
@@ -226,10 +231,10 @@ public class ParallelUsageCheck extends Visitor<Object> {
     public Object visitUnaryPreExpr(UnaryPreExpr up) {
         if (inPar) {
             Log.log(up, "Visiting a UnaryPreExpr.");
-            if (up.op() == UnaryPreExpr.PLUSPLUS
-                    || up.op() == UnaryPreExpr.MINUSMINUS) {
+            if (up.getOperator() == UnaryPreExpr.PLUSPLUS
+                    || up.getOperator() == UnaryPreExpr.MINUSMINUS) {
                 if (up.expr() instanceof NameExpr) {
-                    String name = ((NameExpr) up.expr()).name().getname();
+                    String name = ((NameExpr) up.expr()).toString();
                     if (writeSet.containsKey(name))
                         PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
                                     .addAST(up)
@@ -273,7 +278,11 @@ public class ParallelUsageCheck extends Visitor<Object> {
                     }
                 }
             } else
-                up.expr().visit(this);
+                try {
+                    up.expr().visit(this);
+                } catch (org.processj.Phase.Error error) {
+                    throw new RuntimeException(error);
+                }
         }
         return null;
     }

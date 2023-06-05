@@ -1,26 +1,38 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class RecordLiteral extends Literal {
 
-    public RecordTypeDecl myTypeDecl = null; // set in NameChecker/NameChecker/visitRecordLiteral()
+    private final Name name;
+    private final Sequence<RecordMemberLiteral> recordMemberLiterals;
 
-    public RecordLiteral(Name name, Sequence<RecordMemberLiteral> members) {
+    public RecordLiteral(final Name name, final Sequence<RecordMemberLiteral> members) {
         super(name);
         nchildren = 2;
-        children = new AST[] { name, members };
+        children = new AST[] { name, (members != null) ? members : new Sequence<>() };
+        this.name = name;
+        this.recordMemberLiterals = (Sequence<RecordMemberLiteral>) this.children[1];
     }
 
-    public Name name() {
+    @Override
+    public final String toString() {
+
+        return this.name.toString();
+
+    }
+
+    public Name getName() {
         return (Name) children[0];
     }
 
-    public Sequence<RecordMemberLiteral> members() {
-        return (Sequence<RecordMemberLiteral>) children[1];
+    public Sequence<RecordMemberLiteral> getRecordMemberLiterals() {
+        return this.recordMemberLiterals;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v)
+            throws Phase.Error {
         return v.visitRecordLiteral(this);
     }
 }

@@ -1,31 +1,60 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class ProtocolLiteral extends Literal {
 
-    public ProtocolTypeDecl myTypeDecl = null; // set in NameChecker/NameChecker/visitProtocolLiteral()
-    public ProtocolCase myChosenCase = null; // set in NameChecker/NameChecker/visitProtocolLiteral()
+    private ProtocolCase    protocolCase    ;
+    private final Name      name            ;
+    private final Name      tag             ;
 
-    public ProtocolLiteral(Name name, Name tag, Sequence<RecordMemberLiteral> expressions) {
+    public ProtocolLiteral(final Name name, final Name tag, final Sequence<RecordMemberLiteral> expressions) {
         super(name);
         nchildren = 3;
         children = new AST[] { name, tag, expressions };
+        this.tag            = tag;
+        this.name           = name;
+        this.protocolCase   = null;
     }
 
-    public Name name() {
-        return (Name) children[0];
+    @Override
+    public final String toString() {
+
+        return this.name.toString();
+
     }
 
-    public Name tag() {
+    public Name getTag() {
         return (Name) children[1];
     }
 
-    public Sequence<RecordMemberLiteral> expressions() {
+    public final Name getName() {
+
+        return this.name;
+
+    }
+
+    public final String getTagLiteral() {
+
+        return this.tag.toString();
+
+    }
+
+    public final void setProtocolCase(final ProtocolCase protocolCase) {
+
+        this.protocolCase = protocolCase;
+
+    }
+
+    public final Sequence<RecordMemberLiteral> getExpressions() {
         return (Sequence<RecordMemberLiteral>) children[2];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
-        return v.visitProtocolLiteral(this);
+    public final <S> S visit(Visitor<S> visitor) throws Phase.Error {
+
+        return visitor.visitProtocolLiteral(this);
+
     }
+
 }

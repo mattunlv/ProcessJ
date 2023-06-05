@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class SkipStat extends Statement {
@@ -9,7 +10,7 @@ public class SkipStat extends Statement {
         nchildren = 0;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitSkipStat(this);
     }
 }

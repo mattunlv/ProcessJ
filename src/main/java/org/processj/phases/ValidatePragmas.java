@@ -107,7 +107,7 @@ public class ValidatePragmas extends Phase {
                     procedureTypeDeclaration).commit();
 
         // Procedures must not be declared native
-        else if(procedureTypeDeclaration.isDeclaredNative())
+        else if(procedureTypeDeclaration.isNative())
             throw new ProcedureDeclarationNativeException(validatePragmas,
                     procedureTypeDeclaration).commit();
 
@@ -129,7 +129,7 @@ public class ValidatePragmas extends Phase {
             throw new ProcedureDeclarationDefinesBodyException(validatePragmas, procedureTypeDeclaration).commit();
 
             // If the Procedure is not declared native
-        else if(!procedureTypeDeclaration.isDeclaredNative())
+        else if(!procedureTypeDeclaration.isNative())
             throw new ProcedureDeclarationNonNativeException(validatePragmas, procedureTypeDeclaration).commit();
 
     }
@@ -146,7 +146,7 @@ public class ValidatePragmas extends Phase {
             throws Phase.Error {
 
         // Retrieve the Procedure's return type
-        final Type returnType = procedureTypeDeclaration.returnType();
+        final Type returnType = procedureTypeDeclaration.getReturnType();
 
         // Moved From GenerateNativeCode Visitor
         // If the Procedure does not specify a primitive return type
@@ -172,10 +172,10 @@ public class ValidatePragmas extends Phase {
                                                               final ProcTypeDecl procedureTypeDeclaration)
             throws Phase.Error {
 
-        for(final ParamDecl parameterDeclaration: procedureTypeDeclaration.formalParams()) {
+        for(final ParamDecl parameterDeclaration: procedureTypeDeclaration.getParameters()) {
 
             // Initialize a handle to the parameter type
-            final Type parameterType = parameterDeclaration.type();
+            final Type parameterType = parameterDeclaration.getType();
 
             // If the ProcTypeDecl specified a non-primitive type
             if(!(parameterType instanceof PrimitiveType))
@@ -230,7 +230,7 @@ public class ValidatePragmas extends Phase {
             new EnteringPragma(validatePragmas, pragma).commit();
 
             // Aggregate the Pragma
-            pragmaMap.put(pragma.toString(), pragma.getValue());
+            pragmaMap.put(pragma.toString(), pragma.getValue().replace("\"", ""));
 
         }
 
@@ -288,7 +288,6 @@ public class ValidatePragmas extends Phase {
         // Initialize the Type as a Primitive; This should already be checked.
         final PrimitiveType primitiveType = (PrimitiveType) type;
 
-        // TODO: For the toString(); watch out for RecordTypeDecls (Maybe?)
         // Return the result
         return (primitiveType.isStringType() ? "char*"
                 : (primitiveType.isBooleanType() ? "int" : primitiveType.toString()));
@@ -303,8 +302,8 @@ public class ValidatePragmas extends Phase {
      */
     private static String NativeTypeStringFor(final ParamDecl parameterDeclaration) {
 
-        return (parameterDeclaration != null) && (parameterDeclaration.type() != null) ?
-                NativeTypeStringFor(parameterDeclaration.type()) : "";
+        return (parameterDeclaration != null) && (parameterDeclaration.getType() != null) ?
+                NativeTypeStringFor(parameterDeclaration.getType()) : "";
 
     }
 
@@ -319,7 +318,7 @@ public class ValidatePragmas extends Phase {
 
         // Initialize the StringBuilder & parameters
         final StringBuilder         stringBuilder   = new StringBuilder("(");
-        final Sequence<ParamDecl>   parameters      = procedureTypeDeclaration.formalParams();
+        final Sequence<ParamDecl>   parameters      = procedureTypeDeclaration.getParameters();
 
         // Iterate through the list of Parameter Declarations
         for(int index = 0; index < parameters.size(); index++)
@@ -522,6 +521,11 @@ public class ValidatePragmas extends Phase {
     private String          packageName         ;
 
     /**
+     * <p>{@link String} value of the filename corresponding to the current {@link Compilation}.</p>
+     */
+    private String          fileName            ;
+
+    /**
      * <p>Flag indicating if the {@link Compilation} is specified as a native library</p>
      */
     private boolean         isNativeLibrary     ;
@@ -540,15 +544,16 @@ public class ValidatePragmas extends Phase {
     /// Constructors
 
     /**
-     * <p>Initializes the {@link ValidatePragmas} phase to its' default state with the specified {@link Phase.Listener} &
-     * {@link ProcessJSourceFile}.</p>
-     * @param listener The {@link Phase.Listener} that receives any {@link org.processj.Phase.Message},
-     * {@link org.processj.Phase.Warning}, or {@link org.processj.Phase.Error} messages from the {@link ValidatePragmas}.
+     * <p>Initializes the {@link ValidatePragmas} phase to its' default state with the specified
+     * {@link Phase.Listener}.</p>
+     * @param listener The {@link Phase.Listener} that receives any {@link Message},
+     * {@link Phase.Warning}, or {@link Phase.Error} messages from the {@link ValidatePragmas}.
      */
-    public ValidatePragmas(final Listener listener) {
+    public ValidatePragmas(final Phase.Listener listener) {
         super(listener);
         this.nativeSignatures   = null  ;
         this.packageName        = ""    ;
+        this.fileName           = ""    ;
         this.isNative           = false ;
         this.isNativeLibrary    = false ;
     }
@@ -576,7 +581,8 @@ public class ValidatePragmas extends Phase {
             // Initialize the native lib specifications, package name, & native signatures list.
             this.isNative           = pragmaMap.containsKey("NATIVE")       ;
             this.isNativeLibrary    = pragmaMap.containsKey("NATIVELIB")    ;
-            this.packageName        = compilation.get_packageName()         ;
+            this.fileName           = pragmaMap.getOrDefault("FILE", "");
+            this.packageName        = compilation.getPackageName()          ;
             this.nativeSignatures   = new ArrayList<>()                     ;
 
             // Validate the pragma map
@@ -589,14 +595,12 @@ public class ValidatePragmas extends Phase {
             if(this.isNative && this.nativeSignatures.isEmpty())
                 throw new InvalidNativeSignaturesException(this).commit();
 
-            // Initialize the process j header file & source file name
-            final String processJHeaderFileName = pragmaMap.get("FILE");
-            final String sourceFileName         = compilation.get_filePath() + "_" + processJHeaderFileName;
+            // Initialize the source file name
+            final String sourceFileName = this.packageName.replace('.', '/') + "_" + this.fileName;
 
             // TODO: Generate ProcessJFiles for LIBRARY & PROCESSJ specifications
-            // generateProcessJFiles(c);
             GenerateNativeLibraryCodeFrom(this, this.nativeSignatures, this.packageName,
-                    pragmaMap.get("NATIVELIB"), processJHeaderFileName, sourceFileName);
+                    pragmaMap.get("NATIVELIB"), this.fileName, sourceFileName);
 
             // Send an informative message
             new LibraryPragmaDetected(this).commit();
@@ -659,9 +663,17 @@ public class ValidatePragmas extends Phase {
             ValidateNativeProcedureParameterTypes(this, procedureTypeDeclaration);
 
             // Finally, aggregate the Procedure's native signature
-            if(this.isNative) this.nativeSignatures.add(NativeTypeStringFor(procedureTypeDeclaration.returnType())
-                    + " " + this.packageName + "_" + procedureTypeDeclaration
-                    + "_" + NativeTypeListStringFor(procedureTypeDeclaration));
+            if(this.isNative) {
+
+                this.nativeSignatures.add(NativeTypeStringFor(procedureTypeDeclaration.getReturnType())
+                        + " " + this.packageName + "_" + procedureTypeDeclaration
+                        + "_" + NativeTypeListStringFor(procedureTypeDeclaration));
+
+                // TODO: Should this cover NATIVELIB?
+                procedureTypeDeclaration.setNative();
+                procedureTypeDeclaration.setPackageName(this.packageName);
+
+            }
 
         } else {
 
@@ -715,29 +727,18 @@ public class ValidatePragmas extends Phase {
     /// Private Methods
 
     /**
-     * <p>Returns a valid {@link Compilation} instance from the {@link ProcessJSourceFile}. This method successfully
-     * returns if the {@link ProcessJSourceFile} contains a valid {@link Compilation} and if the {@link Compilation}
-     * contains a {@link Pragma} {@link Map}.</p>
+     * <p>Returns a valid {@link Compilation}. This method successfully returns if the {@link ProcessJSourceFile}
+     * being processed contains a valid {@link Compilation} and if the {@link Compilation} contains a {@link Pragma}
+     * {@link Map} & defines a package name.</p>
      * @return {@link Compilation} corresponding to the {@link ProcessJSourceFile}.
      * @throws Phase.Error If the {@link ProcessJSourceFile} does not contain a {@link Compilation} or if the
      * {@link Compilation} does not contain a {@link Pragma} {@link Map}.
      * @since 0.1.0
      */
-    private Compilation retrieveValidCompilation() throws Phase.Error {
+    @Override
+    protected Compilation retrieveValidCompilation() throws Phase.Error {
 
-        // Retrieve the ProcessJ Source File
-        final ProcessJSourceFile processJSourceFile = this.getProcessJSourceFile();
-
-        // If a null value was specified for the ProcessJ source file
-        if(processJSourceFile == null)
-            throw new NullProcessJSourceFile(this).commit();
-
-        // If the processJ source file does not contain a Compilation
-        else if(!processJSourceFile.containsCompilation())
-            throw new NullCompilationException(this).commit();
-
-        // Initialize the result
-        final Compilation compilation = processJSourceFile.getCompilation();
+        final Compilation compilation = super.retrieveValidCompilation();
 
         // Assert a specified package name if the Compilation contains Pragmas
         if(compilation.definesPragmas() && !compilation.definesPackageName())
@@ -798,12 +799,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName()
-                    + ": Entering <" + this.pragma
+            return "Entering <" + this.pragma
                     + ((this.pragma.getValue() != null)
                     ? ',' + this.pragma.getValue().substring(1, this.pragma.getValue().length() - 1)
                     : "") + "> into pragmaTable.";
@@ -854,11 +851,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message;
+            return Message;
 
         }
 
@@ -919,12 +913,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.nativeLibraryName;
+            return Message + ": " + this.nativeLibraryName;
 
         }
 
@@ -985,12 +975,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.nativeLibraryProcessJHeaderFileName;
+            return Message + ": " + this.nativeLibraryProcessJHeaderFileName;
 
         }
 
@@ -1055,8 +1041,7 @@ public class ValidatePragmas extends Phase {
             final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
 
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.nativeLibraryHeaderFileName;
+            return Message + ": " + this.nativeLibraryHeaderFileName;
 
         }
 
@@ -1117,12 +1102,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.nativeLibraryHeaderFileName;
+            return Message + ": " + this.nativeLibraryHeaderFileName;
 
         }
 
@@ -1184,12 +1165,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.nativeLibraryHeaderFileName + " - this file must be moved to lib/C/include/";
+            return Message + ": " + this.nativeLibraryHeaderFileName + " - this file must be moved to lib/C/include/";
 
         }
 
@@ -1262,8 +1239,7 @@ public class ValidatePragmas extends Phase {
             final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
 
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": "
-                    + this.nativeLibraryImplementationFileName + " with " + this.nativeLibraryHeaderFileName
+            return Message + ": " + this.nativeLibraryImplementationFileName + " with " + this.nativeLibraryHeaderFileName
                     + " - this file must be moved to lib/C/include/";
 
         }
@@ -1333,12 +1309,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.nativeLibraryProcessJHeaderFileName + " must be moved to lib/C/include/"
+            return Message + ": " + this.nativeLibraryProcessJHeaderFileName + " must be moved to lib/C/include/"
                     + this.nativeLibraryProcessJHeaderFilePath;
 
         }
@@ -1391,11 +1363,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message;
+            return Message;
 
         }
 
@@ -1464,12 +1433,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName()
-                    + ": " + Message + ":" + this.currentLine + " '" + this.pragma + "'";
+            return Message + ":" + this.currentLine + " '" + this.pragma + "'";
 
         }
 
@@ -1539,13 +1504,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName()
-                    + ": " + Message + ":" + this.currentLine + " '" + this.pragma
-                    + "' requires 1 parameter, none was given.";
+            return Message + ":" + this.currentLine + " '" + this.pragma + "' requires 1 parameter, none was given.";
 
         }
 
@@ -1619,9 +1579,7 @@ public class ValidatePragmas extends Phase {
             final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
 
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName()
-                    + ": " + Message + ":" + this.currentLine + " '" + this.pragma
-                    + "' does not require any parameters.";
+            return Message + ":" + this.currentLine + " '" + this.pragma + "' does not require any parameters.";
 
         }
 
@@ -1691,13 +1649,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName()
-                    + ": " + Message + ":" + this.currentLine + " '" + this.pragma
-                    + "' already specified.";
+            return Message + ":" + this.currentLine + " '" + this.pragma + "' already specified.";
 
         }
 
@@ -1745,11 +1698,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message;
+            return Message;
 
         }
 
@@ -1797,11 +1747,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message;
+            return Message;
 
         }
 
@@ -1850,11 +1797,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message;
+            return Message;
 
         }
 
@@ -1903,11 +1847,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message;
+            return Message;
 
         }
 
@@ -1971,7 +1912,7 @@ public class ValidatePragmas extends Phase {
             final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
 
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + " '" + this.language + "' ";
+            return Message + " '" + this.language + "' ";
 
         }
 
@@ -2033,12 +1974,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.protocolTypeDeclaration;
+            return Message + ": " + this.protocolTypeDeclaration;
 
         }
 
@@ -2100,12 +2037,9 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
 
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.recordTypeDeclaration;
+            return Message + ": " + this.recordTypeDeclaration;
 
         }
 
@@ -2171,7 +2105,7 @@ public class ValidatePragmas extends Phase {
             final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
 
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.constantDeclaration;
+            return Message + ": " + this.constantDeclaration;
 
         }
 
@@ -2233,11 +2167,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.constantDeclaration;
+            return Message + ": " + this.constantDeclaration;
 
         }
 
@@ -2299,11 +2230,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.constantDeclaration;
+            return Message + ": " + this.constantDeclaration;
 
         }
 
@@ -2369,7 +2297,7 @@ public class ValidatePragmas extends Phase {
             final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
 
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.constantDeclaration;
+            return Message + ": " + this.constantDeclaration;
 
         }
 
@@ -2435,7 +2363,7 @@ public class ValidatePragmas extends Phase {
             final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
 
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.constantDeclaration;
+            return Message + ": " + this.constantDeclaration;
 
         }
 
@@ -2496,11 +2424,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.procedureDeclaration;
+            return Message + ": " + this.procedureDeclaration;
 
         }
 
@@ -2561,11 +2486,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.procedureDeclaration;
+            return Message + ": " + this.procedureDeclaration;
 
         }
 
@@ -2627,11 +2549,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.procedureDeclaration;
+            return Message + ": " + this.procedureDeclaration;
 
         }
 
@@ -2692,11 +2611,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": " + this.procedureDeclaration;
+            return Message + ": " + this.procedureDeclaration;
 
         }
 
@@ -2758,12 +2674,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": "
-                    + this.procedureDeclaration + " specifies '" + this.procedureDeclaration.returnType() + "'";
+            return Message + ": " + this.procedureDeclaration + " specifies '" + this.procedureDeclaration.getReturnType() + "'";
 
         }
 
@@ -2825,12 +2737,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": "
-                    + this.procedureDeclaration + " specifies '" + this.procedureDeclaration.returnType() + "'";
+            return Message + ": " + this.procedureDeclaration + " specifies '" + this.procedureDeclaration.getReturnType() + "'";
 
         }
 
@@ -2899,12 +2807,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": "
-                    + this.procedureDeclaration + " specifies '" + this.parameterType+ "'";
+            return Message + ": " + this.procedureDeclaration + " specifies '" + this.parameterType+ "'";
 
         }
 
@@ -2973,12 +2877,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": "
-                    + this.procedureDeclaration + " specifies '" + this.parameterType + "'";
+            return Message + ": " + this.procedureDeclaration + " specifies '" + this.parameterType + "'";
 
         }
 
@@ -3027,11 +2927,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message;
+            return Message;
 
         }
 
@@ -3094,12 +2991,8 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message +
-                    ": " + this.nativeLibraryHeaderFileName;
+            return Message + ": " + this.nativeLibraryHeaderFileName;
 
         }
 
@@ -3160,28 +3053,11 @@ public class ValidatePragmas extends Phase {
         @Override
         public String getMessage() {
 
-            // Retrieve the culprit & initialize the StringBuilder
-            final ValidatePragmas culpritInstance = (ValidatePragmas) this.getPhase();
-
             // Return the resultant error message
-            return culpritInstance.getProcessJSourceFile().getName() + ": " + Message + ": "
-                    + this.nativeLibraryImplementationFileName;
+            return this.nativeLibraryImplementationFileName;
 
         }
 
     }
-
-    /// --------------
-    /// Phase.Listener
-
-    /**
-     * <p>Represents the corresponding {@link ValidatePragmas.Listener} that handles receiving {@link Phase.Message}s
-     * from the {@link ValidatePragmas} phase.</p>
-     * @see Phase
-     * @author Carlos L. Cuenca
-     * @version 1.0.0
-     * @since 0.1.0
-     */
-    public static abstract class Listener extends Phase.Listener { /* Placeholder */ }
 
 }

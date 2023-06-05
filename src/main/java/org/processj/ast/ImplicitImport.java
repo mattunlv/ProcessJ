@@ -1,8 +1,11 @@
 package org.processj.ast;
 
+import org.processj.Phase;
+import org.processj.ast.expression.Expression;
 import org.processj.utilities.Visitor;
 
 public class ImplicitImport extends Expression {
+
     public ImplicitImport(Name packageName, Name fileName, Name typeName) {
         super((AST) null);
         nchildren = 3;
@@ -22,11 +25,11 @@ public class ImplicitImport extends Expression {
     }
 
     public String toString() {
-        return ((packageName() == null) ? "" : packageName().getname()) + "."
-            + fileName().getname() + "." + typeName().getname();
+        return ((packageName() == null) ? "" : packageName()) + "."
+            + fileName() + "." + typeName();
     }
 
-    public <S extends Object> S visit(Visitor<S> v) {
+    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitImplicitImport(this);
     }
 }

@@ -1,8 +1,11 @@
 package org.processj.ast;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class Sequence<T extends AST> extends AST implements Iterable<T> {
@@ -47,11 +50,9 @@ public class Sequence<T extends AST> extends AST implements Iterable<T> {
         final StringBuilder stringBuilder = new StringBuilder();
 
         // Append each child with the specified separator
-        if(this.children != null) for(int index = 0; (index < this.children.size()); index++) {
+        if(this.children != null) for(int index = 0; (index < this.children.size()); index++)
             stringBuilder.append(this.children.get(index))
                     .append((index == (this.children.size() - 1)) ? "" : separator);
-
-        }
 
         // Return the result
         return stringBuilder.toString();
@@ -99,6 +100,24 @@ public class Sequence<T extends AST> extends AST implements Iterable<T> {
 
     }
 
+    public final boolean containsDuplicates() {
+
+        // Initialize the set & result
+        final Set<String> members = new HashSet<>();
+        boolean doesContainDuplicates = false;
+
+        for(final T element: this.children) {
+
+            doesContainDuplicates = !members.add(element.toString());
+
+            if(doesContainDuplicates) break;
+
+        }
+
+        return doesContainDuplicates;
+
+    }
+
     public int size() {
         return children.size();
     }
@@ -107,7 +126,7 @@ public class Sequence<T extends AST> extends AST implements Iterable<T> {
         children.set(index, e);
     }
 
-    public <W extends Object> W visit(Visitor<W> v) {
+    public <W extends Object> W visit(Visitor<W> v) throws Phase.Error {
         return v.visitSequence(this);
     }
 }

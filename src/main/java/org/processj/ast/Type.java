@@ -2,21 +2,33 @@ package org.processj.ast;
 
 public abstract class Type extends AST {
 
+    private final Name name;
+
     public Type() {
         // must only be called from ErrorType
         super();
+        this.name = new Name("");
     }
 
     public Type(AST a) {
         super(a);
+        this.name = new Name("");
     }
 
     public Type(Token t) {
         super(t);
+        this.name = new Name(t.lexeme);
     }
 
     public Type(final AST[] children) {
         super(children);
+        this.name = new Name("");
+    }
+
+    public Type(final Name name) {
+
+        this.name = name;
+
     }
 
     /// ----------------
@@ -44,6 +56,8 @@ public abstract class Type extends AST {
 
     }
 
+
+
     /**
      * <p>Returns a literal {@link String} representation of the {@link Type}.</p>
      * @return Literal {@link String} representation of the {@link Type}.
@@ -53,6 +67,12 @@ public abstract class Type extends AST {
     public String toString() {
 
         return "null";
+
+    }
+
+    public String getPackageName() {
+
+        return "";
 
     }
 
@@ -73,6 +93,12 @@ public abstract class Type extends AST {
     public boolean assignable() {
 
         return (!this.toString().equals("null") && !this.toString().equals("void"));
+
+    }
+
+    public Name getName() {
+
+        return this.name;
 
     }
 

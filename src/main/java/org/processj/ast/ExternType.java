@@ -1,5 +1,6 @@
 package org.processj.ast;
 
+import org.processj.Phase;
 import org.processj.utilities.Visitor;
 
 public class ExternType extends Type {
@@ -10,14 +11,20 @@ public class ExternType extends Type {
     /**
      * <p>{@link String} value of the {@link ExternType}'s name.</p>
      */
-    private final String name;
+    private final String name           ;
+
+    /**
+     * <p>{@link String} value of the {@link ExternType}'s package name.</p>
+     */
+    private final String packageName    ;
 
     /// ------------
     /// Constructors
 
     public ExternType(final Name name) {
         super(new AST[] { name });
-        this.name = (name != null) ? name.toString() : "";
+        this.name           = (name != null) ? name.toString()          : "";
+        this.packageName    = (name != null) ? name.getPackageName()    : "";
     }
 
     /// ----------------
@@ -61,7 +68,7 @@ public class ExternType extends Type {
      * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) {
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
         return visitor.visitExternType(this);
 
@@ -79,6 +86,12 @@ public class ExternType extends Type {
     public final String getSignature() {
 
         return "E" + this.name + ";";
+
+    }
+
+    public final String getPackageName() {
+
+        return this.packageName;
 
     }
 
