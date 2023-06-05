@@ -284,6 +284,7 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
      * aggregating a 'yield' {@link Annotation} if it doesn't already contain one.</p>
      * @since 0.1.0
      */
+    @Override
     public final void setYields() {
 
         if(!this.doesYield())

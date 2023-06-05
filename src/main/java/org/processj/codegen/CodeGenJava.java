@@ -1,4 +1,4 @@
-package org.processj.codegen.java;
+package org.processj.codegen;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

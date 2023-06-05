@@ -312,6 +312,28 @@ public class SymbolMap {
 
     }
 
+    public final void forEachContext(final ContextCallback contextCallback) {
+
+        // If the context & callback are valid
+        if((this.context != null) && (contextCallback != null)) {
+
+            // Initialize the enclosing Scope
+            SymbolMap scope = this;
+
+            do {
+
+                // Call back with the Context
+                contextCallback.Invoke(scope.context);
+
+                // Update
+                scope = this.getEnclosingScope();
+
+            } while((scope != null) && (scope.context != null));
+
+        }
+
+    }
+
     /// ----------
     /// Interfaces
 
@@ -328,6 +350,8 @@ public class SymbolMap {
             return "";
 
         }
+
+        default void setYields() { /* Empty */ }
 
         default SymbolMap openScope(final SymbolMap symbolMap) throws ContextDoesNotDefineScopeException {
 
@@ -390,6 +414,13 @@ public class SymbolMap {
     public interface EntryCallback {
 
         void Invoke(final Object instance);
+
+    }
+
+    @FunctionalInterface
+    public interface ContextCallback {
+
+        void Invoke(final Context context);
 
     }
 

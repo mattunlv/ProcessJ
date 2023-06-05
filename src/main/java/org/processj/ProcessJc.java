@@ -13,8 +13,8 @@ import org.processj.ast.Compilation;
 import org.processj.ast.SymbolMap;
 import org.processj.butters.Butters;
 import org.processj.codegen.Helper;
-import org.processj.codegen.java.CodeGenJava;
-import org.processj.codegen.cpp.CodeGenCPP;
+import org.processj.codegen.CodeGenJava;
+import org.processj.codegen.CodeGenCPP;
 import org.processj.phases.*;
 import org.processj.utilities.*;
 import org.processj.utilities.printers.ParseTreePrinter;
@@ -28,7 +28,7 @@ import org.processj.rewriters.IOCallsRewrite;
 public class ProcessJc extends Phases.Executor {
 
     // Kinds of available options for the ProcessJ compiler
-    public static enum OptionType {
+    public enum OptionType {
         STRING,
         BOOLEAN;
     }
@@ -174,10 +174,15 @@ public class ProcessJc extends Phases.Executor {
             // Set the absolute path, file, and package name from where this
             System.out.println("Completing: '" + filePath + "'.");
 
-            // Resolve Imports, Names, & check Types
-            new ResolveImports(listener).execute(processJSourceFile);
-            new NameChecker(listener).execute(processJSourceFile);
-            new TypeChecker(listener).execute(processJSourceFile);
+            // TODO: These will get removed in favor of using the Executor interface
+            final ResolveImports resolveImports = new ResolveImports(listener);
+            final NameChecker    nameChecker    = new NameChecker(listener);
+            final TypeChecker    typeChecker    = new TypeChecker(listener);
+
+            // Execute
+            resolveImports.execute(processJSourceFile);
+            nameChecker.execute(processJSourceFile);
+            typeChecker.execute(processJSourceFile);
 
             try {
 
@@ -214,15 +219,6 @@ public class ProcessJc extends Phases.Executor {
                 if (pJc.showMessage)
                     System.out.println("-- Performing parallel usage check.");
 //            c.visit(new org.processj.parallel_usage_check.ParallelUsageCheck());
-
-                // Visit org.processj.yield
-                if (pJc.showMessage)
-                    System.out.println("-- Annotating procedures that may issue a org.processj.yield call.");
-                compilation.visit(new org.processj.yield.Yield());
-
-                if (pJc.showMessage)
-                    System.out.println("-- Marking yielding statements and expressions.");
-                compilation.visit(new org.processj.rewriters.Yield());
 
                 if (pJc.showMessage)
                     System.out.println("-- Checking literal inits are free of channel communication.");
@@ -439,6 +435,35 @@ public class ProcessJc extends Phases.Executor {
     public void version() {
         String msg = "ProcessJ Version: " + Settings.VERSION;
         System.err.println(msg);
+    }
+
+    private void execute(final List<String> inputFiles) throws Phase.Error {
+
+        // Process every file
+        if(inputFiles != null) for(final String path: inputFiles) {
+
+            // Open the file
+            final ProcessJSourceFile processJSourceFile = Request.Open(path);
+
+            // Request an initial Compilation
+            this.getPreliminaryCompilationFor(path);
+
+            // Request the next phase
+            Phase nextPhase = RequestPhase.For(processJSourceFile);
+
+            // Loop until we're done
+            while(nextPhase != null) {
+
+                // Execute the Phase
+                nextPhase.execute(processJSourceFile);
+
+                // Retrieve the next one
+                nextPhase = RequestPhase.For(processJSourceFile);
+
+            }
+
+        }
+
     }
 
 }

@@ -66,7 +66,8 @@ public class Phases {
             ValidatePragmas.class,  ArrayTypeRewrite.class,
             ArrayTypeRewrite.class, ArraysRewrite.class,
             ArraysRewrite.class,    StatementRewrite.class,
-            StatementRewrite.class, ResolveImports.class,
+            StatementRewrite.class, Yield.class,
+            Yield.class,            ResolveImports.class,
             ResolveImports.class,   NameChecker.class
     );
 
@@ -96,13 +97,13 @@ public class Phases {
         // Retrieve the most recent phase (if any) & the next phase
         final Phase                     lastPhase       = processJSourceFile.getLastCompletedPhase();
         final Class<? extends Phase>    recentPhase     = (lastPhase) != null ? lastPhase.getClass() : null;
-        final Class<? extends Phase>    nextPhase       = NextPhaseOf.getOrDefault(recentPhase, ProcessJParser.class);
+        final Class<? extends Phase>    nextPhase       = NextPhaseOf.getOrDefault(recentPhase, null);
 
         // Initialize the result
-        Phase result = null;
+        Phase result = ActivePhases.getOrDefault(nextPhase, null);
 
         // If the Phase has not been instantiated
-        if(!ActivePhases.containsKey(nextPhase)) {
+        if((result == null) && (nextPhase != null)) {
 
             // Attempt to
             try {
@@ -213,13 +214,13 @@ public class Phases {
         /**
          * <p>The {@link Phase} request method that is effectively black-boxed from the {@link Executor}.</p>
          */
-        protected final static RequestPhase RequestPhase  = org.processj.Phases::PhaseFor;
+        protected final static RequestPhase RequestPhase    = org.processj.Phases::PhaseFor;
 
         /**
          * <p>File open request method that provides the {@link Executor} with a method to notify the appropriate entity
          * to open a {@link ProcessJSourceFile}.</p>
          */
-        protected final static Request      Request       = org.processj.Phases::RequestOpen;
+        protected final static Request      Request         = org.processj.Phases::RequestOpen;
 
         /// --------------------------
         /// Protected Abstract Methods
@@ -242,21 +243,15 @@ public class Phases {
             final ArrayTypeRewrite  arrayTypeRewrite    = new ArrayTypeRewrite(listener);
             final ArraysRewrite     arraysRewrite       = new ArraysRewrite(listener);
             final StatementRewrite  statementRewrite    = new StatementRewrite(listener);
+            final Yield             yield               = new Yield(listener);
 
             // Tokenize & parse the input file
             processJParser.execute(processJSourceFile);
-
-            // Validate Pragmas
             validatePragmas.execute(processJSourceFile);
-
-            // Consolidate Array Types
             arrayTypeRewrite.execute(processJSourceFile);
-
-            // Rewrite Array Literals
             arraysRewrite.execute(processJSourceFile);
-
-            // Rewrite Statements
             statementRewrite.execute(processJSourceFile);
+            yield.execute(processJSourceFile);
 
             // Return the transformed, preliminary result
             return processJSourceFile.getCompilation();
