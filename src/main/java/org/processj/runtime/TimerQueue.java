@@ -3,7 +3,7 @@ package org.processj.runtime;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.DelayQueue;
 
-import org.processj.utilities.Log;
+import org.processj.compiler.utilities.Log;
 
 /**
  * An instance of a TimerQueue runs in its own Java Thread and handles all

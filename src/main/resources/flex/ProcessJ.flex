@@ -1,8 +1,7 @@
-package org.processj.lexer;
+package org.processj.compiler.phases.phase;
 
-import org.processj.ast.*;
-import org.processj.syntax.*;
-import org.processj.parser.*;
+import org.processj.compiler.ast.Token;
+import org.processj.compiler.utilities.syntax.Types;
 
 %%
 
@@ -15,54 +14,54 @@ import org.processj.parser.*;
 
 %{
     /// --------------------
-    /// Public Static Fields
+            /// Public Static Fields
 
-    public static boolean   Debug       = false ;
-    public static String    CurrentLine = ""    ;
-    public static int       LineCount   = 0     ;
-    public static int       Spaces      = 0     ;
+            public static boolean   Debug       = false ;
+            public static String    CurrentLine = ""    ;
+            public static int       LineCount   = 0     ;
+            public static int       Spaces      = 0     ;
 
-    /// --------------
-    /// Public Methods
+            /// --------------
+            /// Public Methods
 
-    public void addToLine(String string, int line) {
+            public void addToLine(String string, int line) {
 
-        CurrentLine = (line != LineCount) ? string : CurrentLine + string;
+                CurrentLine = (line != LineCount) ? string : CurrentLine + string;
 
-        LineCount = line;
+                LineCount = line;
 
-    }
+            }
 
-    public void addLineComment() {
+            public void addLineComment() {
 
-        final String line = "Comment, line "
-            + (yyline + 1) + " [" + (yycolumn + 1 + Spaces) + ":" + (yycolumn + yylength()) + "]";
+                final String line = "Comment, line "
+                    + (yyline + 1) + " [" + (yycolumn + 1 + Spaces) + ":" + (yycolumn + yylength()) + "]";
 
-        final Token token = (yytext().startsWith("/*"))
-            ? new Token(Types.INSTANCE.MULTILINE_COMMENT,
-                "Multi-line " + line, yyline + 1, yycolumn + 1, yycolumn + yylength())
-            : new Token(Types.INSTANCE.SINGLELINE_COMMENT,
-                "Single-line " + line, yyline + 1, yycolumn + 1, yycolumn + yylength());
+                final Token token = (yytext().startsWith("/*"))
+                    ? new Token(Types.INSTANCE.MULTILINE_COMMENT,
+                        "Multi-line " + line, yyline + 1, yycolumn + 1, yycolumn + yylength())
+                    : new Token(Types.INSTANCE.SINGLELINE_COMMENT,
+                        "Single-line " + line, yyline + 1, yycolumn + 1, yycolumn + yylength());
 
-    }
+            }
 
-    public void countSpaces(int line) {
+            public void countSpaces(int line) {
 
-        Spaces = line;
+                Spaces = line;
 
-    }
+            }
 
-    private java_cup.runtime.Symbol token(int kind) {
+            private java_cup.runtime.Symbol token(int kind) {
 
-        this.addToLine(yytext(), yyline+1);
+                this.addToLine(yytext(), yyline+1);
 
-        final Token token = new Token(kind, yytext(), yyline + 1, yycolumn + 1, yycolumn + yylength());
+                final Token token = new Token(kind, yytext(), yyline + 1, yycolumn + 1, yycolumn + yylength());
 
-        if(Debug) System.out.println(token);
+                if(Debug) System.out.println(token);
 
-        return new java_cup.runtime.Symbol(kind, token);
+                return new java_cup.runtime.Symbol(kind, token);
 
-    }
+            }
 
 %}
 

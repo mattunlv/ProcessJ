@@ -3,8 +3,8 @@ package org.processj.test.unit;
 import java_cup.runtime.Symbol;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.processj.lexer.Lexer;
-import org.processj.parser.sym;
+import org.processj.compiler.phases.phase.Lexer;
+import org.processj.compiler.phases.phase.sym;
 import org.processj.test.ProcessJTest;
 import org.processj.test.TestInputFile;
 
@@ -78,14 +78,14 @@ public class LexerUnitTest extends ProcessJTest {
 
     /**
      * <p>Returns the {@link TestInputFile}'s stream of tokens as a {@link List} of {@link Symbol}s as produced by the
-     * {@link org.processj.lexer.Lexer}. This method will also stage a regression test input in the path specified
+     * {@link Lexer}. This method will also stage a regression test input in the path specified
      * by {@link LexerUnitTest#RegressionStage}. This method will fail an assertion if a
-     * {@link org.processj.lexer.Lexer} with the specified {@link TestInputFile} or the {@link FileWriter} corresponding
+     * {@link Lexer} with the specified {@link TestInputFile} or the {@link FileWriter} corresponding
      * to the output text file cannot be instantiated.</p>
      * @param testInputFile Instance representing a ProcessJ source file.
      * @return The {@link TestInputFile}'s corresponding token stream as a {@link List} of {@link Symbol}s.
      * @see TestInputFile
-     * @see org.processj.lexer.Lexer
+     * @see Lexer
      * @see Symbol
      * @since 0.1.0
      */
@@ -174,11 +174,11 @@ public class LexerUnitTest extends ProcessJTest {
     }
 
     /**
-     * <p>Generic {@link org.processj.lexer.Lexer} unit test procedure. This executes a test that satisfies all
+     * <p>Generic {@link Lexer} unit test procedure. This executes a test that satisfies all
      * Test Oracles defined in the specification.</p>
      * @param testInputFile Instance representing a ProcessJ source file to unit test against the
-     *                    {@link org.processj.lexer.Lexer}
-     * @see org.processj.lexer.Lexer
+     *                    {@link Lexer}
+     * @see Lexer
      * @see TestInputFile
      * @since 0.1.0
      */

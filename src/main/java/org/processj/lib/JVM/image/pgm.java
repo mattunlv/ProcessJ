@@ -1,9 +1,8 @@
 package image;
 
-import org.processj.utilities.PJBugManager;
+import org.processj.compiler.utilities.PJBugManager;
 
 import java.io.PrintWriter;
-import java.util.*;
 
 public class pgm {
     

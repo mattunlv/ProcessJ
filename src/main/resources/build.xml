@@ -87,7 +87,7 @@
 	<!-- Compiles the source directory                                       -->
 	<!-- =================================================================== -->
         <target name="run">
-                <java classpath="${classpath}:${build}" classname="org.processj.ProcessJc">
+                <java classpath="${classpath}:${build}" classname="org.processj.compiler.ProcessJc">
                 <arg value="${arg0}"/>
                 </java>
         </target>

@@ -2,9 +2,9 @@ package org.processj.test.unit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.processj.ast.AST;
-import org.processj.ast.Compilation;
-import org.processj.ast.Sequence;
+import org.processj.compiler.ast.AST;
+import org.processj.compiler.ast.Compilation;
+import org.processj.compiler.ast.Sequence;
 import org.processj.test.ProcessJTest;
 
 public class ParserUnitTest extends ProcessJTest {

@@ -13,22 +13,22 @@
 /** Package Declaration                                                                                             **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-package org.processj.parser;
+package org.processj.compiler.phases.phase;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** Imports                                                                                                         **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-import org.processj.lexer.Lexer;
-import org.processj.ast.*;
-import org.processj.ast.alt.*;
-import org.processj.ast.expression.ArrayAccessExpr;
-import org.processj.ast.expression.BinaryExpr;
-import org.processj.ast.expression.ArrayLiteral;
-import org.processj.ast.expression.Assignment;
-import org.processj.ast.expression.Expression;
-import org.processj.utilities.Error;
-import org.processj.utilities.PJBugManager;
+import org.processj.compiler.phases.phase.Lexer;
+import org.processj.compiler.ast.*;
+import org.processj.compiler.ast.alt.*;
+import org.processj.compiler.ast.expression.ArrayAccessExpr;
+import org.processj.compiler.ast.expression.BinaryExpr;
+import org.processj.compiler.ast.expression.ArrayLiteral;
+import org.processj.compiler.ast.expression.Assignment;
+import org.processj.compiler.ast.expression.Expression;
+import org.processj.compiler.utilities.Error;
+import org.processj.compiler.utilities.PJBugManager;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** Scanning Method                                                                                                 **/
@@ -1298,16 +1298,16 @@ block_statements
 par_block
 ::=
     PAR
-    block:bl                            {: RESULT = new ParBlock(bl.stats(), new Sequence<Expression>())    ;:}
+    block:bl                            {: RESULT = new ParBlock(bl.getStatements(), new Sequence<Expression>())    ;:}
 |   PAR
     ENROLL
     barriers:b
-    block:bl                            {: RESULT = new ParBlock(bl.stats(), b)                             ;:}
+    block:bl                            {: RESULT = new ParBlock(bl.getStatements(), b)                             ;:}
 //| PAR
 //  ENROLL
 //  LPAREN
 //  barriers:b
-//  RPAREN block:bl                     {: RESULT = new ParBlock(bl.stats(), b)                             ;:}
+//  RPAREN block:bl                     {: RESULT = new ParBlock(bl.getStatements(), b)                             ;:}
 ;
 
 // Sequence[Expression <: AST] <: AST

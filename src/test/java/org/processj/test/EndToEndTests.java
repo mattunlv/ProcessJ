@@ -2,8 +2,8 @@ package org.processj.test;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.processj.Phase;
-import org.processj.ProcessJc;
+import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.ProcessJc;
 
 import java.net.MalformedURLException;
 
@@ -25,7 +25,7 @@ public class EndToEndTests extends ProcessJTest {
      * <p>Generic end-to-end test procedure. This executes a test that satisfies all Test Oracles defined in the
      * specification.</p>
      * @param testInputFile Instance representing a ProcessJ source file to test against the toolchain.
-     * @see org.processj.ProcessJc
+     * @see ProcessJc
      * @see TestInputFile
      * @since 0.1.0
      */
@@ -55,7 +55,7 @@ public class EndToEndTests extends ProcessJTest {
      * <p>Generic end-to-end test procedure. This executes a test that satisfies all Test Oracles defined in the
      * specification.</p>
      * @param testInputFile Instance representing a ProcessJ source file to test against the toolchain.
-     * @see org.processj.ProcessJc
+     * @see ProcessJc
      * @see TestInputFile
      * @since 0.1.0
      */

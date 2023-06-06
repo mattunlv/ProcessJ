@@ -4,9 +4,9 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.processj.utilities.PJBugManager;
-import org.processj.utilities.Pair;
-import org.processj.utilities.PJUtil;
+import org.processj.compiler.utilities.PJBugManager;
+import org.processj.compiler.utilities.Pair;
+import org.processj.compiler.utilities.PJUtil;
 
 /**
  * @author ben

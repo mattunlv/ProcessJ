@@ -1,11 +1,10 @@
 package org.processj.test;
 
 import org.junit.jupiter.api.Test;
-import org.processj.Phase;
-import org.processj.ast.ArrayType;
-import org.processj.ast.Compilation;
-import org.processj.ast.IVisitor;
-import org.processj.ast.SymbolMap;
+import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.ast.Compilation;
+import org.processj.compiler.ast.IVisitor;
+import org.processj.compiler.ast.SymbolMap;
 
 public class ArrayTypeTests extends ProcessJTest implements IVisitor<Void> {
 

@@ -1,10 +1,10 @@
 package org.processj.test;
 
 import org.junit.jupiter.api.Assertions;
-import org.processj.Phases;
-import org.processj.ast.Compilation;
-import org.processj.lexer.Lexer;
-import org.processj.parser.Parser;
+import org.processj.compiler.phases.Phases;
+import org.processj.compiler.ast.Compilation;
+import org.processj.compiler.phases.phase.Lexer;
+import org.processj.compiler.phases.phase.Parser;
 
 import javax.tools.*;
 import java.io.FileReader;

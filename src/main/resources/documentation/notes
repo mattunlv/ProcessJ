@@ -50,3 +50,48 @@
 
 + Record Rewrite & Protocol Rewrite Need be done after NameChecking since they may not resolve the complete or proper
 members
+
++ Deprecate Statement Rewrite
+
+    - This should (and can) be done in the parser phase since the appropriate SymbolTables need to be initialized
+    in the correct order for the newly created Blocks.
+
++ Alt Return Check Deprecated
+
+    - The logic was migrated to SemanticChecker
+
++ Deprecate AltStatement Rewrite
+
+    - The flattenening is handled in ProcessJParser so the scope can be initialized correctly
+
++ Deprecate ReplicatedAlts.java
+
+    - The checks were migrated to SemanticChecker
+
++ Deprecate ArrayChannelDeclRewrite
+
+    - This is handled in CodeGen
+
++ Deprecate ParBlockRewrite
+
+    - This is handled in ProcessJParser for the appropriate scope to be initialized
+
++ Deprecate ParFor Rewrite
+
+    - This is handled in ProcessJParser
+
++ Deprecate SwitchStmtRewrite
+
+    - This is handled in the TypeChecker
+
++ Deprecate Parallel Usage Checker
+
+    - This is handled in Semantic Checker
+
++ Deprecate Arrays Rewrite
+
+    - This is handled in Parser Phase
+
++ Deprecate ArrayType Rewrite
+
+    - This is handled in Parser Phase

@@ -3,14 +3,14 @@ package org.processj.test.unit;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.processj.Phase;
-import org.processj.Phases;
-import org.processj.ast.Compilation;
-import org.processj.ast.SymbolMap;
-import org.processj.phases.ResolveImports;
+import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phases.Phases;
+import org.processj.compiler.ast.Compilation;
+import org.processj.compiler.ast.SymbolMap;
+import org.processj.compiler.phases.phase.ResolveImports;
 import org.processj.test.ProcessJTest;
 import org.processj.test.TestInputFile;
-import org.processj.utilities.ProcessJSourceFile;
+import org.processj.compiler.utilities.ProcessJSourceFile;
 
 public class ResolveImportsUnitTest extends ProcessJTest {
 
