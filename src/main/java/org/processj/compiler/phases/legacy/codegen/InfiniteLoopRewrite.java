@@ -121,7 +121,8 @@ public class InfiniteLoopRewrite {
                         go(ds.getStatements());
                     } else if (stat instanceof ForStat) { // ForStat -- done
                         ForStat fs = (ForStat) stat;
-                        if (fs.foreverLoop) {
+
+                        if(fs.foreverLoop) {
                             String temp = nextTemp();
                             // Create a local declaration to replace the boolean literal value with in the for-stmt
                             LocalDecl ld = new LocalDecl(new PrimitiveType(PrimitiveType.BooleanKind),
@@ -145,6 +146,7 @@ public class InfiniteLoopRewrite {
                             Block b = new Block(stats);
                             s.insert(i, b);
                         }
+
                         go(fs.getStatements());
                     } else if (s.child(i) != null) // Block, IfStat, ParBlock, SwitchStat
                         go(s.child(i));

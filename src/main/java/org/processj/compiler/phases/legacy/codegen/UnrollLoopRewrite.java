@@ -36,9 +36,9 @@ public class UnrollLoopRewrite implements Visitor<AST> {
     private int inside = OUTSIDE;
 
     // break label
-    private int bl;
+    private int breakLabel;
     // continue label
-    private int cl;
+    private int continueLabel;
     // labels (from labeled statements) to label numbers break table.
     private Hashtable<String, Integer> bls = new Hashtable<String, Integer>();
     // labels (from labeled statements) to label numbers continue table.
@@ -106,6 +106,7 @@ public class UnrollLoopRewrite implements Visitor<AST> {
 	 * them by merging the statements in the block into the new block.
      */
     public AST visitBlock(Block bl) {
+
         Log.log("LoopRewriter:\tVisiting a Block");
         Sequence<Statement> stmts = (Sequence<Statement>) bl.getStatements();
         Sequence<Statement> newStmts = new Sequence<Statement>();
@@ -154,32 +155,37 @@ public class UnrollLoopRewrite implements Visitor<AST> {
             PJBugManager.ReportMessageAndExit("ERROR: break statement outside loop or switch");
 
         }
+
         // all breaks with labels get turned into a goto(...); breaks not OUTSIDE and
         // not INSIDE_LOOP must be in switch statements - they never become gotos - just
         // remain as a 'break'.
         if (bs.getTarget() == null) {
-            if (inside == INSIDE_LOOP) {
-                // break to nearest break label.
-                return makeGoto(bl, bs);
-            } else {
-                return bs; // don't change the break in a switch.
-            }
-        } else {
-            if (bls.get(bs.toString()) == null) {
 
-                // TODO: ERROR
+            if(inside == INSIDE_LOOP) {
+
+                // break to nearest break label.
+                return makeGoto(breakLabel, bs);
+
+            } else return bs; // don't change the break in a switch.
+
+        } else {
+
+            if(bls.get(bs.toString()) == null)
                 PJBugManager.ReportMessageAndExit("ERROR: Unknown break label '" + bs + "' in line " + bs.line);
 
-            }
             int target = bls.get(bs.toString());
+
             // Goto(...);
             return makeGoto(target, bs);
+
         }
+
     }
 
     public AST visitChannelReadExpr(ChannelReadExpr cr) {
         Log.log("LoopRewriter:\tVisiting an ChannelReadExpr");
-        if (cr.getExtendedRendezvous() != null) {
+
+        if(cr.getExtendedRendezvous() != null) {
             try {
                 cr.children[1] = cr.getExtendedRendezvous().visit(this);
             } catch (Phase.Error error) {
@@ -201,14 +207,15 @@ public class UnrollLoopRewrite implements Visitor<AST> {
     public AST visitContinueStat(ContinueStat cs) {
         Log.log("LoopRewriter:\tVisiting a ContinueStat");
         if (inside != INSIDE_LOOP) {
-            // TODO: ERROR
+
             PJBugManager.ReportMessageAndExit("ERROR: continue statement outside loop");
 
         }
         // no target => continue to closest continue label.
         if (cs.getTarget() == null) {
-            return makeGoto(cl, cs);
+            return makeGoto(continueLabel, cs);
         } else {
+
             // look up the target in the hash table.
             if(cls.get(cs.getTarget().toString()) == null) {
 
@@ -238,20 +245,19 @@ public class UnrollLoopRewrite implements Visitor<AST> {
         Log.log("LoopRewriter:\tVisiting a DoStat");
         int old_inside = inside;
         inside = INSIDE_LOOP;
-        int bl_old;
-        int cl_old;
+
         Sequence<Statement> stmts = new Sequence<Statement>();
 
         int bl_ = newLabel();
         int cl_ = newLabel();
         // is the statement labeled?
-        if (!ds.getLabel().equals("")) {
+        if(!ds.getLabel().equals("")) {
             addLabels(bls, cls, ds.getLabel(), bl_, cl_);
         }
-        bl_old = bl;
-        bl = bl_;
-        cl_old = cl;
-        cl = cl_;
+        int bl_old = breakLabel;
+        breakLabel = bl_;
+        int cl_old = continueLabel;
+        continueLabel = cl_;
         // Label(cl');
         stmts.append(makeLabel(cl_, ds));
         Statement st = null;
@@ -312,7 +318,7 @@ public class UnrollLoopRewrite implements Visitor<AST> {
         Log.log("LoopRewriter:\tVisiting a ParBlock");
         Sequence<Statement> stmts = pb.getStatements();
         for (int i = 0; i < stmts.size(); i++) {
-            if ((Statement) stmts.child(i) != null) {
+            if (stmts.child(i) != null) {
                 Statement s = null;
                 try {
                     s = (Statement) stmts.child(i).visit(this);
@@ -388,7 +394,7 @@ public class UnrollLoopRewrite implements Visitor<AST> {
         Log.log("LoopRewriter:\tVisiting a SwitchGroup");
         Sequence<Statement> stmts = sg.getStatements();
         Sequence<Statement> newStmts = new Sequence<Statement>();
-        for (int i = 0; i < stmts.size(); i++) {
+        for(int i = 0; i < stmts.size(); i++) {
             if ((Statement) stmts.child(i) != null) {
                 AST a = null;
                 try {
@@ -437,10 +443,10 @@ public class UnrollLoopRewrite implements Visitor<AST> {
         if (!fs.getLabel().equals("")) {
             addLabels(bls, cls, fs.getLabel(), bl_, cl_);
         }
-        bl_old = bl;
-        bl = bl_;
-        cl_old = cl;
-        cl = cl_;
+        bl_old = breakLabel;
+        breakLabel = bl_;
+        cl_old = continueLabel;
+        continueLabel = cl_;
         
         // <--
         // Ignore par-for statement
@@ -525,26 +531,28 @@ public class UnrollLoopRewrite implements Visitor<AST> {
         int bl_ = newLabel();
         int cl_ = newLabel();
         // is the statement labeled?
-        if (!ws.getLabel().equals("")) {
+        if(!ws.getLabel().equals(""))
             addLabels(bls, cls, ws.getLabel(), bl_, cl_);
-        }
+
         // update bl and cl
-        bl_old = bl;
-        bl = bl_;
-        cl_old = cl;
-        cl = cl_;
+        bl_old = breakLabel;
+        breakLabel = bl_;
+        cl_old = continueLabel;
+        continueLabel = cl_;
         // Label(cl');
         stmts.append(makeLabel(cl_, ws));
 
         Sequence<Statement> body = new Sequence<Statement>();
         Statement st = null;
         try {
+
             st = (Statement) ws.getStatements().visit(this);
+
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         // st = R[S](bl',cl',bls',cls');
-        if (st instanceof Block) {
+        if(st instanceof Block) {
             body.merge(((Block) st).getStatements());
         } else {
             body.merge(st);
@@ -554,6 +562,7 @@ public class UnrollLoopRewrite implements Visitor<AST> {
         Block block = new Block(body);
         // is = if (e) { R[S](...); Goto(cl'); }
         IfStat is = new IfStat(ws.getEvaluationExpression(), block, null);
+
         stmts.append(is);
         stmts.append(makeLabel(bl_, ws));
         // is the statement labeled?
@@ -562,8 +571,8 @@ public class UnrollLoopRewrite implements Visitor<AST> {
             cls.remove(ws.getLabel());
         }
         // reset labels
-        bl = bl_old;
-        cl = cl_old;
+        breakLabel = bl_old;
+        continueLabel = cl_old;
         inside = inside_old;
         Block returnBlock = new Block(stmts);
         returnBlock.canBeMerged = true;

@@ -212,15 +212,14 @@ public abstract class Phase implements Visitor<Void> {
     /// -------
     /// Classes
 
-
     protected static class NameAssert {
 
         /// ------------------------
         /// Protected Static Methods
 
-        protected static boolean NotMobileOverload(final Phase phase,
-                                                   final Type type,
-                                                   final ProcTypeDecl procedureTypeDeclaration)
+        protected static boolean MobileProcedureNotOverloaded(final Phase phase,
+                                                              final Type type,
+                                                              final ProcTypeDecl procedureTypeDeclaration)
                 throws Phase.Error {
 
             // Initialize the result
@@ -229,16 +228,16 @@ public abstract class Phase implements Visitor<Void> {
             // Assert for all entries, if a Procedure Type was found, the existing Procedure Type is not
             // declared 'mobile'.
             if(found && ((ProcTypeDecl) type).isMobile())
-                throw new MobileOverloadException(phase, procedureTypeDeclaration);
+                MobileProcedureOverloaded.Assert(phase, procedureTypeDeclaration);
 
             // Return the result
             return found;
 
         }
 
-        protected static boolean NonMobileProcedureDefined(final Phase phase,
-                                                           final Type type,
-                                                           final ProcTypeDecl procedureTypeDeclaration)
+        protected static boolean NotOverloadingNonMobileProcedure(final Phase phase,
+                                                                  final Type type,
+                                                                  final ProcTypeDecl procedureTypeDeclaration)
                 throws Phase.Error {
 
             // Initialize the result
@@ -247,12 +246,83 @@ public abstract class Phase implements Visitor<Void> {
             // Assert for all entries, if a Procedure Type was found, the specified Procedure Type
             // is not declared 'mobile'.
             if(found && procedureTypeDeclaration.isMobile())
-                throw new NonMobileProcedureDefinedException(phase, procedureTypeDeclaration).commit();
+                NonMobileProcedureTypeDefined.Assert(phase, type);
 
             // Return the result
             return found;
 
         }
+
+        protected static void MobileProcedureSpecifiesNonVoidReturnType(final Phase phase,
+                                                                        final ProcTypeDecl procedureTypeDeclaration)
+                throws Phase.Error {
+
+            if(procedureTypeDeclaration.isMobile() && !procedureTypeDeclaration.getReturnType().isVoidType())
+                MobileProcedureSpecifiesNonVoidReturnType.Assert(phase, procedureTypeDeclaration);
+
+        }
+
+        protected static void Defines(final Phase phase,
+                                      final Type type)
+                throws Phase.Error {
+
+            if(!phase.getScope().put(type.toString(), type))
+                TypeDefined.Assert(phase, type);
+
+        }
+
+        protected static void Defines(final Phase phase,
+                                      final ProcTypeDecl procedureTypeDeclaration)
+                throws Phase.Error {
+
+            // Assert that if the Procedure is specified as 'mobile', it also specifies a void
+            // return Type
+            MobileProcedureSpecifiesNonVoidReturnType(phase, procedureTypeDeclaration);
+
+            // Initialize a handle to the current scope & retrieve the result
+            final SymbolMap     scope   = phase.getScope();
+            final List<Object>  result  = scope.get(procedureTypeDeclaration.toString());
+
+            // If the procedure has not been defined
+            if(!result.isEmpty()) {
+
+                // Initialize a handle to the result
+                final Object preliminary = result.get(0);
+
+                // Assert for all overloads, the Procedure Type or the existing Type are not declared 'mobile'
+                if(!(preliminary instanceof SymbolMap))
+                    NonProcedureTypeDefined.Assert(phase, procedureTypeDeclaration);
+
+                // Assert for all existing Procedure Types, the Procedure Type of the existing Type are not declared
+                // 'mobile'
+                scope.forEachEntryUntil(type -> MobileProcedureNotOverloaded(phase, (Type) type, procedureTypeDeclaration)
+                        || NotOverloadingNonMobileProcedure(phase, (Type) type, procedureTypeDeclaration));
+
+                // Cast the result
+                final SymbolMap procedures = (SymbolMap) result;
+
+                // Assert the procedure definition is unique
+                if(!procedures.put(procedureTypeDeclaration.getSignature(), procedureTypeDeclaration))
+                    TypeDefined.Assert(phase, procedureTypeDeclaration);
+
+                // Otherwise
+            } else {
+
+                // Initialize a new SymbolMap
+                final SymbolMap symbolMap = new SymbolMap();
+
+                // Insert the Procedure
+                symbolMap.put(procedureTypeDeclaration.getSignature(), procedureTypeDeclaration);
+
+                // Emplace the entry
+                scope.put(procedureTypeDeclaration.toString(), procedureTypeDeclaration);
+
+            }
+
+        }
+
+
+
 
         protected static void VisibleToEnclosingParFor(final Phase phase,
                                                        final Expression expression) throws Phase.Error {
@@ -288,14 +358,7 @@ public abstract class Phase implements Visitor<Void> {
 
         }
 
-        protected static void Define(final Phase phase,
-                                     final Type type)
-                throws Phase.Error {
 
-            if(!phase.getScope().put(type))
-                throw new TypeDefinedException(phase, type.toString()).commit();
-
-        }
 
         protected static void Define(final Phase phase,
                                      final Statement statement)
@@ -310,52 +373,6 @@ public abstract class Phase implements Visitor<Void> {
 
         }
 
-        protected static void Define(final Phase phase,
-                                     final ProcTypeDecl procedureTypeDeclaration)
-                throws Phase.Error {
-
-            // Initialize a handle to the current scope & retrieve the result
-            final SymbolMap     scope   = phase.getScope();
-            final List<Object>  result  = scope.get(procedureTypeDeclaration.toString());
-
-            // If the procedure has not been defined
-            if(!result.isEmpty()) {
-
-                // Initialize a handle to the result
-                final Object preliminary = result.get(0);
-
-                // Assert for all overloads, the Procedure Type or the existing Type are not declared 'mobile'
-                // Assert the result is a Symbol Map
-                if(!(preliminary instanceof SymbolMap))
-                    throw new NonProcedureTypeDefinedException(phase, procedureTypeDeclaration.toString()).commit();
-
-                // Assert for all existing Procedure Types, the Procedure Type of the existing Type are not declared
-                // 'mobile'
-                scope.forEachEntryUntil(type -> NotMobileOverload(phase, (Type) type, procedureTypeDeclaration)
-                    || NonMobileProcedureDefined(phase, (Type) type, procedureTypeDeclaration));
-
-                // Cast the result
-                final SymbolMap procedures = (SymbolMap) result;
-
-                // Assert the procedure definition is unique
-                if(!procedures.put(procedureTypeDeclaration.getSignature(), procedureTypeDeclaration))
-                    throw new TypeDefinedException(phase, procedureTypeDeclaration.toString()).commit();
-
-                // Otherwise
-            } else {
-
-                // Initialize a new SymbolMap
-                final SymbolMap symbolMap = new SymbolMap();
-
-                // Insert the Procedure
-                symbolMap.put(procedureTypeDeclaration.getSignature(), procedureTypeDeclaration);
-
-                // Emplace the entry
-                scope.put(procedureTypeDeclaration.toString(), procedureTypeDeclaration);
-
-            }
-
-        }
 
         protected static Object Resolved(final Phase phase, final Name symbol) throws Phase.Error {
 
@@ -545,7 +562,301 @@ public abstract class Phase implements Visitor<Void> {
 
         }
 
-        // TODO: Error Code 203
+        /**
+         * <p>{@link Phase.Error} to be emitted if the {@link Type}'s {@link Name} is already defined in the
+         * current scope.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class TypeDefined extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link TypeDefined} to the specified {@link Phase}'s {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             */
+            protected static void Assert(final Phase phase, final AST instance) {
+
+                Phase.Error.Assert(TypeDefined.class, phase, instance);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link TypeDefined} to its default state.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected TypeDefined(final Phase culprit,
+                                  final AST instance) {
+                super(culprit);
+
+                this.instance       = instance    ;
+                this.instanceClass  = (instance != null) ? instance.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the {@link Type}'s {@link Name} is already defined in the
+         * current scope as a non-procedure {@link Type}.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class NonProcedureTypeDefined extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link NonProcedureTypeDefined} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             */
+            protected static void Assert(final Phase phase, final AST instance) {
+
+                Phase.Error.Assert(NonProcedureTypeDefined.class, phase, instance);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link NonProcedureTypeDefined} to its default state.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected NonProcedureTypeDefined(final Phase culprit,
+                                              final AST instance) {
+                super(culprit);
+
+                this.instance       = instance    ;
+                this.instanceClass  = (instance != null) ? instance.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the {@link Type}'s {@link Name} is already defined in the
+         * current scope as a non-mobile procedure {@link Type}.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class NonMobileProcedureTypeDefined extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link NonMobileProcedureTypeDefined} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             */
+            protected static void Assert(final Phase phase, final AST instance) {
+
+                Phase.Error.Assert(NonMobileProcedureTypeDefined.class, phase, instance);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link NonMobileProcedureTypeDefined} to its default state.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected NonMobileProcedureTypeDefined(final Phase culprit, final AST instance) {
+                super(culprit);
+
+                this.instance       = instance    ;
+                this.instanceClass  = (instance != null) ? instance.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the {@link Type}'s {@link Name} is already defined in the
+         * current scope.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class MobileProcedureOverloaded extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link MobileProcedureOverloaded} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             */
+            protected static void Assert(final Phase phase, final AST instance) {
+
+                Phase.Error.Assert(MobileProcedureOverloaded.class, phase, instance);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link MobileProcedureOverloaded} to its default state.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected MobileProcedureOverloaded(final Phase culprit,
+                                                final AST instance) {
+                super(culprit);
+
+                this.instance       = instance    ;
+                this.instanceClass  = (instance != null) ? instance.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the {@link ProcTypeDecl} is mobile procedure with a specified
+         * non-void return {@link Type}.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class MobileProcedureSpecifiesNonVoidReturnType extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link MobileProcedureSpecifiesNonVoidReturnType} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             */
+            protected static void Assert(final Phase phase, final AST instance) {
+
+                Phase.Error.Assert(MobileProcedureSpecifiesNonVoidReturnType.class, phase, instance);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link MobileProcedureSpecifiesNonVoidReturnType} to its default state.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected MobileProcedureSpecifiesNonVoidReturnType(final Phase culprit,
+                                                                final AST instance) {
+                super(culprit);
+
+                this.instance       = instance    ;
+                this.instanceClass  = (instance != null) ? instance.getClass() : null;
+
+            }
+
+        }
+
+
+
         /**
          * <p>{@link Phase.Error} class that encapsulates the pertinent information of attempting to define a {@link Type}
          * that is already defined.</p>
@@ -668,67 +979,6 @@ public abstract class Phase implements Visitor<Void> {
 
         }
 
-        /**
-         * <p>{@link Phase.Error} class that encapsulates the pertinent information of attempting to define a
-         * {@link ProcTypeDecl} that is already defined as a different {@link Type}.</p>
-         * <p>Error Code: 200</p>
-         * @see Phase
-         * @see Phase.Error
-         * @version 1.0.0
-         * @since 0.1.0
-         */
-        private static class NonProcedureTypeDefinedException extends Phase.Error {
-
-            /// ------------------------
-            /// Private Static Constants
-
-            /**
-             * <p>Standard error message {@link String} for reporting.</p>
-             */
-            private final static String Message = "Type with name '%s' already declared in this scope";
-
-            /// --------------
-            /// Private Fields
-
-            /**
-             * <p>The {@link String} value of the type that was already defined.</p>
-             */
-            private final String typename;
-
-            /// ------------
-            /// Constructors
-
-            /**
-             * <p>Constructs the {@link NonProcedureTypeDefinedException}.</p>
-             * @param culpritInstance The {@link Phase} instance that raised the error.
-             * @see Phase
-             * @see Phase.Error
-             * @since 0.1.0
-             */
-            protected NonProcedureTypeDefinedException(final Phase culpritInstance,
-                                                       final String typename) {
-                super(culpritInstance);
-                this.typename = typename;
-            }
-
-            /// -------------------
-            /// java.lang.Exception
-
-            /**
-             * <p>Returns a newly constructed message specifying the error.</p>
-             * @return {@link String} value of the error message.
-             * @since 0.1.0
-             */
-            @Override
-            public String getMessage() {
-
-                // Return the resultant error message
-                return String.format(Message, this.typename);
-
-            }
-
-        }
-
         // TODO: Error Code 400
         /**
          * <p>{@link Phase.Error} class that encapsulates the pertinent information of attempting to define a label
@@ -787,128 +1037,6 @@ public abstract class Phase implements Visitor<Void> {
 
                 // Return the resultant error message
                 return String.format(Message, this.labelledStatement.getLabel(), this.labelledStatement);
-
-            }
-
-        }
-
-        /**
-         * <p>{@link Phase.Error} class that encapsulates the pertinent information of attempting to overload a
-         * {@link ProcTypeDecl} specified as 'mobile'.</p>
-         * <p>Error Code: 206</p>
-         * @see Phase
-         * @see Phase.Error
-         * @version 1.0.0
-         * @since 0.1.0
-         */
-        private static class MobileOverloadException extends Phase.Error {
-
-            /// ------------------------
-            /// Private Static Constants
-
-            /**
-             * <p>Standard error message {@link String} for reporting.</p>
-             */
-            private final static String Message = "Only one declaration of mobile procedure '%s' may exists";
-
-            /// --------------
-            /// Private Fields
-
-            /**
-             * <p>The mobile {@link ProcTypeDecl} that cannot be overloaded.</p>
-             */
-            private final ProcTypeDecl procedureTypeDeclaration;
-
-            /// ------------
-            /// Constructors
-
-            /**
-             * <p>Constructs the {@link MobileOverloadException}.</p>
-             * @param culpritInstance The {@link Phase} instance that raised the error.
-             * @see Phase
-             * @see Phase.Error
-             * @since 0.1.0
-             */
-            protected MobileOverloadException(final Phase culpritInstance,
-                                              final ProcTypeDecl procedureTypeDeclaration) {
-                super(culpritInstance);
-                this.procedureTypeDeclaration = procedureTypeDeclaration;
-            }
-
-            /// -------------------
-            /// java.lang.Exception
-
-            /**
-             * <p>Returns a newly constructed message specifying the error.</p>
-             * @return {@link String} value of the error message.
-             * @since 0.1.0
-             */
-            @Override
-            public String getMessage() {
-
-                // Return the resultant error message
-                return String.format(Message, this.procedureTypeDeclaration.toString());
-
-            }
-
-        }
-
-        /**
-         * <p>{@link Phase.Error} class that encapsulates the pertinent information of attempting to overload a
-         * {@link ProcTypeDecl} with {@link ProcTypeDecl} specified as 'mobile'.</p>
-         * <p>Error Code: 208</p>
-         * @see Phase
-         * @see Phase.Error
-         * @version 1.0.0
-         * @since 0.1.0
-         */
-        private static class NonMobileProcedureDefinedException extends Phase.Error {
-
-            /// ------------------------
-            /// Private Static Constants
-
-            /**
-             * <p>Standard error message {@link String} for reporting.</p>
-             */
-            private final static String Message = "Non-mobile procedure '%s' already exists";
-
-            /// --------------
-            /// Private Fields
-
-            /**
-             * <p>The mobile {@link ProcTypeDecl} that cannot be overloaded.</p>
-             */
-            private final ProcTypeDecl procedureTypeDeclaration;
-
-            /// ------------
-            /// Constructors
-
-            /**
-             * <p>Constructs the {@link NonMobileProcedureDefinedException}.</p>
-             * @param culpritInstance The {@link Phase} instance that raised the error.
-             * @see Phase
-             * @see Phase.Error
-             * @since 0.1.0
-             */
-            protected NonMobileProcedureDefinedException(final Phase culpritInstance,
-                                                         final ProcTypeDecl procedureTypeDeclaration) {
-                super(culpritInstance);
-                this.procedureTypeDeclaration = procedureTypeDeclaration;
-            }
-
-            /// -------------------
-            /// java.lang.Exception
-
-            /**
-             * <p>Returns a newly constructed message specifying the error.</p>
-             * @return {@link String} value of the error message.
-             * @since 0.1.0
-             */
-            @Override
-            public String getMessage() {
-
-                // Return the resultant error message
-                return String.format(Message, this.procedureTypeDeclaration.toString());
 
             }
 
@@ -1118,450 +1246,6 @@ public abstract class Phase implements Visitor<Void> {
 
     }
 
-    protected static class SemanticAssert {
-
-        protected static boolean DefinesConstantEvaluationExpression(final DoStat doStatement)
-                throws Phase.Error {
-
-            // Initialize a handle to the Do Statement's Evaluation Expression
-            final Expression evaluationExpression = doStatement.getEvaluationExpression();
-
-            // Return the result
-            return (evaluationExpression != null) && (evaluationExpression.isConstant());
-
-        }
-
-        protected static void RewriteArrayType(final ConstantDecl constantDeclaration) throws Phase.Error {
-
-            // Initialize a handle to the Constant Declaration's Name
-            final Type          type        = constantDeclaration.getType();
-            final Name          name        = constantDeclaration.getName();
-            final Expression    expression  = constantDeclaration.getInitializationExpression();
-
-            // Assert the Constant Declaration's Type is not an ArrayType
-            if((name.getDepth() > 0) || (expression instanceof ArrayLiteral)) {
-
-                // Initialize a handle to the synthesized Type
-                final Type synthesized = (name.getDepth() > 0) ? new ArrayType(type, name.getDepth()) : type;
-
-                // Assert the Constant Declaration is not initialized with an ArrayLiteral Expression
-                if(expression instanceof ArrayLiteral)
-                    constantDeclaration.setInitializationExpression(
-                            new NewArray(synthesized, (ArrayLiteral) expression));
-
-                // Overwrite the Constant Declaration's Type
-                constantDeclaration.setType(synthesized);
-
-            }
-
-            // Overwrite the Constant Declaration's Name
-            constantDeclaration.setName(new Name(name, 0));
-
-        }
-
-        protected static void RewriteArrayType(final ParamDecl parameterDeclaration) throws Phase.Error {
-
-            // Initialize a handle to the Constant Declaration's Name
-            final Type          type        = parameterDeclaration.getType();
-            final Name          name        = parameterDeclaration.getName();
-
-            // Assert the Constant Declaration's Type is not an ArrayType
-            if((name.getDepth() > 0)) {
-
-                // Initialize a handle to the synthesized Type
-                final Type synthesized = (name.getDepth() > 0) ? new ArrayType(type, name.getDepth()) : type;
-
-                // Overwrite the Constant Declaration's Type
-                parameterDeclaration.setType(synthesized);
-
-            }
-
-            // Overwrite the Constant Declaration's Name
-            parameterDeclaration.setName(new Name(name, 0));
-
-        }
-
-        protected static void RewriteArrayType(final LocalDecl localDeclaration) throws Phase.Error {
-
-            // Initialize a handle to the Constant Declaration's Name
-            final Type          type        = localDeclaration.getType();
-            final Name          name        = localDeclaration.getName();
-
-            // Assert the Constant Declaration's Type is not an ArrayType
-            if((name.getDepth() > 0)) {
-
-                // Initialize a handle to the synthesized Type
-                final Type synthesized = (name.getDepth() > 0) ? new ArrayType(type, name.getDepth()) : type;
-
-                // Overwrite the Constant Declaration's Type
-                localDeclaration.setType(synthesized);
-
-            }
-
-            // Overwrite the Constant Declaration's Name
-            localDeclaration.setName(new Name(name, 0));
-
-        }
-
-        protected static void MobileProcedureVoidYielding(final Phase phase,
-                                                          final ProcTypeDecl procedureTypeDeclaration)
-                throws Phase.Error {
-
-            if(procedureTypeDeclaration.isMobile() && !procedureTypeDeclaration.getReturnType().isVoidType())
-                PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                        .addAST(procedureTypeDeclaration)
-                        .addError(VisitorMessageNumber.TOP_LEVEL_DECLS_205)
-                        .addArguments(procedureTypeDeclaration.toString())
-                        .build());
-
-        }
-
-        protected static void PriAltNotEnclosedByAltStatement(final Phase phase,
-                                                              final AltStat altStatement)
-                throws Phase.Error {
-
-            phase.getScope().forEachContextUntil(context -> {
-
-                final boolean found = context instanceof AltStat;
-
-                // Assert that if the Context is an Alt Statement and the specified Alt Statement
-                // is pri, that the Context is not a non-pri Alt Statement
-                if(found && (!((AltStat) context).isPri() && altStatement.isPri()))
-                    PJBugManager.INSTANCE.reportMessage(
-                            new PJMessage.Builder()
-                                    .addAST(altStatement)
-                                    .addError(VisitorMessageNumber.REWRITE_1006)
-                                    .build());
-
-                return found;
-
-            });
-
-        }
-
-        protected static void SetEnclosingContextYields(final Phase phase)
-                throws Phase.Error {
-
-            phase.getScope().forEachContextUntil(SymbolMap.Context::setYields);
-
-        }
-
-        protected static void SingleInitializationForReplicatedAlt(final AltStat altStatement)
-                throws Phase.Error {
-
-            // Assert that if the Alt Statement is replicated, it does not define multiple initialization
-            // statements.
-            if(altStatement.isReplicated() && altStatement.definesMultipleInitializationStatements())
-                PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                        .addAST(altStatement)
-                        .addError(VisitorMessageNumber.SEMATIC_CHECKS_901)
-                        .build());
-
-        }
-
-        protected static void NotReplicatedAltInputGuardWriteExpression(final Phase phase,
-                                                                        final Expression expression)
-                throws Phase.Error {
-
-            phase.getScope().forEachContextUntil(context -> {
-
-                final boolean found = context instanceof AltCase;
-
-                // Assert the Context is not an Alt Case & does not define an Input Guard
-                if(found && ((AltCase) context).definesInputGuardExpression()) {
-
-                    // Initialize a handle to the input guard Expression's Channel Read Expression
-                    final Assignment inputGuardExpression = ((AltCase) context).getInputGuardExpression();
-
-                    // Assert the Channel Read's Expression is not the specified Expression
-                    if((inputGuardExpression != null) && inputGuardExpression.getRight() == expression) {
-
-                        // Initialize a handle to the Scope
-                        final SymbolMap scope = context.openScope();
-
-                        // Assert any enclosing alt statements are not replicated alts
-                        scope.forEachEnclosingContext(outerContext -> {
-                            if((outerContext instanceof AltStat) && ((AltStat) outerContext).isReplicated())
-                                PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                                        .addAST(expression)
-                                        .addError(VisitorMessageNumber.SEMATIC_CHECKS_902)
-                                        .build());
-                        });
-
-                    }
-
-                }
-
-                return found;
-
-            });
-
-        }
-
-        protected static void InParBlockReadSet(final Phase phase,
-                                                final Expression expression)
-                throws Phase.Error {
-
-            phase.getScope().forEachContextUntil(context -> {
-
-                // TODO: Errors 701, 702, 703, 704, 705, 706, 707
-                final boolean foundPar = (context instanceof ParBlock);
-
-                // Check the result
-                if(foundPar) {
-
-                    // Initialize a handle to the ParBlock
-                    final ParBlock parBlock = (ParBlock) context;
-
-                    // Assert the Expression is not in the Par Block's Write Set
-                    if(parBlock.inWriteSet(expression))
-                        PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                                .addAST(expression)
-                                .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_701)
-                                .addArguments(expression)
-                                .build());
-
-                    // Aggregate the Expression to the read set
-                    parBlock.toReadSet(expression);
-                    PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                            .addAST(expression)
-                            .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_702)
-                            .addArguments(expression)
-                            .build());
-
-                }
-
-                return foundPar;
-
-            });
-
-        }
-
-        protected static void InParBlockWriteSet(final Phase phase,
-                                                    final Expression expression)
-                throws Phase.Error {
-
-            phase.getScope().forEachContextUntil(context -> {
-
-                // TODO: Errors 701, 702
-                final boolean foundPar = (context instanceof ParBlock);
-
-                // Check the result
-                if(foundPar) {
-
-                    // Initialize a handle to the ParBlock
-                    final ParBlock parBlock = (ParBlock) context;
-
-                    // Assert the Expression is not in the Par Block's Write Set
-                    if(parBlock.inWriteSet(expression))
-                        PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                                .addAST(expression)
-                                .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_701)
-                                .addArguments(expression)
-                                .build());
-
-                    // Aggregate the Expression to the read set
-                    parBlock.toWriteSet(expression);
-                    PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                            .addAST(expression)
-                            .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_702)
-                            .addArguments(expression)
-                            .build());
-
-                }
-
-                return foundPar;
-
-            });
-
-        }
-
-        protected static void NotInLiteralExpression(final Phase phase,
-                                                        final ChannelReadExpr channelReadExpression)
-                throws Phase.Error {
-
-            phase.getScope().forEachContextUntil(context -> {
-
-                final boolean found = context instanceof Literal;
-
-                // Assert the Context is not a Literal
-                if(context instanceof Literal)
-                    PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                            .addAST(channelReadExpression)
-                            .addError(VisitorMessageNumber.SEMATIC_CHECKS_900)
-                            .addArguments(channelReadExpression)
-                            .build());
-
-                return found;
-
-            });
-
-        }
-
-        protected static void NonYieldingPrecondition(final Phase phase,
-                                                      final ChannelReadExpr channelReadExpression)
-                throws Phase.Error{
-
-            phase.getScope().forEachEntryUntil(context -> {
-
-                final boolean found = context instanceof AltCase;
-
-                // If the Context is an AltCase
-                if(found) {
-
-                    // Initialize a handle to the AltCase
-                    final AltCase altCase = (AltCase) context;
-
-                    // Assert the Alt Case does not define a yielding precondition
-                    if(altCase.definesPrecondition()
-                            && altCase.getPreconditionExpression().doesYield())
-                        PJBugManager.INSTANCE.reportMessage(
-                                new PJMessage.Builder()
-                                        .addAST(channelReadExpression)
-                                        .addError(VisitorMessageNumber.REWRITE_1001)
-                                        .build());
-
-                }
-
-                return found;
-
-            });
-
-        }
-
-        protected static void NotPreconditionExpression(final Phase phase,
-                                                           final Expression expression)
-                throws Phase.Error {
-
-            phase.getScope().forEachContextUntil(context -> {
-
-                final boolean found = context instanceof AltCase;
-
-                // If the Context is an AltCase
-                if(found) {
-
-                    // Initialize a handle to the AltCase
-                    final AltCase altCase = (AltCase) context;
-
-                    // Assert we're not the AltCase's precondition
-                    if (altCase.definesPrecondition()
-                            && altCase.getPreconditionExpression() == expression)
-                        PJBugManager.INSTANCE.reportMessage(
-                                new PJMessage.Builder()
-                                        .addAST(expression)
-                                        .addError(VisitorMessageNumber.REWRITE_1001)
-                                        .build());
-
-                }
-
-                return found;
-
-            });
-
-        }
-
-        protected static void NotInAltStatement(final Phase phase,
-                                                final Statement statement)
-                throws Phase.Error {
-
-            phase.getScope().forEachEntryUntil(context -> {
-
-                final boolean found = context instanceof AltStat;
-
-                // Assert the Context is not an Alt Statement
-                if(found)
-                    PJBugManager.INSTANCE.reportMessage(
-                            new PJMessage.Builder()
-                                    .addAST(statement)
-                                    .addError(VisitorMessageNumber.SEMATIC_CHECKS_903)
-                                    .build());
-
-                return found;
-
-            });
-
-        }
-
-        protected static boolean NotEmptyParallelContext(final Phase phase) throws Phase.Error {
-
-            // Initialize a handle to the Context
-            final SymbolMap.Context context = phase.getScope().getContext();
-
-            // Initialize the result
-            final boolean isParallelContextEmpty = (context instanceof ParBlock)
-                    && ((ParBlock) context).getStatements().isEmpty();
-
-            // Assert the parallel Context is not empty
-            if(isParallelContextEmpty)
-                ParallelContextEmpty.Assert(phase, context);
-
-            // Return the result
-            return isParallelContextEmpty;
-
-        }
-
-
-
-        /**
-         * <p>{@link Phase.Error} to be emitted if a parallel {@link org.processj.compiler.ast.SymbolMap.Context}
-         * contains an empty body.</p>
-         * @see Phase
-         * @see Phase.Error
-         * @version 1.0.0
-         * @since 0.1.0
-         */
-        protected static class ParallelContextEmpty extends Phase.Error {
-
-            /// ------------------------
-            /// Protected Static Methods
-
-            /**
-             * <p>Emits the {@link ParallelContextEmpty} to the specified {@link Phase}'s {@link Listener}.</p>
-             * @param phase The invoking {@link Phase}.
-             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
-             */
-            protected static void Assert(final Phase phase, final SymbolMap.Context context) {
-
-                Phase.Error.Assert(ParallelContextEmpty.class, phase, context);
-
-            }
-
-            /// --------------
-            /// Private Fields
-
-            /**
-             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
-             */
-            private final Class<? extends SymbolMap.Context>    contextClass    ;
-
-            /**
-             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
-             */
-            private final SymbolMap.Context                     context         ;
-
-            /// ------------
-            /// Constructors
-
-            /**
-             * <p>Constructs the {@link ParallelContextEmpty} to its' default state.</p>
-             * @param culprit The {@link Phase} instance that raised the error.
-             * @see Phase
-             * @see Phase.Error
-             * @since 0.1.0
-             */
-            protected ParallelContextEmpty(final Phase culprit,
-                                           final SymbolMap.Context context) {
-                super(culprit);
-
-                this.context      = context                                         ;
-                this.contextClass = (context != null) ? context.getClass() : null   ;
-
-            }
-
-        }
-
-    }
-
     protected static class ReachabilityAssert {
 
         protected static Set<String> WithFailures(final Class<?>... classes) {
@@ -1683,8 +1367,8 @@ public abstract class Phase implements Visitor<Void> {
 
             // Initialize a handle to the Context
             final SymbolMap.Context enclosingContext = phase.getScope().forEachContextRetrieve(
-                            context -> (context instanceof ConditionalStatement)
-                                    || (context instanceof ParBlock));
+                    context -> (context instanceof ConditionalStatement)
+                            || (context instanceof ParBlock));
 
             // Assert the statement's enclosing Context isn't parallel
             if(enclosingContext instanceof ParBlock)
@@ -1697,12 +1381,12 @@ public abstract class Phase implements Visitor<Void> {
             if(!enclosingIterativeContextBreaks)
                 NotEnclosedInIterativeContext.Assert(phase, statement, phase.getScope().getContext());
 
-            // Assert that the enclosing Context does not define a constant true evaluation expression
+                // Assert that the enclosing Context does not define a constant true evaluation expression
             else if(TypeAssert.IsConstantTrue(
                     ((ConditionalStatement) enclosingContext).getEvaluationExpression()))
                 EnclosingIterativeContextDoesNotTerminate.Assert(phase, statement, enclosingContext);
 
-            // Assert that the enclosing Context does not define a constant false evaluation expression
+                // Assert that the enclosing Context does not define a constant false evaluation expression
             else if(TypeAssert.IsConstantFalse(
                     ((ConditionalStatement) enclosingContext).getEvaluationExpression()))
                 EnclosingIterativeContextIsNotReachable.Assert(phase, statement, enclosingContext);
@@ -2381,6 +2065,440 @@ public abstract class Phase implements Visitor<Void> {
 
                 this.instanceClass = (instance != null) ? instance.getClass() : null;
                 this.contextClass  = (context != null) ? context.getClass() : null;
+
+            }
+
+        }
+
+    }
+
+
+    protected static class SemanticAssert {
+
+        protected static boolean DefinesConstantEvaluationExpression(final DoStat doStatement)
+                throws Phase.Error {
+
+            // Initialize a handle to the Do Statement's Evaluation Expression
+            final Expression evaluationExpression = doStatement.getEvaluationExpression();
+
+            // Return the result
+            return (evaluationExpression != null) && (evaluationExpression.isConstant());
+
+        }
+
+        protected static void RewriteArrayType(final ConstantDecl constantDeclaration) {
+
+            // Initialize a handle to the Constant Declaration's Name
+            final Type          type        = constantDeclaration.getType();
+            final Name          name        = constantDeclaration.getName();
+            final Expression    expression  = constantDeclaration.getInitializationExpression();
+
+            // Assert the Constant Declaration's Type is not an ArrayType
+            if((name.getDepth() > 0) || (expression instanceof ArrayLiteral)) {
+
+                // Initialize a handle to the synthesized Type
+                final Type synthesized = (name.getDepth() > 0) ? new ArrayType(type, name.getDepth()) : type;
+
+                // Assert the Constant Declaration is not initialized with an ArrayLiteral Expression
+                if(expression instanceof ArrayLiteral)
+                    constantDeclaration.setInitializationExpression(
+                            new NewArray(synthesized, (ArrayLiteral) expression));
+
+                // Overwrite the Constant Declaration's Type
+                constantDeclaration.setType(synthesized);
+
+            }
+
+            // Overwrite the Constant Declaration's Name
+            constantDeclaration.setName(new Name(name, 0));
+
+        }
+
+        protected static void RewriteArrayType(final ParamDecl parameterDeclaration) throws Phase.Error {
+
+            // Initialize a handle to the Constant Declaration's Name
+            final Type          type        = parameterDeclaration.getType();
+            final Name          name        = parameterDeclaration.getName();
+
+            // Assert the Constant Declaration's Type is not an ArrayType
+            if((name.getDepth() > 0)) {
+
+                // Initialize a handle to the synthesized Type
+                final Type synthesized = (name.getDepth() > 0) ? new ArrayType(type, name.getDepth()) : type;
+
+                // Overwrite the Constant Declaration's Type
+                parameterDeclaration.setType(synthesized);
+
+            }
+
+            // Overwrite the Constant Declaration's Name
+            parameterDeclaration.setName(new Name(name, 0));
+
+        }
+
+        protected static void RewriteArrayType(final LocalDecl localDeclaration) throws Phase.Error {
+
+            // Initialize a handle to the Constant Declaration's Name
+            final Type          type        = localDeclaration.getType();
+            final Name          name        = localDeclaration.getName();
+
+            // Assert the Constant Declaration's Type is not an ArrayType
+            if((name.getDepth() > 0)) {
+
+                // Initialize a handle to the synthesized Type
+                final Type synthesized = (name.getDepth() > 0) ? new ArrayType(type, name.getDepth()) : type;
+
+                // Overwrite the Constant Declaration's Type
+                localDeclaration.setType(synthesized);
+
+            }
+
+            // Overwrite the Constant Declaration's Name
+            localDeclaration.setName(new Name(name, 0));
+
+        }
+
+
+
+        protected static void PriAltNotEnclosedByAltStatement(final Phase phase,
+                                                              final AltStat altStatement)
+                throws Phase.Error {
+
+            phase.getScope().forEachContextUntil(context -> {
+
+                final boolean found = context instanceof AltStat;
+
+                // Assert that if the Context is an Alt Statement and the specified Alt Statement
+                // is pri, that the Context is not a non-pri Alt Statement
+                if(found && (!((AltStat) context).isPri() && altStatement.isPri()))
+                    PJBugManager.INSTANCE.reportMessage(
+                            new PJMessage.Builder()
+                                    .addAST(altStatement)
+                                    .addError(VisitorMessageNumber.REWRITE_1006)
+                                    .build());
+
+                return found;
+
+            });
+
+        }
+
+        protected static void SetEnclosingContextYields(final Phase phase)
+                throws Phase.Error {
+
+            phase.getScope().forEachContextUntil(SymbolMap.Context::setYields);
+
+        }
+
+        protected static void SingleInitializationForReplicatedAlt(final AltStat altStatement)
+                throws Phase.Error {
+
+            // Assert that if the Alt Statement is replicated, it does not define multiple initialization
+            // statements.
+            if(altStatement.isReplicated() && altStatement.definesMultipleInitializationStatements())
+                PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                        .addAST(altStatement)
+                        .addError(VisitorMessageNumber.SEMATIC_CHECKS_901)
+                        .build());
+
+        }
+
+        protected static void NotReplicatedAltInputGuardWriteExpression(final Phase phase,
+                                                                        final Expression expression)
+                throws Phase.Error {
+
+            phase.getScope().forEachContextUntil(context -> {
+
+                final boolean found = context instanceof AltCase;
+
+                // Assert the Context is not an Alt Case & does not define an Input Guard
+                if(found && ((AltCase) context).definesInputGuardExpression()) {
+
+                    // Initialize a handle to the input guard Expression's Channel Read Expression
+                    final Assignment inputGuardExpression = ((AltCase) context).getInputGuardExpression();
+
+                    // Assert the Channel Read's Expression is not the specified Expression
+                    if((inputGuardExpression != null) && inputGuardExpression.getRight() == expression) {
+
+                        // Initialize a handle to the Scope
+                        final SymbolMap scope = context.openScope();
+
+                        // Assert any enclosing alt statements are not replicated alts
+                        scope.forEachEnclosingContext(outerContext -> {
+                            if((outerContext instanceof AltStat) && ((AltStat) outerContext).isReplicated())
+                                PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                                        .addAST(expression)
+                                        .addError(VisitorMessageNumber.SEMATIC_CHECKS_902)
+                                        .build());
+                        });
+
+                    }
+
+                }
+
+                return found;
+
+            });
+
+        }
+
+        protected static void InParBlockReadSet(final Phase phase,
+                                                final Expression expression)
+                throws Phase.Error {
+
+            phase.getScope().forEachContextUntil(context -> {
+
+                // TODO: Errors 701, 702, 703, 704, 705, 706, 707
+                final boolean foundPar = (context instanceof ParBlock);
+
+                // Check the result
+                if(foundPar) {
+
+                    // Initialize a handle to the ParBlock
+                    final ParBlock parBlock = (ParBlock) context;
+
+                    // Assert the Expression is not in the Par Block's Write Set
+                    if(parBlock.inWriteSet(expression))
+                        PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                                .addAST(expression)
+                                .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_701)
+                                .addArguments(expression)
+                                .build());
+
+                    // Aggregate the Expression to the read set
+                    parBlock.toReadSet(expression);
+                    PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                            .addAST(expression)
+                            .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_702)
+                            .addArguments(expression)
+                            .build());
+
+                }
+
+                return foundPar;
+
+            });
+
+        }
+
+        protected static void InParBlockWriteSet(final Phase phase,
+                                                    final Expression expression)
+                throws Phase.Error {
+
+            phase.getScope().forEachContextUntil(context -> {
+
+                // TODO: Errors 701, 702
+                final boolean foundPar = (context instanceof ParBlock);
+
+                // Check the result
+                if(foundPar) {
+
+                    // Initialize a handle to the ParBlock
+                    final ParBlock parBlock = (ParBlock) context;
+
+                    // Assert the Expression is not in the Par Block's Write Set
+                    if(parBlock.inWriteSet(expression))
+                        PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                                .addAST(expression)
+                                .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_701)
+                                .addArguments(expression)
+                                .build());
+
+                    // Aggregate the Expression to the read set
+                    parBlock.toWriteSet(expression);
+                    PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                            .addAST(expression)
+                            .addError(VisitorMessageNumber.PARALLEL_USAGE_CHECKER_702)
+                            .addArguments(expression)
+                            .build());
+
+                }
+
+                return foundPar;
+
+            });
+
+        }
+
+        protected static void NotInLiteralExpression(final Phase phase,
+                                                        final ChannelReadExpr channelReadExpression)
+                throws Phase.Error {
+
+            phase.getScope().forEachContextUntil(context -> {
+
+                final boolean found = context instanceof Literal;
+
+                // Assert the Context is not a Literal
+                if(context instanceof Literal)
+                    PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                            .addAST(channelReadExpression)
+                            .addError(VisitorMessageNumber.SEMATIC_CHECKS_900)
+                            .addArguments(channelReadExpression)
+                            .build());
+
+                return found;
+
+            });
+
+        }
+
+        protected static void NonYieldingPrecondition(final Phase phase,
+                                                      final ChannelReadExpr channelReadExpression)
+                throws Phase.Error{
+
+            phase.getScope().forEachEntryUntil(context -> {
+
+                final boolean found = context instanceof AltCase;
+
+                // If the Context is an AltCase
+                if(found) {
+
+                    // Initialize a handle to the AltCase
+                    final AltCase altCase = (AltCase) context;
+
+                    // Assert the Alt Case does not define a yielding precondition
+                    if(altCase.definesPrecondition()
+                            && altCase.getPreconditionExpression().doesYield())
+                        PJBugManager.INSTANCE.reportMessage(
+                                new PJMessage.Builder()
+                                        .addAST(channelReadExpression)
+                                        .addError(VisitorMessageNumber.REWRITE_1001)
+                                        .build());
+
+                }
+
+                return found;
+
+            });
+
+        }
+
+        protected static void NotPreconditionExpression(final Phase phase,
+                                                           final Expression expression)
+                throws Phase.Error {
+
+            phase.getScope().forEachContextUntil(context -> {
+
+                final boolean found = context instanceof AltCase;
+
+                // If the Context is an AltCase
+                if(found) {
+
+                    // Initialize a handle to the AltCase
+                    final AltCase altCase = (AltCase) context;
+
+                    // Assert we're not the AltCase's precondition
+                    if (altCase.definesPrecondition()
+                            && altCase.getPreconditionExpression() == expression)
+                        PJBugManager.INSTANCE.reportMessage(
+                                new PJMessage.Builder()
+                                        .addAST(expression)
+                                        .addError(VisitorMessageNumber.REWRITE_1001)
+                                        .build());
+
+                }
+
+                return found;
+
+            });
+
+        }
+
+        protected static void NotInAltStatement(final Phase phase,
+                                                final Statement statement)
+                throws Phase.Error {
+
+            phase.getScope().forEachEntryUntil(context -> {
+
+                final boolean found = context instanceof AltStat;
+
+                // Assert the Context is not an Alt Statement
+                if(found)
+                    PJBugManager.INSTANCE.reportMessage(
+                            new PJMessage.Builder()
+                                    .addAST(statement)
+                                    .addError(VisitorMessageNumber.SEMATIC_CHECKS_903)
+                                    .build());
+
+                return found;
+
+            });
+
+        }
+
+        protected static boolean NotEmptyParallelContext(final Phase phase) throws Phase.Error {
+
+            // Initialize a handle to the Context
+            final SymbolMap.Context context = phase.getScope().getContext();
+
+            // Initialize the result
+            final boolean isParallelContextEmpty = (context instanceof ParBlock)
+                    && ((ParBlock) context).getStatements().isEmpty();
+
+            // Assert the parallel Context is not empty
+            if(isParallelContextEmpty)
+                ParallelContextEmpty.Assert(phase, context);
+
+            // Return the result
+            return isParallelContextEmpty;
+
+        }
+
+
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if a parallel {@link org.processj.compiler.ast.SymbolMap.Context}
+         * contains an empty body.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class ParallelContextEmpty extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link ParallelContextEmpty} to the specified {@link Phase}'s {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(ParallelContextEmpty.class, phase, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link ParallelContextEmpty} to its' default state.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected ParallelContextEmpty(final Phase culprit,
+                                           final SymbolMap.Context context) {
+                super(culprit);
+
+                this.context      = context                                         ;
+                this.contextClass = (context != null) ? context.getClass() : null   ;
 
             }
 

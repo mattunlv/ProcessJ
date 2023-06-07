@@ -152,7 +152,7 @@ public class ProcessJParser extends Phase implements Parser.Handler {
     public final Void visitConstantDecl(final ConstantDecl constantDeclaration) throws Phase.Error {
 
         // Assert the Constant Declaration's Name is undefined
-        NameAssert.Define(this, constantDeclaration);
+        NameAssert.Defines(this, constantDeclaration);
 
         // Assert the Constant Declaration's Type, Name, & initialization Expression are rewritten
         // if they're specified as ArrayType
@@ -179,10 +179,7 @@ public class ProcessJParser extends Phase implements Parser.Handler {
     public final Void visitProcTypeDecl(final ProcTypeDecl procedureTypeDeclaration) throws Phase.Error {
 
         // Assert that the Procedure's Name or Overload is not defined
-        NameAssert.Define(this, procedureTypeDeclaration);
-
-        // Assert that if the Procedure Type is declared 'mobile', its' return Type is 'void'
-        SemanticAssert.MobileProcedureVoidYielding(this, procedureTypeDeclaration);
+        NameAssert.Defines(this, procedureTypeDeclaration);
 
         // Resolve the Procedure Type
         super.visitProcTypeDecl(procedureTypeDeclaration);
@@ -200,7 +197,8 @@ public class ProcessJParser extends Phase implements Parser.Handler {
     @Override
     public final Void visitProtocolTypeDecl(final ProtocolTypeDecl protocolTypeDeclaration) throws Phase.Error {
 
-        NameAssert.Define(this, protocolTypeDeclaration);
+        // Assert that the Protocol Type's Name is not defined
+        NameAssert.Defines(this, protocolTypeDeclaration);
 
         // Resolve the Protocol Type
         super.visitProtocolTypeDecl(protocolTypeDeclaration);
@@ -218,7 +216,8 @@ public class ProcessJParser extends Phase implements Parser.Handler {
     @Override
     public final Void visitRecordTypeDecl(final RecordTypeDecl recordTypeDeclaration) throws Phase.Error {
 
-        NameAssert.Define(this, recordTypeDeclaration);
+        // Assert that the Record's Name is not defined
+        NameAssert.Defines(this, recordTypeDeclaration);
 
         // Resolve the Record Type
         super.visitRecordTypeDecl(recordTypeDeclaration);
@@ -238,7 +237,7 @@ public class ProcessJParser extends Phase implements Parser.Handler {
     public final Void visitParamDecl(final ParamDecl parameterDeclaration) throws Phase.Error {
 
         // Assert the Parameter Declaration's Name is undefined
-        NameAssert.Define(this, parameterDeclaration);
+        NameAssert.Defines(this, parameterDeclaration);
 
         // Assert the Parameter Declaration's Type is rewritten if it's specified as an ArrayType
         SemanticAssert.RewriteArrayType(parameterDeclaration);
@@ -264,7 +263,7 @@ public class ProcessJParser extends Phase implements Parser.Handler {
         NameAssert.Define(this, localDeclaration.getName());
 
         // Assert that the Local Declaration's Label is undefined
-        NameAssert.Define(this, localDeclaration);
+        NameAssert.DefinesLabel(this, localDeclaration.getLabel(), localDeclaration);
 
         // Assert the Constant Declaration's Type, Name, & initialization Expression are rewritten
         // if they're specified as ArrayType
@@ -379,7 +378,7 @@ public class ProcessJParser extends Phase implements Parser.Handler {
     public final Void visitBreakStat(final BreakStat breakStatement) throws Phase.Error {
 
         // Assert that the Break Statement's Label is undefined
-        NameAssert.Define(this, breakStatement);
+        NameAssert.DefinesLabel(this, breakStatement.getLabel(), breakStatement);
 
         // Resolve the Break Statement
         super.visitBreakStat(breakStatement);
