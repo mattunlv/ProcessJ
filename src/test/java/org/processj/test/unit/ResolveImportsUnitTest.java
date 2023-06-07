@@ -49,6 +49,8 @@ public class ResolveImportsUnitTest extends ProcessJTest {
 
         } catch(final Exception exception) {
 
+            System.out.println(exception.getMessage());
+
             result = false;
 
         }

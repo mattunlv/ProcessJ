@@ -17,7 +17,6 @@ import org.processj.compiler.phases.legacy.codegen.*;
 import org.processj.compiler.phases.phase.*;
 import org.processj.compiler.utilities.*;
 import org.processj.compiler.phases.legacy.codegen.InfiniteLoopRewrite;
-import org.processj.compiler.phases.phase.Reachability;
 import org.processj.compiler.phases.legacy.codegen.UnrollLoopRewrite;
 import org.processj.compiler.utilities.printers.ParseTreePrinter;
 
@@ -185,11 +184,6 @@ public class ProcessJc extends Phases.Executor {
             typeChecker.execute(processJSourceFile);
 
             try {
-
-                // Visit org.processj.reachability
-                if (pJc.showMessage)
-                    System.out.println("-- Computing org.processj.reachability.");
-                compilation.visit(new Reachability());
 
                 if (pJc.showMessage)
                     System.out.println("-- Rewriting infinite loops.");

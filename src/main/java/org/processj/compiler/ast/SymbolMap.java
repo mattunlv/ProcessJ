@@ -102,7 +102,8 @@ public class SymbolMap {
         this.enclosingScope     = parent                                                                ;
         this.context            = context                                                               ;
         this.importedEntries    = (parent != null) ? parent.importedEntries : new HashMap<>()           ;
-        this.packageName        = (parent != null) ? parent.packageName     : context.getPackageName()  ;
+        this.packageName        = (parent != null) ? parent.packageName
+                : ((context != null) ? context.getPackageName() : "")  ;
 
     }
 
@@ -255,7 +256,7 @@ public class SymbolMap {
         if(!doesExist) this.entries.put(name, instance);
 
         // Return the flag
-        return doesExist;
+        return !doesExist;
 
     }
 
@@ -326,7 +327,7 @@ public class SymbolMap {
                 contextCallback.Invoke(scope.context);
 
                 // Update
-                scope = this.getEnclosingScope();
+                scope = scope.getEnclosingScope();
 
             } while((scope != null) && (scope.context != null));
 
@@ -334,7 +335,9 @@ public class SymbolMap {
 
     }
 
-    public final void forEachContextUntil(final UntilContextCallback untilContextCallback) throws Phase.Error {
+    public final boolean forEachContextUntil(final UntilContextCallback untilContextCallback) throws Phase.Error {
+
+        boolean result = false;
 
         // If the context & callback are valid
         if((this.context != null) && (untilContextCallback != null)) {
@@ -344,15 +347,45 @@ public class SymbolMap {
 
             do {
 
-                // Call back with the Context
-                if(untilContextCallback.Invoke(scope.context)) break;
+                // Call back with the context
+                result = untilContextCallback.Invoke(scope.context);
 
                 // Update
-                scope = this.getEnclosingScope();
+                scope = scope.getEnclosingScope();
 
-            } while((scope != null) && (scope.context != null));
+            } while(!result && (scope != null) && (scope.context != null));
 
         }
+
+        return result;
+
+    }
+
+    public final SymbolMap.Context forEachContextRetrieve(final UntilContextCallback untilContextCallback) throws Phase.Error {
+
+        // Initialize the result
+        SymbolMap.Context context = null;
+
+        // If the callback is valid
+        if(untilContextCallback != null) {
+
+            // Initialize the enclosing Scope
+            SymbolMap scope = this;
+
+            // Iterate
+            do {
+
+                // Update the result
+                context = scope.context;
+
+                // Set the next scope
+                scope   = scope.getEnclosingScope();
+
+            } while(scope != null && !untilContextCallback.Invoke(context));
+
+        }
+
+        return context;
 
     }
 

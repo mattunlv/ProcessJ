@@ -28,7 +28,7 @@ public class ResolveImports extends Phase {
      * <p>Contains a mapping of {@link String} values corresponding to a path {@link String} value &
      * {@link Compilation}.</p>
      */
-    private final static Map<String, Compilation>   Imported                = new HashMap<>()   ;
+    protected final static Map<String, Compilation>   Imported                = new HashMap<>()   ;
 
     /**
      * <p>Regex pattern that corresponds to a ProcessJ source file.</p>

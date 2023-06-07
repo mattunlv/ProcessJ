@@ -4,7 +4,7 @@ import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.phases.phase.Visitor;
 
-public class WhileStat extends LoopStatement {
+public class WhileStat extends LoopStatement implements IterativeStatement {
 
     private final Expression    expression  ;
     private final Block         body        ;

@@ -53,7 +53,16 @@ public class ProtocolLiteral extends Literal implements SymbolMap.Context {
 
     public final <S> S visit(Visitor<S> visitor) throws Phase.Error {
 
-        return visitor.visitProtocolLiteral(this);
+        // Open the scope
+        visitor.setScope(this.openScope(visitor.getScope()));
+
+        // Visit
+        S result = visitor.visitProtocolLiteral(this);
+
+        // Close the scope
+        visitor.setScope(visitor.getScope().getEnclosingScope());
+
+        return result;
 
     }
 

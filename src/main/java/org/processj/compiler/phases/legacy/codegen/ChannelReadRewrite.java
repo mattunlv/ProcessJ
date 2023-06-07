@@ -20,9 +20,7 @@ import org.processj.compiler.utilities.printers.PrettyPrinter;
  * from which the read happens. The above example generates:
  *
  * temp_0 = c.read(); x = temp_0 + 2;
- *
  * Errors generated in this file:
- *
  * 1000 ->
  */
 
@@ -395,13 +393,13 @@ public class ChannelReadRewrite {
             System.out.println("IfStat");
             IfStat is = (IfStat) a;
             Sequence seq2 = new Sequence();
-            if (is.evaluationExpression().doesYield()) { // the expression on the if org.processj.yield.
+            if (is.getEvaluationExpression().doesYield()) { // the expression on the if org.processj.yield.
                 String t = nextTemp();
                 // T t; (T is the type of the expression)
-                LocalDecl ld = makeLocalDecl(is.evaluationExpression().type, t);
+                LocalDecl ld = makeLocalDecl(is.getEvaluationExpression().type, t);
                 seq2.append(ld);
                 // t = e;
-                Sequence s = (Sequence) go(new ExprStat(makeAssignment(t, is.evaluationExpression())));
+                Sequence s = (Sequence) go(new ExprStat(makeAssignment(t, is.getEvaluationExpression())));
                 seq2.merge(s.child(0)); // [ T t; <t = e>; ]
                 is.children[0] = new NameExpr(new Name(t));
             }

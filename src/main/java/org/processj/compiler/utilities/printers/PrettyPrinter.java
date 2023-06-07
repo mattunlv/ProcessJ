@@ -503,7 +503,7 @@ public class PrettyPrinter implements Visitor<Void> {
 		System.out.print(tab());
 		System.out.print("if (");
         try {
-            is.evaluationExpression().visit(this);
+            is.getEvaluationExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }

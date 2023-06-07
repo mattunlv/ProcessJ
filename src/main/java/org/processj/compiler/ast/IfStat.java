@@ -4,7 +4,7 @@ import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.phases.phase.Visitor;
 
-public class IfStat extends Statement {
+public class IfStat extends Statement implements ConditionalStatement {
 
     /// --------------
     /// Private Fields
@@ -33,7 +33,7 @@ public class IfStat extends Statement {
         return v.visitIfStat(this);
     }
 
-    public final Expression evaluationExpression() {
+    public final Expression getEvaluationExpression() {
 
         return this.expression;
 

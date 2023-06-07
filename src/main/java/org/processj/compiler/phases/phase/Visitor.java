@@ -33,34 +33,38 @@ public interface Visitor<T> {
         return null;
     }
 
-    default T visitAltCase(AltCase ac) throws Phase.Error { return null; }
+    default T visitAltCase(AltCase ac) throws Phase.Error {
+
+        return ac.visitChildren(this);
+
+    }
 
     default T visitAltStat(AltStat as) throws Phase.Error {
-        return null;
+        return as.visitChildren(this);
     }
 
     default T visitArrayAccessExpr(ArrayAccessExpr ae) throws Phase.Error {
-        return null;
+        return ae.visitChildren(this);
     }
 
     default T visitArrayLiteral(ArrayLiteral al) throws Phase.Error {
-        return null;
+        return al.visitChildren(this);
     }
 
     default T visitArrayType(ArrayType at) throws Phase.Error {
-        return null;
+        return at.visitChildren(this);
     }
 
     default T visitAssignment(Assignment as) throws Phase.Error {
-        return null;
+        return as.visitChildren(this);
     }
 
     default T visitBinaryExpr(BinaryExpr be) throws Phase.Error {
-        return null;
+        return be.visitChildren(this);
     }
 
     default T visitBlock(Block bl) throws Phase.Error {
-        return null;
+        return bl.visitChildren(this);
     }
 
     default T visitBreakStat(BreakStat bs) throws Phase.Error {
@@ -68,31 +72,31 @@ public interface Visitor<T> {
     }
 
     default T visitCastExpr(CastExpr ce) throws Phase.Error {
-        return null;
+        return ce.visitChildren(this);
     }
 
     default T visitChannelType(ChannelType ct) throws Phase.Error {
-        return null;
+        return ct.visitChildren(this);
     }
 
     default T visitChannelEndExpr(ChannelEndExpr ce) throws Phase.Error {
-        return null;
+        return ce.visitChildren(this);
     }
 
     default T visitChannelEndType(ChannelEndType ct) throws Phase.Error {
-        return null;
+        return ct.visitChildren(this);
     }
 
     default T visitChannelReadExpr(ChannelReadExpr cr) throws Phase.Error {
-        return null;
+        return cr.visitChildren(this);
     }
 
     default T visitChannelWriteStat(ChannelWriteStat cw) throws Phase.Error {
-        return null;
+        return cw.visitChildren(this);
     }
 
     default T visitClaimStat(ClaimStat cs) throws Phase.Error {
-        return null;
+        return cs.visitChildren(this);
     }
 
     default T visitCompilation(Compilation co) throws Phase.Error {
@@ -100,7 +104,7 @@ public interface Visitor<T> {
     }
 
     default T visitConstantDecl(ConstantDecl cd) throws Phase.Error {
-        return null;
+        return cd.visitChildren(this);
     }
 
     default T visitContinueStat(ContinueStat cs) throws Phase.Error {
@@ -108,15 +112,15 @@ public interface Visitor<T> {
     }
 
     default T visitDoStat(DoStat ds) throws Phase.Error {
-        return null;
+        return ds.visitChildren(this);
     }
 
     default T visitErrorType(ErrorType et) throws Phase.Error {
-        return null;
+        return et.visitChildren(this);
     }
 
     default T visitExprStat(ExprStat es) throws Phase.Error {
-        return null;
+        return es.visitChildren(this);
     }
 
     default T visitExternType(ExternType et) throws Phase.Error {
@@ -124,19 +128,19 @@ public interface Visitor<T> {
     }
 
     default T visitForStat(ForStat fs) throws Phase.Error {
-        return null;
+        return fs.visitChildren(this);
     }
 
     default T visitGuard(Guard gu) throws Phase.Error {
-        return null;
+        return gu.visitChildren(this);
     }
 
     default T visitIfStat(IfStat is) throws Phase.Error {
-        return null;
+        return is.visitChildren(this);
     }
 
     default T visitImplicitImport(ImplicitImport ii) throws Phase.Error {
-        return null;
+        return ii.visitChildren(this);
     }
 
     default T visitImport(Import im) throws Phase.Error {
@@ -144,11 +148,11 @@ public interface Visitor<T> {
     }
 
     default T visitInvocation(Invocation in) throws Phase.Error {
-        return null;
+        return in.visitChildren(this);
     }
 
     default T visitLocalDecl(LocalDecl ld) throws Phase.Error {
-        return null;
+        return ld.visitChildren(this);
     }
 
     default T visitModifier(Modifier mo) throws Phase.Error {
@@ -160,27 +164,27 @@ public interface Visitor<T> {
     }
 
     default T visitNamedType(NamedType nt) throws Phase.Error {
-        return null;
+        return nt.visitChildren(this);
     }
 
     default T visitNameExpr(NameExpr ne) throws Phase.Error {
-        return null;
+        return ne.visitChildren(this);
     }
 
     default T visitNewArray(NewArray ne) throws Phase.Error {
-        return null;
+        return ne.visitChildren(this);
     }
 
     default T visitNewMobile(NewMobile nm) throws Phase.Error {
-        return null;
+        return nm.visitChildren(this);
     }
 
     default T visitParamDecl(ParamDecl pd) throws Phase.Error {
-        return null;
+        return pd.visitChildren(this);
     }
 
     default T visitParBlock(ParBlock pb) throws Phase.Error {
-        return null;
+        return pb.visitChildren(this);
     }
 
     default T visitPragma(Pragma pr) throws Phase.Error {
@@ -197,49 +201,49 @@ public interface Visitor<T> {
 
     default T visitProcTypeDecl(ProcTypeDecl pd) throws Phase.Error {
 
-        return null;
+        return pd.visitChildren(this);
 
 
     }
 
     default T visitProtocolLiteral(ProtocolLiteral pl) throws Phase.Error {
-        return null;
+        return pl.visitChildren(this);
     }
 
     default T visitProtocolCase(ProtocolCase pc) throws Phase.Error {
-        return null;
+        return pc.visitChildren(this);
     }
 
     default T visitProtocolTypeDecl(ProtocolTypeDecl pd) throws Phase.Error {
-        return null;
+        return pd.visitChildren(this);
     }
 
     default T visitQualifiedName(QualifiedName qn) throws Phase.Error {
-        return null;
+        return qn.visitChildren(this);
     }
 
     default T visitRecordAccess(RecordAccess ra) throws Phase.Error {
-        return null;
+        return ra.visitChildren(this);
     }
 
     default T visitRecordMemberLiteral(RecordMemberLiteral rm) throws Phase.Error {
-        return null;
+        return rm.visitChildren(this);
     }
 
     default T visitRecordLiteral(RecordLiteral rl) throws Phase.Error {
-        return null;
+        return rl.visitChildren(this);
     }
 
     default T visitRecordMember(RecordMember rm) throws Phase.Error {
-        return null;
+        return rm.visitChildren(this);
     }
 
     default T visitRecordTypeDecl(RecordTypeDecl rt) throws Phase.Error {
-        return null;
+        return rt.visitChildren(this);
     }
 
     default T visitReturnStat(ReturnStat rs) throws Phase.Error {
-        return null;
+        return rs.visitChildren(this);
     }
 
     default T visitSequence(Sequence se) throws Phase.Error {
@@ -260,47 +264,47 @@ public interface Visitor<T> {
     }
 
     default T visitSuspendStat(SuspendStat ss) throws Phase.Error {
-        return null;
+        return ss.visitChildren(this);
     }
 
     default T visitSwitchGroup(SwitchGroup sg) throws Phase.Error {
-        return null;
+        return sg.visitChildren(this);
     }
 
     default T visitSwitchLabel(SwitchLabel sl) throws Phase.Error {
-        return null;
+        return sl.visitChildren(this);
     }
 
     default T visitSwitchStat(SwitchStat st) throws Phase.Error {
-        return null;
+        return st.visitChildren(this);
     }
 
     default T visitSyncStat(SyncStat st) throws Phase.Error {
-        return null;
+        return st.visitChildren(this);
     }
 
     default T visitTernary(Ternary te) throws Phase.Error {
-        return null;
+        return te.visitChildren(this);
     }
 
     default T visitTimeoutStat(TimeoutStat ts) throws Phase.Error {
-        return null;
+        return ts.visitChildren(this);
     }
 
     default T visitUnaryPostExpr(UnaryPostExpr up) throws Phase.Error {
-        return null;
+        return up.visitChildren(this);
     }
 
     default T visitUnaryPreExpr(UnaryPreExpr up) throws Phase.Error {
-        return null;
+        return up.visitChildren(this);
     }
 
     default T visitVar(Var va) throws Phase.Error {
-        return null;
+        return va.visitChildren(this);
     }
 
     default T visitWhileStat(WhileStat ws) throws Phase.Error {
-        return null;
+        return ws.visitChildren(this);
     }
 
 }

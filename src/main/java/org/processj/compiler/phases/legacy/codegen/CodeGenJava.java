@@ -752,9 +752,9 @@ public class CodeGenJava implements Visitor<Object> {
         String condExpr = null;
         // We either have an if-statement _or_ a loop construct that
         // has been re-written as an if-statement
-        if(is.evaluationExpression() != null)
+        if(is.getEvaluationExpression() != null)
             try {
-                condExpr = (String) is.evaluationExpression().visit(this);
+                condExpr = (String) is.getEvaluationExpression().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }

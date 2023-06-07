@@ -8,9 +8,12 @@ import org.processj.compiler.ast.expression.Assignment;
 import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.utilities.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.processj.compiler.utilities.Files.HasContent;
+import static org.processj.compiler.utilities.Reflection.NewInstanceOf;
 
 /**
  * <p>Class that encapsulates a compiler {@link Phase} to execute upon a {@link ProcessJSourceFile} to provide
@@ -209,6 +212,7 @@ public abstract class Phase implements Visitor<Void> {
     /// -------
     /// Classes
 
+
     protected static class NameAssert {
 
         /// ------------------------
@@ -262,6 +266,25 @@ public abstract class Phase implements Visitor<Void> {
                 return found;
 
             });
+
+        }
+
+        protected static void DefinesLabel(final Phase phase,
+                                           final String label,
+                                           final Statement statement)
+                throws Phase.Error {
+
+            if(!phase.getScope().put(label, statement))
+                throw new TypeDefinedException(phase, label).commit();
+
+        }
+
+        protected static void Define(final Phase phase,
+                                     final Name name)
+                throws Phase.Error {
+
+            if(!phase.getScope().put(name))
+                throw new NameDefinedException(phase, name.toString()).commit();
 
         }
 
@@ -579,6 +602,67 @@ public abstract class Phase implements Visitor<Void> {
 
                 // Return the resultant error message
                 return String.format(Message, this.typename);
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} class that encapsulates the pertinent information of attempting to define a {@link Type}
+         * that is already defined.</p>
+         * <p>Error Code: 200</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        private static class NameDefinedException extends Phase.Error {
+
+            /// ------------------------
+            /// Private Static Constants
+
+            /**
+             * <p>Standard error message {@link String} for reporting.</p>
+             */
+            private final static String Message = "Name '%s' already declared in this scope";
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The {@link String} value of the name that was already defined.</p>
+             */
+            private final String name;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link NameDefinedException}.</p>
+             * @param culpritInstance The {@link NameDefinedException} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected NameDefinedException(final Phase culpritInstance,
+                                           final String name) {
+                super(culpritInstance);
+                this.name = name;
+            }
+
+            /// -------------------
+            /// java.lang.Exception
+
+            /**
+             * <p>Returns a newly constructed message specifying the error.</p>
+             * @return {@link String} value of the error message.
+             * @since 0.1.0
+             */
+            @Override
+            public String getMessage() {
+
+                // Return the resultant error message
+                return String.format(Message, this.name);
 
             }
 
@@ -1036,6 +1120,17 @@ public abstract class Phase implements Visitor<Void> {
 
     protected static class SemanticAssert {
 
+        protected static boolean DefinesConstantEvaluationExpression(final DoStat doStatement)
+                throws Phase.Error {
+
+            // Initialize a handle to the Do Statement's Evaluation Expression
+            final Expression evaluationExpression = doStatement.getEvaluationExpression();
+
+            // Return the result
+            return (evaluationExpression != null) && (evaluationExpression.isConstant());
+
+        }
+
         protected static void RewriteArrayType(final ConstantDecl constantDeclaration) throws Phase.Error {
 
             // Initialize a handle to the Constant Declaration's Name
@@ -1387,9 +1482,933 @@ public abstract class Phase implements Visitor<Void> {
 
         }
 
+        protected static boolean NotEmptyParallelContext(final Phase phase) throws Phase.Error {
+
+            // Initialize a handle to the Context
+            final SymbolMap.Context context = phase.getScope().getContext();
+
+            // Initialize the result
+            final boolean isParallelContextEmpty = (context instanceof ParBlock)
+                    && ((ParBlock) context).getStatements().isEmpty();
+
+            // Assert the parallel Context is not empty
+            if(isParallelContextEmpty)
+                ParallelContextEmpty.Assert(phase, context);
+
+            // Return the result
+            return isParallelContextEmpty;
+
+        }
+
+
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if a parallel {@link org.processj.compiler.ast.SymbolMap.Context}
+         * contains an empty body.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class ParallelContextEmpty extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link ParallelContextEmpty} to the specified {@link Phase}'s {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(ParallelContextEmpty.class, phase, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link ParallelContextEmpty} to its' default state.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected ParallelContextEmpty(final Phase culprit,
+                                           final SymbolMap.Context context) {
+                super(culprit);
+
+                this.context      = context                                         ;
+                this.contextClass = (context != null) ? context.getClass() : null   ;
+
+            }
+
+        }
+
     }
 
+    protected static class ReachabilityAssert {
+
+        protected static Set<String> WithFailures(final Class<?>... classes) {
+
+            return Arrays.stream(classes).map(Class::getName).collect(Collectors.toSet());
+
+        }
+
+        protected static boolean EnclosedInIterativeContext(final Phase phase) throws Error {
+
+            return phase.getScope().forEachContextUntil(context -> (context instanceof IterativeStatement));
+
+        }
+
+        protected static boolean EnclosedInBreakableContext(final Phase phase) throws Error {
+
+            return phase.getScope().forEachContextUntil(context -> context instanceof BreakableStatement);
+
+        }
+
+        protected static boolean EnclosedInParallelContext(final Phase phase) throws Error {
+
+            return phase.getScope().forEachContextUntil(context -> context instanceof ParBlock);
+
+        }
+
+        protected static boolean EnclosedInChoiceContext(final Phase phase) throws Error {
+
+            return phase.getScope().forEachContextUntil(context -> context instanceof AltStat);
+
+        }
+
+        protected static boolean EnclosedInParallelOrChoiceContext(final Phase phase) throws Error {
+
+            return phase.getScope().forEachContextUntil(context ->
+                    (context instanceof AltStat)|| (context instanceof ParBlock));
+
+        }
+
+        protected static boolean EnclosedInBreakableContext(final Phase phase,
+                                                            final AST construct) throws Phase.Error {
+
+            final boolean inBreakableContext = EnclosedInBreakableContext(phase);
+
+            if(!inBreakableContext)
+                NotEnclosedInBreakableContext.Assert(phase, construct, phase.getScope().getContext());
+
+            return inBreakableContext;
+
+        }
+
+        protected static boolean EnclosedInIterativeContext(final Phase phase,
+                                                            final AST construct) throws Phase.Error {
+
+            final boolean inIterativeContext = EnclosedInIterativeContext(phase);
+
+            if(!inIterativeContext)
+                NotEnclosedInIterativeContext.Assert(phase, construct, phase.getScope().getContext());
+
+            return inIterativeContext;
+
+        }
+
+        protected static boolean NotEnclosedInChoiceContext(final Phase phase,
+                                                            final AST construct) throws Phase.Error {
+
+            final boolean inChoiceContext = EnclosedInChoiceContext(phase);
+
+            // Assert the construct is not enclosed in a choice Context
+            if(inChoiceContext)
+                EnclosedInChoiceContext.Assert(phase, construct, phase.getScope().getContext());
+
+            // Return the result
+            return !inChoiceContext;
+
+        }
+
+        protected static boolean NotEnclosedInParallelContext(final Phase phase,
+                                                              final AST construct) throws Phase.Error {
+
+            final boolean inParallelContext = EnclosedInParallelContext(phase);
+
+            // Assert the construct is not enclosed in a parallel Context
+            if(inParallelContext)
+                EnclosedInParallelContext.Assert(phase, construct, phase.getScope().getContext());
+
+            // Return the result
+            return !inParallelContext;
+
+        }
+
+        protected static boolean NotEnclosedInParallelOrChoiceContext(final Phase phase,
+                                                                      final AST construct) throws Phase.Error {
+
+            // Initialize a handle to the Context
+            final SymbolMap.Context enclosingContext = phase.getScope()
+                    .forEachContextRetrieve(context -> (context instanceof ParBlock) || (context instanceof AltStat));
+
+            // Initialize a handle to the result
+            final boolean enclosingContextParallelOrChoice = enclosingContext != null;
+
+            // Assert the construct is not enclosed in a parallel Context
+            if(enclosingContext instanceof ParBlock)
+                EnclosedInParallelContext.Assert(phase, construct, phase.getScope().getContext());
+
+            // Assert the construct is not enclosed in a choice Context
+            if(enclosingContext instanceof AltStat)
+                EnclosedInParallelContext.Assert(phase, construct, phase.getScope().getContext());
+
+            // Return the result
+            return !enclosingContextParallelOrChoice;
+
+        }
+
+        protected static boolean EnclosingIterativeContextBreaksAndReachable(final Phase phase,
+                                                                             final Statement statement,
+                                                                             final Set<String>... failures)
+                throws Phase.Error {
+
+            // Initialize a handle to the Context
+            final SymbolMap.Context enclosingContext = phase.getScope().forEachContextRetrieve(
+                            context -> (context instanceof ConditionalStatement)
+                                    || (context instanceof ParBlock));
+
+            // Assert the statement's enclosing Context isn't parallel
+            if(enclosingContext instanceof ParBlock)
+                EnclosedInParallelContext.Assert(phase, statement, enclosingContext);
+
+            // Initialize a handle to the result
+            final boolean enclosingIterativeContextBreaks = enclosingContext != null;
+
+            // Assert the Statement is enclosed in a Breakable Context
+            if(!enclosingIterativeContextBreaks)
+                NotEnclosedInIterativeContext.Assert(phase, statement, phase.getScope().getContext());
+
+            // Assert that the enclosing Context does not define a constant true evaluation expression
+            else if(TypeAssert.IsConstantTrue(
+                    ((ConditionalStatement) enclosingContext).getEvaluationExpression()))
+                EnclosingIterativeContextDoesNotTerminate.Assert(phase, statement, enclosingContext);
+
+            // Assert that the enclosing Context does not define a constant false evaluation expression
+            else if(TypeAssert.IsConstantFalse(
+                    ((ConditionalStatement) enclosingContext).getEvaluationExpression()))
+                EnclosingIterativeContextIsNotReachable.Assert(phase, statement, enclosingContext);
+
+
+            return enclosingIterativeContextBreaks;
+
+        }
+
+        protected static boolean DoesNotContainHaltingProcedures(final Phase phase,
+                                                                 final Block block)
+                throws Phase.Error {
+
+            // Initialize a handle to the Statements
+            final Sequence<? extends Statement> statements = block.getStatements();
+
+            // Initialize the preliminary result
+            boolean haltsBeforeCompletion = false;
+
+            // Iterate
+
+            int index = 0; for(;!haltsBeforeCompletion && (index < statements.size()); index++)
+                haltsBeforeCompletion = (statements.child(index) instanceof StopStat)
+                        && ((index < statements.size() - 1));
+
+            // Assert that if the Context contains a Stop Statement, it's the last one
+            if(!haltsBeforeCompletion)
+                ContextDoesNotTerminate.Assert(phase, statements.child(index), block);
+
+            return haltsBeforeCompletion;
+
+        }
+
+        protected static boolean ConditionalContextReachable(final Phase phase,
+                                                             final IfStat ifStatement)
+                throws Phase.Error {
+
+            if(TypeAssert.IsConstantTrue(ifStatement.getEvaluationExpression()))
+                BranchConditionalContextNotReachable.Assert(phase, ifStatement);
+
+            if(TypeAssert.IsConstantFalse(ifStatement.getEvaluationExpression()))
+                ConditionalContextNotReachable.Assert(phase, ifStatement);
+
+            return true;
+
+        }
+
+        /// -----------
+        /// Phase.Error
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the conditional {@link org.processj.compiler.ast.SymbolMap.Context}'s
+         * alternative {@link org.processj.compiler.ast.SymbolMap.Context} is not reachable.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class BranchConditionalContextNotReachable extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link BranchConditionalContextNotReachable} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             */
+            protected static void Assert(final Phase phase, final AST instance) {
+
+                Phase.Error.Assert(BranchConditionalContextNotReachable.class, phase, instance);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link ConditionalContextNotReachable} to its'.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected BranchConditionalContextNotReachable(final Phase culprit,
+                                                           final AST instance) {
+                super(culprit);
+
+                this.instance = instance    ;
+
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the conditional {@link org.processj.compiler.ast.SymbolMap.Context}
+         * is not reachable.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class ConditionalContextNotReachable extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link ConditionalContextNotReachable} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             */
+            protected static void Assert(final Phase phase, final AST instance) {
+
+                Phase.Error.Assert(ConditionalContextNotReachable.class, phase, instance);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link ConditionalContextNotReachable} to its'.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected ConditionalContextNotReachable(final Phase culprit,
+                                                     final AST instance) {
+                super(culprit);
+
+                this.instance = instance    ;
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the {@link org.processj.compiler.ast.SymbolMap.Context} does not
+         * terminate.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class ContextDoesNotTerminate extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link ContextDoesNotTerminate} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final AST instance, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(ContextDoesNotTerminate.class, phase, instance, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link ContextDoesNotTerminate} to its'.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected ContextDoesNotTerminate(final Phase culprit,
+                                              final AST instance,
+                                              final SymbolMap.Context context) {
+                super(culprit);
+
+                this.instance = instance    ;
+                this.context  = context     ;
+
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+                this.contextClass  = (context != null) ? context.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if an {@link AST} is enclosed in a choice
+         * {@link org.processj.compiler.ast.SymbolMap.Context}.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class EnclosedInChoiceContext extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link EnclosedInChoiceContext} to the specified {@link Phase}'s {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final AST instance, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(EnclosedInChoiceContext.class, phase, instance, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link EnclosedInChoiceContext} to its' default state.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected EnclosedInChoiceContext(final Phase culprit,
+                                              final AST instance,
+                                              final SymbolMap.Context context) {
+                super(culprit);
+
+                this.instance = instance    ;
+                this.context  = context     ;
+
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+                this.contextClass  = (context != null) ? context.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if an {@link AST} is enclosed in a parallel
+         * {@link org.processj.compiler.ast.SymbolMap.Context}.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class EnclosedInParallelContext extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link EnclosedInParallelContext} to the specified {@link Phase}'s {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final AST instance, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(EnclosedInParallelContext.class, phase, instance, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link EnclosedInParallelContext} to its'.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected EnclosedInParallelContext(final Phase culprit,
+                                                final AST instance,
+                                                final SymbolMap.Context context) {
+                super(culprit);
+
+                this.instance = instance    ;
+                this.context  = context     ;
+
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+                this.contextClass  = (context != null) ? context.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the enclosing {@link org.processj.compiler.ast.SymbolMap.Context}
+         * does not terminate.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class EnclosingIterativeContextDoesNotTerminate extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link EnclosingIterativeContextDoesNotTerminate} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final AST instance, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(EnclosingIterativeContextDoesNotTerminate.class, phase, instance, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link EnclosingIterativeContextDoesNotTerminate} to its'.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected EnclosingIterativeContextDoesNotTerminate(final Phase culprit,
+                                                                final AST instance,
+                                                                final SymbolMap.Context context) {
+                super(culprit);
+
+                this.instance = instance    ;
+                this.context  = context     ;
+
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+                this.contextClass  = (context != null) ? context.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if the enclosing {@link org.processj.compiler.ast.SymbolMap.Context}
+         * is not reachable.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class EnclosingIterativeContextIsNotReachable extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link EnclosingIterativeContextIsNotReachable} to the specified {@link Phase}'s
+             * {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final AST instance, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(EnclosingIterativeContextIsNotReachable.class, phase, instance, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link EnclosingIterativeContextIsNotReachable} to its'.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected EnclosingIterativeContextIsNotReachable(final Phase culprit,
+                                                              final AST instance,
+                                                              final SymbolMap.Context context) {
+                super(culprit);
+
+                this.instance = instance    ;
+                this.context  = context     ;
+
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+                this.contextClass  = (context != null) ? context.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if an {@link AST} is not enclosed in an iterative
+         * {@link org.processj.compiler.ast.SymbolMap.Context}.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class NotEnclosedInIterativeContext extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link NotEnclosedInIterativeContext} to the specified {@link Phase}'s {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final AST instance, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(NotEnclosedInIterativeContext.class, phase, instance, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link EnclosedInParallelContext} to its'.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected NotEnclosedInIterativeContext(final Phase culprit,
+                                                    final AST instance,
+                                                    final SymbolMap.Context context) {
+                super(culprit);
+
+                this.instance = instance    ;
+                this.context  = context     ;
+
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+                this.contextClass  = (context != null) ? context.getClass() : null;
+
+            }
+
+        }
+
+        /**
+         * <p>{@link Phase.Error} to be emitted if an {@link AST} is not enclosed in an breakable
+         * {@link org.processj.compiler.ast.SymbolMap.Context}.</p>
+         * @see Phase
+         * @see Phase.Error
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        protected static class NotEnclosedInBreakableContext extends Phase.Error {
+
+            /// ------------------------
+            /// Protected Static Methods
+
+            /**
+             * <p>Emits the {@link NotEnclosedInBreakableContext} to the specified {@link Phase}'s {@link Listener}.</p>
+             * @param phase The invoking {@link Phase}.
+             * @param instance The problem {@link AST} instance.
+             * @param context The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}.
+             */
+            protected static void Assert(final Phase phase, final AST instance, final SymbolMap.Context context) {
+
+                Phase.Error.Assert(NotEnclosedInIterativeContext.class, phase, instance, context);
+
+            }
+
+            /// --------------
+            /// Private Fields
+
+            /**
+             * <p>The class object of the {@link AST} whose assertion failed.</p>
+             */
+            private final Class<? extends AST>                  instanceClass   ;
+
+            /**
+             * <p>The {@link AST}'s enclosing {@link org.processj.compiler.ast.SymbolMap.Context}'s class object.</p>
+             */
+            private final Class<? extends SymbolMap.Context>    contextClass    ;
+
+            /**
+             * <p>The {@link AST} instance that failed the assertion.</p>
+             */
+            private final AST                                   instance        ;
+
+            /**
+             * <p>The enclosing {@link org.processj.compiler.ast.SymbolMap.Context} instance.</p>
+             */
+            private final SymbolMap.Context                     context         ;
+
+            /// ------------
+            /// Constructors
+
+            /**
+             * <p>Constructs the {@link NotEnclosedInBreakableContext} to its'.</p>
+             * @param culprit The {@link Phase} instance that raised the error.
+             * @see Phase
+             * @see Phase.Error
+             * @since 0.1.0
+             */
+            protected NotEnclosedInBreakableContext(final Phase culprit,
+                                                    final AST instance,
+                                                    final SymbolMap.Context context) {
+                super(culprit);
+
+                this.instance = instance    ;
+                this.context  = context     ;
+
+                this.instanceClass = (instance != null) ? instance.getClass() : null;
+                this.contextClass  = (context != null) ? context.getClass() : null;
+
+            }
+
+        }
+
+    }
+
+
     protected static class TypeAssert {
+
+        protected static boolean IsConstant(final Expression expression) {
+
+            // Return the result
+            return (expression != null) && expression.isConstant();
+
+        }
+
+        protected static boolean IsConstantTrue(final Expression expression) {
+
+            return IsConstant(expression) && ((Boolean) expression.constantValue());
+
+        }
+
+        protected static boolean IsConstantFalse(final Expression expression) {
+
+            return IsConstant(expression) && !((Boolean) expression.constantValue());
+
+        }
 
         protected static void TargetExpressionTypeEqual(final ChannelWriteStat channelWriteStatement)
                 throws Phase.Error {
@@ -1474,17 +2493,53 @@ public abstract class Phase implements Visitor<Void> {
         /// -----------------
         /// Protected Methods
 
-        protected final Warning commit() {
+        protected final void commit() {
 
             this.getPhase().getListener().notify(this);
-
-            return this;
 
         }
 
     }
 
     public static class Error extends Message {
+
+        /// ------------------------
+        /// Protected Static Methods
+
+        /**
+         * <p>Constructs an {@link Phase.Error} from the specified class object, {@link Phase}, & variadic parameters.
+         * Once the {@link Phase.Error} is instantiated, this method will notify the specified {@link Phase}'s
+         * {@link Phase.Listener} of the {@link Phase.Error}</p>
+         * @param messageType The class object corresponding to the {@link Phase.Error} to instantiate.
+         * @param phase The {@link Phase} where the assertion was raised.
+         * @param parameters Any parameters that pertain to the {@link Phase.Error}.
+         * @param <MessageType> Parameteric Type of the {@link Phase.Error}.
+         */
+        protected static <MessageType extends Error> void Assert(final Class<MessageType> messageType,
+                                                                 final Phase phase,
+                                                                 final Object... parameters) {
+
+            // Initialize a handle to the message instance
+            Phase.Error messageInstance;
+
+            try {
+
+                messageInstance = NewInstanceOf(messageType, phase, parameters);
+
+            } catch(final InvocationTargetException | InstantiationException | IllegalAccessException exception) {
+
+                // TODO: Fatal Error
+                messageInstance = null;
+
+            }
+
+            // Simple assert
+            assert messageInstance != null;
+
+            // Notify the listener
+            phase.getListener().notify(messageInstance);
+
+        }
 
         /// ------------
         /// Constructors

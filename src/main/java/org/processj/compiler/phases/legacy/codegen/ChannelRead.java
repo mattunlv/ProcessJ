@@ -466,15 +466,15 @@ public class ChannelRead implements Visitor<Pair<Sequence, Expression>> {
         Log.log(is, "Visiting an IfStat");
         Pair<Sequence, Expression> p = null;
         Sequence se = new Sequence();
-        if (is.evaluationExpression().doesYield()) {
+        if (is.getEvaluationExpression().doesYield()) {
             Log.log("---- Case #1 IfStat: then-part");
             String name = nextTemp();
             // T t; where T represents the type of e
-            LocalDecl ld = createLocalDecl(name, is.evaluationExpression().type);
+            LocalDecl ld = createLocalDecl(name, is.getEvaluationExpression().type);
             // Rewrite the expression to t = e;
             Pair<Sequence, Expression> t = null;
             try {
-                t = new ExprStat(createAssignment(name, is.evaluationExpression())).visit(this);
+                t = new ExprStat(createAssignment(name, is.getEvaluationExpression())).visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }

@@ -33,7 +33,12 @@ public class Compilation extends AST implements SymbolMap.Context {
         this.scope              = null;
 
     }
+    @Override
+    public final String toString() {
 
+        return this.packageName;
+
+    }
     /// --------------------
     /// org.processj.ast.AST
 

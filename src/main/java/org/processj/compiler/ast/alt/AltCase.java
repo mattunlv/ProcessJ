@@ -54,10 +54,17 @@ public class AltCase extends Statement implements SymbolMap.Context {
     /// org.processj.utilities.Visitor
 
     @Override
-    public final <S> S visit(Visitor<S> visitor)
-            throws Phase.Error {
+    public final <S> S visit(Visitor<S> visitor) throws Phase.Error {
 
-        return visitor.visitAltCase(this);
+        // Open the scope
+        visitor.setScope(this.openScope(visitor.getScope()));
+
+        S result = visitor.visitAltCase(this);
+
+        // Close the scope
+        visitor.setScope(visitor.getScope().getEnclosingScope());
+
+        return result;
 
     }
 

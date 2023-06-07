@@ -258,13 +258,13 @@ public class TypeChecker extends Phase {
         Log.log(ifStatement.line + ": Visiting a if statement");
 
         // Resolve the evaluation Expression
-        ifStatement.evaluationExpression().visit(this);
+        ifStatement.getEvaluationExpression().visit(this);
 
         // Initialize a handle to the do statement's evaluation Expression's Type
-        final Type type = ifStatement.evaluationExpression().getType();
+        final Type type = ifStatement.getEvaluationExpression().getType();
 
         // Assert that it's a boolean Type
-        if(!ifStatement.evaluationExpression().getType().isBooleanType())
+        if(!ifStatement.getEvaluationExpression().getType().isBooleanType())
             throw new ControlEvaluationExpressionNonBooleanTypeException(this, type).commit();
 
         // Resolve the then block

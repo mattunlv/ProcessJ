@@ -31,8 +31,16 @@ public class RecordLiteral extends Literal implements SymbolMap.Context {
         return this.recordMemberLiterals;
     }
 
-    public <S> S visit(Visitor<S> v)
-            throws Phase.Error {
-        return v.visitRecordLiteral(this);
+    public <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+        // Open the scope
+        visitor.setScope(this.openScope(visitor.getScope()));
+
+        // Visit
+        S result = visitor.visitRecordLiteral(this);
+
+        // Close the scope
+        visitor.setScope(visitor.getScope().getEnclosingScope());
+
+        return result;
     }
 }

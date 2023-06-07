@@ -770,9 +770,9 @@ public class CodeGenCPP implements Visitor<Object> {
         String[] thenParts = null;
         String condExpr = null;
 
-        if (is.evaluationExpression() != null)
+        if (is.getEvaluationExpression() != null)
             try {
-                condExpr = (String) is.evaluationExpression().visit(this);
+                condExpr = (String) is.getEvaluationExpression().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }

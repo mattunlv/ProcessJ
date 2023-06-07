@@ -136,4 +136,26 @@ public class Reflection {
 
     }
 
+    public static <Type, Check> boolean AreEqual(final Type instance, final Class<Check> check) {
+
+        // Initialize the preliminary result
+        boolean areEqual = (instance != null) && (check != null);
+
+        // If the preliminary result is valid
+        if(areEqual) {
+
+            // Initialize a handle to the class names
+            final String instanceName   = instance.getClass().getName();
+            final String checkName      = check.getName();
+
+            // Update the result
+            areEqual = instanceName.equals(checkName);
+
+        }
+
+        // Return the Result
+        return areEqual;
+
+    }
+
 }

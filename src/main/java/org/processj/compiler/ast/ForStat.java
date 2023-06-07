@@ -5,7 +5,7 @@ import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.phases.phase.Visitor;
 import java.util.ArrayList;
 
-public class ForStat extends LoopStatement implements SymbolMap.Context {
+public class ForStat extends LoopStatement implements SymbolMap.Context, IterativeStatement {
 
     /// --------------
     /// Private Fields
@@ -87,13 +87,13 @@ public class ForStat extends LoopStatement implements SymbolMap.Context {
     public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
         // Open the scope
-        final SymbolMap scope = this.openScope(visitor.getScope());
+        visitor.setScope(this.openScope(visitor.getScope()));
 
         // Visit
         S result = visitor.visitForStat(this);
 
         // Close the scope
-        visitor.setScope(scope.getEnclosingScope());
+        visitor.setScope(visitor.getScope().getEnclosingScope());
 
         return result;
 

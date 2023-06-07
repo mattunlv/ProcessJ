@@ -94,13 +94,13 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
     public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
 
         // Open the scope
-        final SymbolMap scope = this.openScope(visitor.getScope());
+        visitor.setScope(this.openScope(visitor.getScope()));
 
         // Visit
         S result = visitor.visitProcTypeDecl(this);
 
         // Close the scope
-        visitor.setScope(scope.getEnclosingScope());
+        visitor.setScope(visitor.getScope().getEnclosingScope());
 
         return result;
 

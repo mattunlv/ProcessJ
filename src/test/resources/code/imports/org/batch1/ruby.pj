@@ -4,6 +4,13 @@
  */
  package org.batch1.ruby;
 
- import org.batch1.onyx;
- import org.batch1.emerald;
- import org.batch1.methods.math;
+import org.batch1.onyx;
+import org.batch1.emerald;
+import org.batch1.methods.math;
+
+public const int derpy = 27;
+
+public void main(string[] args) {
+
+
+}

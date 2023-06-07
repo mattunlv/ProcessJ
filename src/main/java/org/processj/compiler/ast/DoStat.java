@@ -4,7 +4,7 @@ import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.phases.phase.Visitor;
 
-public class DoStat extends LoopStatement {
+public class DoStat extends LoopStatement implements IterativeStatement {
 
     /// --------------
     /// Private Fields

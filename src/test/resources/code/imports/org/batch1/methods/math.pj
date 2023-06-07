@@ -3,3 +3,13 @@
  * @package org.batch1.methods.math
  */
  package org.batch1.methods.math;
+
+import org.batch1.ruby;
+
+
+public void someProcedure() {
+
+    // "Back" port
+    int added = org.batch1.ruby::derpy + 5;
+
+}

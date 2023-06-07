@@ -99,7 +99,7 @@ public class ParBlock extends Statement implements SymbolMap.Context {
         S result = visitor.visitParBlock(this);
 
         // Close the scope
-        visitor.setScope(scope.getEnclosingScope());
+        visitor.setScope(visitor.getScope().getEnclosingScope());
 
         return result;
 

@@ -106,6 +106,9 @@ public class ProcessJParser extends Phase implements Parser.Handler {
         // Retrieve the ProcessJSource file
         final ProcessJSourceFile processJSourceFile = this.getProcessJSourceFile();
 
+        // Initialize the result
+        Compilation compilation = null;
+
         // Attempt to
         try {
 
@@ -114,13 +117,7 @@ public class ProcessJParser extends Phase implements Parser.Handler {
             parser = new Parser(new Lexer(processJSourceFile.getCorrespondingFileReader()));
 
             // Retrieve the Compilation
-            final Compilation compilation = (Compilation) parser.parse().value;
-
-            // Perform the preliminary transformation
-            compilation.visit(this);
-
-            // Update the ProcessJSource File
-            processJSourceFile.setCompilation(compilation);
+            compilation = (Compilation) parser.parse().value;
 
         // Otherwise
         } catch(final Exception exception) {
@@ -130,6 +127,13 @@ public class ProcessJParser extends Phase implements Parser.Handler {
                     : new ParserFailureException(this, exception.getMessage()).commit());
 
         }
+
+        // Perform the preliminary transformation
+        compilation.visit(this);
+
+        // Update the ProcessJSource File
+        processJSourceFile.setCompilation(compilation);
+
 
     }
 
@@ -256,6 +260,9 @@ public class ProcessJParser extends Phase implements Parser.Handler {
     @Override
     public final Void visitLocalDecl(final LocalDecl localDeclaration) throws Phase.Error {
 
+        // Assert that the Local Declaration's Name is defined
+        NameAssert.Define(this, localDeclaration.getName());
+
         // Assert that the Local Declaration's Label is undefined
         NameAssert.Define(this, localDeclaration);
 
@@ -337,16 +344,23 @@ public class ProcessJParser extends Phase implements Parser.Handler {
     }
 
     /**
-     * <p>Defines any labels specified in the {@link Block} in the current scope.</p>
-     * @param block The {@link Block} to define its' labels.
-     * @throws Phase.Error If the {@link Block}'s label is defined in the current scope.
+     * <p>Defines any labels specified in the {@link Block} in the current scope & asserts that the {@link Block}
+     * does not contain any halting {@link Statement}s anywhere in its' body with the exception of the last
+     * {@link Statement}.</p>
+     * @param block The {@link Block} to define its' labels & verify absence of halting {@link Statement}s.
+     * @throws Phase.Error If the {@link Block}'s label is defined in the current scope or if it contains any
+     *          intermediate halting {@link Statement}s.
      * @since 0.1.0
      */
     @Override
     public final Void visitBlock(final Block block) throws Phase.Error {
 
-        // Assert that the Block's Label is undefined
-        NameAssert.Define(this, block);
+        // Assert that the Block's Label doesn't clash with any visible names
+        NameAssert.DefinesLabel(this, block.getLabel(), block);
+
+        // Assert the Break Statement does not contain halting procedures except for the last
+        // statement
+        ReachabilityAssert.DoesNotContainHaltingProcedures(this, block);
 
         // Resolve the Block
         super.visitBlock(block);

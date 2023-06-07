@@ -4,7 +4,7 @@ import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.phases.phase.Visitor;
 
-public class SwitchStat extends Statement {
+public class SwitchStat extends Statement implements ConditionalStatement {
 
     public SwitchStat(Expression expr, Sequence<SwitchGroup> switchGroups) {
         super(expr);

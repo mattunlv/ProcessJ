@@ -301,7 +301,7 @@ public class UnrollLoopRewrite implements Visitor<AST> {
             throw new RuntimeException(error);
         }
 
-        return new IfStat(is.evaluationExpression(), thenPart, elsePart);
+        return new IfStat(is.getEvaluationExpression(), thenPart, elsePart);
     }
 
     public AST visitLocalDecl(LocalDecl ld) {

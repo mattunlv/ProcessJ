@@ -9,8 +9,7 @@ import org.processj.compiler.phases.phase.Phase;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-import static org.processj.compiler.phases.phase.ResolveImports.ProcessJSourceFileRegex;
-import static org.processj.compiler.phases.phase.ResolveImports.SymbolPaths;
+import static org.processj.compiler.phases.phase.ResolveImports.*;
 import static org.processj.compiler.utilities.Files.RetrieveMatchingFilesListWithName;
 import static org.processj.compiler.utilities.Reflection.NewInstanceOf;
 
