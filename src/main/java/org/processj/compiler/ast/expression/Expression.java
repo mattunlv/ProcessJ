@@ -1,6 +1,7 @@
 package org.processj.compiler.ast.expression;
 
 import org.processj.compiler.ast.AST;
+import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.Token;
 import org.processj.compiler.ast.Type;
 
@@ -22,6 +23,8 @@ public abstract class Expression extends AST {
         super(children);
 
     }
+
+    public Name getName() { return new Name(""); }
 
     public boolean isConstant() {
         return false;

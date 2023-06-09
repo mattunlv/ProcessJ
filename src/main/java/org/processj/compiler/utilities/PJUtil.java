@@ -17,29 +17,9 @@ public final class PJUtil {
      *
      * @throws IllegalArgumentException
      *             When the class type of parameter is not an array class.
-     * @param obj
-     *            The array to be checked for nullability or emptiness.
      * @return true if the parameter parameter represents an empty
      *         array, or false otherwise.
      */
-    public static boolean isArrayEmpty(Object obj) {
-        if (obj == null)
-            return true;
-        else if (!obj.getClass().isArray())
-            throw new IllegalArgumentException("Invalid object '" + obj.getClass().getSimpleName() + "' type found");
-        else {
-            Object[] objects = (Object[]) obj;
-            if (objects.length == 0)
-                return true;
-            else {
-                for (Object o : objects)
-                    if (o == null)
-                        return true;
-            }
-        }
-        return false;
-    }
-    
     public static String join(Collection<String> src, CharSequence delimiter) {
         StringBuilder sb = new StringBuilder();
         boolean delim = true;

@@ -82,9 +82,6 @@ public class ChannelRead implements Visitor<Pair<Sequence, Expression>> {
     }
     
     public ChannelRead() {
-        Log.logHeader("*****************************************");
-        Log.logHeader("* C H A N N E L - E N D   R E W R I T E *");
-        Log.logHeader("*****************************************");
     }
 
     @Override

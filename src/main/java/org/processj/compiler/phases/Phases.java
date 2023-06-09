@@ -1,43 +1,25 @@
 package org.processj.compiler.phases;
 
 import org.processj.compiler.ast.Compilation;
+import org.processj.compiler.phases.legacy.butters.Butters;
 import org.processj.compiler.phases.phase.*;
-import org.processj.compiler.utilities.ProcessJSourceFile;
+import org.processj.compiler.utilities.Log;
+import org.processj.compiler.ProcessJSourceFile;
 import org.processj.compiler.utilities.Settings;
 import org.processj.compiler.phases.phase.Phase;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.util.*;
 
-import static org.processj.compiler.phases.phase.ResolveImports.*;
 import static org.processj.compiler.utilities.Files.RetrieveMatchingFilesListWithName;
-import static org.processj.compiler.utilities.Reflection.NewInstanceOf;
+import static org.processj.compiler.utilities.Reflection.*;
 
 public class Phases {
 
     /// ------------------------
     /// Private Static Constants
-
-    /**
-     * <p>A handle to the {@link Executor} that is currently handling a compilation.</p>
-     */
-    public static Executor Executor = null;
-
-    /**
-     * <p>Contains a mapping of the {@link Phase}s executed by the compiler to the corresponding {@link Phase.Listener}
-     * that will handle the {@link Phase.Message} callbacks. This {@link Map} is used to initialize a set of
-     * {@link Phases} that will be executed by the {@link Phases.Executor}</p>
-     * @see Phase
-     * @see Phase.Message
-     * @see Phase.Listener
-     * @see Map
-     * @see Executor
-     */
-    private final static Map<Class<? extends Phase>, Class<? extends Phase.Listener>> Phases = Map.of(
-        ProcessJParser.class,   Phase.Listener.class,
-        ResolveImports.class,   Phase.Listener.class,
-        NameChecker.class,      Phase.Listener.class
-    );
 
     /**
      * <p>Contains a mapping of the {@link Phase}s executed by the compiler to the corresponding {@link Phase.Listener}
@@ -66,13 +48,42 @@ public class Phases {
             ResolveImports.class,   NameChecker.class
     );
 
-    /// --------------------------
-    /// Protected Static Constants
+    /**
+     * <p>Contains a mapping of {@link String} values corresponding to a package name {@link String} value &
+     * {@link Compilation}.</p>
+     */
+    private final static Map<String, Compilation> Imported = new HashMap<>()   ;
 
     /**
      * <p>Maintains the set of {@link ProcessJSourceFile}s that have been opened.</p>
      */
-    protected final static Map<String, ProcessJSourceFile> Opened = new HashMap<>();
+    private final static Map<String, ProcessJSourceFile> Opened = new HashMap<>();
+
+    private final static String UserHome                    = System.getProperty("user.home")  ;
+    private final static String Version                     = "2.1.1"                          ;
+    private final static String IncludeDirectory            = "include"                        ;
+    private static List<String> FileSet                     = new ArrayList<>()                ;
+    private static String       WorkingDirectory            = ".processj"                      ;
+    private static String       Target                      = "JVM"                            ;
+    private static boolean      ShowingColor                = false                            ;
+    private static boolean      ShowMessage                 = false                            ; // TODO: Log.startLogging
+    private static boolean      ShowTree                    = false                            ; // TODO: Uses Parse Tree Printer after Parsing
+    private static boolean      Install                     = false                            ;
+
+    /**
+     * <p>Regex pattern that corresponds to a ProcessJ source file.</p>
+     */
+    public static String       ProcessJSourceFileRegex  = ".*\\.([pP][jJ])";
+
+    /**
+     * <p>{@link List} containing the set of paths to look for source files.</p>
+     */
+    public static List<String> IncludePaths             = new ArrayList<>() ;
+
+    /**
+     * <p>{@link List} containing the set of paths to look for source files.</p>
+     */
+    public static List<String> LibraryIncludePaths      = new ArrayList<>() ;
 
     /// ----------------------
     /// Private Static Methods
@@ -143,7 +154,7 @@ public class Phases {
 
             // Set the wildcard flag
             // Retrieve the list of files
-            final List<String> files = RetrieveMatchingFilesListWithName(path, filename, SymbolPaths, ProcessJSourceFileRegex);
+            final List<String> files = RetrieveMatchingFilesListWithName(path, filename, IncludePaths, ProcessJSourceFileRegex);
 
             // Initialize a new ProcessJSourceFile with the first path
             processJSourceFile = new ProcessJSourceFile(files.get(0));
@@ -159,20 +170,270 @@ public class Phases {
     }
 
     /**
-     * <p>Requests a {@link Compilation} from the file specified in the {@link String} name & path.</p>
-     * @param filepath {@link String} value of the file path.
-     * @return A valid, preliminary {@link Compilation}.
+     * <p>Requests a {@link Compilation} mapped to the {@link String} value of the package name, if it exists.</p>
+     * @param packageName {@link String} value of the package name.
+     * @return A valid {@link Compilation}, or null.
+     * @since 0.1.0
      */
-    private static Compilation RequestCompilation(final String filepath) throws Phase.Error {
-
-        // Initialize a handle to the result
-        Compilation compilation = null;
-
-        // If a handle to the Executor is valid, retrieve a Compilation
-        if(Executor != null) compilation = Executor.getPreliminaryCompilationFor(filepath);
+    public static Compilation GetImported(final String packageName) {
 
         // Return the result
-        return compilation;
+        return Imported.getOrDefault(packageName, null);
+
+    }
+
+    /**
+     * <p>Aggregates a mapping of a package name {@link String} value, to a {@link Compilation}.</p>
+     * @param packageName {@link String} value of the package name.
+     */
+    public static void SetImported(final String packageName, final Compilation compilation) {
+
+        // Set the result
+        Imported.put(packageName, compilation);
+
+    }
+
+    private static boolean IsValidArgument(final String string) {
+
+        return (string != null) && !string.isBlank() && string.startsWith("-");
+
+    }
+
+    private static String ValidParameter(final String string) {
+
+        return ((string != null) && !string.startsWith("-")) ? string.trim() : "" ;
+
+    }
+
+    private static int ParseParameters(final String[] parameters, final List<String> result,
+                                       final int startIndex) {
+
+        // Iterate while the arguments are valid, or the index is in range
+        int index = startIndex; while(index < parameters.length) {
+
+            // Initialize a handle to the parameter
+            final String parameter = parameters[index];
+
+            // Assert the parameter is not empty & does not begin with a '-'
+            if(ValidParameter(parameter).isBlank()) break;
+
+            // Aggregate the parameter
+            result.add(parameter);
+
+        }
+
+        // Return the latest index
+        return index;
+
+    }
+
+    private static Map<String, Object> ParseArguments(final String[] arguments) {
+
+        // Initialize a handle to the result & the file list
+        final Map<String, Object>   result  = new HashMap<>();
+        final List<String>          files   = new ArrayList<>();
+
+        // Iterate through the arguments
+        int index = 0; while(index < arguments.length) {
+
+            // Assert the specified argument is valid
+            if(IsValidArgument(arguments[index])) {
+
+                // Initialize a handle to the argument & parameter
+                final String argument   = arguments[index++].replaceFirst("(-)+", "");
+                final String parameter  = ((index < arguments.length)) ? arguments[index] : "";
+
+                // Assert the argument was not a nativelib specification
+                if(argument.equals("nativelib") || argument.equals("userlib")) {
+
+                    final String currentValue = (String) result.getOrDefault("install", "");
+
+                    result.put("install", ((!currentValue.isBlank() && !currentValue.endsWith(":"))
+                            ? ":" : "") +  ValidParameter(parameter));
+
+                } else result.put(argument, ValidParameter(parameter));
+
+                // Increment the index
+                if(!parameter.startsWith("-")) index++;
+
+            // Otherwise, we must have encountered files, aggregate them
+            } else index = ParseParameters(arguments, files, index);
+
+        }
+
+        // Set the files
+        result.put("files", files);
+
+        // Return the result
+        return result;
+
+    }
+
+    private static Map<String, Method> RetrieveCompilerOptions() {
+
+        // Initialize a handle to the result & retrieve all the Methods annotated with CompilerOption
+        final Map<String, Method>   result              = new HashMap<>();
+        final List<Method>          compilerOptions     = MethodsWithAnnotationOf(Phases.class, CompilerOption.class);
+
+        // Iterate through the CompilerOptions
+        for(final Method compilerOption: compilerOptions) {
+
+            // Initialize a handle to the CompilerOption
+            final CompilerOption annotation = compilerOption.getDeclaredAnnotation(CompilerOption.class);
+
+            // Map the name to the Method
+            result.put(annotation.name(), compilerOption);
+
+        }
+
+        // Return the result
+        return result;
+
+    }
+
+    private static void PrintUsage() {
+
+        Log.log("Usage: 'pjc [<option>] <files>");
+
+    }
+
+    /// ---------------
+    /// CompilerOptions
+
+    @CompilerOption(name = "showColor", description = "Use color on terminals that support ansi escape codes.", flag = true)
+    private static void EnableColor() {
+
+        ShowingColor = true;
+
+    }
+
+    @CompilerOption(name = "showMessage", description = "Show all info, error, & warning messages when available.")
+    private static void EnableLogging() {
+
+        ShowingColor = true;
+
+    }
+
+    // -libinclude
+    @CompilerOption(name = "install", description = "Install an existing or user-defined library.")
+    public static void InstallLibrary(final String arguments)
+            throws MalformedURLException, ClassNotFoundException {
+
+        // TODO: Split paths from arguments
+        // Process nativelib
+        // Open the file
+        final ProcessJSourceFile processJSourceFile = RequestOpen("");
+
+        // Process the initial Phase
+        //processPhaseFor(processJSourceFile);
+
+        // Retrieve the Compilation
+        final Compilation compilation = processJSourceFile.getCompilation();
+
+        // Run Butters
+        Butters.decodePragmas(compilation);
+        // TODO: move files to the correct directory??
+
+    }
+
+    @CompilerOption(name = "include", description = "Override the default include directories.")
+    private static void OverwriteIncludeDirectory(final String includeDirectory) {
+
+
+    }
+
+    @CompilerOption(name = "libinclude", description = "Override the default library include directories.")
+    private static void OverwriteLibraryIncludeDirectory(final String includeDirectory) {
+
+
+    }
+
+    @CompilerOption(name = "help", description = "Show this help message.", terminate = true)
+    private static void PrintHelp() {
+
+        // Retrieve the set of annotations
+        final List<java.lang.annotation.Annotation> compilerOptions =
+                DeclaredMethodAnnotations(Phases.class, CompilerOption.class);
+
+        // Iterate through each annotation
+        for(final java.lang.annotation.Annotation annotation: compilerOptions) {
+
+            // Initialize a handle to the CompilerOption
+            final CompilerOption compilerOption = (CompilerOption) annotation;
+
+            // Output the option name & description
+            Log.log("-" + compilerOption.name() + "    " + compilerOption.description());
+
+        }
+
+    }
+
+    @CompilerOption(name = "version", description = "Print version information and exit", terminate = true)
+    private static void PrintVersion() {
+
+        Log.log("ProcessJ Version: " + Version);
+
+    }
+
+    @CompilerOption(name = "target", description = "Specify the target language; C++ or Java (default).", value = "JVM")
+    private static void SetTargetLanguage(final String targetLanguage) { }
+
+    @CompilerOption(name = "showTree", description = "Show the AST constructed from the parser.")
+    private static void ShowTree() {
+
+
+    }
+
+    /// ---------------------
+    /// Public Static Methods
+
+    @SuppressWarnings("unchecked")
+    public static boolean SetEnvironment(final String[] input) throws InvocationTargetException, IllegalAccessException {
+
+        // Initialize a handle to the resultant flag
+        boolean shouldTerminate = (input == null) || (input.length <= 2);
+
+        // Assert we received a valid amount of arguments
+        // @0: -include, @1: path
+        if(shouldTerminate) PrintUsage();
+
+        // Otherwise
+        else {
+
+            // Retrieve the compiler options mapping & parse the arguments
+            final Map<String, Method> compilerOptions   = RetrieveCompilerOptions();
+            final Map<String, Object> arguments         = ParseArguments(input);
+
+            // Retrieve the fileset
+            FileSet = Collections.checkedList((List<String>)
+                    arguments.getOrDefault("files", FileSet), String.class);
+
+            // Iterate through the specified arguments
+            for(final Map.Entry<String, Object> argument: arguments.entrySet()) {
+
+                // Initialize a handle to the argument & the Compiler Option
+                final String key            = argument.getKey();
+                final Method compilerOption = compilerOptions.getOrDefault(key, null);
+
+                // Assert the Compiler Option is valid
+                if(compilerOption == null) { Log.log("Invalid argument: '" + key + "'"); break; }
+
+                // Initialize a handle to the result of invoking the Compiler Option
+                final Object result = (compilerOption.getParameterCount() > 0)
+                        ? compilerOption.invoke(null, argument.getValue()) : compilerOption.invoke(null);
+
+                // Update the terminate flag
+                shouldTerminate = (result != null) && ((Boolean) result);
+
+                // Assert the execution should terminate
+                if(shouldTerminate) break;
+
+            }
+
+        }
+
+        // Return the flag indicating if the execution should terminate
+        return shouldTerminate;
 
     }
 
@@ -181,13 +442,17 @@ public class Phases {
 
     static {
 
-        Phase.Request = org.processj.compiler.phases.Phases::RequestCompilation;
+        Phase.Listener.Info     = Log::Info     ;
+        Phase.Listener.Warning  = Log::Warn     ;
+        Phase.Listener.Error    = Log::Error    ;
 
-        ProcessJSourceFileRegex  = ".*\\.([pP][jJ])"                                                 ;
-        SymbolPaths.add("");
-        SymbolPaths.add(Settings.includeDir + "/" + Settings.language + "/");
+        Phases.Executor.RequestPhase    = org.processj.compiler.phases.Phases::PhaseFor    ;
+        Phases.Executor.RequestOpen     = org.processj.compiler.phases.Phases::RequestOpen ;
+        Phases.Executor.SetImported     = org.processj.compiler.phases.Phases::SetImported ;
+        Phases.Executor.GetImported     = org.processj.compiler.phases.Phases::GetImported ;
 
-        // TODO: Set Executor here
+        IncludePaths.add("")                                                     ;
+        IncludePaths.add(IncludeDirectory + "/" + Settings.language + "/")       ;
 
     }
 
@@ -201,7 +466,7 @@ public class Phases {
      * @version 1.0.0
      * @since 0.1.0
      */
-    public static abstract class Executor {
+    public static abstract class Executor extends Phase.Listener {
 
         /// --------------------------
         /// Protected Static Constants
@@ -209,13 +474,25 @@ public class Phases {
         /**
          * <p>The {@link Phase} request method that is effectively black-boxed from the {@link Executor}.</p>
          */
-        protected final static RequestPhase RequestPhase    = org.processj.compiler.phases.Phases::PhaseFor;
+        protected static RequestPhase RequestPhase    = null;
 
         /**
          * <p>File open request method that provides the {@link Executor} with a method to notify the appropriate entity
          * to open a {@link ProcessJSourceFile}.</p>
          */
-        protected final static Request      Request         = org.processj.compiler.phases.Phases::RequestOpen;
+        protected static RequestOpen  RequestOpen     = null;
+
+        /**
+         * <p>Method that provides the {@link Executor} with a method to aggregate a {@link Compilation} to the
+         * imported mapping.</p>
+         */
+        protected static SetImported  SetImported     = null;
+
+        /**
+         * <p>Method that provides the {@link Executor} with a method to retrieve a {@link Compilation} from the
+         * imported mapping, if it exists.</p>
+         */
+        protected static GetImported  GetImported     = null;
 
         /// --------------------------
         /// Protected Abstract Methods
@@ -226,24 +503,8 @@ public class Phases {
          * @return A preliminary {@link Compilation}
          * @since 0.1.0
          */
-        protected Compilation getPreliminaryCompilationFor(final String filePath) throws Phase.Error {
-
-            // Initialize a Phase listener & a ProcessJSourceFile
-            final Phase.Listener        listener            = new Phase.Listener();
-            final ProcessJSourceFile    processJSourceFile  = Request.Open(filePath);
-
-            // Initialize the phases
-            final ProcessJParser    processJParser      = new ProcessJParser(listener);
-            final ValidatePragmas   validatePragmas     = new ValidatePragmas(listener);
-
-            // Tokenize & parse the input file
-            processJParser.execute(processJSourceFile);
-            validatePragmas.execute(processJSourceFile);
-
-            // Return the transformed, preliminary result
-            return processJSourceFile.getCompilation();
-
-        }
+        protected abstract Compilation onRequestCompilation(final String filePath, final String packageName)
+                throws Phase.Error;
 
         /// ---------------------
         /// Functional Interfaces
@@ -272,11 +533,51 @@ public class Phases {
          * @since 0.1.0
          */
         @FunctionalInterface
-        public interface Request {
+        public interface RequestOpen {
 
-            ProcessJSourceFile Open(final String filePath);
+            ProcessJSourceFile File(final String filePath);
 
         }
+
+        /**
+         * <p>Defines a functional interface for a method to be specified to the {@link Executor} class that
+         * provides a request to aggregate a {@link Compilation} to the imported mapping.</p>
+         * @see Phase
+         * @author Carlos L. Cuenca
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        @FunctionalInterface
+        public interface SetImported {
+
+            void Compilation(final String packageName, final Compilation compilation);
+
+        }
+
+        /**
+         * <p>Defines a functional interface for a method to be specified to the {@link Executor} class that
+         * provides a request to retrieve an imported {@link Compilation} if it exists.</p>
+         * @see Phase
+         * @author Carlos L. Cuenca
+         * @version 1.0.0
+         * @since 0.1.0
+         */
+        @FunctionalInterface
+        public interface GetImported {
+
+            Compilation Compilation(final String packageName);
+
+        }
+
+    }
+
+    private @interface CompilerOption {
+
+        String  name()          default "none"  ;
+        String  description()   default "none"  ;
+        String  value()         default ""      ;
+        boolean flag()          default false   ;
+        boolean terminate()     default false   ;
 
     }
 

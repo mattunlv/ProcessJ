@@ -117,14 +117,14 @@ public class ANSICode {
     public static String setColor(String tag, ErrorSeverity severity) {
         StringBuilder sb = new StringBuilder();
         sb.append(ANSI_PREFIX);
-        sb.append(Attribute.BOLD.toString());
+        sb.append(Attribute.BOLD);
         sb.append(ANSI_COMMA);
         switch (severity) {
         case WARNING:
-            sb.append(ANSIForeground.YELLOW.toString());
+            sb.append(ANSIForeground.YELLOW);
             break;
         case ERROR:
-            sb.append(ANSIForeground.RED.toString());
+            sb.append(ANSIForeground.RED);
             break;
         default:
             break;

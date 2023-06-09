@@ -63,7 +63,7 @@ public class PJProcess {
      * Sets the process ready to run.
      */
     public synchronized void setReady() {
-        if (!ready) {
+        if(!ready) {
             ready = true;
             scheduler.inactivePool.decrement();
         }

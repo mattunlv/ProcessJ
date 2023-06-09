@@ -3,6 +3,9 @@ package org.processj.compiler.ast;
 import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.phases.phase.Visitor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class RecordTypeDecl extends Type implements DefineTopLevelDecl, SymbolMap.Context {
 
     /// --------------
@@ -13,7 +16,7 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl, SymbolMa
      */
     private final Name name;
     private SymbolMap scope;
-    private final Sequence<Type> extendTypes;
+    private final Map<String, RecordTypeDecl> extendTypes;
     private final Sequence<Name> extend;
     private final Sequence<RecordMember> recordMembers;
 
@@ -28,7 +31,7 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl, SymbolMa
         children = new AST[] { modifiers, name, extend, annotations, body };
         this.name = name;
         this.scope = null;
-        this.extendTypes = new Sequence<>();
+        this.extendTypes = new HashMap<>();
         this.extend = extend;
         this.recordMembers = body;
     }
@@ -104,57 +107,23 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl, SymbolMa
 
     }
 
-    public final void setTypeForEachExtend(final TypeReturnCallback typeReturnCallback) {
+    public final void setTypeForEachExtend(final CandidatesReturnCallback candidatesReturnCallback) throws Phase.Error {
 
-        if((this.extend != null) && (typeReturnCallback != null)) {
+        if((this.extend != null) && (candidatesReturnCallback != null)) {
 
-            // Clear the extend Types
+            // Clear the Types
             this.extendTypes.clear();
 
-            // Append the results
-            this.extend.forEach(name -> {
+            // Iterate through each extend Name
+            for(final Name name: this.extend) {
 
-                Type type;
+                // Initialize a handle to the Type
+                final RecordTypeDecl recordTypeDecl = candidatesReturnCallback.Invoke(name);
 
-                try {
+                // Place the Mapping
+                this.extendTypes.put(name.toString(), recordTypeDecl);
 
-                    type = typeReturnCallback.Invoke(name);
-
-                } catch (final Phase.Error phaseError) {
-
-                    type = new ErrorType();
-
-                }
-
-                this.extendTypes.append(type);
-
-            });
-
-        }
-
-    }
-
-    public final void setTypeForEachRecordMember(final TypeReturnCallback typeReturnCallback){
-
-        if((this.recordMembers != null) && (typeReturnCallback != null)) {
-
-            this.recordMembers.forEach(recordMember -> {
-
-                Type type;
-
-                try {
-
-                    type = typeReturnCallback.Invoke(recordMember.getName());
-
-                } catch (final Phase.Error phaseError) {
-
-                    type = new ErrorType();
-
-                }
-
-                recordMember.setType(type);
-
-            });
+            }
 
         }
 
@@ -228,6 +197,13 @@ public class RecordTypeDecl extends Type implements DefineTopLevelDecl, SymbolMa
     public interface TypeReturnCallback {
 
         Type Invoke(final Name name) throws Phase.Error;
+
+    }
+
+    @FunctionalInterface
+    public interface CandidatesReturnCallback {
+
+        RecordTypeDecl Invoke(final Name name) throws Phase.Error;
 
     }
 

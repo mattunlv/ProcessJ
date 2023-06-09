@@ -10,9 +10,6 @@ import org.processj.compiler.phases.phase.Visitor;
 public class IOCallsRewrite implements Visitor<AST> {
 
     public IOCallsRewrite() {
-        Log.logHeader("****************************************");
-        Log.logHeader("*   I O   C A L L S   R E W R I T E    *");
-        Log.logHeader("****************************************");
     }
 
     @Override

@@ -47,7 +47,6 @@ public class GotoLabelRewrite {
 
     public GotoLabelRewrite(String path) {
         this.path = path.isEmpty() ? "" : path;
-        Log.doLog = false; // Change this to 'true' for debugging
         Log.log("======================================");
         Log.log(" Rewriting goto(s) and label(s)...");
         Log.log(" Path: " + this.path);
@@ -108,11 +107,11 @@ public class GotoLabelRewrite {
             return;
         @SuppressWarnings("unchecked")
         Iterator<AbstractInsnNode> it = insList.iterator();
-        while (it.hasNext()) {
+        while(it.hasNext()) {
             AbstractInsnNode node = it.next();
-            if (node.getType() == AbstractInsnNode.METHOD_INSN) {
+            if(node.getType() == AbstractInsnNode.METHOD_INSN) {
                 MethodInsnNode mNode = (MethodInsnNode) node;
-                if (LABEL.equals(mNode.name)) {
+                if(LABEL.equals(mNode.name)) {
                     Log.log("Found label/" + mNode.desc);
                     // Find the correct constant value on the operand stack
                     // that belongs to this 'label' invocation
@@ -123,7 +122,7 @@ public class GotoLabelRewrite {
                     // Check if the node represents an instruction with a single
                     // integer operand, e.g. the opcode of the instruction must
                     // be one of the following: BIPUSH, SIPUSH, NEWARRAY
-                    if (prevIns instanceof IntInsnNode) {
+                    if(prevIns instanceof IntInsnNode) {
                         IntInsnNode iiNode = (IntInsnNode) prevIns;
                         Log.log("Adding operand " + iiNode.operand);
                         hashMap.put(iiNode.operand, ln);
@@ -205,7 +204,7 @@ public class GotoLabelRewrite {
                     // Traverse the list of methods that belong to this class
                     for (Object o : cn.methods) {
                         // Ignore anything that is not considered to be a method
-                        if (!(o instanceof MethodNode))
+                        if(!(o instanceof MethodNode))
                             continue;
                         MethodNode mn = (MethodNode)o;
                         Log.log("Visiting " + mn.name + "/" + mn.desc);

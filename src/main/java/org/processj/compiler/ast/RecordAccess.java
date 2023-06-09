@@ -19,7 +19,7 @@ public class RecordAccess extends Expression {
         this.record = record;
     }
 
-    public Expression record() {
+    public Expression getTarget() {
         return (Expression) children[0];
     }
 

@@ -10,7 +10,7 @@ public class NewArray extends Expression {
     private final Sequence<Expression>  bracketExpressions      ;
     private final ArrayLiteral          arrayLiteralExpression  ;
     private final int                   depth                   ;
-    private Type componentType;
+    private Type                        componentType           ;
 
     public NewArray(final Type type, final Sequence<Expression> bracketExpressions,
                     final Sequence<AST> dims, final ArrayLiteral arrayLiteralExpression) {

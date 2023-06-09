@@ -95,7 +95,9 @@ public class PrimitiveLiteral extends Literal {
     }
 
     public String toString() {
-        return text;
+
+        return this.text + this.getSuffix();
+
     }
 
     public float floatValue() {
@@ -238,7 +240,7 @@ public class PrimitiveLiteral extends Literal {
     }
     
     public boolean isSuffixed() {
-        if (kind == DoubleKind || kind == FloatKind || kind == LongKind) {
+        if(kind == DoubleKind || kind == FloatKind || kind == LongKind) {
             char suffix = rawtext.charAt(rawtext.length() - 1);
             if (suffix == 'd' || suffix == 'D' ||
                 suffix == 'f' || suffix == 'F' ||
@@ -247,6 +249,16 @@ public class PrimitiveLiteral extends Literal {
             }
         }
         return false;
+    }
+
+    public String getSuffix() {
+
+        // Initialize the preliminary result
+        String suffix = (this.kind == DoubleKind) ? "d" : (this.kind == FloatKind) ? "f" : "";
+
+        // Return
+        return (suffix.isBlank() && kind == LongKind) ? "l" : suffix;
+
     }
     
     public char suffix() {

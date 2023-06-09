@@ -3,6 +3,9 @@ package org.processj.compiler.ast;
 import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.phases.phase.Visitor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl, SymbolMap.Context {
 
     /// --------------
@@ -11,10 +14,10 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl, Symbol
     /**
      * <p>{@link Name} corresponding to the {@link ProtocolTypeDecl}.</p>
      */
-    private final Name                      name        ;
-    private final Sequence<ProtocolCase>    body        ;
-    private final Sequence<Name>            extend      ;
-    private final Sequence<Type>            extendTypes ;
+    private final Name                          name                ;
+    private final Sequence<ProtocolCase>        body                ;
+    private final Sequence<Name>                extend              ;
+    private final Map<String, ProtocolTypeDecl> extendTypes         ;
     private SymbolMap scope;
 
     /// ------------
@@ -30,7 +33,7 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl, Symbol
         this.body = body;
         this.scope = null;
         this.extend = extend;
-        this.extendTypes = new Sequence<>();
+        this.extendTypes = new HashMap<>();
     }
 
     /// ----------------
@@ -104,56 +107,23 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl, Symbol
 
     }
 
-    public final void setTypeForEachExtend(final TypeReturnCallback typeReturnCallback) {
+    public final void setTypeForEachExtend(final CandidatesReturnCallback candidatesReturnCallback) throws Phase.Error {
 
-        if((this.extend != null) && (typeReturnCallback != null)) {
+        if((this.extendTypes != null) && (candidatesReturnCallback != null)) {
 
-            // Clear the extend Types
+            // Clear the Types
             this.extendTypes.clear();
 
-            // Append the results
-            this.extend.forEach(name -> {
+            // Iterate through each extend Name
+            for(final Name name: this.extend) {
 
-                Type type;
+                // Initialize a handle to the Type
+                final ProtocolTypeDecl candidate = candidatesReturnCallback.Invoke(name);
 
-                try {
+                // Place the mapping
+                this.extendTypes.put(name.toString(), candidate);
 
-                    type = typeReturnCallback.Invoke(name);
-
-                } catch (final Phase.Error phaseError) {
-
-                    type = new ErrorType();
-
-                }
-
-                this.extendTypes.append(type);
-
-            });
-        }
-
-    }
-
-    public final void setTypeForEachRecordMember(final TypeReturnCallback typeReturnCallback) {
-
-        if((this.body != null) && (typeReturnCallback != null)) {
-
-            this.body.forEach(protocolCase -> protocolCase.body().forEach(recordMember -> {
-
-                Type type;
-
-                try {
-
-                    type = typeReturnCallback.Invoke(recordMember.getName());
-
-                } catch (final Phase.Error phaseError) {
-
-                    type = new ErrorType();
-
-                }
-
-                recordMember.setType(type);
-
-            }));
+            }
 
         }
 
@@ -178,7 +148,7 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl, Symbol
         return (Annotations) children[3];
     }
 
-    public Sequence<ProtocolCase> body() {
+    public Sequence<ProtocolCase> getBody() {
         return (Sequence<ProtocolCase>) children[4];
     }
 
@@ -213,9 +183,9 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl, Symbol
 
     public ProtocolCase getCase(String name) {
         /** Search our own body first */
-        if (body() != null) {
-            for (ProtocolCase pc : body()) {
-                if (pc.name().getName().equals(name))
+        if (getBody() != null) {
+            for (ProtocolCase pc : getBody()) {
+                if (pc.getName().getName().equals(name))
                     return pc;
             }
         }
@@ -256,6 +226,13 @@ public class ProtocolTypeDecl extends Type implements DefineTopLevelDecl, Symbol
     public interface TypeReturnCallback {
 
         Type Invoke(final Name name) throws Phase.Error;
+
+    }
+
+    @FunctionalInterface
+    public interface CandidatesReturnCallback {
+
+        ProtocolTypeDecl Invoke(final Name name) throws Phase.Error;
 
     }
 

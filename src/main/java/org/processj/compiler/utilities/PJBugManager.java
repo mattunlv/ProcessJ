@@ -1,7 +1,5 @@
 package org.processj.compiler.utilities;
 
-import org.processj.compiler.ProcessJc;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,21 +72,9 @@ public enum PJBugManager {
 
     }
 
-    public static void ReportErrorAndExitWithUsage(final MessageNumber messageNumber) {
-
-        INSTANCE.reportErrorAndExitWithUsage(messageNumber);
-
-    }
-
     public void reportMessageAndExit(final Object... arguments) {
 
         this.reportMessageAndExit(new PJMessage.Builder().addArguments(arguments).build(), MessageType.PRINT_STOP);
-
-    }
-
-    public void reportErrorAndExitWithUsage(final MessageNumber messageNumber) {
-
-        this.reportErrorAndExitWithUsage(new PJMessage.Builder().addError(messageNumber).build(), MessageType.PRINT_STOP);
 
     }
 
@@ -125,7 +111,6 @@ public enum PJBugManager {
                 System.out.println(bug.getRenderedMessage());
                 if(stop) {
 
-                    ProcessJc.printUsage();
                     System.exit(1);
 
                 }
@@ -141,19 +126,7 @@ public enum PJBugManager {
             type = bug.getMessageNumber().getMessageType();
         reportMessageAndExit(bug, type);
     }
-    
-    public int getErrorCount() {
-        return errorNum;
-    }
-    
-    public Stack<PJBugMessage> getTrace() {
-        return trace;
-    }
-    
-    public PJBugMessage getPostPonedMessage() {
-        return postPonedMessage;
-    }
-    
+
     public void printTrace(String src) {
         System.out.println("The application panicked! (crashed).");
         System.out.println("Location: " + src);
@@ -220,4 +193,5 @@ public enum PJBugManager {
             System.out.println(e);
         }
     }
+
 }

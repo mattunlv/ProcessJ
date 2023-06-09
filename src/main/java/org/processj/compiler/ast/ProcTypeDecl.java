@@ -3,49 +3,57 @@ package org.processj.compiler.ast;
 import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.phases.phase.Visitor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLevelDecl {
 
     /// --------------
     /// Private Fields
 
-    private final Sequence<Modifier>    modifiers       ;
-    private final Annotations           annotations     ;
+    private final Annotations               annotations             ;
+    private final Sequence<Modifier>        modifiers               ;
 
     /**
      * <p>{@link String} value of the {@link ProcTypeDecl}'s name.</p>
      */
-    private final String                name            ;
-    private final Block                 body            ;
-    private final Sequence<ParamDecl>   parameters      ;
-    private final Sequence<Name>        implement       ;
-    private final Sequence<Type>        implementTypes  ;
-    private String  packageName                         ;
-    private boolean isDeclaredNative                    ;
-    private boolean isDeclaredMobile                    ;
-    private SymbolMap scope;
-    private Type returnType;
+    private final Name                      name                    ;
+    private final Block                     body                    ;
+    private final Sequence<ParamDecl>       parameters              ;
+    private final Sequence<Name>            implement               ;
+    private final Map<String, SymbolMap>    implementCandidates     ;
+    private final Map<String, Type>         parameterTypes          ;
+    private String                          packageName             ;
+    private boolean                         isDeclaredNative        ;
+    private boolean                         isDeclaredMobile        ;
+    private SymbolMap                       scope                   ;
+    private Type                            returnType              ;
 
     /// ------------
     /// Constructors
 
-    public ProcTypeDecl(final Sequence<Modifier> modifiers, final Type returnType,
-                        final Name name, final Sequence<ParamDecl> formalParameters,
-                        final Sequence<Name> implement, final Annotations annotations,
+    public ProcTypeDecl(final Sequence<Modifier> modifiers,
+                        final Type returnType,
+                        final Name name,
+                        final Sequence<ParamDecl> parameter,
+                        final Sequence<Name> implement,
+                        final Annotations annotations,
                         final Block body) {
-        super(name);
-        nchildren = 7;
-        children = new AST[] { modifiers, returnType, name, formalParameters, implement, annotations, body };
-        this.modifiers          = modifiers         ;
-        this.annotations        = annotations       ;
-        this.name               = (name != null) ? name.toString() : "";
-        this.parameters         = formalParameters  ;
-        this.implement          = implement         ;
-        this.implementTypes     = new Sequence<>()  ;
-        this.body               = body              ;
-        this.packageName        = ""                ;
-        this.isDeclaredNative   = false             ;
-        this.isDeclaredMobile   = false             ;
-        this.returnType         = returnType        ;
+        super(new AST[] { modifiers, returnType, name, parameter, implement, annotations,
+                (body != null) ? body : new Block(new Sequence<>()) });
+
+        this.modifiers              = modifiers                             ;
+        this.annotations            = annotations                           ;
+        this.name                   = (name != null) ? name : new Name("")  ;
+        this.parameters             = parameter                             ;
+        this.implement              = implement                             ;
+        this.body                   = body                                  ;
+        this.packageName            = ""                                    ;
+        this.isDeclaredNative       = false                                 ;
+        this.isDeclaredMobile       = false                                 ;
+        this.returnType             = returnType                            ;
+        this.implementCandidates    = new HashMap<>()                       ;
+        this.parameterTypes         = new HashMap<>()                       ;
 
     }
 
@@ -76,7 +84,7 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
     @Override
     public final String toString() {
 
-        return this.name;
+        return this.name.toString();
 
     }
 
@@ -115,16 +123,16 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
      * @since 0.1.0
      */
     @Override
-    public final <T> T visit(final IVisitor<T> visitor) throws Phase.Error, ContextDoesNotDefineScopeException {
+    public final <T> T visit(final IVisitor<T> visitor) throws Phase.Error {
 
         // Open the scope
-        final SymbolMap scope = this.openScope(visitor.getScope());
+        visitor.setScope(this.openScope(visitor.getScope()));
 
         // Visit
         T result = visitor.visitProcTypeDecl(this);
 
         // Close the scope
-        visitor.setScope(scope.getEnclosingScope());
+        visitor.setScope(visitor.getScope().getEnclosingScope());
 
         return result;
 
@@ -229,7 +237,7 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
     public final boolean definesBody() {
 
         // Return the result
-        return this.body != null;
+        return !this.body.getStatements().isEmpty();
 
     }
 
@@ -252,6 +260,39 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
     public final String getPackageName() {
 
         return this.packageName;
+
+    }
+
+    public final int getParameterCount() {
+
+        return this.parameters.size();
+
+    }
+
+    public final Type getTypeForParameter(final int index) {
+
+        return this.parameters.child(index).getType();
+
+    }
+
+    public final Type getTypeForParameter(final Name name) {
+
+        return this.parameterTypes.get(name.toString());
+
+    }
+
+    /**
+     * <p>Marks the {@link ProcTypeDecl} as 'yielding' (i.e. annotated with the 'yield' {@link Annotation} by
+     * aggregating a 'yield' {@link Annotation} if it doesn't already contain one.</p>
+     * @since 0.1.0
+     */
+    @Override
+    public final boolean setYields() {
+
+        if(!this.doesYield())
+            this.getAnnotations().add("yield", "true");
+
+        return true;
 
     }
 
@@ -279,68 +320,76 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
 
     }
 
-    /**
-     * <p>Marks the {@link ProcTypeDecl} as 'yielding' (i.e. annotated with the 'yield' {@link Annotation} by
-     * aggregating a 'yield' {@link Annotation} if it doesn't already contain one.</p>
-     * @since 0.1.0
-     */
-    @Override
-    public final boolean setYields() {
-
-        if(!this.doesYield())
-            this.getAnnotations().add("yield", "true");
-
-        return true;
-
-    }
-
-    public final int getParameterCount() {
-
-        return this.parameters.size();
-
-    }
-
-    public final Type getTypeForParameter(final int index) {
-
-        // Return the result if we can access it
-        return ((this.parameters != null) && (index < this.parameters.size()))
-                ? this.parameters.child(index).getType() : null;
-
-    }
-
-    public final void setTypeForEachImplement(final TypeReturnCallback typeReturnCallback) {
-
-        if((this.implementTypes != null) && (typeReturnCallback != null)) {
-
-            // Clear the implement types
-            this.implementTypes.clear();
-
-            // Append the results
-            this.implement.forEach(name -> {
-
-                Type type;
-
-                try {
-
-                    type = typeReturnCallback.Invoke(name);
-
-                } catch (final Phase.Error phaseError) {
-
-                    type = new ErrorType();
-
-                }
-
-                this.implementTypes.append(type);
-
-            });
-        }
-
-    }
-
     public final void setReturnType(final Type returnType) {
 
         this.returnType     = returnType;
         this.children[1]    = returnType;
+
+    }
+
+    public final void setCandidateForEachImplement(final CandidatesReturnCallback candidatesReturnCallback) throws Phase.Error {
+
+        if((this.implementCandidates != null) && (candidatesReturnCallback != null)) {
+
+
+            // Iterate through each Implement Name
+            for(final Name name: this.implement) {
+
+                // Initialize a handle to the Type
+                final SymbolMap candidates = candidatesReturnCallback.Invoke(name);
+
+                // Place the mapping
+                this.implementCandidates.put(name.toString(), candidates);
+
+            }
+
+        }
+
+    }
+
+    public final void setTypeForEachParameter(final TypeReturnCallback typeReturnCallback) throws Phase.Error {
+
+        if((this.parameterTypes != null) && (typeReturnCallback != null)) {
+
+            // Iterate through each Implement Name
+            for(final ParamDecl parameterDeclaration: this.parameters) {
+
+                // Initialize a handle to the Type
+                final Type type = typeReturnCallback.Invoke(parameterDeclaration);
+
+                // Place the mapping
+                this.parameterTypes.put(parameterDeclaration.toString(), type);
+
+                // Assert the Parameter Declaration hase a Type bound
+                parameterDeclaration.setType(type);
+
+            }
+
+        }
+
+    }
+
+    public final void forEachModifier(final ModifierCallback modifierCallback) throws Phase.Error {
+
+        if((this.modifiers != null) && (modifierCallback != null)) {
+
+            // Iterate through each Modifier & Invoke the ModifierCallback
+            for(final Modifier modifier: this.modifiers)
+                modifierCallback.Invoke(modifier);
+
+        }
+
+    }
+
+    public final void forEachStatement(final StatementCallback statementCallback) throws Phase.Error {
+
+        if((this.body.getStatements() != null) && (statementCallback != null)) {
+
+            // Iterate through each Statement & Invoke the StatementCallback
+            for(final Statement statement: this.body.getStatements())
+                statementCallback.Invoke(statement);
+
+        }
 
     }
 
@@ -356,7 +405,7 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
         return (Sequence<ParamDecl>) children[3];
     }
 
-    public Sequence<Name> implement() {
+    public Sequence<Name> getImplements() {
         return (Sequence<Name>) children[4];
     }
 
@@ -367,11 +416,10 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
     }
 
     public Block getBody() {
-        return (Block) children[6];
-    }
 
-    // *************************************************************************
-    // ** Type Related Methods
+        return (Block) children[6];
+
+    }
 
     // α = procedure(name1, {t1,1, . . . , t1,m1 }, t1) ∧ β = procedure(name2,
     // {t2,1, . . . , t2,m2 }, t2)
@@ -431,9 +479,37 @@ public class ProcTypeDecl extends Type implements SymbolMap.Context, DefineTopLe
     }
 
     @FunctionalInterface
+    public interface AnnotationCallback {
+
+        void Invoke(final Annotation annotation) throws Phase.Error;
+
+    }
+
+    @FunctionalInterface
+    public interface ModifierCallback {
+
+        void Invoke(final Modifier modifier) throws Phase.Error;
+
+    }
+
+    @FunctionalInterface
+    public interface StatementCallback {
+
+        void Invoke(final Statement statement) throws Phase.Error;
+
+    }
+
+    @FunctionalInterface
+    public interface CandidatesReturnCallback {
+
+        SymbolMap Invoke(final Name name) throws Phase.Error;
+
+    }
+
+    @FunctionalInterface
     public interface TypeReturnCallback {
 
-        Type Invoke(final Name name) throws Phase.Error;
+        Type Invoke(final ParamDecl parameterDeclaration) throws Phase.Error;
 
     }
 

@@ -241,7 +241,7 @@ final PJPar <name> = new PJPar(<count>, <process>);
 <! Not to be scheduled again until 'data' is ready !>
 if (<name>.shouldYield()) {
     this.runLabel = <jump>;
-    this.org.processj.yield();
+    this.yield();
     this.label(<jump>);
 }<\n>
 >>
@@ -324,12 +324,6 @@ TimerRedExpr(name) ::= "<name> = PJTimer.read();"
 
 //========================================================================================
 //
-// 1.) value:
-// 2.) type:
-PrimitiveLiteral(value, type) ::= "<value><if(type)><type><endif>"
-
-//========================================================================================
-//
 // 1.) name:
 // 2.) type:
 // 3.) dims:
@@ -405,7 +399,7 @@ label(<resume0>);<!-- remove 'line-feed' --!>
 ChannelReadExpr(chanName, lhs, type, op, resume0, resume1, extendRv) ::= <<
 if (!<chanName>.isReadyToRead(this)) {
     this.runLabel = <resume0>;
-    this.org.processj.yield();
+    this.yield();
 }
 
 label(<resume0>);
@@ -554,12 +548,6 @@ CastExpr(type, expr) ::= "<if(type)>((<type>) (<expr>))<endif>"
 BinaryExpr(lhs, rhs, op) ::= <<
 <lhs> <op> <rhs>
 >>
-
-//========================================================================================
-//
-// 1.) package:
-// 2.) file
-Import(package, file) ::= "import <package><if(file)>.<file><endif>"
 
 //========================================================================================
 //
@@ -908,12 +896,6 @@ RepAltObjectGuards(objectGuards, objectValue,booleanGuards,booleanValue) ::= <<
 TimerLocals(timers) ::= <<
 <if(timers)><timers; separator="\n"><endif>
 >>
-
-//========================================================================================
-//
-// 1.) type:
-// 2.) var:
-ConstantDecl(type, var) ::= "public static final <type> <var>"
 
 //========================================================================================
 //

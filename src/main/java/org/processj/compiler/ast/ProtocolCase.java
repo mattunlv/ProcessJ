@@ -11,15 +11,22 @@ public class ProtocolCase extends AST {
         children = new AST[] { caseName, body };
     }
 
-    public Name name() {
+    public Name getName() {
+
         return (Name) children[0];
+
     }
 
-    public Sequence<RecordMember> body() {
+    public Sequence<RecordMember> getBody() {
+
         return (Sequence<RecordMember>) children[1];
+
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitProtocolCase(this);
+    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+
+        return visitor.visitProtocolCase(this);
+
     }
+
 }

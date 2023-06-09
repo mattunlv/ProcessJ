@@ -12,6 +12,7 @@ public class Invocation extends Expression {
     private final Sequence<Expression>  parameters      ;
     private final Sequence<Type>        parameterTypes  ;
     private Type                        returnType      ;
+    private SymbolMap                   candidates      ;
     public boolean ignore = false; // This is used to ignore invocations for 'labels' and 'gotos' in the org.processj.codegen phase.
 
     public Invocation(final Expression target, final Name name, final Sequence<Expression> parameters) {
@@ -23,6 +24,7 @@ public class Invocation extends Expression {
         this.parameters     = parameters        ;
         this.parameterTypes = new Sequence<>()  ;
         this.returnType     = null              ;
+        this.candidates     = null              ;
     }
     
     public Invocation(final Expression target, final Name name,
@@ -51,6 +53,18 @@ public class Invocation extends Expression {
     public final boolean definesTarget() {
 
         return this.target != null;
+
+    }
+
+    public final SymbolMap getCandidates() {
+
+        return this.candidates;
+
+    }
+
+    public final void setCandidates(final SymbolMap symbolMap) {
+
+        this.candidates = symbolMap;
 
     }
 

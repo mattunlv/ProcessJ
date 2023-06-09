@@ -69,12 +69,6 @@ public class UnrollLoopRewrite implements Visitor<AST> {
                 PrimitiveLiteral.IntKind)), true));
     }
 
-    public UnrollLoopRewrite() {
-        Log.logHeader("*****************************************");
-        Log.logHeader("*      L O O P  -  R E W R I T E R      *");
-        Log.logHeader("*****************************************");
-    }
-
     public AST visitAltCase(AltCase ac) {
         Log.log("LoopRewriter:\tVisiting an AltCase");
 	// if ac.guard() is null, it is because we have a nested alt.

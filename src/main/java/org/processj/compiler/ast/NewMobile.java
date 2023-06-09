@@ -8,10 +8,13 @@ public class NewMobile extends Expression {
 
     public DefineTopLevelDecl myDecl = null;
 
+    private SymbolMap                   candidates      ;
+
     public NewMobile(Name name) {
         super(name);
         nchildren = 1;
         children = new AST[] { name };
+        this.candidates = null;
     }
 
     public Name name() {
@@ -21,6 +24,19 @@ public class NewMobile extends Expression {
     public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitNewMobile(this);
     }
+
+    public final SymbolMap getCandidates() {
+
+        return this.candidates;
+
+    }
+
+    public final void setCandidates(final SymbolMap symbolMap) {
+
+        this.candidates = symbolMap;
+
+    }
+
 
 
 }

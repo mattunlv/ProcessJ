@@ -3251,7 +3251,7 @@ class CUP$Parser$actions {
 
             // Take the last (field) name off the record access and call recursively on the rest-
             // turn all into a sequence of names
-            result = primary2PackageAccess(recordAccess.record()).append(recordAccess.field());
+            result = primary2PackageAccess(recordAccess.getTarget()).append(recordAccess.field());
 
         } else if(expression instanceof NameExpr) {
 

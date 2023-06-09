@@ -106,7 +106,7 @@ public class TypeChecker extends Phase {
     public final Void visitProtocolTypeDecl(final ProtocolTypeDecl protocolTypeDeclaration) throws Phase.Error {
 
         // TODO: Maybe check extend Types?
-        protocolTypeDeclaration.body().visit(this);
+        protocolTypeDeclaration.getBody().visit(this);
 
         return null;
 
@@ -1283,7 +1283,7 @@ public class TypeChecker extends Phase {
         Log.log(recordAccessExpression.line + ": visiting a record access expression (" + recordAccessExpression.field() + ")");
 
         // Resolve the Record
-        recordAccessExpression.record().visit(this);
+        recordAccessExpression.getTarget().visit(this);
 
         // Initialize a handle to the Type
         final Type type = recordAccessExpression.getType();
@@ -1331,7 +1331,7 @@ public class TypeChecker extends Phase {
                 boolean found = false;
 
                 if(protocolCase != null)
-                    for(RecordMember recordMember: protocolCase.body())
+                    for(RecordMember recordMember: protocolCase.getBody())
                         if(recordMember.getName().toString().equals(fieldName)) {
 
                             recordAccessExpression.setType(recordMember.getType());

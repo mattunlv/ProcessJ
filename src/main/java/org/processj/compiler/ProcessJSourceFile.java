@@ -1,4 +1,4 @@
-package org.processj.compiler.utilities;
+package org.processj.compiler;
 
 import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.ast.Compilation;
@@ -41,7 +41,6 @@ public class ProcessJSourceFile {
      * the toolchain.</p>
      */
     private Compilation                         compilation         ;
-
 
     /// ------------
     /// Constructors

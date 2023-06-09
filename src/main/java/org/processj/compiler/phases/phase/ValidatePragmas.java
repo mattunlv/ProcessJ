@@ -1,7 +1,6 @@
 package org.processj.compiler.phases.phase;
 
 import org.processj.compiler.ast.*;
-import org.processj.compiler.utilities.ProcessJSourceFile;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -46,6 +45,10 @@ public class ValidatePragmas extends Phase {
     /// ----------------------
     /// Private Static Methods
 
+    /// ----------
+    /// Assertions
+
+    // TODO: Refactor these to Phase.LibraryAssert
     /**
      * <p>Validates the {@link ConstantDecl}'s native declaration.</p>
      * @param validatePragmas The invoking {@link Phase}
@@ -159,7 +162,6 @@ public class ValidatePragmas extends Phase {
 
     }
 
-
     /**
      * <p>Validates the {@link ProcTypeDecl}'s native procedure parameter types.</p>
      * @param validatePragmas The invoking {@link Phase}
@@ -238,7 +240,6 @@ public class ValidatePragmas extends Phase {
 
     }
 
-
     /**
      * <p>Validates the specified {@link Pragma} {@link Map} to make sure the {@link Compilation}'s
      * defined {@link Pragma}s are consistent.</p>
@@ -275,6 +276,9 @@ public class ValidatePragmas extends Phase {
                     : new InvalidNativeLanguageException(validatePragmas, language)).commit();
 
     }
+
+    /// ---------------
+    /// Code Generation
 
     /**
      * <p>Returns the native type string for the specified type.</p>
@@ -557,8 +561,8 @@ public class ValidatePragmas extends Phase {
         this.isNativeLibrary    = false ;
     }
 
-    /// ------------------
-    /// org.processj.compiler.phases.phase.Phase
+    /// -----
+    /// Phase
 
     /**
      * <p>Executes the {@link Pragma} validation {@link Phase}. This verifies the current {@link Compilation}'s
@@ -571,8 +575,13 @@ public class ValidatePragmas extends Phase {
     public void executePhase() throws Phase.Error {
 
         // Retrieve the Compilation & its Pragma Map
-        final Compilation           compilation = this.retrieveValidCompilation();
-        final Map<String, String>   pragmaMap   = DecodePragmas(this, compilation.getPragmas());
+        final Compilation compilation = this.retrieveValidCompilation();
+
+        // Assert a specified package name if the Compilation contains Pragmas
+        if(compilation.definesPragmas() && !compilation.definesPackageName())
+            throw new MissingPackageNameException(this).commit();
+
+        final Map<String, String> pragmaMap = DecodePragmas(this, compilation.getPragmas());
 
         // If the pragma map contains a LIBRARY key
         if(pragmaMap.containsKey("LIBRARY")) {
@@ -608,8 +617,8 @@ public class ValidatePragmas extends Phase {
 
     }
 
-    /// -------------------------
-    /// org.processj.ast.IVisitor
+    /// -------
+    /// Visitor
 
     /**
      * <p>Validates the {@link ConstantDecl}. Verifies that:
@@ -719,32 +728,6 @@ public class ValidatePragmas extends Phase {
             throw new LibraryContainsRecordDeclarationException(this, recordTypeDeclaration).commit();
 
         return null;
-
-    }
-
-    /// ---------------
-    /// Private Methods
-
-    /**
-     * <p>Returns a valid {@link Compilation}. This method successfully returns if the {@link ProcessJSourceFile}
-     * being processed contains a valid {@link Compilation} and if the {@link Compilation} contains a {@link Pragma}
-     * {@link Map} & defines a package name.</p>
-     * @return {@link Compilation} corresponding to the {@link ProcessJSourceFile}.
-     * @throws Phase.Error If the {@link ProcessJSourceFile} does not contain a {@link Compilation} or if the
-     * {@link Compilation} does not contain a {@link Pragma} {@link Map}.
-     * @since 0.1.0
-     */
-    @Override
-    protected Compilation retrieveValidCompilation() throws Phase.Error {
-
-        final Compilation compilation = super.retrieveValidCompilation();
-
-        // Assert a specified package name if the Compilation contains Pragmas
-        if(compilation.definesPragmas() && !compilation.definesPackageName())
-            throw new MissingPackageNameException(this).commit();
-
-        // Return the compilation
-        return compilation;
 
     }
 

@@ -20,11 +20,11 @@ public class RecordMemberLiteral extends AST {
 
     }
 
-    public Name name() {
+    public Name getName() {
         return (Name) children[0];
     }
 
-    public Expression expr() {
+    public Expression getExpression() {
 	return (Expression) children[1];
     }
 

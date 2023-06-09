@@ -723,15 +723,15 @@ public class PrettyPrinter implements Visitor<Void> {
 				System.out.print(", ");
 		}
 		System.out.print(")");
-		if (pd.implement().size() > 0) {
+		if (pd.getImplements().size() > 0) {
 			System.out.print(" implements ");
-			for (int i = 0; i < pd.implement().size(); i++) {
+			for (int i = 0; i < pd.getImplements().size(); i++) {
                 try {
-                    pd.implement().child(i).visit(this);
+                    pd.getImplements().child(i).visit(this);
                 } catch (Phase.Error error) {
                     throw new RuntimeException(error);
                 }
-                if (i < pd.implement().size() - 1)
+                if (i < pd.getImplements().size() - 1)
 					System.out.print(", ");
 			}
 		}
@@ -773,7 +773,7 @@ public class PrettyPrinter implements Visitor<Void> {
 	@Override
     public final Void visitRecordAccess(RecordAccess ra) {
         try {
-            ra.record().visit(this);
+            ra.getTarget().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }

@@ -4,27 +4,27 @@ import org.processj.compiler.ast.AST;
 
 import java.io.PrintStream;
 
-public class Log {
+public final class Log {
 
     private final static PrintStream InfoStream    = System.out    ;
     private final static PrintStream WarningStream = System.out    ;
     private final static PrintStream ErrorStream   = System.err    ;
 
-    public static boolean doLog         = true ;
     public static boolean LogInfo       = true ;
     public static boolean LogWarning    = true ;
     public static boolean LogError      = true ;
 
-    public static void startLogging() {
-        doLog = true;
+    private Log() { /* Empty */ }
+
+    public static void log(final String message) {
+
+        Log.InfoStream.println(message);
+
     }
 
-    public static void stopLogging() {
-        doLog = false;
-    }
-
-    private Log() {
-        // Avoid creating instances
+    public static void log(AST a, String s) {
+        //if ( doLog )
+        System.out.println("[info] " + PJBugManager.INSTANCE.getFileName() + ":" + a.line + ": " + s);
     }
 
     public static void Info(final String message) {
@@ -48,28 +48,4 @@ public class Log {
 
     }
 
-    public static void log(String s) {
-        //if ( doLog )
-            System.out.println("[info] " + PJBugManager.INSTANCE.getFileName() + ": " + s);
-    }
-
-    public static void log(AST a, String s) {
-        //if ( doLog )
-            System.out.println("[info] " + PJBugManager.INSTANCE.getFileName() + ":" + a.line + ": " + s);
-    }
-    
-    public static void logHeader(String s) {
-        //if ( doLog )
-            System.out.println("[info] " + s);
-    }
-
-    public static void logNoNewline(String s) {
-        //if ( doLog )
-            System.out.print("[info] " + PJBugManager.INSTANCE.getFileName() + ": " + s);
-    }
-
-    public static void logNoNewline(AST a, String s) {
-        //if ( doLog )
-            System.out.print("[info] " + PJBugManager.INSTANCE.getFileName() + ":" + a.line + ": " + s);
-    }
 }

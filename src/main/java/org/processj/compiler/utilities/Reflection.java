@@ -1,8 +1,14 @@
 package org.processj.compiler.utilities;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Reflection {
 
@@ -136,6 +142,36 @@ public class Reflection {
 
     }
 
+    public static <Type, AnnotationType extends Annotation>
+    List<Method> MethodsWithAnnotationOf(final Class<Type> clazz, final Class<AnnotationType> annotationTypeClass) {
+
+        return Arrays.stream(clazz.getDeclaredMethods()).toList().stream()
+                .filter(method -> method.isAnnotationPresent(annotationTypeClass))
+                .collect(Collectors.toList());
+
+    }
+
+    public static <Type, AnnotationType extends Annotation>
+    List<Annotation> DeclaredMethodAnnotations(final Class<Type> clazz, final Class<AnnotationType> annotationTypeClass) {
+
+        // Initialize a handle to the result
+        final List<Annotation> annotations = new ArrayList<>();
+
+        // Assert the Class Object and Annotation Class Object are valid
+        if(clazz != null && annotationTypeClass != null) {
+
+            // Aggregate the Annotations to the list
+            Arrays.stream(clazz.getDeclaredMethods()).toList().stream()
+                    .filter(method -> method.isAnnotationPresent(annotationTypeClass))
+                    .forEach(method -> annotations.addAll(Arrays.stream(method.getDeclaredAnnotations()).toList()));
+
+        }
+
+        // Return the result
+        return annotations;
+
+    }
+
     public static <Type, Check> boolean AreEqual(final Type instance, final Class<Check> check) {
 
         // Initialize the preliminary result
@@ -157,5 +193,6 @@ public class Reflection {
         return areEqual;
 
     }
+
 
 }
