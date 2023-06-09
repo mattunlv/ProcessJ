@@ -10,9 +10,14 @@ import org.processj.compiler.phases.Phases;
 import org.processj.compiler.phases.phase.*;
 
 /**
- * ProcessJ compiler.
+ * <p>ProcessJ Compiler</p>.
  *
- * @author ben
+ * @author Jan B. Pedersen
+ * @author Cabel Shrestha
+ * @author Benjamin Cisneros
+ * @author Carlos L. Cuenca
+ * @since 0.1.0
+ * @version 1.0.0
  */
 public class Compiler extends Phases.Executor {
 
@@ -20,10 +25,9 @@ public class Compiler extends Phases.Executor {
     /// Public Static Methods
 
     /**
-     * Program execution begins here.
-     *
-     * @param arguments
-     *          A vector of command arguments passed to the compiler.
+     * <p>Execution entry point. Instantiates an instance of the ProcessJ initializes the environment from the specified
+     * arguments, initializes a {@link Compiler} instance, & executes the {@link Compiler}.</p>
+     * @param arguments The command-line arguements specified by the user.
      */
     public static void main(final String[] arguments)
             throws Phase.Error, MalformedURLException, ClassNotFoundException, InvocationTargetException,
@@ -41,30 +45,7 @@ public class Compiler extends Phases.Executor {
 
         }
 
-        /*
-        new InfiniteLoopRewrite().go(compilation);
-        compilation.visit(new UnrollLoopRewrite());
-        compilation.visit(new ChannelRead());
-
-        if(pJc.target == Language.CPLUS) compilation.visit(new IOCallsRewrite());
-
-        // Run the code generator to decode pragmas, generate libraries,
-        // resolve types, and set the symbol table for top level declarations
-        CodeGenJava codeGen = new CodeGenJava(new SymbolTable());
-        CodeGenCPP cppCodeGen = new CodeGenCPP(new SymbolTable());
-
-        // Set the working source file
-        codeGen.sourceProgam(compilation.fileNoExtension());
-        // Visit this compilation unit and recursively build the program
-        // after returning strings rendered by the string template
-
-        String code = (String) compilation.visit(codeGen);
-        String cppFile = (String) compilation.visit(cppCodeGen);
-
         // TODO: Write to File with working directory and extension in utf-8 encoding
-
-        }
-        */
 
     }
 

@@ -10,12 +10,14 @@ import org.processj.compiler.ast.expression.Assignment;
 import org.processj.compiler.ast.expression.BinaryExpr;
 
 /**
- * Abstract class for the visitor pattern. This abstract class
- * must be re-implemented for each traversal through the tree.
- *
- * @author Matt Pedersen
- * @since 1.1
- *
+ * <p>Abstract class for the visitor pattern. This abstract class must be re-implemented for each traversal through
+ * the parse tree.</p>
+ * @author Jan B. Pedersen
+ * @author Cabel Shrestha
+ * @author Benjamin Cisneros
+ * @author Carlos L. Cuenca
+ * @since 0.1.0
+ * @version 1.0.0
  */
 public interface Visitor<T> {
 

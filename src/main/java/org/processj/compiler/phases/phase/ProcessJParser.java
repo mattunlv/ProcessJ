@@ -13,9 +13,12 @@ import org.processj.compiler.ast.expression.*;
  * @see Parser
  * @see Phase
  * @see Parser.Handler
+ * @author Jan B. Pedersen
+ * @author Cabel Shrestha
+ * @author Benjamin Cisneros
  * @author Carlos L. Cuenca
- * @version 1.0.0
  * @since 0.1.0
+ * @version 1.0.0
  */
 public class ProcessJParser extends Phase implements Parser.Handler {
 

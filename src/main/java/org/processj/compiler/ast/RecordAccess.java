@@ -31,7 +31,7 @@ public class RecordAccess extends Expression {
         return this.record + "." + this.field;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
+    public <S> S visit(Visitor<S> v) throws Phase.Error {
         return v.visitRecordAccess(this);
     }
 }

@@ -16,10 +16,12 @@ import org.processj.compiler.utilities.PJMessage;
 import org.processj.compiler.utilities.VisitorMessageNumber;
 
 /**
- * 
- * @author Matt Pedersen
- * @version 02/10/2019
- * @since 1.2
+ * @author Jan B. Pedersen
+ * @author Cabel Shrestha
+ * @author Benjamin Cisneros
+ * @author Carlos L. Cuenca
+ * @since 0.1.0
+ * @version 1.0.0
  */
 public class TypeChecker extends Phase {
 

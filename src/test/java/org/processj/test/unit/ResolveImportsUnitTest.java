@@ -1,16 +1,7 @@
 package org.processj.test.unit;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.Phases;
-import org.processj.compiler.ast.Compilation;
-import org.processj.compiler.ast.SymbolMap;
-import org.processj.compiler.phases.phase.ResolveImports;
 import org.processj.test.ProcessJTest;
 import org.processj.test.TestInputFile;
-import org.processj.compiler.utilities.ProcessJSourceFile;
 
 public class ResolveImportsUnitTest extends ProcessJTest {
 
