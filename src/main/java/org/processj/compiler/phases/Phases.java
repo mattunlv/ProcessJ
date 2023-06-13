@@ -1,7 +1,7 @@
 package org.processj.compiler.phases;
 
 import org.processj.compiler.ast.Compilation;
-import org.processj.compiler.phases.legacy.butters.Butters;
+import org.processj.compiler.utilities.butters.Butters;
 import org.processj.compiler.phases.phase.*;
 import org.processj.compiler.utilities.Log;
 import org.processj.compiler.ProcessJSourceFile;
@@ -43,9 +43,8 @@ public class Phases {
      * @see Executor
      */
     private final static Map<Class<? extends Phase>, Class<? extends Phase>> NextPhaseOf = Map.of(
-            ProcessJParser.class,   ValidatePragmas.class,
-            ValidatePragmas.class,  ResolveImports.class,
-            ResolveImports.class,   NameChecker.class
+            ProcessJParser.class,   NameChecker.class,
+            NameChecker.class,      TypeChecker.class
     );
 
     /**

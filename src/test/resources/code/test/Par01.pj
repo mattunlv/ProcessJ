@@ -34,8 +34,8 @@ public void main(string args[]) {
             println("inside second par");
             println("par inside second");
             par {
-                println("thrid par block");
-                println("par block thrid");
+                println("thrid par blockStatement");
+                println("par blockStatement thrid");
             }
         }
     }

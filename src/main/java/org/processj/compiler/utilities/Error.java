@@ -3,8 +3,8 @@ package org.processj.compiler.utilities;
 import java.io.File;
 
 import org.processj.compiler.ast.AST;
-import org.processj.compiler.ast.ErrorType;
-import org.processj.compiler.ast.Type;
+import org.processj.compiler.ast.type.ErrorType;
+import org.processj.compiler.ast.type.Type;
 
 public class Error {
     public static String fileName = "";

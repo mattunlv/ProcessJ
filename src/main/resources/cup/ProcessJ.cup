@@ -13,28 +13,42 @@
 /** Package Declaration                                                                                             **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-package org.processj.compiler.phases.phase;
+package org.processj.compiler.phases.phase.generated;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** Imports                                                                                                         **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-import org.processj.compiler.phases.phase.Lexer;
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.alt.*;
-import org.processj.compiler.ast.expression.ArrayAccessExpr;
-import org.processj.compiler.ast.expression.BinaryExpr;
-import org.processj.compiler.ast.expression.ArrayLiteral;
-import org.processj.compiler.ast.expression.Assignment;
-import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.utilities.Error;
-import org.processj.compiler.utilities.PJBugManager;
+import org.processj.compiler.ast.expression.*;
+import org.processj.compiler.ast.expression.access.*;
+import org.processj.compiler.ast.expression.binary.*;
+import org.processj.compiler.ast.expression.constructing.*;
+import org.processj.compiler.ast.expression.literal.*;
+import org.processj.compiler.ast.expression.resolve.*;
+import org.processj.compiler.ast.expression.result.*;
+import org.processj.compiler.ast.expression.unary.*;
+import org.processj.compiler.ast.expression.yielding.*;
+import org.processj.compiler.ast.statement.*;
+import org.processj.compiler.ast.statement.alt.*;
+import org.processj.compiler.ast.statement.conditional.*;
+import org.processj.compiler.ast.statement.control.*;
+import org.processj.compiler.ast.statement.declarative.*;
+import org.processj.compiler.ast.statement.switched.*;
+import org.processj.compiler.ast.statement.yielding.*;
+import org.processj.compiler.ast.type.*;
+
+import java.io.FileReader;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** Scanning Method                                                                                                 **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-scan with {: return lexer.next_token(); :};
+scan with {:
+
+    return lexer.next_token();
+
+:};
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** Lexer Initialization Code                                                                                       **/
@@ -51,15 +65,11 @@ parser code {:
     public  Lexer   lexer   ;
     private Handler handler ;
 
-    public Parser(final Lexer lexer) {
+    public Parser(final FileReader fileReader, final Handler handler) {
         this();
-        this.lexer = lexer;
-    }
 
-    public Parser(final Lexer lexer, final Handler handler) {
-        this(lexer);
-
-        this.handler = handler;
+        this.lexer      = new Lexer(fileReader) ;
+        this.handler    = handler               ;
 
     }
 
@@ -81,6 +91,13 @@ parser code {:
 
     }
 
+    public final Compilation getParsedCompilation() throws Exception {
+
+        return (Compilation) this.parse().value;
+
+    }
+
+
 :};
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -95,19 +112,19 @@ action code {:
         // Initialize a handle to the result
         Sequence<Name> result = null;
 
-        if(expression instanceof RecordAccess) {
+        if(expression instanceof RecordAccessExpression) {
 
-            // Initialize a handle to the RecordAccess
-            final RecordAccess recordAccess = (RecordAccess) expression;
+            // Initialize a handle to the RecordAccessExpression
+            final RecordAccessExpression recordAccessExpression = (RecordAccessExpression) expression;
 
             // Take the last (field) name off the record access and call recursively on the rest-
             // turn all into a sequence of names
-            result = primary2PackageAccess(recordAccess.getTarget()).append(recordAccess.field());
+            result = primary2PackageAccess(recordAccessExpression.getTarget()).append(recordAccessExpression.field());
 
-        } else if(expression instanceof NameExpr) {
+        } else if(expression instanceof NameExpression) {
 
             // A name is OK - just turn it into a sequence with one member
-            result = new Sequence<Name>(((NameExpr) expression).getName());
+            result = new Sequence<Name>(((NameExpression) expression).getName());
 
         } else {
 
@@ -325,306 +342,306 @@ terminal Token IDENTIFIER           ;
 /** 1.0 Source                                                                                                      **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Compilation        source                                  ;
+non terminal Compilation                source                                  ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 2.0 Type Declarations                                                                                           **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Sequence           type_declarations_opt                   ;
-non terminal Sequence           type_declarations                       ;
-non terminal Sequence           type_declaration                        ;
-non terminal Name               extern_type                             ;
+non terminal Sequence                   type_declarations_opt                   ;
+non terminal Sequence                   type_declarations                       ;
+non terminal Sequence                   type_declaration                        ;
+non terminal Name                       extern_type                             ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 2.1 Procedure Type Declarations                                                                                 **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal ProcTypeDecl       procedure_type_declaration              ;
-non terminal Block              body_opt                                ;
-non terminal Sequence           implements_opt                          ;
-non terminal Sequence           type_list                               ;
-non terminal Sequence           formal_parameter_list_opt               ;
-non terminal Sequence           formal_parameter_list                   ;
-non terminal ParamDecl          formal_parameter                        ;
-non terminal Sequence           package_access                          ;
-non terminal Name               type_name                               ;
-non terminal Annotations        annotations_opt                         ;
-non terminal Sequence           annotations                             ;
-non terminal Annotation         range                                   ;
+non terminal ProcedureTypeDeclaration   procedure_type_declaration              ;
+non terminal BlockStatement             body_opt                                ;
+non terminal Sequence                   implements_opt                          ;
+non terminal Sequence                   type_list                               ;
+non terminal Sequence                   formal_parameter_list_opt               ;
+non terminal Sequence                   formal_parameter_list                   ;
+non terminal ParameterDeclaration       formal_parameter                        ;
+non terminal Sequence                   package_access                          ;
+non terminal Name                       type_name                               ;
+non terminal Annotations                annotations_opt                         ;
+non terminal Sequence                   annotations                             ;
+non terminal Annotation                 range                                   ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 2.2 Protocol Type Declarations                                                                                  **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal ProtocolTypeDecl   protocol_type_declaration               ;
-non terminal Sequence           extends_opt                             ;
-non terminal Sequence           protocol_body                           ;
-non terminal Sequence           protocol_cases                          ;
-non terminal ProtocolCase       protocol_case                           ;
-non terminal Sequence           record_body_opt                         ;
+non terminal ProtocolTypeDeclaration    protocol_type_declaration               ;
+non terminal Sequence                   extends_opt                             ;
+non terminal Sequence                   protocol_body                           ;
+non terminal Sequence                   protocol_cases                          ;
+non terminal ProtocolCase               protocol_case                           ;
+non terminal Sequence                   record_body_opt                         ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 2.3 Record Type Declarations                                                                                    **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal RecordTypeDecl     record_type_declaration                 ;
-non terminal Sequence           record_body                             ;
-non terminal Sequence           record_member_declarations              ;
-non terminal Sequence           record_member_declaration               ;
-non terminal Sequence           record_member_declarators               ;
-non terminal Name               record_member_declarator                ;
+non terminal RecordTypeDeclaration      record_type_declaration                 ;
+non terminal Sequence                   record_body                             ;
+non terminal Sequence                   record_member_declarations              ;
+non terminal Sequence                   record_member_declaration               ;
+non terminal Sequence                   record_member_declarators               ;
+non terminal Name                       record_member_declarator                ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 3.0 Types                                                                                                       **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Type               type                                    ;
-non terminal PrimitiveType      primitive_type                          ;
-non terminal NamedType          named_type                              ; // TODO: I don't think we ever need this one in the parse tree to be honest.
-non terminal ArrayType          array_type                              ;
-non terminal Type               channel_type                            ;
+non terminal Type                       type                                    ;
+non terminal PrimitiveType              primitive_type                          ;
+non terminal NamedType                  named_type                              ; // TODO: I don't think we ever need this one in the parse tree to be honest.
+non terminal ArrayType                  array_type                              ;
+non terminal Type                       channel_type                            ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 5.0 Packages                                                                                                    **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Compilation        compilation_unit                        ;
-non terminal Sequence           package_declaration_opt                 ;
-non terminal Sequence           package_declaration                     ;
-non terminal Sequence           pragmas_opt                             ;
-non terminal Sequence           pragmas                                 ;
-non terminal Pragma             pragma                                  ;
-non terminal Sequence           import_declarations_opt                 ;
-non terminal Sequence           import_declarations                     ;
-non terminal Import             import_declaration                      ;
+non terminal Compilation                compilation_unit                        ;
+non terminal Sequence                   package_declaration_opt                 ;
+non terminal Sequence                   package_declaration                     ;
+non terminal Sequence                   pragmas_opt                             ;
+non terminal Sequence                   pragmas                                 ;
+non terminal Pragma                     pragma                                  ;
+non terminal Sequence                   import_declarations_opt                 ;
+non terminal Sequence                   import_declarations                     ;
+non terminal Import                     import_declaration                      ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 6.0 Modifiers                                                                                                   **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Sequence           modifiers_opt                           ;
-non terminal Sequence           modifiers                               ;
-non terminal Modifier           modifier                                ;
+non terminal Sequence                   modifiers_opt                           ;
+non terminal Sequence                   modifiers                               ;
+non terminal Modifier                   modifier                                ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 7.0 Constants & Variable Declarations                                                                           **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Sequence           constant_declaration                    ;
-non terminal Sequence           constant_declarators                    ;
-non terminal Var                constant_declarator                     ;
-non terminal Sequence           variable_declarators                    ;
-non terminal Var                variable_declarator                     ;
-non terminal Name               variable_declarator_identifier          ;
-non terminal Expression         variable_initializer                    ;
+non terminal Sequence                   constant_declaration                    ;
+non terminal Sequence                   constant_declarators                    ;
+non terminal Var                        constant_declarator                     ;
+non terminal Sequence                   variable_declarators                    ;
+non terminal Var                        variable_declarator                     ;
+non terminal Name                       variable_declarator_identifier          ;
+non terminal Expression                 variable_initializer                    ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 8.0 Arrays                                                                                                      **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal ArrayLiteral       array_initializer                       ;
-non terminal Sequence           variable_initializers_opt               ;
-non terminal Sequence           variable_initializers                   ;
+non terminal ArrayLiteralExpression     array_initializer                       ;
+non terminal Sequence                   variable_initializers_opt               ;
+non terminal Sequence                   variable_initializers                   ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.0 Blocks & Statements                                                                                         **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Block              block_opt                               ;
-non terminal Block              block                                   ;
-non terminal Sequence           block_statements_opt                    ;
-non terminal Sequence           block_statements                        ;
-non terminal ParBlock           par_block                               ;
-non terminal Sequence           barriers                                ;
-non terminal Sequence           block_statement                         ;
-non terminal Sequence           local_variable_declaration              ;
-non terminal Statement          statement                               ;
-non terminal Statement          statement_no_short_if                   ;
-non terminal Statement          statement_without_trailing_substatement ;
+non terminal BlockStatement             block_opt                               ;
+non terminal BlockStatement             block                                   ;
+non terminal Sequence                   block_statements_opt                    ;
+non terminal Sequence                   block_statements                        ;
+non terminal ParBlock                   par_block                               ;
+non terminal Sequence                   barriers                                ;
+non terminal Sequence                   block_statement                         ;
+non terminal Sequence                   local_variable_declaration              ;
+non terminal Statement                  statement                               ;
+non terminal Statement                  statement_no_short_if                   ;
+non terminal Statement                  statement_without_trailing_substatement ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.1 If Statements                                                                                               **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal IfStat             if_then_statement                       ;
-non terminal IfStat             if_then_else_statement                  ;
-non terminal IfStat             if_then_else_statement_no_short_if      ;
+non terminal IfStatement                if_then_statement                       ;
+non terminal IfStatement                if_then_else_statement                  ;
+non terminal IfStatement                if_then_else_statement_no_short_if      ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.2 While/For/Do Statements                                                                                     **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal WhileStat          while_statement                         ;
-non terminal WhileStat          while_statement_no_short_if             ;
-non terminal ForStat            for_statement                           ;
-non terminal ForStat            for_statement_no_short_if               ;
-non terminal Sequence           for_init_opt                            ;
-non terminal Sequence           for_init                                ;
-non terminal Sequence           for_update_opt                          ;
-non terminal Sequence           for_update                              ;
-non terminal Sequence           statement_expressions                   ;
-non terminal Sequence           enroll_opt                              ;
-non terminal DoStat             do_statement                            ;
+non terminal WhileStatement             while_statement                         ;
+non terminal WhileStatement             while_statement_no_short_if             ;
+non terminal ForStatement               for_statement                           ;
+non terminal ForStatement               for_statement_no_short_if               ;
+non terminal Sequence                   for_init_opt                            ;
+non terminal Sequence                   for_init                                ;
+non terminal Sequence                   for_update_opt                          ;
+non terminal Sequence                   for_update                              ;
+non terminal Sequence                   statement_expressions                   ;
+non terminal Sequence                   enroll_opt                              ;
+non terminal DoStatement                do_statement                            ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.3 Claim Statement                                                                                             **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal ClaimStat          claim_statement                         ;
-non terminal ClaimStat          claim_statement_no_short_if             ;
-non terminal Sequence           channels                                ;
-non terminal AST                channel                                 ;
+non terminal ClaimStatement             claim_statement                         ;
+non terminal ClaimStatement             claim_statement_no_short_if             ;
+non terminal Sequence                   channels                                ;
+non terminal AST                        channel                                 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.4 Empty Statement                                                                                             **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Statement          empty_statement                         ;
+non terminal Statement                  empty_statement                         ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.5 Barrier Sync & Timeout Statements                                                                           **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal SyncStat           barrier_sync_statement                  ;
-non terminal TimeoutStat        timeout_statement                       ;
+non terminal SyncStatement              barrier_sync_statement                  ;
+non terminal TimeoutStatement           timeout_statement                       ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.6 Suspend Statement                                                                                           **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal SuspendStat        suspend_statement                       ;
+non terminal SuspendStatement           suspend_statement                       ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.7 Expression Statement & Labelled Statements                                                                  **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal ExprStat           expression_statement                    ;
-non terminal Expression         statement_expression                    ;
-non terminal Statement          labeled_statement                       ;
+non terminal ExpressionStatement        expression_statement                    ;
+non terminal Expression                 statement_expression                    ;
+non terminal Statement                  labeled_statement                       ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.8 Break/Continue/Return Statements                                                                            **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal BreakStat          break_statement                         ;
-non terminal ContinueStat       continue_statement                      ;
-non terminal Name               identifier_opt                          ;
-non terminal ReturnStat         return_statement                        ;
+non terminal BreakStatement             break_statement                         ;
+non terminal ContinueStatement          continue_statement                      ;
+non terminal Name                       identifier_opt                          ;
+non terminal ReturnStatement            return_statement                        ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.9 Switch Statement                                                                                            **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal SwitchStat         switch_statement                        ;
-non terminal Sequence           switch_block                            ;
-non terminal Sequence           switch_block_statement_groups_opt       ;
-non terminal Sequence           switch_block_statement_groups           ;
-non terminal SwitchGroup        switch_block_statement_group            ;
-non terminal Sequence           switch_labels                           ;
-non terminal SwitchLabel        switch_label                            ;
+non terminal SwitchStatement            switch_statement                        ;
+non terminal Sequence                   switch_block                            ;
+non terminal Sequence                   switch_block_statement_groups_opt       ;
+non terminal Sequence                   switch_block_statement_groups           ;
+non terminal SwitchGroupStatement       switch_block_statement_group            ;
+non terminal Sequence                   switch_labels                           ;
+non terminal SwitchLabel                switch_label                            ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.10 Skip/Stop Statements                                                                                       **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal StopStat           stop_statement                          ;
-non terminal SkipStat           skip_statement                          ;
+non terminal StopStatement              stop_statement                          ;
+non terminal SkipStatement              skip_statement                          ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 9.11 Alt Statement                                                                                              **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal AltStat            alt_statement                           ;
-non terminal Sequence           alt_body                                ;
-non terminal AltCase            alt_case                                ;
-non terminal Guard              guard                                   ;
+non terminal AltStatement               alt_statement                           ;
+non terminal Sequence                   alt_body                                ;
+non terminal AltCase                    alt_case                                ;
+non terminal GuardStatement             guardStatement                          ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 10.0 Expressions                                                                                                **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Expression         primary                                 ;
-non terminal Expression         primary_no_new_array_or_mobile          ;
+non terminal Expression                 primary                                 ;
+non terminal Expression                 primary_no_new_array_or_mobile          ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 10.1 Array Creation Expressions                                                                                 **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal NewArray           array_creation_expression               ;
-non terminal Sequence           dim_exprs                               ;
-non terminal Expression         dim_expr                                ;
-non terminal Sequence           dims_opt                                ;
-non terminal Sequence           dims                                    ;
+non terminal NewArrayExpression         array_creation_expression               ;
+non terminal Sequence                   dim_exprs                               ;
+non terminal Expression                 dim_expr                                ;
+non terminal Sequence                   dims_opt                                ;
+non terminal Sequence                   dims                                    ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 10.2 Mobile Creation Expression                                                                                 **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal NewMobile          mobile_creation                         ;
+non terminal NewMobileExpression        mobile_creation                         ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 10.3 Channel Expression/Channel Read Expression                                                                 **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal ChannelEndExpr     chan_expression                         ;
-non terminal ChannelReadExpr    chan_read_expression                    ;
+non terminal ChannelEndExpression       chan_expression                         ;
+non terminal ChannelReadExpression      chan_read_expression                    ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 10.4 Structured Access                                                                                          **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Expression         record_access                           ;
-non terminal ArrayAccessExpr    array_access                            ;
+non terminal Expression                 record_access                           ;
+non terminal ArrayAccessExpression      array_access                            ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 10.5 Invocation Expression                                                                                      **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Invocation         invocation                              ;
-non terminal Sequence           argument_list_opt                       ;
-non terminal Sequence           argument_list                           ;
+non terminal InvocationExpression       invocation_expression                   ;
+non terminal Sequence                   argument_list_opt                       ;
+non terminal Sequence                   argument_list                           ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 10.6 Expressions                                                                                                **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Expression         postfix_expression                      ;
-non terminal UnaryPostExpr      post_increment_expression               ;
-non terminal UnaryPostExpr      post_decrement_expression               ;
-non terminal Expression         unary_expression                        ;
-non terminal UnaryPreExpr       pre_increment_expression                ;
-non terminal UnaryPreExpr       pre_decrement_expression                ;
-non terminal Expression         unary_expression_not_plus_minus         ;
-non terminal CastExpr           cast_expression                         ;
-non terminal Expression         multiplicative_expression               ;
-non terminal Expression         additive_expression                     ;
-non terminal Expression         shift_expression                        ;
-non terminal Expression         relational_expression                   ;
-non terminal Expression         equality_expression                     ;
-non terminal Expression         and_expression                          ;
-non terminal Expression         exclusive_or_expression                 ;
-non terminal Expression         inclusive_or_expression                 ;
-non terminal Expression         conditional_and_expression              ;
-non terminal Expression         conditional_or_expression               ;
-non terminal Expression         conditional_expression                  ;
-non terminal Expression         assignment_expression                   ;
-non terminal Assignment         assignment                              ;
-non terminal Integer            assignment_operator                     ;
-non terminal Expression         left_hand_side                          ;
-non terminal Expression         expression_opt                          ;
-non terminal Expression         expression                              ;
-non terminal Expression         constant_expression                     ;
+non terminal Expression                 postfix_expression                      ;
+non terminal UnaryPostExpression        post_increment_expression               ;
+non terminal UnaryPostExpression        post_decrement_expression               ;
+non terminal Expression                 unary_expression                        ;
+non terminal UnaryPreExpression         pre_increment_expression                ;
+non terminal UnaryPreExpression         pre_decrement_expression                ;
+non terminal Expression                 unary_expression_not_plus_minus         ;
+non terminal CastExpression             cast_expression                         ;
+non terminal Expression                 multiplicative_expression               ;
+non terminal Expression                 additive_expression                     ;
+non terminal Expression                 shift_expression                        ;
+non terminal Expression                 relational_expression                   ;
+non terminal Expression                 equality_expression                     ;
+non terminal Expression                 and_expression                          ;
+non terminal Expression                 exclusive_or_expression                 ;
+non terminal Expression                 inclusive_or_expression                 ;
+non terminal Expression                 conditional_and_expression              ;
+non terminal Expression                 conditional_or_expression               ;
+non terminal Expression                 conditional_expression                  ;
+non terminal Expression                 assignment_expression                   ;
+non terminal AssignmentExpression       assignment                              ;
+non terminal Integer                    assignment_operator                     ;
+non terminal Expression                 left_hand_side                          ;
+non terminal Expression                 expression_opt                          ;
+non terminal Expression                 expression                              ;
+non terminal Expression                 constant_expression                     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 11.0 Literal Expressions (See 8.0 for Array Literals)                                                           **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Literal            literal                                 ;
-non terminal RecordLiteral      record_literal                          ;
-non terminal Sequence           record_literal_argument_list_opt        ;
-non terminal Sequence           record_literal_argument_list            ;
-non terminal ProtocolLiteral    protocol_literal                        ;
+non terminal LiteralExpression          literal                                 ;
+non terminal RecordLiteralExpression    record_literal                          ;
+non terminal Sequence                   record_literal_argument_list_opt        ;
+non terminal Sequence                   record_literal_argument_list            ;
+non terminal ProtocolLiteralExpression  protocol_literal                        ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** Productions                                                                                                     **/
@@ -666,16 +683,11 @@ type_declarations
 // Sequence[Type <: AST] <: AST
 type_declaration
 ::= // TODO: We might be able to assign the package elsewhere
-    procedure_type_declaration:p        {:  p.myPackage = PJBugManager.INSTANCE.getPackageName();
-                                            RESULT = new Sequence<Type>(p)                          ;:}
-|   record_type_declaration:r           {:  r.myPackage = PJBugManager.INSTANCE.getPackageName();
-                                            RESULT = new Sequence<Type>(r)                          ;:}
-|   protocol_type_declaration:p         {:  p.myPackage = PJBugManager.INSTANCE.getPackageName();
-                                            RESULT = new Sequence<Type>(p)                          ;:}
-|   constant_declaration:c              {:  c.myPackage = PJBugManager.INSTANCE.getPackageName();
-                                            RESULT = c                                              ;:}
-|   EXTERN extern_type:e IDENTIFIER:n   {:  e.myPackage = PJBugManager.INSTANCE.getPackageName();
-                                            RESULT = new Sequence<Type>(new NamedType(new Name(n), new ExternType(e)));:}
+    procedure_type_declaration:p        {:  RESULT = new Sequence<Type>(p)                          ;:}
+|   record_type_declaration:r           {:  RESULT = new Sequence<Type>(r)                          ;:}
+|   protocol_type_declaration:p         {:  RESULT = new Sequence<Type>(p)                          ;:}
+|   constant_declaration:c              {:  RESULT = c                                              ;:}
+|   EXTERN extern_type:e IDENTIFIER:n   {:  RESULT = new Sequence<Type>(new NamedType(new Name(n), new ExternType(e)));:}
 ;
 
 // Name <: AST
@@ -703,7 +715,7 @@ procedure_type_declaration
     RPAREN
     annotations_opt:a
     implements_opt:i
-    body_opt:b                          {: RESULT = new ProcTypeDecl(m, t, new Name(id), f, i, a, b)    ;:}
+    body_opt:b                          {: RESULT = new ProcedureTypeDeclaration(m, t, new Name(id), f, i, a, b)    ;:}
 |   modifiers_opt:m
     // PROC
     VOID:t
@@ -713,7 +725,7 @@ procedure_type_declaration
     RPAREN
     annotations_opt:a
     implements_opt:i
-    body_opt:b                          {: RESULT = new ProcTypeDecl(m, new PrimitiveType(t, PrimitiveType.VoidKind),
+    body_opt:b                          {: RESULT = new ProcedureTypeDeclaration(m, new PrimitiveType(t, PrimitiveType.VoidKind),
                                                         new Name(id), f, i, a, b)                       ;:}
 ;
 
@@ -788,30 +800,30 @@ package_access
     IDENTIFIER:id                       {: RESULT = pa.append(new Name(id))                             ;:}
 ;
 
-// Sequence[ParamDecl <: AST] <: AST
+// Sequence[ParameterDeclaration <: AST] <: AST
 formal_parameter_list_opt
 ::=
     formal_parameter_list:f             {: RESULT = f                                                   ;:}
-|   /* Epsilon */                       {: RESULT = new Sequence<ParamDecl>()                           ;:}
+|   /* Epsilon */                       {: RESULT = new Sequence<ParameterDeclaration>()                ;:}
 ;
 
-// Sequence[ParamDecl <: AST] <: AST
+// Sequence[ParameterDeclaration <: AST] <: AST
 formal_parameter_list
 ::=
     formal_parameter_list:lst
     COMMA
     formal_parameter:e                  {: RESULT = lst.append(e)                                       ;:}
-|   formal_parameter:e                  {: RESULT = new Sequence<ParamDecl>(e)                          ;:}
+|   formal_parameter:e                  {: RESULT = new Sequence<ParameterDeclaration>(e)               ;:}
 ;
 
-// ParamDecl <: AST
+// ParameterDeclaration <: AST
 formal_parameter
 ::=
     type:t
-    variable_declarator_identifier:v   {: RESULT = new ParamDecl(t, v, false)                           ;:}
+    variable_declarator_identifier:v   {: RESULT = new ParameterDeclaration(t, v, false)                ;:}
 |   CONST
     type:t
-    variable_declarator_identifier:v   {: RESULT = new ParamDecl(t, v, true)                            ;:}
+    variable_declarator_identifier:v   {: RESULT = new ParameterDeclaration(t, v, true)                 ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -826,13 +838,13 @@ protocol_type_declaration
     IDENTIFIER:id
     extends_opt:e
     annotations_opt:a
-    protocol_body:b                     {: RESULT = new ProtocolTypeDecl(m, new Name(id), e, a, b)      ;:}
+    protocol_body:b                     {: RESULT = new ProtocolTypeDeclaration(m, new Name(id), e, a, b)      ;:}
 |   modifiers_opt:m
     PROTOCOL
     IDENTIFIER:id
     extends_opt:e
     annotations_opt:a
-    SEMICOLON                           {: RESULT = new ProtocolTypeDecl(m, new Name(id), e, a, null)   ;:}
+    SEMICOLON                           {: RESULT = new ProtocolTypeDeclaration(m, new Name(id), e, a, null)   ;:}
 ;
 
 // Sequence[Name <: AST] <: AST
@@ -867,8 +879,8 @@ protocol_case
 // Sequence[RecordMember <: AST] <: AST
 record_body_opt
 ::=
-    record_body:r                       {: RESULT = r                                                   ;:}
-//|   LBRACE /* empty */ RBRACE           {: RESULT = new Sequence<RecordMember>()                        ;:}
+    record_body:r                           {: RESULT = r                                                   ;:}
+//|   LBRACE /* empty */ RBRACE             {: RESULT = new Sequence<RecordMemberDeclaration>()             ;:}
 ;
 
 // Sequence[ProtocolCaseDecl <: AST] <: AST
@@ -878,7 +890,7 @@ record_body_opt
 //  protocol_case_declarations:lst
 //  SEMICOLON type:t
 //  variable_declarator_identifier:v {: RESULT = lst.append(new ProtocolM) ;:}
-//|   type variable_declarator_identifier {: RESULT = new Sequence<RecordMember>(new ProtocolCaseDecl($1, $2)) ;:}
+//|   type variable_declarator_identifier {: RESULT = new Sequence<RecordMemberDeclaration>(new ProtocolCaseDecl($1, $2)) ;:}
 //;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -893,7 +905,7 @@ record_type_declaration
     IDENTIFIER:id
     extends_opt:e
     annotations_opt:a
-    record_body:r                       {: RESULT = new RecordTypeDecl(m, new Name(id), e, a, r)        ;:}
+    record_body:r                       {: RESULT = new RecordTypeDeclaration(m, new Name(id), e, a, r)        ;:}
 ;
 
 // Sequence[RecordMember <: AST] <: AST
@@ -902,7 +914,7 @@ record_body
     LBRACE
     record_member_declarations:r
     RBRACE                              {: RESULT = r                                                   ;:}
-|   LBRACE /* empty */ RBRACE   {: RESULT = new Sequence<RecordMember>(); :}
+|   LBRACE /* empty */ RBRACE           {: RESULT = new Sequence<RecordMemberDeclaration>()             ;:}
 ;
 
 // Sequence[RecordMember <: AST] <: AST
@@ -918,9 +930,9 @@ record_member_declaration
 ::=
     type:t
     record_member_declarators:r
-    SEMICOLON                           {: final Sequence sequence = new Sequence<RecordMember>();
+    SEMICOLON                           {: final Sequence sequence = new Sequence<RecordMemberDeclaration>();
                                            for(final Name name: (Sequence<Name>) r)
-                                               sequence.append(new RecordMember(t, name));
+                                               sequence.append(new RecordMemberDeclaration(t, name));
                                            RESULT = sequence                                            ;:}
 ;
 
@@ -972,13 +984,6 @@ primitive_type
 named_type
 ::=
     IDENTIFIER:id                       {: RESULT = new NamedType(new Name(id))                             ;:}
-//| primary:p
-//  COLONCOLON
-//  IDENTIFIER:id                       {: RESULT = new NamedType(new Name(id, primary2PackageAccess(p)))   ;:}
-//| IDENTIFIER:p
-//  COLONCOLON
-//  IDENTIFIER:id                       {: RESULT = new NamedType(new Name(id,
-//                                                      primary2PackageAccess(new NameExpr(new Name(p)))))  ;:}
 ;
 
 // ArrayType <: Type <: AST
@@ -1174,9 +1179,9 @@ constant_declaration
     modifiers_opt:m
     type:t
     constant_declarators:c
-    SEMICOLON                           {: final Sequence sequence = new Sequence<ConstantDecl>();
+    SEMICOLON                           {: final Sequence sequence = new Sequence<ConstantDeclaration>();
                                            for(final Var variable: (Sequence<Var>) c)
-                                               sequence.append(new ConstantDecl(m, t, variable));
+                                               sequence.append(new ConstantDeclaration(m, t, variable));
                                            RESULT = sequence                                                ;:}
 ;
 
@@ -1241,7 +1246,7 @@ array_initializer
 ::=
     LBRACE
     variable_initializers_opt:v
-    RBRACE                              {: RESULT = new ArrayLiteral(v)                                     ;:}
+    RBRACE                              {: RESULT = new ArrayLiteralExpression(v)                                   ;:}
 ;
 
 // Sequence[Expression <: AST] <: AST
@@ -1268,7 +1273,7 @@ variable_initializers
 block_opt
 ::=
     block:b                             {: RESULT = b                                                       ;:}
-|   /* Epsilon */                       {: RESULT = null                                                    ;:}
+|   /* Epsilon */                       {: RESULT = new BlockStatement()                                             ;:}
 ;
 
 // Block <: Statement <: AST
@@ -1276,7 +1281,7 @@ block
 ::=
     LBRACE
     block_statements_opt:b
-    RBRACE                              {: RESULT = new Block(b)                                            ;:}
+    RBRACE                              {: RESULT = new BlockStatement(b)                                          ;:}
 ;
 
 // Sequence[Statement <: AST] <: AST
@@ -1298,16 +1303,16 @@ block_statements
 par_block
 ::=
     PAR
-    block:bl                            {: RESULT = new ParBlock(bl.getStatements(), new Sequence<Expression>())    ;:}
+    block:bl                                    {: RESULT = new ParBlock(bl.getStatements(), new Sequence<Expression>())    ;:}
 |   PAR
     ENROLL
     barriers:b
-    block:bl                            {: RESULT = new ParBlock(bl.getStatements(), b)                             ;:}
+    block:bl                                    {: RESULT = new ParBlock(bl.getStatements(), b)                             ;:}
 //| PAR
 //  ENROLL
 //  LPAREN
 //  barriers:b
-//  RPAREN block:bl                     {: RESULT = new ParBlock(bl.getStatements(), b)                             ;:}
+//  RPAREN block:bl                         {: RESULT = new ParBlock(bl.getStatements(), b)                             ;:}
 ;
 
 // Sequence[Expression <: AST] <: AST
@@ -1333,20 +1338,40 @@ local_variable_declaration
 ::=
     CONST
     type:t
-    variable_declarators:v              {: Sequence<LocalDecl> s = new Sequence<LocalDecl>();
-                                           for(int index = 0; index < ((Sequence<LocalDecl>) v).size(); index++)
-                                               s.append(new LocalDecl(t, (Var) v.child(index), true /* it is CONST */));
+    variable_declarators:v              {: Sequence<LocalDeclaration> s = new Sequence<LocalDeclaration>();
+                                           for(int index = 0; index < ((Sequence<LocalDeclaration>) v).size(); index++) {
+
+                                                // Initialize  a handle to the LocalDeclaration
+                                                final LocalDeclaration localDeclaration = (LocalDeclaration) v.child(index);
+
+                                                s.append(new LocalDeclaration(t, localDeclaration.getName(),
+                                                    localDeclaration.getInitializationExpression(), true /* it is CONST */));
+
+                                           }
+
                                            RESULT = s                                                       ;:}
 |   type:t
-    variable_declarators:v              {: Sequence s = new Sequence<LocalDecl>();
-                                           for(int index = 0; index < ((Sequence<LocalDecl>) v).size(); index++)
-                                               s.append(new LocalDecl(t, (Var) v.child(index), false /* it is NOT CONST */));
+    variable_declarators:v              {: Sequence s = new Sequence<LocalDeclaration>();
+                                           for(int index = 0; index < ((Sequence<LocalDeclaration>) v).size(); index++) {
+                                                // Initialize  a handle to the LocalDeclaration
+                                                final LocalDeclaration localDeclaration = (LocalDeclaration) v.child(index);
+                                                s.append(new LocalDeclaration(t, localDeclaration.getName(),
+                                                    localDeclaration.getInitializationExpression(), false /* it is not CONST */));
+
+                                           }
+
                                            RESULT = s                                                       ;:}
 |   MOBILE
     type:t
-    variable_declarators:v              {: Sequence s = new Sequence<LocalDecl>();
-                                           for(int i = 0; i < ((Sequence<LocalDecl>) v).size(); i++)
-                                               s.append(new LocalDecl(t, (Var)v.child(i), false /* it is NOT CONST */));
+    variable_declarators:v              {: Sequence s = new Sequence<LocalDeclaration>();
+                                           for(int index = 0; index < ((Sequence<LocalDeclaration>) v).size(); index++) {
+                                                // Initialize  a handle to the LocalDeclaration
+                                                final LocalDeclaration localDeclaration = (LocalDeclaration) v.child(index);
+                                                s.append(new LocalDeclaration(t, localDeclaration.getName(),
+                                                    localDeclaration.getInitializationExpression(), false /* it is not CONST */));
+
+                                           }
+
                                            RESULT = s                                                       ;:}
 ;
 // TODO: we should be able to declare mobile channels and procedures here
@@ -1397,14 +1422,14 @@ statement_without_trailing_substatement
     LPAREN
     expression:e
     RPAREN
-    SEMICOLON                                   {: RESULT = new ChannelWriteStat(new NameExpr(new Name(id)), e) ;:}
+    SEMICOLON                                   {: RESULT = new ChannelWriteStatement(new NameExpression(new Name(id)), e) ;:}
 |   primary:p
     DOT
     WRITE
     LPAREN
     expression:e
     RPAREN
-    SEMICOLON                                   {: RESULT = new ChannelWriteStat(p, e)                          ;:}
+    SEMICOLON                                   {: RESULT = new ChannelWriteStatement(p, e)                     ;:}
 |   alt_statement:s                             {: RESULT = s                                                   ;:}
 ;
 
@@ -1419,7 +1444,7 @@ if_then_statement
     LPAREN
     expression:e
     RPAREN
-    statement:s                                 {: RESULT = new IfStat(e, s, null)                              ;:}
+    statement:s                                 {: RESULT = new IfStatement(e, s, null)                              ;:}
 //|   IF
 //    LPAREN
 //    error
@@ -1446,7 +1471,7 @@ if_then_else_statement
     RPAREN
     statement_no_short_if:s1
     ELSE
-    statement:s2                                {: RESULT = new IfStat(e, s1, s2)                               ;:}
+    statement:s2                                {: RESULT = new IfStatement(e, s1, s2)                         ;:}
 ;
 
 // IfStat <: Statement <: AST
@@ -1457,7 +1482,7 @@ if_then_else_statement_no_short_if
     expression:e
     RPAREN
     statement_no_short_if:s1
-    ELSE statement_no_short_if:s2               {: RESULT = new IfStat(e, s1, s2)                               ;:}
+    ELSE statement_no_short_if:s2               {: RESULT = new IfStatement(e, s1, s2)                        ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -1471,7 +1496,7 @@ while_statement
     LPAREN
     expression:e
     RPAREN
-    statement:s                                 {: RESULT = new WhileStat(e, s)                                 ;:}
+    statement:s                                 {: RESULT = new WhileStatement(e, s)                                 ;:}
 ;
 
 // WhileStat <: Statement <: AST
@@ -1481,7 +1506,7 @@ while_statement_no_short_if
     LPAREN
     expression:e
     RPAREN
-    statement_no_short_if:s                     {: RESULT = new WhileStat(e, s)                                 ;:}
+    statement_no_short_if:s                     {: RESULT = new WhileStatement(e, s)                                 ;:}
 ;
 
 // ForStat <: Statement <: AST
@@ -1495,7 +1520,7 @@ for_statement
     SEMICOLON
     for_update_opt:u
     RPAREN
-    statement:s                                 {: RESULT = new ForStat(t, i, e, u, new Sequence<Expression>(), s, false)   ;:}
+    statement:s                                 {: RESULT = new ForStatement(t, i, e, u, new Sequence<Expression>(), s, false)   ;:}
 |   PAR
     FOR:t
     LPAREN
@@ -1509,7 +1534,7 @@ for_statement
     LPAREN
     argument_list:b
     RPAREN
-    statement:s                                 {: RESULT = new ForStat(t, i, e, u, b, s, true)             ;:}
+    statement:s                                 {: RESULT = new ForStatement(t, i, e, u, b, s, true)             ;:}
 |   PAR
     FOR:t
     LPAREN
@@ -1519,7 +1544,7 @@ for_statement
     SEMICOLON
     for_update_opt:u
     RPAREN
-    statement:s                                 {: RESULT = new ForStat(t, i, e, u, new Sequence<Expression>(), s, true)    ;:}
+    statement:s                                 {: RESULT = new ForStatement(t, i, e, u, new Sequence<Expression>(), s, true)    ;:}
 ;
 
 // ForStat <: Statement <: AST
@@ -1533,7 +1558,7 @@ for_statement_no_short_if
     SEMICOLON
     for_update_opt:u
     RPAREN
-    statement_no_short_if:s                     {: RESULT = new ForStat(t, i, e, u, new Sequence<Expression>(), s, false)   ;:}
+    statement_no_short_if:s                     {: RESULT = new ForStatement(t, i, e, u, new Sequence<Expression>(), s, false)   ;:}
 |   PAR
     FOR:t
     LPAREN
@@ -1547,7 +1572,7 @@ for_statement_no_short_if
     LPAREN
     argument_list:b
     RPAREN
-    statement_no_short_if:s                     {: RESULT = new ForStat(t, i, e, u, b, s, true)             ;:}
+    statement_no_short_if:s                     {: RESULT = new ForStatement(t, i, e, u, b, s, true)             ;:}
 |   PAR
     FOR:t
     LPAREN
@@ -1557,7 +1582,7 @@ for_statement_no_short_if
     SEMICOLON
     for_update_opt:u
     RPAREN
-    statement_no_short_if:s                     {: RESULT = new ForStat(t, i, e, u, new Sequence<Expression>(), s, true)    ;:}
+    statement_no_short_if:s                     {: RESULT = new ForStatement(t, i, e, u, new Sequence<Expression>(), s, true)    ;:}
 ;
 
 // Sequence[AST] <: AST
@@ -1578,7 +1603,7 @@ for_init
 for_update_opt
 ::=
     for_update:u                                {: RESULT = u                                                       ;:}
-|   /* Epsilon */                               {: RESULT = new Sequence<ExprStat>()                                ;:}
+|   /* Epsilon */                               {: RESULT = new Sequence<ExpressionStatement>()                     ;:}
 ;
 
 // Sequence[ExprStat <: AST] <: AST
@@ -1590,10 +1615,10 @@ for_update
 // Sequence[ExprStat <: AST] <: AST
 statement_expressions
 ::=
-    statement_expression:e                      {: RESULT = new Sequence<ExprStat>(new ExprStat(e))                 ;:}
+    statement_expression:e                      {: RESULT = new Sequence<ExpressionStatement>(new ExpressionStatement(e))                 ;:}
 |   statement_expressions:lst
     COMMA
-    statement_expression:e                      {: RESULT = lst.append(new ExprStat(e))                             ;:}
+    statement_expression:e                      {: RESULT = lst.append(new ExpressionStatement(e))                             ;:}
 ;
 
 // DoStat <: Statement <: AST
@@ -1605,7 +1630,7 @@ do_statement
     LPAREN
     expression:e
     RPAREN
-    SEMICOLON                                   {: RESULT = new DoStat(s, e)                                        ;:}
+    SEMICOLON                                   {: RESULT = new DoStatement(s, e)                                    ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -1619,7 +1644,7 @@ claim_statement
     LPAREN
     channels:c
     RPAREN
-    statement:s                                 {: RESULT = new ClaimStat(c, s)                                     ;:}
+    statement:s                                 {: RESULT = new ClaimStatement(c, s)                                ;:}
 ;
 
 // ClaimStat <: Statement <: AST
@@ -1628,7 +1653,7 @@ claim_statement_no_short_if ::=
     LPAREN
     channels:c
     RPAREN
-    statement_no_short_if:s                     {: RESULT = new ClaimStat(c, s)                                     ;:}
+    statement_no_short_if:s                     {: RESULT = new ClaimStatement(c, s)                                ;:}
 ;
 
 // Sequence[AST] <: AST
@@ -1643,12 +1668,12 @@ channels
 // AST
 channel
 ::=
-    IDENTIFIER:id                               {: RESULT = new NameExpr(new Name(id))                              ;:}
+    IDENTIFIER:id                               {: RESULT = new NameExpression(new Name(id))                        ;:}
 |   channel_type:t
     IDENTIFIER:id
     EQ
-    primary_no_new_array_or_mobile:e            {: RESULT = new LocalDecl(t, new Var(new Name(id), e), false)       ;:}
-|   chan_expression:e                           {: RESULT = e                                                       ;:}
+    primary_no_new_array_or_mobile:e            {: RESULT = new LocalDeclaration(t, new Name(id), e, false) ;:}
+|   chan_expression:e                           {: RESULT = e                                                        ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -1670,19 +1695,19 @@ barrier_sync_statement
 ::=
 // SYNC
 // primary_no_new_array_or_mobile:e
-// SEMICOLON                                    {: RESULT = new SyncStat(e)                                         ;:}
+// SEMICOLON                                    {: RESULT = new SyncStatement(e)                                    ;:}
     primary:e
     DOT
     SYNC
     LPAREN
     RPAREN
-    SEMICOLON                                   {: RESULT = new SyncStat(e)                                         ;:}
+    SEMICOLON                                   {: RESULT = new SyncStatement(e)                                    ;:}
 |   IDENTIFIER:id
     DOT
     SYNC
     LPAREN
     RPAREN
-    SEMICOLON                                   {: RESULT = new SyncStat(new NameExpr(new Name(id)))                ;:}
+    SEMICOLON                                   {: RESULT = new SyncStatement(new NameExpression(new Name(id)))           ;:}
 ;
 
 // TimeoutStat <: Statement <: AST
@@ -1693,13 +1718,13 @@ timeout_statement
     TIMEOUT
     LPAREN
     expression:e
-    RPAREN                                      {: RESULT = new TimeoutStat(new NameExpr(new Name(id)), e)          ;:}
+    RPAREN                                      {: RESULT = new TimeoutStatement(new NameExpression(new Name(id)), e)     ;:}
 |   primary:p
     DOT
     TIMEOUT
     LPAREN
     expression:e
-    RPAREN                                      {: RESULT = new TimeoutStat(p, e)                                   ;:}
+    RPAREN                                      {: RESULT = new TimeoutStatement(p, e)                              ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -1710,14 +1735,14 @@ timeout_statement
 suspend_statement
 ::=
     SUSPEND:s
-    SEMICOLON                                   {: RESULT = new SuspendStat(s, new Sequence())                      ;:}
+    SEMICOLON                                   {: RESULT = new SuspendStatement(s, new Sequence())                 ;:}
     //SUSPEND:s
     //RESUME
     //WITH
     //LPAREN
     //formal_parameter_list:l
     //RPAREN
-    //SEMICOLON                                 {: RESULT = new SuspendStat(s, l)                                   ;:}
+    //SEMICOLON                                 {: RESULT = new SuspendStatement(s, l)                              ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -1728,30 +1753,30 @@ suspend_statement
 expression_statement
 ::=
     statement_expression:e
-    SEMICOLON                          {: RESULT = new ExprStat(e)                                      ;:}
+    SEMICOLON                          {: RESULT = new ExpressionStatement(e)                                      ;:}
 ;
 
 // Expression <: AST
 statement_expression
 ::=
-    assignment:e                       {: RESULT = e                                                    ;:}
-|   pre_increment_expression:e         {: RESULT = e                                                    ;:}
-|   pre_decrement_expression:e         {: RESULT = e                                                    ;:}
-|   post_increment_expression:e        {: RESULT = e                                                    ;:}
-|   post_decrement_expression:e        {: RESULT = e                                                    ;:}
-|   invocation:e                       {: RESULT = e                                                    ;:}
+    assignment:e                                 {: RESULT = e                                                    ;:}
+|   pre_increment_expression:e                   {: RESULT = e                                                    ;:}
+|   pre_decrement_expression:e                   {: RESULT = e                                                    ;:}
+|   post_increment_expression:e                  {: RESULT = e                                                    ;:}
+|   post_decrement_expression:e                  {: RESULT = e                                                    ;:}
+|   invocation_expression:e                      {: RESULT = e                                                    ;:}
 |   primary:p
     DOT
     READ
     LPAREN
     block_opt:b
-    RPAREN                              {: RESULT = new ChannelReadExpr(p, b)                           ;:}
+    RPAREN                              {: RESULT = new ChannelReadExpression(p, b)                           ;:}
 |   IDENTIFIER:id
     DOT
     READ
     LPAREN
     block_opt:b
-    RPAREN                              {: RESULT = new ChannelReadExpr(new NameExpr(new Name(id)), b)  ;:}
+    RPAREN                              {: RESULT = new ChannelReadExpression(new NameExpression(new Name(id)), b)  ;:}
 ;
 
 // Statement <: AST
@@ -1771,7 +1796,7 @@ break_statement
 ::=
     BREAK:b
     identifier_opt:i
-    SEMICOLON                           {: RESULT = new BreakStat(b, i)                                 ;:}
+    SEMICOLON                           {: RESULT = new BreakStatement(b, i)                                 ;:}
 ;
 
 // ContinueStat <: Statement <: AST
@@ -1779,7 +1804,7 @@ continue_statement
 ::=
     CONTINUE:c
     identifier_opt:i
-    SEMICOLON                           {: RESULT = new ContinueStat(c,i)                               ;:}
+    SEMICOLON                           {: RESULT = new ContinueStatement(c,i)                               ;:}
 ;
 
 // Name <: AST
@@ -1794,7 +1819,7 @@ return_statement
 ::=
     RETURN:r
     expression_opt:e
-    SEMICOLON                           {: RESULT = new ReturnStat(r, e)                                ;:}
+    SEMICOLON                           {: RESULT = new ReturnStatement(r, e)                                ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -1808,7 +1833,7 @@ switch_statement
     LPAREN
     expression:e
     RPAREN
-    switch_block:b                      {: RESULT = new SwitchStat(e, b)                                ;:}
+    switch_block:b                      {: RESULT = new SwitchStatement(e, b)                                ;:}
 ;
 
 // Sequence<SwitchGroup <: AST> <: AST
@@ -1823,13 +1848,13 @@ switch_block
 switch_block_statement_groups_opt
 ::=
     switch_block_statement_groups:s     {: RESULT = s                                                   ;:}
-|   /* Epsilon */                       {: RESULT = new Sequence<SwitchGroup>()                         ;:}
+|   /* Epsilon */                       {: RESULT = new Sequence<SwitchGroupStatement>()                ;:}
 ;
 
 // Sequence<SwitchGroup <: AST> <: AST
 switch_block_statement_groups
 ::=
-    switch_block_statement_group:e      {: RESULT = new Sequence<SwitchGroup>(e)                        ;:}
+    switch_block_statement_group:e      {: RESULT = new Sequence<SwitchGroupStatement>(e)               ;:}
 |   switch_block_statement_groups:lst
     switch_block_statement_group:e      {: RESULT = lst.append(e)                                       ;:}
 ;
@@ -1838,7 +1863,7 @@ switch_block_statement_groups
 switch_block_statement_group
 ::=
     switch_labels:s
-    block_statements:b                  {: RESULT = new SwitchGroup(s, b)                               ;:}
+    block_statements:b                  {: RESULT = new SwitchGroupStatement(s, b)                      ;:}
 ;
 
 // Sequence<SwitchLabel <: AST> <: AST
@@ -1867,14 +1892,14 @@ switch_label
 stop_statement
 ::=
     STOP:s
-    SEMICOLON                           {: RESULT = new StopStat(s)                                     ;:}
+    SEMICOLON                           {: RESULT = new StopStatement(s)                                 ;:}
 ;
 
 // SkipStat <: Statement <: AST
 skip_statement
 ::=
     SKIP:s
-    SEMICOLON                           {: RESULT = new SkipStat(s)                                     ;:}
+    SEMICOLON                           {: RESULT = new SkipStatement(s)                                 ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -1888,7 +1913,7 @@ alt_statement
     ALT
     LBRACE
     alt_body:b
-    RBRACE                              {: RESULT = new AltStat(b, true /* PRI ALT */)                  ;:}
+    RBRACE                              {: RESULT = new AltStatement(b, true /* PRI ALT */)               ;:}
 |   PRI
     ALT
     LPAREN
@@ -1900,11 +1925,11 @@ alt_statement
     RPAREN
     LBRACE
     alt_body:b
-    RBRACE                              {: RESULT = new AltStat(i, e, u, b, true /* PRI ALT */)         ;:}
+    RBRACE                              {: RESULT = new AltStatement(i, e, u, b, true /* PRI ALT */)      ;:}
 |   ALT
     LBRACE
     alt_body:b
-    RBRACE                              {: RESULT = new AltStat(b, false /* ALT */)                     ;:}
+    RBRACE                              {: RESULT = new AltStatement(b, false /* ALT */)                  ;:}
 |   ALT
     LPAREN
     for_init_opt:i
@@ -1915,7 +1940,7 @@ alt_statement
     RPAREN
     LBRACE
     alt_body:b
-    RBRACE                              {: RESULT = new AltStat(i, e, u, b, false /* ALT */)            ;:}
+    RBRACE                              {: RESULT = new AltStatement(i, e, u, b, false /* ALT */)         ;:}
 ;
 
 // Sequence[AltCase <: AST] <: AST
@@ -1933,23 +1958,23 @@ alt_case
     expression:e
     RPAREN
     ANDAND
-    guard:g
+    guardStatement:g
     COLON
     statement:s                         {: RESULT = new AltCase(e, g, s)                                ;:}
-|   guard:g
+|   guardStatement:g
     COLON
     statement:s                         {: RESULT = new AltCase(null, g, s)                             ;:}
 |   alt_statement:as                    {: RESULT = new AltCase(as)                                     ;:}
 ;
 
 // Guard (takes in a statement) <: AST
-guard
+guardStatement
 ::=
     left_hand_side:l
     EQ
-    chan_read_expression:e              {: RESULT = new Guard(new ExprStat(new Assignment(l, e, Assignment.EQ)))    ;:}
-|   SKIP:s                              {: RESULT = new Guard(new SkipStat(s))                                      ;:}
-|   timeout_statement:s                 {: RESULT = new Guard(s)                                                    ;:}
+    chan_read_expression:e              {: RESULT = new GuardStatement(new ExpressionStatement(new AssignmentExpression(l, e, AssignmentExpression.EQ))) ;:}
+|   SKIP:s                              {: RESULT = new GuardStatement(new SkipStatement(s))                                      ;:}
+|   timeout_statement:s                 {: RESULT = new GuardStatement(s)                                                    ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -1967,10 +1992,10 @@ primary
 |   chan_expression:e                   {: RESULT = e                                                   ;:}
 |   primary:e
     COLONCOLON
-    IDENTIFIER:id                       {: RESULT = new NameExpr(new Name(id, primary2PackageAccess(e)))        ;:}
+    IDENTIFIER:id                       {: RESULT = new NameExpression(new Name(id, primary2PackageAccess(e)))      ;:}
 |   IDENTIFIER:id1
     COLONCOLON
-    IDENTIFIER:id2                      {: RESULT = new NameExpr(new Name(id2, new Sequence(new Name(id1))))    ;:}
+    IDENTIFIER:id2                      {: RESULT = new NameExpression(new Name(id2, new Sequence(new Name(id1))))  ;:}
 ;
 
 // Expression <: AST
@@ -1979,7 +2004,7 @@ primary_no_new_array_or_mobile
     literal:e                           {: RESULT = e                                                   ;:}
 |   LPAREN expression:e RPAREN          {: RESULT = e; RESULT.hasParens = true                          ;:}
 |   record_access:e                     {: RESULT = e                                                   ;:}
-|   invocation:e                        {: RESULT = e                                                   ;:}
+|   invocation_expression:e             {: RESULT = e                                                   ;:}
 |   array_access:e                      {: RESULT = e                                                   ;:}
 ;
 
@@ -1993,27 +2018,27 @@ array_creation_expression
     NEW
     primitive_type:t
     dim_exprs:d1
-    dims_opt:d2                         {: RESULT = new NewArray(t, d1, d2, null)                           ;:}
+    dims_opt:d2                         {: RESULT = new NewArrayExpression(t, d1, d2, null)                           ;:}
 |   NEW
     primitive_type:t
     dims:d
-    array_initializer:i                 {: RESULT = new NewArray(t, new Sequence<Expression>(), d, i)       ;:}
+    array_initializer:i                 {: RESULT = new NewArrayExpression(t, new Sequence<Expression>(), d, i)       ;:}
 |   NEW
     IDENTIFIER:id
     dim_exprs:d1
-    dims_opt:d2                         {: RESULT = new NewArray(new NamedType(new Name(id)), d1, d2, null) ;:}
+    dims_opt:d2                         {: RESULT = new NewArrayExpression(new NamedType(new Name(id)), d1, d2, null) ;:}
 |   NEW
     IDENTIFIER:id
     dims:d
-    array_initializer:i                 {: RESULT = new NewArray(new NamedType(new Name(id)), new Sequence<Expression>(), d, i) ;:}
+    array_initializer:i                 {: RESULT = new NewArrayExpression(new NamedType(new Name(id)), new Sequence<Expression>(), d, i) ;:}
 |   NEW
     channel_type:ct
     dim_exprs:d1
-    dims_opt:d2                         {: RESULT = new NewArray(ct, d1, d2, null)                          ;:}
+    dims_opt:d2                         {: RESULT = new NewArrayExpression(ct, d1, d2, null)                          ;:}
 |   NEW
     channel_type:ct
     dims:d
-    array_initializer:i                 {: RESULT = new NewArray(ct, new Sequence<Expression>(), d, i)      ;:}
+    array_initializer:i                 {: RESULT = new NewArrayExpression(ct, new Sequence<Expression>(), d, i)      ;:}
 ;
 
 // Sequence[Expression <: AST] <: AST
@@ -2060,7 +2085,7 @@ mobile_creation
     MOBILE
     LPAREN
     type_name:tn
-    RPAREN                              {: RESULT = new NewMobile(tn)                                       ;:}
+    RPAREN                              {: RESULT = new NewMobileExpression(tn)                                     ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -2072,16 +2097,16 @@ chan_expression
 ::=
     primary:p
     DOT
-    READ                                {: RESULT = new ChannelEndExpr(p, ChannelEndExpr.READ)              ;:}
+    READ                                {: RESULT = new ChannelEndExpression(p, ChannelEndExpression.READ)              ;:}
 |   primary:p
     DOT
-    WRITE                               {: RESULT = new ChannelEndExpr(p, ChannelEndExpr.WRITE)             ;:}
+    WRITE                               {: RESULT = new ChannelEndExpression(p, ChannelEndExpression.WRITE)             ;:}
 |   IDENTIFIER:id
     DOT
-    READ                                {: RESULT = new ChannelEndExpr(new NameExpr(new Name(id)), ChannelEndExpr.READ) ;:}
+    READ                                {: RESULT = new ChannelEndExpression(new NameExpression(new Name(id)), ChannelEndExpression.READ) ;:}
 |   IDENTIFIER:id
     DOT
-    WRITE                               {: RESULT = new ChannelEndExpr(new NameExpr(new Name(id)), ChannelEndExpr.WRITE);:}
+    WRITE                               {: RESULT = new ChannelEndExpression(new NameExpression(new Name(id)), ChannelEndExpression.WRITE);:}
 ;
 
 // ChannelReadExpr <: Expression <: AST
@@ -2092,13 +2117,13 @@ chan_read_expression
     READ
     LPAREN
     block_opt:b
-    RPAREN                              {: RESULT = new ChannelReadExpr(p, b)                               ;:}
+    RPAREN                              {: RESULT = new ChannelReadExpression(p, b)                                 ;:}
 |   IDENTIFIER:id
     DOT
     READ
     LPAREN
     block_opt:b
-    RPAREN                              {: RESULT = new ChannelReadExpr(new NameExpr(new Name(id)), b)      ;:}
+    RPAREN                              {: RESULT = new ChannelReadExpression(new NameExpression(new Name(id)), b)  ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -2110,10 +2135,10 @@ record_access
 ::=
     primary:p
     DOT
-    IDENTIFIER:id                       {: RESULT = new RecordAccess(p, new Name(id))                               ;:}
+    IDENTIFIER:id                       {: RESULT = new RecordAccessExpression(p, new Name(id))                             ;:}
 |   IDENTIFIER:id1
     DOT
-    IDENTIFIER:id2                      {: RESULT = new RecordAccess(new NameExpr(new Name(id1)), new Name(id2))    ;:}
+    IDENTIFIER:id2                      {: RESULT = new RecordAccessExpression(new NameExpression(new Name(id1)), new Name(id2))  ;:}
 ;
 
 // ArrayAccessExpr <: Expression <: AST
@@ -2122,11 +2147,11 @@ array_access
     IDENTIFIER:id
     LBRACK
     expression:e
-    RBRACK                              {: RESULT = new ArrayAccessExpr(new NameExpr(new Name(id)), e)              ;:}
+    RBRACK                              {: RESULT = new ArrayAccessExpression(new NameExpression(new Name(id)), e)        ;:}
 |   primary_no_new_array_or_mobile:p
     LBRACK
     expression:e
-    RBRACK                              {: RESULT = new ArrayAccessExpr(p, e)                                       ;:}
+    RBRACK                              {: RESULT = new ArrayAccessExpression(p, e)                                 ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -2134,41 +2159,41 @@ array_access
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 // Invocation <: Expression <: AST
-invocation
+invocation_expression
 ::=
     IDENTIFIER:id
     LPAREN
     argument_list_opt:l
-    RPAREN                              {: RESULT = new Invocation(null, new Name(id), l)               ;:}
+    RPAREN                              {: RESULT = new InvocationExpression(null, new Name(id), l)               ;:}
 |   FORK:f
     LPAREN
     argument_list:l
-    RPAREN                              {: RESULT = new Invocation(null, new Name(f), l)                ;:}
+    RPAREN                              {: RESULT = new InvocationExpression(null, new Name(f), l)                ;:}
 |   primary:p
     DOT
     IDENTIFIER:id
     LPAREN
     argument_list_opt:l
-    RPAREN                              {: RESULT = new Invocation(p, new Name(id), l)                  ;:}
+    RPAREN                              {: RESULT = new InvocationExpression(p, new Name(id), l)                  ;:}
 |   primary:p
     COLONCOLON
     IDENTIFIER:id
     LPAREN
     argument_list_opt:l
-    RPAREN                              {: RESULT = new Invocation(null, new Name(id, primary2PackageAccess(p)), l) ;:}
+    RPAREN                              {: RESULT = new InvocationExpression(null, new Name(id, primary2PackageAccess(p)), l) ;:}
 |   IDENTIFIER:p
     COLONCOLON
     IDENTIFIER:id
     LPAREN
     argument_list_opt:l
-    RPAREN                              {: RESULT = new Invocation(null, new Name(id,
-                                                        primary2PackageAccess(new NameExpr(new Name(p)))), l)       ;:}
+    RPAREN                              {: RESULT = new InvocationExpression(null, new Name(id,
+                                                        primary2PackageAccess(new NameExpression(new Name(p)))), l) ;:}
 |   IDENTIFIER:p
     DOT
     IDENTIFIER:id
     LPAREN
     argument_list_opt:l
-    RPAREN                              {: RESULT = new Invocation(new NameExpr(new Name(p)), new Name(id), l)      ;:}
+    RPAREN                              {: RESULT = new InvocationExpression(new NameExpression(new Name(p)), new Name(id), l)      ;:}
 ;
 
 // Sequence[Expression <: AST] <: AST
@@ -2197,21 +2222,21 @@ postfix_expression
     primary:e                           {: RESULT = e                                                               ;:}
 |   post_increment_expression:e         {: RESULT = e                                                               ;:}
 |   post_decrement_expression:e         {: RESULT = e                                                               ;:}
-|   IDENTIFIER:id                       {: RESULT = new NameExpr(new Name(id))                                      ;:}
+|   IDENTIFIER:id                       {: RESULT = new NameExpression(new Name(id))                                ;:}
 ;
 
-// UnaryPostExpr <: Expression <: AST
+// UnaryPostExpression <: Expression <: AST
 post_increment_expression
 ::=
     postfix_expression:e
-    PLUSPLUS                            {: RESULT = new UnaryPostExpr(e, UnaryPostExpr.PLUSPLUS)                    ;:}
+    PLUSPLUS                            {: RESULT = new UnaryPostExpression(e, UnaryPostExpression.PLUSPLUS)                    ;:}
 ;
 
-// UnaryPostExpr <: Expression <: AST
+// UnaryPostExpression <: Expression <: AST
 post_decrement_expression
 ::=
     postfix_expression:e
-    MINUSMINUS                          {: RESULT = new UnaryPostExpr(e, UnaryPostExpr.MINUSMINUS)                  ;:}
+    MINUSMINUS                          {: RESULT = new UnaryPostExpression(e, UnaryPostExpression.MINUSMINUS)                  ;:}
 ;
 
 // Expression <: AST
@@ -2220,7 +2245,7 @@ unary_expression
     pre_increment_expression:e          {: RESULT = e                                                               ;:}
 |   pre_decrement_expression:e          {: RESULT = e                                                               ;:}
 |   PLUS unary_expression:e             {: RESULT = e                                                               ;:}
-|   MINUS unary_expression:e            {: RESULT = new UnaryPreExpr(e, UnaryPreExpr.MINUS)                         ;:}
+|   MINUS unary_expression:e            {: RESULT = new UnaryPreExpression(e, UnaryPreExpression.MINUS)                   ;:}
 |   unary_expression_not_plus_minus:e   {: RESULT = e                                                               ;:}
 ;
 
@@ -2228,22 +2253,22 @@ unary_expression
 pre_increment_expression
 ::=
     PLUSPLUS
-    unary_expression:e                  {: RESULT = new UnaryPreExpr(e, UnaryPreExpr.PLUSPLUS)                      ;:}
+    unary_expression:e                  {: RESULT = new UnaryPreExpression(e, UnaryPreExpression.PLUSPLUS)               ;:}
 ;
 
 // UnaryPreExpr <: Expression <: AST
 pre_decrement_expression
 ::=
     MINUSMINUS
-    unary_expression:e                  {: RESULT = new UnaryPreExpr(e, UnaryPreExpr.MINUSMINUS)                    ;:}
+    unary_expression:e                  {: RESULT = new UnaryPreExpression(e, UnaryPreExpression.MINUSMINUS)              ;:}
 ;
 
 // Expression <: AST
 unary_expression_not_plus_minus
 ::=
     postfix_expression:e                {: RESULT = e                                                               ;:}
-|   COMP unary_expression:e             {: RESULT = new UnaryPreExpr(e, UnaryPreExpr.COMP)                          ;:}
-|   NOT unary_expression:e              {: RESULT = new UnaryPreExpr(e, UnaryPreExpr.NOT)                           ;:}
+|   COMP unary_expression:e             {: RESULT = new UnaryPreExpression(e, UnaryPreExpression.COMP)              ;:}
+|   NOT unary_expression:e              {: RESULT = new UnaryPreExpression(e, UnaryPreExpression.NOT)               ;:}
 |   cast_expression:e                   {: RESULT = e                                                               ;:}
 ;
              
@@ -2253,8 +2278,8 @@ cast_expression
     LPAREN
     expression:e
     RPAREN
-    unary_expression_not_plus_minus:ex  {: if(e instanceof NameExpr)
-                                               RESULT = new CastExpr(new NamedType(((NameExpr) e).getName()), ex);
+    unary_expression_not_plus_minus:ex  {: if(e instanceof NameExpression)
+                                               RESULT = new CastExpression(new NamedType(((NameExpression) e).getName()), ex);
                                            else {
                                                handler.onIllegalCastExpression(e,
                                                     Lexer.CurrentLine.length() + 1, Lexer.LineCount);
@@ -2263,7 +2288,7 @@ cast_expression
 |   LPAREN
     primitive_type:t
     RPAREN
-    unary_expression:e                  {: RESULT = new CastExpr(t, e)                                              ;:}
+    unary_expression:e                  {: RESULT = new CastExpression(t, e)                                        ;:}
 ;
 
 // Expression <: AST
@@ -2272,13 +2297,13 @@ multiplicative_expression
     unary_expression:e                  {: RESULT = e                                                               ;:}
 |   multiplicative_expression:e1
     MULT
-    unary_expression:e2                 {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.MULT)                         ;:}
+    unary_expression:e2                 {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.MULT)             ;:}
 |   multiplicative_expression:e1
     DIV
-    unary_expression:e2                 {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.DIV)                          ;:}
+    unary_expression:e2                 {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.DIV)              ;:}
 |   multiplicative_expression:e1
     MOD
-    unary_expression:e2                 {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.MOD)                          ;:}
+    unary_expression:e2                 {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.MOD)              ;:}
 ;
 
 // Expression <: AST
@@ -2287,10 +2312,10 @@ additive_expression
     multiplicative_expression:e         {: RESULT = e                                                               ;:}
 |   additive_expression:e1
     PLUS
-    multiplicative_expression:e2        {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.PLUS)                         ;:}
+    multiplicative_expression:e2        {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.PLUS)             ;:}
 |   additive_expression:e1
     MINUS
-    multiplicative_expression:e2        {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.MINUS)                        ;:}
+    multiplicative_expression:e2        {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.MINUS)            ;:}
 ;
 
 // Expression <: AST
@@ -2299,13 +2324,13 @@ shift_expression
     additive_expression:e               {: RESULT = e                                                               ;:}
 |   shift_expression:e1
     LSHIFT
-    additive_expression:e2              {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.LSHIFT)                       ;:}
+    additive_expression:e2              {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.LSHIFT)           ;:}
 |   shift_expression:e1
     RSHIFT
-    additive_expression:e2              {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.RSHIFT)                       ;:}
+    additive_expression:e2              {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.RSHIFT)           ;:}
 |   shift_expression:e1
     RRSHIFT
-    additive_expression:e2              {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.RRSHIFT)                      ;:}
+    additive_expression:e2              {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.RRSHIFT)          ;:}
 ;
                        
 // Expression <: AST
@@ -2314,19 +2339,19 @@ relational_expression
     shift_expression:e                  {: RESULT = e                                                               ;:}
 |   relational_expression:e1
     LT
-    shift_expression:e2                 {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.LT)                           ;:}
+    shift_expression:e2                 {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.LT)               ;:}
 |   relational_expression:e1
     GT
-    shift_expression:e2                 {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.GT)                           ;:}
+    shift_expression:e2                 {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.GT)               ;:}
 |   relational_expression:e1
     LTEQ
-    shift_expression:e2                 {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.LTEQ)                         ;:}
+    shift_expression:e2                 {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.LTEQ)             ;:}
 |   relational_expression:e1
     GTEQ
-    shift_expression:e2                 {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.GTEQ)                         ;:}
+    shift_expression:e2                 {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.GTEQ)             ;:}
 |   relational_expression:e1
     IS
-    type_name:e2                        {: RESULT = new BinaryExpr(e1, new NameExpr(e2), BinaryExpr.INSTANCEOF)     ;:}
+    type_name:e2                        {: RESULT = new BinaryExpression(e1, new NameExpression(e2), BinaryExpression.INSTANCEOF);:}
 ;
              
 // Expression <: AST
@@ -2335,10 +2360,10 @@ equality_expression
     relational_expression:e             {: RESULT = e                                                               ;:}
 |   equality_expression:e1
     EQEQ
-    relational_expression:e2            {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.EQEQ)                         ;:}
+    relational_expression:e2            {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.EQEQ)             ;:}
 |   equality_expression:e1
     NOTEQ
-    relational_expression:e2            {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.NOTEQ)                        ;:}
+    relational_expression:e2            {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.NOTEQ)            ;:}
 ;
              
 // Expression <: AST
@@ -2347,7 +2372,7 @@ and_expression
     equality_expression:e               {: RESULT = e                                                               ;:}
 |   and_expression:e1
     AND
-    equality_expression:e2              {: RESULT = new BinaryExpr(e1 ,e2, BinaryExpr.AND)                          ;:}
+    equality_expression:e2              {: RESULT = new BinaryExpression(e1 ,e2, BinaryExpression.AND)                          ;:}
 ;
              
 // Expression <: AST
@@ -2356,7 +2381,7 @@ exclusive_or_expression
     and_expression:e                    {: RESULT = e                                                               ;:}
 |   exclusive_or_expression:e1
     XOR
-    and_expression:e2                   {: RESULT = new BinaryExpr(e1 ,e2, BinaryExpr.XOR)                          ;:}
+    and_expression:e2                   {: RESULT = new BinaryExpression(e1 ,e2, BinaryExpression.XOR)                          ;:}
 ;
              
 // Expression <: AST
@@ -2365,7 +2390,7 @@ inclusive_or_expression
     exclusive_or_expression:e           {: RESULT = e                                                               ;:}
 |   inclusive_or_expression:e1
     OR
-    exclusive_or_expression:e2          {: RESULT = new BinaryExpr(e1 ,e2 ,BinaryExpr.OR)                           ;:}
+    exclusive_or_expression:e2          {: RESULT = new BinaryExpression(e1 ,e2 ,BinaryExpression.OR)                           ;:}
 ;
             
 // Expression <: AST
@@ -2374,7 +2399,7 @@ conditional_and_expression
     inclusive_or_expression:e           {: RESULT = e                                                               ;:}
 |   conditional_and_expression:e1
     ANDAND
-    inclusive_or_expression:e2          {: RESULT = new BinaryExpr(e1 ,e2, BinaryExpr.ANDAND)                       ;:}
+    inclusive_or_expression:e2          {: RESULT = new BinaryExpression(e1 ,e2, BinaryExpression.ANDAND)                       ;:}
 ;
              
 // Expression <: AST
@@ -2383,7 +2408,7 @@ conditional_or_expression
     conditional_and_expression:e        {: RESULT = e                                                               ;:}
 |   conditional_or_expression:e1
     OROR
-    conditional_and_expression:e2       {: RESULT = new BinaryExpr(e1, e2, BinaryExpr.OROR)                         ;:}
+    conditional_and_expression:e2       {: RESULT = new BinaryExpression(e1, e2, BinaryExpression.OROR)                         ;:}
 ;
              
 // Expression <: AST
@@ -2394,7 +2419,7 @@ conditional_expression
     QUEST
     expression:e1
     COLON
-    conditional_expression:e2           {: RESULT = new Ternary(e ,e1, e2)                                          ;:}
+    conditional_expression:e2           {: RESULT = new TernaryExpression(e ,e1, e2)                                ;:}
 ;
              
 // Expression <: AST
@@ -2403,36 +2428,36 @@ assignment_expression
     conditional_expression:e            {: RESULT = e                                                               ;:}
 |   assignment:a                        {: RESULT = a                                                               ;:}
 ;
-  
+
 // Assignment <: Expression <: AST
 assignment
 ::=
     left_hand_side:l
     assignment_operator:o
-    assignment_expression:e             {: RESULT = new Assignment(l, e, o)                                         ;:}
+    assignment_expression:e             {: RESULT = new AssignmentExpression(l, e, o)                                ;:}
 ;
              
 // Integer
 assignment_operator
 ::=
-    EQ                                  {: RESULT = Assignment.EQ                                                   ;:}
-|   MULTEQ                              {: RESULT = Assignment.MULTEQ                                               ;:}
-|   DIVEQ                               {: RESULT = Assignment.DIVEQ                                                ;:}
-|   MODEQ                               {: RESULT = Assignment.MODEQ                                                ;:}
-|   PLUSEQ                              {: RESULT = Assignment.PLUSEQ                                               ;:}
-|   MINUSEQ                             {: RESULT = Assignment.MINUSEQ                                              ;:}
-|   LSHIFTEQ                            {: RESULT = Assignment.LSHIFTEQ                                             ;:}
-|   RSHIFTEQ                            {: RESULT = Assignment.RSHIFTEQ                                             ;:}
-|   RRSHIFTEQ                           {: RESULT = Assignment.RRSHIFTEQ                                            ;:}
-|   ANDEQ                               {: RESULT = Assignment.ANDEQ                                                ;:}
-|   XOREQ                               {: RESULT = Assignment.XOREQ                                                ;:}
-|   OREQ                                {: RESULT = Assignment.OREQ                                                 ;:}
+    EQ                                  {: RESULT = AssignmentExpression.EQ                                                   ;:}
+|   MULTEQ                              {: RESULT = AssignmentExpression.MULTEQ                                               ;:}
+|   DIVEQ                               {: RESULT = AssignmentExpression.DIVEQ                                                ;:}
+|   MODEQ                               {: RESULT = AssignmentExpression.MODEQ                                                ;:}
+|   PLUSEQ                              {: RESULT = AssignmentExpression.PLUSEQ                                               ;:}
+|   MINUSEQ                             {: RESULT = AssignmentExpression.MINUSEQ                                              ;:}
+|   LSHIFTEQ                            {: RESULT = AssignmentExpression.LSHIFTEQ                                             ;:}
+|   RSHIFTEQ                            {: RESULT = AssignmentExpression.RSHIFTEQ                                             ;:}
+|   RRSHIFTEQ                           {: RESULT = AssignmentExpression.RRSHIFTEQ                                            ;:}
+|   ANDEQ                               {: RESULT = AssignmentExpression.ANDEQ                                                ;:}
+|   XOREQ                               {: RESULT = AssignmentExpression.XOREQ                                                ;:}
+|   OREQ                                {: RESULT = AssignmentExpression.OREQ                                                 ;:}
 ;
        
 // Expression <: AST
 left_hand_side
 ::=
-    IDENTIFIER:id                       {: RESULT = new NameExpr(new Name(id))                                      ;:}  // TODO - not really a nameExpr .... but oh well
+    IDENTIFIER:id                       {: RESULT = new NameExpression(new Name(id))                                ;:}  // TODO - not really a nameExpr .... but oh well
 |   record_access:r                     {: RESULT = r                                                               ;:}
 |   array_access:a                      {: RESULT = a                                                               ;:}
 ;
@@ -2463,16 +2488,16 @@ constant_expression ::=
 // Literal <: Expression <: AST
 literal
 ::=
-    INTEGER_LITERAL:l                   {: RESULT = new PrimitiveLiteral(l, PrimitiveLiteral.IntKind)               ;:}
-|   LONG_LITERAL:l                      {: RESULT = new PrimitiveLiteral(l, PrimitiveLiteral.LongKind)              ;:}
-|   FLOAT_LITERAL:l                     {: RESULT = new PrimitiveLiteral(l, PrimitiveLiteral.FloatKind)             ;:}
-|   DOUBLE_LITERAL:l                    {: RESULT = new PrimitiveLiteral(l, PrimitiveLiteral.DoubleKind)            ;:}
-|   BOOLEAN_LITERAL:l                   {: RESULT = new PrimitiveLiteral(l, PrimitiveLiteral.BooleanKind)           ;:}
-|   STRING_LITERAL:l                    {: RESULT = new PrimitiveLiteral(l, PrimitiveLiteral.StringKind)            ;:}
-|   CHARACTER_LITERAL:l                 {: RESULT = new PrimitiveLiteral(l, PrimitiveLiteral.CharKind)              ;:}
+    INTEGER_LITERAL:l                   {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.IntKind)               ;:}
+|   LONG_LITERAL:l                      {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.LongKind)              ;:}
+|   FLOAT_LITERAL:l                     {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.FloatKind)             ;:}
+|   DOUBLE_LITERAL:l                    {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.DoubleKind)            ;:}
+|   BOOLEAN_LITERAL:l                   {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.BooleanKind)           ;:}
+|   STRING_LITERAL:l                    {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.StringKind)            ;:}
+|   CHARACTER_LITERAL:l                 {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.CharKind)              ;:}
 |   record_literal:l                    {: RESULT = l                                                               ;:}
 |   protocol_literal:l                  {: RESULT = l                                                               ;:}
-|   NULL_LITERAL:l                      {: RESULT = new PrimitiveLiteral(l, PrimitiveLiteral.NullKind)              ;:}
+|   NULL_LITERAL:l                      {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.NullKind)              ;:}
 ;
 
 // RecordLiteral <: Literal <: Expression <: AST
@@ -2482,7 +2507,7 @@ record_literal
     type_name:tn
     LBRACE
     record_literal_argument_list:l
-    RBRACE                              {: RESULT = new RecordLiteral(tn, l)                                        ;:}
+    RBRACE                              {: RESULT = new RecordLiteralExpression(tn, l)                              ;:}
 ;
 
 // Sequence<RecordMemberLiteral <: AST> <: AST
@@ -2497,12 +2522,12 @@ record_literal_argument_list
 ::=
     IDENTIFIER:id
     EQ
-    expression:e                        {: RESULT = new Sequence(new RecordMemberLiteral(new Name(id), e))          ;:}
+    expression:e                        {: RESULT = new Sequence(new RecordMemberLiteralExpression(new Name(id), e));:}
 |   record_literal_argument_list:rl
     COMMA
     IDENTIFIER:id
     EQ
-    expression:e                        {: RESULT = rl.append(new RecordMemberLiteral(new Name(id), e))             ;:}
+    expression:e                        {: RESULT = rl.append(new RecordMemberLiteralExpression(new Name(id), e))   ;:}
 ;
 
 // ProtocolLiteral <: Literal <: Expression <: AST
@@ -2515,7 +2540,7 @@ protocol_literal
     COLON
 //  argument_list_opt:l
     record_literal_argument_list_opt:l
-    RBRACE                              {: RESULT = new ProtocolLiteral(tn, new Name(id2), l)                       ;:}
+    RBRACE                              {: RESULT = new ProtocolLiteralExpression(tn, new Name(id2), l)             ;:}
 //| NEW
 //  type_name:tn
 //  LBRACE

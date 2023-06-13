@@ -1,67 +1,51 @@
 package org.processj.compiler.utilities.printers;
 
+import org.processj.compiler.ast.expression.access.ArrayAccessExpression;
+import org.processj.compiler.ast.expression.access.RecordAccessExpression;
+import org.processj.compiler.ast.expression.binary.AssignmentExpression;
+import org.processj.compiler.ast.expression.binary.BinaryExpression;
+import org.processj.compiler.ast.expression.constructing.NewArrayExpression;
+import org.processj.compiler.ast.expression.constructing.NewMobileExpression;
+import org.processj.compiler.ast.expression.literal.ArrayLiteralExpression;
+import org.processj.compiler.ast.expression.literal.PrimitiveLiteralExpression;
+import org.processj.compiler.ast.expression.literal.ProtocolLiteralExpression;
+import org.processj.compiler.ast.expression.literal.RecordLiteralExpression;
+import org.processj.compiler.ast.expression.resolve.NameExpression;
+import org.processj.compiler.ast.expression.result.*;
+import org.processj.compiler.ast.expression.unary.*;
+import org.processj.compiler.ast.expression.yielding.ChannelEndExpression;
+import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
+import org.processj.compiler.ast.statement.*;
+import org.processj.compiler.ast.statement.conditional.*;
+import org.processj.compiler.ast.statement.control.*;
+import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
+import org.processj.compiler.ast.statement.declarative.ProtocolCase;
+import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
+import org.processj.compiler.ast.statement.yielding.ChannelWriteStatement;
+import org.processj.compiler.ast.statement.yielding.ParBlock;
 import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.ast.alt.AltCase;
-import org.processj.compiler.ast.alt.AltStat;
-import org.processj.compiler.ast.expression.ArrayAccessExpr;
-import org.processj.compiler.ast.expression.ArrayLiteral;
-import org.processj.compiler.ast.ArrayType;
-import org.processj.compiler.ast.expression.Assignment;
-import org.processj.compiler.ast.expression.BinaryExpr;
-import org.processj.compiler.ast.Block;
-import org.processj.compiler.ast.BreakStat;
-import org.processj.compiler.ast.CastExpr;
-import org.processj.compiler.ast.ChannelEndExpr;
-import org.processj.compiler.ast.ChannelEndType;
-import org.processj.compiler.ast.ChannelReadExpr;
-import org.processj.compiler.ast.ChannelType;
-import org.processj.compiler.ast.ChannelWriteStat;
-import org.processj.compiler.ast.ClaimStat;
+import org.processj.compiler.ast.statement.alt.AltCase;
+import org.processj.compiler.ast.statement.alt.AltStatement;
+import org.processj.compiler.ast.type.ArrayType;
+import org.processj.compiler.ast.type.ChannelEndType;
+import org.processj.compiler.ast.type.ChannelType;
 import org.processj.compiler.ast.Compilation;
-import org.processj.compiler.ast.ConstantDecl;
-import org.processj.compiler.ast.ContinueStat;
-import org.processj.compiler.ast.DoStat;
-import org.processj.compiler.ast.ExprStat;
-import org.processj.compiler.ast.ForStat;
-import org.processj.compiler.ast.alt.Guard;
-import org.processj.compiler.ast.IfStat;
+import org.processj.compiler.ast.type.ConstantDeclaration;
+import org.processj.compiler.ast.statement.alt.GuardStatement;
 import org.processj.compiler.ast.Import;
-import org.processj.compiler.ast.Invocation;
-import org.processj.compiler.ast.LocalDecl;
 import org.processj.compiler.ast.Modifier;
 import org.processj.compiler.ast.Name;
-import org.processj.compiler.ast.NameExpr;
-import org.processj.compiler.ast.NamedType;
-import org.processj.compiler.ast.NewArray;
-import org.processj.compiler.ast.NewMobile;
-import org.processj.compiler.ast.ParBlock;
-import org.processj.compiler.ast.ParamDecl;
+import org.processj.compiler.ast.type.NamedType;
+import org.processj.compiler.ast.type.ParameterDeclaration;
 import org.processj.compiler.ast.Pragma;
-import org.processj.compiler.ast.PrimitiveLiteral;
-import org.processj.compiler.ast.PrimitiveType;
-import org.processj.compiler.ast.ProcTypeDecl;
-import org.processj.compiler.ast.ProtocolCase;
-import org.processj.compiler.ast.ProtocolLiteral;
-import org.processj.compiler.ast.ProtocolTypeDecl;
-import org.processj.compiler.ast.RecordAccess;
-import org.processj.compiler.ast.RecordLiteral;
-import org.processj.compiler.ast.RecordMember;
-import org.processj.compiler.ast.RecordTypeDecl;
-import org.processj.compiler.ast.ReturnStat;
+import org.processj.compiler.ast.type.PrimitiveType;
+import org.processj.compiler.ast.type.ProcedureTypeDeclaration;
+import org.processj.compiler.ast.type.ProtocolTypeDeclaration;
+import org.processj.compiler.ast.type.RecordTypeDeclaration;
 import org.processj.compiler.ast.Sequence;
-import org.processj.compiler.ast.SkipStat;
-import org.processj.compiler.ast.Statement;
-import org.processj.compiler.ast.StopStat;
-import org.processj.compiler.ast.SuspendStat;
-import org.processj.compiler.ast.SwitchGroup;
-import org.processj.compiler.ast.SwitchLabel;
-import org.processj.compiler.ast.SwitchStat;
-import org.processj.compiler.ast.SyncStat;
-import org.processj.compiler.ast.Ternary;
-import org.processj.compiler.ast.TimeoutStat;
-import org.processj.compiler.ast.UnaryPostExpr;
-import org.processj.compiler.ast.UnaryPreExpr;
-import org.processj.compiler.ast.WhileStat;
+import org.processj.compiler.ast.statement.switched.SwitchGroupStatement;
+import org.processj.compiler.ast.expression.result.SwitchLabel;
+import org.processj.compiler.ast.statement.switched.SwitchStatement;
 import org.processj.compiler.phases.phase.Visitor;
 
 public class PrettyPrinter implements Visitor<Void> {
@@ -94,26 +78,26 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitAltCase(AltCase ac) {
+    public final Void visitAltCase(AltCase altCase) {
 		System.out.print(tab());
-		if (ac.getPreconditionExpression() != null) {
+		if (altCase.getPreconditionExpression() != null) {
 			System.out.print("(");
             try {
-                ac.getPreconditionExpression().visit(this);
+                altCase.getPreconditionExpression().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
             System.out.print(") && ");
 		}
         try {
-            ac.getGuard().visit(this);
+            altCase.getGuard().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" : ");
 		indent += 2;
         try {
-            ac.getStatements().visit(this);
+            altCase.getBody().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -121,25 +105,25 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitAltStat(AltStat as) throws Phase.Error {
+    public final Void visitAltStatement(AltStatement altStatement) throws Phase.Error {
 		p("alt {");
 		indent += 2;
-		as.visitChildren(this);
+		altStatement.visitChildren(this);
 		indent -= 2;
 		p("}");
 		return null;
 	}
 
 	@Override
-    public final Void visitArrayAccessExpr(ArrayAccessExpr ae) {
+    public final Void visitArrayAccessExpression(ArrayAccessExpression arrayAccessExpression) {
         try {
-            ae.targetExpression().visit(this);
+            arrayAccessExpression.getTargetExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print("[");
         try {
-            ae.indexExpression().visit(this);
+            arrayAccessExpression.getIndexExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -148,46 +132,30 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitArrayLiteral(ArrayLiteral al) throws Phase.Error{
+    public final Void visitArrayLiteralExpression(ArrayLiteralExpression arrayLiteralExpression) throws Phase.Error{
 		// TODO
-		return al.visitChildren(this);
+		return arrayLiteralExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitArrayType(ArrayType at) {
+    public final Void visitArrayType(ArrayType arrayType) {
 
-		System.out.print(at.toString());
+		System.out.print(arrayType.toString());
 
 		return null;
 
 	}
 
 	@Override
-    public final Void visitAssignment(Assignment as) {
+    public final Void visitAssignmentExpression(AssignmentExpression assignmentExpression) {
         try {
-            as.left().visit(this);
+            assignmentExpression.getLeftExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        System.out.print(" " + as.opString() + " ");
+        System.out.print(" " + assignmentExpression.opString() + " ");
         try {
-            as.getRight().visit(this);
-        } catch (Phase.Error error) {
-            throw new RuntimeException(error);
-        }
-        return null;
-	}
-
-	@Override
-    public final Void visitBinaryExpr(BinaryExpr be) {
-        try {
-            be.left().visit(this);
-        } catch (Phase.Error error) {
-            throw new RuntimeException(error);
-        }
-        System.out.print(" " + be.opString() + " ");
-        try {
-            be.right().visit(this);
+            assignmentExpression.getRightExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -195,10 +163,26 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitBlock(Block bl) {
+    public final Void visitBinaryExpression(BinaryExpression binaryExpression) {
+        try {
+            binaryExpression.getLeft().visit(this);
+        } catch (Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        System.out.print(" " + binaryExpression.opString() + " ");
+        try {
+            binaryExpression.getRight().visit(this);
+        } catch (Phase.Error error) {
+            throw new RuntimeException(error);
+        }
+        return null;
+	}
+
+	@Override
+    public final Void visitBlockStatement(BlockStatement blockStatement) {
 		System.out.println(tab() + "{");
 		indent += 2;
-		for (Statement st : bl.getStatements()) {
+		for (Statement st : blockStatement.getStatements()) {
 			indent += 2;
 			if (st == null) {
 				System.out.println(tab() + ";");
@@ -218,12 +202,12 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitBreakStat(BreakStat bs) {
+    public final Void visitBreakStatement(BreakStatement breakStatement) {
 		System.out.print(tab() + "break");
-		if (bs.getTarget() != null) {
+		if (breakStatement.getTarget() != null) {
 			System.out.print(" ");
             try {
-                bs.getTarget().visit(this);
+                breakStatement.getTarget().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -233,20 +217,20 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitCastExpr(CastExpr ce) throws Phase.Error {
+    public final Void visitCastExpression(CastExpression castExpression) throws Phase.Error {
 		// TODO
-		return ce.visitChildren(this);
+		return castExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitChannelType(ChannelType ct) {
-		String modString = ct.modString();
+    public final Void visitChannelType(ChannelType channelType) {
+		String modString = channelType.modString();
 		System.out.print(modString);
 		if (!modString.equals(""))
 			System.out.print(" ");
 		System.out.print("chan<");
         try {
-            ct.getComponentType().visit(this);
+            channelType.getComponentType().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -255,43 +239,43 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitChannelEndExpr(ChannelEndExpr ce) {
+    public final Void visitChannelEndExpression(ChannelEndExpression channelEndExpression) {
         try {
-            ce.getChannelType().visit(this);
+            channelEndExpression.getChannelType().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        System.out.print("." + (ce.isRead() ? "read" : "write"));
+        System.out.print("." + (channelEndExpression.isRead() ? "read" : "write"));
 		return null;
 	}
 
 	@Override
-    public final Void visitChannelEndType(ChannelEndType ct) {
-		if (ct.isSharedEnd())
+    public final Void visitChannelEndType(ChannelEndType channelEndType) {
+		if (channelEndType.isSharedEnd())
 			System.out.print("shared ");
 		System.out.print("chan<");
         try {
-            ct.getComponentType().visit(this);
+            channelEndType.getComponentType().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        System.out.print(">." + (ct.isReadEnd() ? "read" : "write"));
+        System.out.print(">." + (channelEndType.isReadEnd() ? "read" : "write"));
 		return null;
 	}
 
 	@Override
-    public final Void visitChannelReadExpr(ChannelReadExpr cr) {
+    public final Void visitChannelReadExpression(ChannelReadExpression channelReadExpression) {
         try {
-            cr.getExpression().visit(this);
+            channelReadExpression.getChannelExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(".read(");
-		if (cr.getExtendedRendezvous() != null) {
+		if (channelReadExpression.getExtendedRendezvous() != null) {
 			System.out.println("{");
 			indent += 2;
             try {
-                cr.getExtendedRendezvous().getStatements().visit(this);
+                channelReadExpression.getExtendedRendezvous().getStatements().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -303,17 +287,17 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitChannelWriteStat(ChannelWriteStat cw) {
+    public final Void visitChannelWriteStatement(ChannelWriteStatement channelWriteStatement) {
 		System.out.print(tab());
 
         try {
-            cw.getTargetExpression().visit(this);
+            channelWriteStatement.getTargetExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(".write(");
         try {
-            cw.getWriteExpression().visit(this);
+            channelWriteStatement.getWriteExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -322,36 +306,36 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitClaimStat(ClaimStat cs) throws Phase.Error {
+    public final Void visitClaimStatement(ClaimStatement claimStatement) throws Phase.Error {
 		// TODO
-		return cs.visitChildren(this);
+		return claimStatement.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitCompilation(Compilation co) throws Phase.Error  {
+    public final Void visitCompilation(Compilation compilation) throws Phase.Error  {
 		System.out.println("Compilation");
-		return co.visitChildren(this);
+		return compilation.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitConstantDecl(ConstantDecl cd) {
+    public final Void visitConstantDeclaration(ConstantDeclaration constantDeclaration) {
 		System.out.print(tab());
-		printModifierSequence(cd.modifiers());
-		if (cd.modifiers().size() > 0)
+		printModifierSequence(constantDeclaration.modifiers());
+		if (constantDeclaration.modifiers().size() > 0)
 			System.out.print(" ");
         try {
-            cd.getType().visit(this);
+            constantDeclaration.getType().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
         try {
-            cd.getName().visit(this);
+            constantDeclaration.getName().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         try {
-            cd.getInitializationExpression().visit(this);
+            constantDeclaration.getInitializationExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -360,12 +344,12 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitContinueStat(ContinueStat cs) {
+    public final Void visitContinueStatement(ContinueStatement continueStatement) {
 		System.out.print("continue");
-		if (cs.getTarget() != null) {
+		if (continueStatement.getTarget() != null) {
 			System.out.print(" ");
             try {
-                cs.getTarget().visit(this);
+                continueStatement.getTarget().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -374,17 +358,17 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitDoStat(DoStat ds) throws Phase.Error {
+    public final Void visitDoStatement(DoStatement doStatement) throws Phase.Error {
 		System.out.print(tab() + "do ");
 
 			System.out.println("{");
 			indent += 2;
 
-            ds.getStatements().visit(this);
+            doStatement.getBody().visit(this);
             indent -= 2;
 			System.out.print(tab() + "} while (");
 
-            ds.getEvaluationExpression().visit(this);
+            doStatement.getEvaluationExpression().visit(this);
 
             System.out.print(")");
 
@@ -393,10 +377,10 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitExprStat(ExprStat es) {
+    public final Void visitExpressionStatement(ExpressionStatement expressionStatement) {
 		System.out.print(tab());
         try {
-            es.getExpression().visit(this);
+            expressionStatement.getExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -405,17 +389,17 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitForStat(ForStat fs) throws Phase.Error {
+    public final Void visitForStatement(ForStatement forStatement) throws Phase.Error {
 		System.out.print(tab());
 		System.out.print("for (");
-		if (fs.getInitializationExpression() != null) {
-			if (fs.getInitializationExpression().size() > 0) {
+		if (forStatement.getInitializationStatements() != null) {
+			if (forStatement.getInitializationStatements().size() > 0) {
 				// there are some children - if the first is a localDecl so are the rest!
-				if (fs.getInitializationExpression().child(0) instanceof LocalDecl) {
-					LocalDecl ld = (LocalDecl) fs.getInitializationExpression().child(0);
+				if (forStatement.getInitializationStatements().child(0) instanceof LocalDeclaration) {
+					LocalDeclaration ld = (LocalDeclaration) forStatement.getInitializationStatements().child(0);
 					System.out.print(ld.getType().toString() + " ");
-					for (int i = 0; i < fs.getInitializationExpression().size(); i++) {
-						ld = (LocalDecl) fs.getInitializationExpression().child(i);
+					for (int i = 0; i < forStatement.getInitializationStatements().size(); i++) {
+						ld = (LocalDeclaration) forStatement.getInitializationStatements().child(i);
                         try {
                             ld.getName().visit(this);
                         } catch (Phase.Error error) {
@@ -426,11 +410,11 @@ public class PrettyPrinter implements Visitor<Void> {
                         } catch (Phase.Error error) {
                             throw new RuntimeException(error);
                         }
-                        if (i < fs.getInitializationExpression().size() - 1)
+                        if (i < forStatement.getInitializationStatements().size() - 1)
 							System.out.print(",");
 					}
 				} else {
-					for (Statement es : fs.getInitializationExpression())
+					for (Statement es : forStatement.getInitializationStatements())
                         try {
                             es.visit(this);
                         } catch (Phase.Error error) {
@@ -440,17 +424,17 @@ public class PrettyPrinter implements Visitor<Void> {
 			}
 		}
 		System.out.print(";");
-		if (fs.getEvaluationExpression() != null)
+		if (forStatement.getEvaluationExpression() != null)
             try {
-                fs.getEvaluationExpression().visit(this);
+                forStatement.getEvaluationExpression().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
         System.out.print(";");
-		if (fs.getIncrementExpression() != null) {
-			for (int i = 0; i < fs.getIncrementExpression().size(); i++) {
-				if (fs.getIncrementExpression().child(i) instanceof ExprStat) {
-					ExprStat es = (ExprStat) fs.getIncrementExpression().child(i);
+		if (forStatement.getIncrementStatements() != null) {
+			for (int i = 0; i < forStatement.getIncrementStatements().size(); i++) {
+				if (forStatement.getIncrementStatements().child(i) instanceof ExpressionStatement) {
+					ExpressionStatement es = (ExpressionStatement) forStatement.getIncrementStatements().child(i);
                     try {
                         es.getExpression().visit(this);
                     } catch (Phase.Error error) {
@@ -464,24 +448,24 @@ public class PrettyPrinter implements Visitor<Void> {
 
         System.out.println(" {");
         indent += 2;
-        fs.getStatements().visit(this);
+        forStatement.getBody().visit(this);
         indent -= 2;
         System.out.println(tab() + "}");
 		return null;
 	}
 
 	@Override
-    public final Void visitGuard(Guard gu) {
-		if (gu.getStatement() instanceof ExprStat)
+    public final Void visitGuardStatement(GuardStatement guardStatement) {
+		if (guardStatement.getStatement() instanceof ExpressionStatement)
             try {
-                ((ExprStat) gu.getStatement()).getExpression().visit(this);
+                ((ExpressionStatement) guardStatement.getStatement()).getExpression().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
-        else if (gu.getStatement() instanceof SkipStat)
+        else if (guardStatement.getStatement() instanceof SkipStatement)
 			System.out.print("skip");
-		else if (gu.getStatement() instanceof TimeoutStat) {
-			TimeoutStat ts = (TimeoutStat) gu.getStatement();
+		else if (guardStatement.getStatement() instanceof TimeoutStatement) {
+			TimeoutStatement ts = (TimeoutStatement) guardStatement.getStatement();
             try {
                 ts.getTimerExpression().visit(this);
             } catch (Phase.Error error) {
@@ -499,11 +483,11 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitIfStat(IfStat is) throws Phase.Error {
+    public final Void visitIfStatement(IfStatement ifStatement) throws Phase.Error {
 		System.out.print(tab());
 		System.out.print("if (");
         try {
-            is.getEvaluationExpression().visit(this);
+            ifStatement.getEvaluationExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -511,7 +495,7 @@ public class PrettyPrinter implements Visitor<Void> {
 		System.out.println(" {");
 		indent += 2;
 
-        is.getThenStatements().visit(this);
+        ifStatement.getThenBody().visit(this);
 
         indent -= 2;
 
@@ -521,7 +505,7 @@ public class PrettyPrinter implements Visitor<Void> {
 
 		System.out.println(" {");
         indent += 2;
-        is.getElseBody().visit(this);
+        ifStatement.getElseBody().visit(this);
 
         indent -= 2;
 		System.out.println(tab() + "}");
@@ -530,7 +514,7 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitImport(Import im) {
+    public final Void visitImport(Import importName) {
 		// System.out.print(tab() + "import " + im.packageName() + ".");
 		// if (im.all())
 		// System.out.println("*;");
@@ -540,21 +524,21 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitInvocation(Invocation in) {
-		if (in.getTarget() != null)
+    public final Void visitInvocationExpression(InvocationExpression invocationExpression) {
+		if (invocationExpression.getTarget() != null)
             try {
-                in.getTarget().visit(this);
+                invocationExpression.getTarget().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
-        System.out.print(in.getProcedureName() + "(");
-		for (int i = 0; i < in.getParameters().size(); i++) {
+        System.out.print(invocationExpression.getProcedureName() + "(");
+		for (int i = 0; i < invocationExpression.getParameters().size(); i++) {
             try {
-                in.getParameters().child(i).visit(this);
+                invocationExpression.getParameters().child(i).visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
-            if (i < in.getParameters().size() - 1)
+            if (i < invocationExpression.getParameters().size() - 1)
 				System.out.print(",");
 		}
 		System.out.print(")");
@@ -562,24 +546,24 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitLocalDecl(LocalDecl ld) {
+    public final Void visitLocalDeclaration(LocalDeclaration localDeclaration) {
 		System.out.print(tab());
-		if (ld.isConstant())
+		if (localDeclaration.isConstant())
 			System.out.print("const ");
 
         try {
-            ld.getType().visit(this);
+            localDeclaration.getType().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
         try {
-            ld.getName().visit(this);
+            localDeclaration.getName().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         try {
-            ld.getInitializationExpression().visit(this);
+            localDeclaration.getInitializationExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -588,8 +572,8 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitModifier(Modifier mo) {
-		System.out.print(mo.toString());
+    public final Void visitModifier(Modifier modifier) {
+		System.out.print(modifier.toString());
 		return null;
 	}
 
@@ -608,15 +592,15 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitName(Name na) {
-		System.out.print(na);
+    public final Void visitName(Name name) {
+		System.out.print(name);
 		return null;
 	}
 
 	@Override
-    public final Void visitNamedType(NamedType nt) {
+    public final Void visitNamedType(NamedType namedType) {
         try {
-            nt.getName().visit(this);
+            namedType.getName().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -624,9 +608,9 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitNameExpr(NameExpr ne) {
+    public final Void visitNameExpression(NameExpression nameExpression) {
         try {
-            ne.getName().visit(this);
+            nameExpression.getName().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -634,16 +618,16 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitNewArray(NewArray ne)  throws Phase.Error {
+    public final Void visitNewArrayExpression(NewArrayExpression newArrayExpression)  throws Phase.Error {
 		// TODO
-		return ne.visitChildren(this);
+		return newArrayExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitNewMobile(NewMobile nm) {
+    public final Void visitNewMobileExpression(NewMobileExpression newMobileExpression) {
 		System.out.print(tab() + "new mobile ");
         try {
-            nm.name().visit(this);
+            newMobileExpression.name().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -651,28 +635,28 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitParamDecl(ParamDecl pd) {
-		if (pd.isConstant())
+    public final Void visitParameterDeclaration(ParameterDeclaration parameterDeclaration) {
+		if (parameterDeclaration.isConstant())
 			System.out.print("const ");
         try {
-            pd.getType().visit(this);
+            parameterDeclaration.getType().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
-        System.out.print(pd.getName());
+        System.out.print(parameterDeclaration.getName());
 
         return null;
 	}
 
 	@Override
-    public final Void visitParBlock(ParBlock pb) {
+    public final Void visitParBlockStatement(ParBlock parBlock) {
 
 		// TODO - don't forget that there are barriers to enroll on.
 		System.out.println(tab() + "par {");
 		indent += 2;
         try {
-            pb.getStatements().visit(this);
+            parBlock.getBody().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -682,65 +666,65 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitPragma(Pragma pr) {
-		System.out.println(tab() + "#pragma " + pr + " " + (pr.getValue() == null ? "" : pr.getValue()));
+    public final Void visitPragma(Pragma pragma) {
+		System.out.println(tab() + "#pragma " + pragma + " " + (pragma.getValue() == null ? "" : pragma.getValue()));
 		return null;
 	}
 
 	@Override
-    public final Void visitPrimitiveLiteral(PrimitiveLiteral li) {
-		System.out.print(li.getText());
+    public final Void visitPrimitiveLiteralExpression(PrimitiveLiteralExpression primitiveLiteralExpression) {
+		System.out.print(primitiveLiteralExpression.getText());
 		return null;
 	}
 
 	@Override
-    public final Void visitPrimitiveType(PrimitiveType pt) {
-		System.out.print(pt.toString());
+    public final Void visitPrimitiveType(PrimitiveType primitiveType) {
+		System.out.print(primitiveType.toString());
 		return null;
 	}
 
 	@Override
-    public final Void visitProcTypeDecl(ProcTypeDecl pd) {
+    public final Void visitProcedureTypeDeclaration(ProcedureTypeDeclaration procedureTypeDeclaration) {
 		System.out.print(tab());
-		printModifierSequence(pd.modifiers());
-		if (pd.modifiers().size() > 0)
+		printModifierSequence(procedureTypeDeclaration.modifiers());
+		if (procedureTypeDeclaration.modifiers().size() > 0)
 			System.out.print(" ");
         try {
-            pd.getReturnType().visit(this);
+            procedureTypeDeclaration.getReturnType().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
-		System.out.print(pd);
+		System.out.print(procedureTypeDeclaration);
 		System.out.print("(");
-		for (int i = 0; i < pd.getParameters().size(); i++) {
+		for (int i = 0; i < procedureTypeDeclaration.getParameters().size(); i++) {
             try {
-                pd.getParameters().child(i).visit(this);
+                procedureTypeDeclaration.getParameters().child(i).visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
-            if (i < pd.getParameters().size() - 1)
+            if (i < procedureTypeDeclaration.getParameters().size() - 1)
 				System.out.print(", ");
 		}
 		System.out.print(")");
-		if (pd.getImplements().size() > 0) {
+		if (procedureTypeDeclaration.getImplements().size() > 0) {
 			System.out.print(" implements ");
-			for (int i = 0; i < pd.getImplements().size(); i++) {
+			for (int i = 0; i < procedureTypeDeclaration.getImplements().size(); i++) {
                 try {
-                    pd.getImplements().child(i).visit(this);
+                    procedureTypeDeclaration.getImplements().child(i).visit(this);
                 } catch (Phase.Error error) {
                     throw new RuntimeException(error);
                 }
-                if (i < pd.getImplements().size() - 1)
+                if (i < procedureTypeDeclaration.getImplements().size() - 1)
 					System.out.print(", ");
 			}
 		}
 
-		if (pd.getBody() != null) {
+		if (procedureTypeDeclaration.getBody() != null) {
 			System.out.println(" {");
 			indent += 2;
             try {
-                pd.getBody().getStatements().visit(this);
+                procedureTypeDeclaration.getBody().getStatements().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -753,33 +737,33 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitProtocolLiteral(ProtocolLiteral pl)  throws Phase.Error {
+    public final Void visitProtocolLiteralExpression(ProtocolLiteralExpression protocolLiteralExpression)  throws Phase.Error {
 		// TODO
-		return pl.visitChildren(this);
+		return protocolLiteralExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitProtocolCase(ProtocolCase pc)  throws Phase.Error {
+    public final Void visitProtocolCase(ProtocolCase protocolCase)  throws Phase.Error {
 		// TODO
-		return pc.visitChildren(this);
+		return protocolCase.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitProtocolTypeDecl(ProtocolTypeDecl pd) throws Phase.Error  {
+    public final Void visitProtocolTypeDeclaration(ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error  {
 		// TODO
-		return pd.visitChildren(this);
+		return protocolTypeDeclaration.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitRecordAccess(RecordAccess ra) {
+    public final Void visitRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
         try {
-            ra.getTarget().visit(this);
+            recordAccessExpression.getTarget().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(".)");
         try {
-            ra.field().visit(this);
+            recordAccessExpression.field().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -787,22 +771,22 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitRecordLiteral(RecordLiteral rl)  throws Phase.Error {
+    public final Void visitRecordLiteralExpression(RecordLiteralExpression recordLiteralExpression)  throws Phase.Error {
 		// TODO
-		return rl.visitChildren(this);
+		return recordLiteralExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitRecordMember(RecordMember rm) {
+    public final Void visitRecordMemberDeclaration(RecordMemberDeclaration recordMemberDeclaration) {
 		System.out.print(tab());
         try {
-            rm.getType().visit(this);
+            recordMemberDeclaration.getType().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
         try {
-            rm.getName().visit(this);
+            recordMemberDeclaration.getName().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -811,29 +795,29 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitRecordTypeDecl(RecordTypeDecl rt) {
+    public final Void visitRecordTypeDeclaration(RecordTypeDeclaration recordTypeDeclaration) {
 		System.out.print(tab());
-		printModifierSequence(rt.modifiers());
-		if (rt.modifiers().size() > 0)
+		printModifierSequence(recordTypeDeclaration.modifiers());
+		if (recordTypeDeclaration.modifiers().size() > 0)
 			System.out.print(" ");
 		System.out.print("record ");
-		System.out.print(rt);
-		if (rt.getExtends().size() > 0) {
+		System.out.print(recordTypeDeclaration);
+		if (recordTypeDeclaration.getExtends().size() > 0) {
 			System.out.print(" extends ");
-			for (int i = 0; i < rt.getExtends().size(); i++) {
+			for (int i = 0; i < recordTypeDeclaration.getExtends().size(); i++) {
                 try {
-                    rt.getExtends().child(i).visit(this);
+                    recordTypeDeclaration.getExtends().child(i).visit(this);
                 } catch (Phase.Error error) {
                     throw new RuntimeException(error);
                 }
-                if (i < rt.getExtends().size() - 1)
+                if (i < recordTypeDeclaration.getExtends().size() - 1)
 					System.out.print(", ");
 			}
 		}
 		System.out.println(" {");
 		indent += 2;
         try {
-            rt.getBody().visit(this);
+            recordTypeDeclaration.getBody().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -843,12 +827,12 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitReturnStat(ReturnStat rs) {
+    public final Void visitReturnStatement(ReturnStatement returnStatement) {
 		System.out.print(tab() + "return");
-		if (rs.getExpression() != null) {
+		if (returnStatement.getExpression() != null) {
 			System.out.print(" ");
             try {
-                rs.getExpression().visit(this);
+                returnStatement.getExpression().visit(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -857,12 +841,12 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitSequence(Sequence se) {
+    public final Void visitSequence(Sequence sequence) {
 		// se.visitChildren(this);
-		for (int i = 0; i < se.size(); i++) {
-			if (se.child(i) != null)
+		for (int i = 0; i < sequence.size(); i++) {
+			if (sequence.child(i) != null)
                 try {
-                    se.child(i).visit(this);
+                    sequence.child(i).visit(this);
                 } catch (Phase.Error error) {
                     throw new RuntimeException(error);
                 }
@@ -871,22 +855,22 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitSkipStat(SkipStat ss) {
+    public final Void visitSkipStatement(SkipStatement skipStatement) {
 		System.out.println("skip;");
 		return null;
 	}
 
 	@Override
-    public final Void visitStopStat(StopStat ss) {
+    public final Void visitStopStatement(StopStatement stopStatement) {
 		System.out.println("stop;");
 		return null;
 	}
 
 	@Override
-    public final Void visitSuspendStat(SuspendStat ss) {
+    public final Void visitSuspendStatement(SuspendStatement suspendStatement) {
 		System.out.print("suspend resume with (");
         try {
-            ss.params().visit(this);
+            suspendStatement.getParameters().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -895,15 +879,15 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitSwitchGroup(SwitchGroup sg) {
+    public final Void visitSwitchGroupStatement(SwitchGroupStatement switchGroupStatement) {
         try {
-            sg.getLabels().visit(this);
+            switchGroupStatement.getLabels().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         indent += 2;
         try {
-            sg.getStatements().visit(this);
+            switchGroupStatement.getStatements().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -912,26 +896,26 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitSwitchLabel(SwitchLabel sl) {
-		if (sl.isDefault())
+    public final Void visitSwitchLabelExpression(SwitchLabel switchLabel) {
+		if (switchLabel.isDefault())
 			System.out.println(tab() + "default:");
 		else
-			System.out.println(tab() + "case " + sl.getExpression() + ":");
+			System.out.println(tab() + "case " + switchLabel.getExpression() + ":");
 		return null;
 	}
 
 	@Override
-    public final Void visitSwitchStat(SwitchStat st) {
+    public final Void visitSwitchStatement(SwitchStatement switchStatement) {
 		System.out.print(tab() + "switch (");
         try {
-            st.getEvaluationExpression().visit(this);
+            switchStatement.getEvaluationExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(") {");
 		indent += 2;
         try {
-            st.switchBlocks().visit(this);
+            switchStatement.getBody().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -941,10 +925,10 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitSyncStat(SyncStat st) {
+    public final Void visitSyncStatement(SyncStatement syncStatement) {
 		System.out.print(tab());
         try {
-            st.barrier().visit(this);
+            syncStatement.getBarrierExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -953,21 +937,21 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitTernary(Ternary te) {
+    public final Void visitTernaryExpression(TernaryExpression ternaryExpression) {
         try {
-            te.getEvaluationExpression().visit(this);
+            ternaryExpression.getEvaluationExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ? ");
         try {
-            te.thenPart().visit(this);
+            ternaryExpression.thenPart().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" : ");
         try {
-            te.elsePart().visit(this);
+            ternaryExpression.elsePart().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -975,16 +959,16 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitTimeoutStat(TimeoutStat ts) {
+    public final Void visitTimeoutStatement(TimeoutStatement timeoutStatement) {
 		System.out.print(tab());
         try {
-            ts.getTimerExpression().visit(this);
+            timeoutStatement.getTimerExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(".timeout(");
         try {
-            ts.getDelayExpression().visit(this);
+            timeoutStatement.getDelayExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -993,21 +977,21 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitUnaryPostExpr(UnaryPostExpr up) {
+    public final Void visitUnaryPostExpression(UnaryPostExpression unaryPostExpression) {
         try {
-            up.getExpression().visit(this);
+            unaryPostExpression.getExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        System.out.print(up.opString());
+        System.out.print(unaryPostExpression.opString());
 		return null;
 	}
 
 	@Override
-    public final Void visitUnaryPreExpr(UnaryPreExpr up) {
-		System.out.print(up.opString());
+    public final Void visitUnaryPreExpression(UnaryPreExpression unaryPreExpression) {
+		System.out.print(unaryPreExpression.opString());
         try {
-            up.getExpression().visit(this);
+            unaryPreExpression.getExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -1015,10 +999,10 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitWhileStat(WhileStat ws) throws Phase.Error {
+    public final Void visitWhileStatement(WhileStatement whileStatement) throws Phase.Error {
 		System.out.print(tab() + "while (");
         try {
-            ws.getEvaluationExpression().visit(this);
+            whileStatement.getEvaluationExpression().visit(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -1026,7 +1010,7 @@ public class PrettyPrinter implements Visitor<Void> {
 
         System.out.println(" {");
         indent += 2;
-        ws.getStatements().visit(this);
+        whileStatement.getBody().visit(this);
         indent -= 2;
         System.out.println(tab() + "}");
 

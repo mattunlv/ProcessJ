@@ -1,6 +1,17 @@
 package org.processj.compiler.phases.phase;
 
-import org.processj.compiler.ast.*;
+import org.processj.compiler.ast.expression.constructing.NewArrayExpression;
+import org.processj.compiler.ast.expression.constructing.NewMobileExpression;
+import org.processj.compiler.ast.expression.literal.ProtocolLiteralExpression;
+import org.processj.compiler.ast.expression.literal.RecordLiteralExpression;
+import org.processj.compiler.ast.expression.result.CastExpression;
+import org.processj.compiler.ast.expression.result.InvocationExpression;
+import org.processj.compiler.ast.expression.resolve.NameExpression;
+import org.processj.compiler.ast.statement.control.BreakStatement;
+import org.processj.compiler.ast.statement.control.ContinueStatement;
+import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
+import org.processj.compiler.ast.expression.result.SwitchLabel;
+import org.processj.compiler.ast.type.*;
 
 public class NameChecker extends Phase {
 
@@ -21,18 +32,19 @@ public class NameChecker extends Phase {
     /// org.processj.ast.Visitor
 
     /**
-     * <p>Asserts that the {@link ConstantDecl}'s {@link Type} is bound to the {@link ConstantDecl}.</p>
-     * @param constantDeclaration The {@link ConstantDecl} to bind.
-     * @throws Phase.Error If the {@link ConstantDecl}'s component {@link Type} is not visible in the current scope.
+     * <p>Asserts that the {@link ConstantDeclaration}'s {@link Type} is bound to the {@link ConstantDeclaration}.</p>
+     *
+     * @param constantDeclaration The {@link ConstantDeclaration} to bind.
+     * @throws Phase.Error If the {@link ConstantDeclaration}'s component {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitConstantDecl(final ConstantDecl constantDeclaration) throws Phase.Error {
+    public final Void visitConstantDeclaration(final ConstantDeclaration constantDeclaration) throws Phase.Error {
 
         // Assert the Constant Declaration Type's Name has been resolved
         NameAssert.Resolved(this, constantDeclaration);
 
-        // Resolve the Constant Declaration
+        // Resolve the children; Don't iterate twice
         if(constantDeclaration.isInitialized())
             constantDeclaration.getInitializationExpression().visit(this);
 
@@ -41,18 +53,18 @@ public class NameChecker extends Phase {
     }
 
     /**
-     * <p>Asserts that the {@link ProcTypeDecl}'s declared {@link Type}s are bound to the {@link ProcTypeDecl}.</p>
-     * @param procedureTypeDeclaration The {@link ProcTypeDecl} to bind.
-     * @throws Phase.Error If the {@link ProcTypeDecl}'s declared {@link Type}s are not visible in the current scope.
+     * <p>Asserts that the {@link ProcedureTypeDeclaration}'s declared {@link Type}s are bound to the {@link ProcedureTypeDeclaration}.</p>
+     * @param procedureTypeDeclaration The {@link ProcedureTypeDeclaration} to bind.
+     * @throws Phase.Error If the {@link ProcedureTypeDeclaration}'s declared {@link Type}s are not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitProcTypeDecl(final ProcTypeDecl procedureTypeDeclaration) throws Phase.Error {
+    public final Void visitProcedureTypeDeclaration(final ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error {
 
         // Assert the Procedure Type Declaration's Implements & Return Type are resolved
         NameAssert.Resolved(this, procedureTypeDeclaration);
 
-        // Resolve the Statements
+        // Resolve the children; Don't iterate twice
         procedureTypeDeclaration.getBody().visit(this);
 
         return null;
@@ -60,18 +72,19 @@ public class NameChecker extends Phase {
     }
 
     /**
-     * <p>Asserts that the {@link ProtocolTypeDecl}'s declared {@link Type}s are bound to the {@link ProtocolTypeDecl}.</p>
-     * @param protocolTypeDeclaration The {@link ProtocolTypeDecl} to bind.
-     * @throws Phase.Error If the {@link ProtocolTypeDecl}'s declared {@link Type}s are not visible in the current scope.
+     * <p>Asserts that the {@link ProtocolTypeDeclaration}'s declared {@link Type}s are bound to the {@link ProtocolTypeDeclaration}.</p>
+     *
+     * @param protocolTypeDeclaration The {@link ProtocolTypeDeclaration} to bind.
+     * @throws Phase.Error If the {@link ProtocolTypeDeclaration}'s declared {@link Type}s are not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitProtocolTypeDecl(final ProtocolTypeDecl protocolTypeDeclaration) throws Phase.Error {
+    public final Void visitProtocolTypeDeclaration(final ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error {
 
         // Assert the Protocol Type Declaration's Implements & Return Type are resolved
         NameAssert.Resolved(this, protocolTypeDeclaration);
 
-        // Resolve the children
+        // Resolve the children; Don't iterate twice
         protocolTypeDeclaration.getBody().visit(this);
 
         return null;
@@ -79,39 +92,40 @@ public class NameChecker extends Phase {
     }
 
     /**
-     * <p>Asserts that the {@link RecordTypeDecl}'s declared {@link Type}s are bound to the {@link RecordTypeDecl}.</p>
-     * @param recordTypeDeclaration The {@link RecordTypeDecl} to bind.
-     * @throws Phase.Error If the {@link RecordTypeDecl}'s declared {@link Type}s are not visible in the current scope.
+     * <p>Asserts that the {@link RecordTypeDeclaration}'s declared {@link Type}s are bound to the {@link RecordTypeDeclaration}.</p>
+     *
+     * @param recordTypeDeclaration The {@link RecordTypeDeclaration} to bind.
+     * @throws Phase.Error If the {@link RecordTypeDeclaration}'s declared {@link Type}s are not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitRecordTypeDecl(final RecordTypeDecl recordTypeDeclaration) throws Phase.Error {
+    public final Void visitRecordTypeDeclaration(final RecordTypeDeclaration recordTypeDeclaration) throws Phase.Error {
 
         // Assert the Record Type Declaration's Implements & Return Type are resolved
         NameAssert.Resolved(this, recordTypeDeclaration);
 
         // Resolve the children
-        recordTypeDeclaration.getBody().visit(this);
+        recordTypeDeclaration.visitChildren(this);
 
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link LocalDecl}'s {@link Type} is bound to the {@link LocalDecl}.</p>
-     * @param localDeclaration The {@link LocalDecl} to bind.
-     * @throws Phase.Error If the {@link LocalDecl}'s component {@link Type} is not visible in the current scope.
+     * <p>Asserts that the {@link LocalDeclaration}'s {@link Type} is bound to the {@link LocalDeclaration}.</p>
+     *
+     * @param localDeclaration The {@link LocalDeclaration} to bind.
+     * @throws Phase.Error If the {@link LocalDeclaration}'s component {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitLocalDecl(final LocalDecl localDeclaration) throws Phase.Error {
+    public final Void visitLocalDeclaration(final LocalDeclaration localDeclaration) throws Phase.Error {
 
         // Assert the Local Declaration Type's Names have been resolved
         NameAssert.Resolved(this, localDeclaration);
 
-        // Assert the Local Declaration has an initialization expression
-        if(localDeclaration.isInitialized())
-            localDeclaration.getInitializationExpression().visit(this);
+        // Resolve the Children
+        localDeclaration.visitChildren(this);
 
         return null;
 
@@ -120,6 +134,7 @@ public class NameChecker extends Phase {
     /**
      * <p>Asserts that the {@link ArrayType}'s component {@link Type} is bound to the
      * {@link ArrayType}.</p>
+     *
      * @param arrayType The {@link ArrayType} to bind.
      * @throws Phase.Error If the {@link ArrayType}'s component {@link Type} is not visible in the current scope.
      * @since 0.1.0
@@ -130,6 +145,9 @@ public class NameChecker extends Phase {
         // Assert the Array Type Component Type's Name has been resolved
         NameAssert.Resolved(this, arrayType);
 
+        // Resolve the Children
+        arrayType.visitChildren(this);
+
         return null;
 
     }
@@ -137,6 +155,7 @@ public class NameChecker extends Phase {
     /**
      * <p>Asserts that the {@link ChannelType}'s component {@link Type} is bound to the
      * {@link ChannelType}.</p>
+     *
      * @param channelType The {@link ChannelType} to bind.
      * @throws Phase.Error If the {@link ChannelType}'s component {@link Type} is not visible in the current scope.
      * @since 0.1.0
@@ -147,6 +166,9 @@ public class NameChecker extends Phase {
         // Assert the Channel Type Component Type's Name has been resolved
         NameAssert.Resolved(this, channelType);
 
+        // Resolve the Children
+        channelType.visitChildren(this);
+
         return null;
 
     }
@@ -154,6 +176,7 @@ public class NameChecker extends Phase {
     /**
      * <p>Asserts that the {@link ChannelEndType}'s component {@link Type} is bound to the
      * {@link ChannelEndType}.</p>
+     *
      * @param channelEndType The {@link ChannelEndType} to bind.
      * @throws Phase.Error If the {@link ChannelEndType}'s component {@link Type} is not visible in the current scope.
      * @since 0.1.0
@@ -164,193 +187,186 @@ public class NameChecker extends Phase {
         // Assert the Channel End Type Component Type's Name has been resolved
         NameAssert.Resolved(this, channelEndType);
 
+        // Resolve the Children
+        channelEndType.visitChildren(this);
+
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link CastExpr}'s cast {@link Type} is bound to the {@link CastExpr}.</p>
-     * @param castExpression The {@link CastExpr} to bind.
-     * @throws Phase.Error If the {@link CastExpr}'s cast {@link Type} is not visible in the current scope.
+     * <p>Asserts that the {@link CastExpression}'s cast {@link Type} is bound to the {@link CastExpression}.</p>
+     *
+     * @param castExpression The {@link CastExpression} to bind.
+     * @throws Phase.Error If the {@link CastExpression}'s cast {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitCastExpr(final CastExpr castExpression) throws Phase.Error {
+    public final Void visitCastExpression(final CastExpression castExpression) throws Phase.Error {
 
         // Assert the Cast Expression Cast Type's Name has been resolved
         NameAssert.Resolved(this, castExpression);
 
-        // Resolve the expression
-        castExpression.getExpression().visit(this);
+        // Resolve the Children
+        castExpression.visitChildren(this);
 
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link Invocation}'s {@link Type} is bound to the {@link Invocation}.</p>
-     * @param invocation The {@link Invocation} to bind.
-     * @throws Phase.Error If the {@link Invocation}'s {@link Type} is not visible in the current scope.
+     * <p>Asserts that the {@link InvocationExpression}'s {@link Type} is bound to the {@link InvocationExpression}.</p>
+     *
+     * @param invocationExpression The {@link InvocationExpression} to bind.
+     * @throws Phase.Error If the {@link InvocationExpression}'s {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitInvocation(final Invocation invocation) throws Phase.Error {
+    public final Void visitInvocationExpression(final InvocationExpression invocationExpression) throws Phase.Error {
 
         // Assert the Invocation's Name has been resolved
-        NameAssert.Resolved(this, invocation);
+        NameAssert.Resolved(this, invocationExpression);
 
-        // Resolve the target
-        invocation.getTarget().visit(this);
-
-        // Resolve the parameters
-        invocation.getParameters().visit(this);
+        // Resolve the Children
+        invocationExpression.visitChildren(this);
 
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link NameExpr}'s {@link Type} is bound to the {@link NameExpr}.</p>
-     * @param nameExpression The {@link NameExpr} to bind.
-     * @throws Phase.Error If the {@link NameExpr}'s {@link Type} is not visible in the current scope.
+     * <p>Asserts that the {@link NameExpression}'s {@link Type} is bound to the {@link NameExpression}.</p>
+     * @param nameExpression The {@link NameExpression} to bind.
+     * @throws Phase.Error If the {@link NameExpression}'s {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitNameExpr(final NameExpr nameExpression) throws Phase.Error {
+    public final Void visitNameExpression(final NameExpression nameExpression) throws Phase.Error {
 
         // Simply update the Type
         NameAssert.Resolved(this, nameExpression);
 
+        // Resolve the Children
+        nameExpression.visitChildren(this);
+
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link NewArray}'s component {@link Type} is bound to the {@link NewArray}.</p>
-     * @param newArray The {@link NewArray} to bind.
-     * @throws Phase.Error If the {@link NewArray}'s component {@link Type} is not visible in the current scope.
+     * <p>Asserts that the {@link NewArrayExpression}'s component {@link Type} is bound to the {@link NewArrayExpression}.</p>
+     * @param newArrayExpression The {@link NewArrayExpression} to bind.
+     * @throws Phase.Error If the {@link NewArrayExpression}'s component {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitNewArray(final NewArray newArray) throws Phase.Error {
+    public final Void visitNewArrayExpression(final NewArrayExpression newArrayExpression) throws Phase.Error {
 
         // Assert the Component Type has been resolved
-        NameAssert.Resolved(this, newArray);
+        NameAssert.Resolved(this, newArrayExpression);
 
-        // Resolve the New Array Expression
-        if(newArray.definesBracketExpressions())
-            newArray.getBracketExpressions().visit(this);
-
-        // Resolve the literal
-        if(newArray.definesLiteralExpression())
-            newArray.getInitializationExpression().visit(this);
+        // Resolve the Children
+        newArrayExpression.visitChildren(this);
 
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link NewMobile}'s {@link Type} is bound to the {@link NewMobile}.</p>
-     * @param newMobile The {@link NewMobile} to bind.
-     * @throws Phase.Error If the {@link NewMobile}'s {@link Type} is not visible in the current scope.
+     * <p>Asserts that the {@link NewMobileExpression}'s {@link Type} is bound to the {@link NewMobileExpression}.</p>
+     *
+     * @param newMobileExpression The {@link NewMobileExpression} to bind.
+     * @throws Phase.Error If the {@link NewMobileExpression}'s {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitNewMobile(final NewMobile newMobile) throws Phase.Error {
+    public final Void visitNewMobileExpression(final NewMobileExpression newMobileExpression) throws Phase.Error {
 
         // Assert the Component Type has been resolved
-        NameAssert.Resolved(this, newMobile);
+        NameAssert.Resolved(this, newMobileExpression);
+
+        // Resolve the Children
+        newMobileExpression.visitChildren(this);
 
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link ProtocolLiteral}'s {@link Type} is bound to the {@link ProtocolLiteral} as
+     * <p>Asserts that the {@link ProtocolLiteralExpression}'s {@link Type} is bound to the {@link ProtocolLiteralExpression} as
      * well as its tag case.</p>
-     * @param protocolLiteral The {@link ProtocolLiteral} to bind.
-     * @throws Phase.Error If the {@link ProtocolLiteral}'s {@link Type} is not visible in the current scope.
+     * @param protocolLiteralExpression The {@link ProtocolLiteralExpression} to bind.
+     * @throws Phase.Error If the {@link ProtocolLiteralExpression}'s {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitProtocolLiteral(final ProtocolLiteral protocolLiteral) throws Phase.Error {
+    public final Void visitProtocolLiteralExpression(final ProtocolLiteralExpression protocolLiteralExpression) throws Phase.Error {
 
         // Assert the Type & Tag Case has been resolved
-        NameAssert.Resolved(this, protocolLiteral);
+        NameAssert.Resolved(this, protocolLiteralExpression);
 
-        // Resolve the children
-        protocolLiteral.getExpressions().visit(this);
+        // Resolve the Children
+        protocolLiteralExpression.visitChildren(this);
 
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link RecordLiteral}'s {@link Type} is bound to the {@link RecordLiteral}.</p>
-     * @param recordLiteral The {@link RecordLiteral} to bind.
-     * @throws Phase.Error If the {@link RecordLiteral}'s {@link Type} is not visible in the current scope.
+     * <p>Asserts that the {@link RecordLiteralExpression}'s {@link Type} is bound to the {@link RecordLiteralExpression}.</p>
+     *
+     * @param recordLiteralExpression The {@link RecordLiteralExpression} to bind.
+     * @throws Phase.Error If the {@link RecordLiteralExpression}'s {@link Type} is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitRecordLiteral(final RecordLiteral recordLiteral) throws Phase.Error {
+    public final Void visitRecordLiteralExpression(final RecordLiteralExpression recordLiteralExpression) throws Phase.Error {
 
         // Assert the Type has been resolved
-        NameAssert.Resolved(this, recordLiteral);
+        NameAssert.Resolved(this, recordLiteralExpression);
 
-        // Resolve the Record Literal Expression
-        recordLiteral.getRecordMemberLiterals().visit(this);
+        // Resolve the Children
+        recordLiteralExpression.visitChildren(this);
 
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link BreakStat}'s label is visible in the current scope.</p>
-     * @param breakStat The {@link BreakStat} to assert.
-     * @throws Phase.Error If the {@link BreakStat}'s label is not visible in the current scope.
+     * <p>Asserts that the {@link BreakStatement}'s label is visible in the current scope.</p>
+     *
+     * @param breakStatement The {@link BreakStatement} to assert.
+     * @throws Phase.Error If the {@link BreakStatement}'s label is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitBreakStat(final BreakStat breakStat) throws Phase.Error {
+    public final Void visitBreakStatement(final BreakStatement breakStatement) throws Phase.Error {
 
         // Assert the Continue Statement's Label is visible
-        NameAssert.Resolved(this, breakStat);
+        NameAssert.Resolved(this, breakStatement);
+
+        // Resolve the Children
+        breakStatement.visitChildren(this);
 
         return null;
 
     }
 
     /**
-     * <p>Asserts that the {@link ContinueStat}'s label is visible in the current scope.</p>
-     * @param continueStat The {@link ContinueStat} to assert.
-     * @throws Phase.Error If the {@link ContinueStat}'s label is not visible in the current scope.
+     * <p>Asserts that the {@link ContinueStatement}'s label is visible in the current scope.</p>
+     *
+     * @param continueStatement The {@link ContinueStatement} to assert.
+     * @throws Phase.Error If the {@link ContinueStatement}'s label is not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final Void visitContinueStat(final ContinueStat continueStat) throws Phase.Error {
+    public final Void visitContinueStatement(final ContinueStatement continueStatement) throws Phase.Error {
 
         // Assert the Continue Statement's Label is visible
-        NameAssert.Resolved(this, continueStat);
+        NameAssert.Resolved(this, continueStatement);
 
-        return null;
-
-    }
-
-    /**
-     * <p>Asserts that the {@link SwitchLabel} {@link org.processj.compiler.ast.expression.Expression}'s {@link Type}
-     * is declared constant or is a {@link ProcTypeDecl}'s tag.</p>
-     * @param switchLabel The {@link SwitchLabel} to assert.
-     * @throws Phase.Error If the {@link SwitchLabel}'s is not constant or a {@link ProcTypeDecl}'s tag.
-     * @since 0.1.0
-     */
-    @Override
-    public final Void visitSwitchLabel(final SwitchLabel switchLabel) throws Phase.Error {
-
-        // Assert the SwitchLabel Expression is constant or a Protocol Tag
-        TypeAssert.SwitchLabelConstantOrProtocolType(this, switchLabel);
-
-        // Resolve the children
-        switchLabel.visitChildren(this);
+        // Resolve the Children
+        continueStatement.visitChildren(this);
 
         return null;
 

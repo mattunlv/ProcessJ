@@ -5,6 +5,21 @@ import org.processj.compiler.ast.*;
 import java.io.FileInputStream;
 import java.util.*;
 
+import org.processj.compiler.ast.expression.constructing.NewMobileExpression;
+import org.processj.compiler.ast.expression.literal.ProtocolLiteralExpression;
+import org.processj.compiler.ast.expression.literal.RecordLiteralExpression;
+import org.processj.compiler.ast.expression.result.InvocationExpression;
+import org.processj.compiler.ast.expression.resolve.NameExpression;
+import org.processj.compiler.ast.statement.*;
+import org.processj.compiler.ast.statement.conditional.*;
+import org.processj.compiler.ast.statement.control.BreakStatement;
+import org.processj.compiler.ast.statement.control.ContinueStatement;
+import org.processj.compiler.ast.statement.control.ReturnStatement;
+import org.processj.compiler.ast.statement.control.StopStatement;
+import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
+import org.processj.compiler.ast.expression.result.SwitchLabel;
+import org.processj.compiler.ast.statement.yielding.ParBlock;
+import org.processj.compiler.ast.type.*;
 import org.processj.compiler.phases.phase.Phase.ImportAssert;
 import org.processj.compiler.phases.phase.Phase.SemanticAssert;
 import org.processj.compiler.phases.phase.Phase.ReachabilityAssert;
@@ -38,28 +53,28 @@ public class ErrorTable {
 
     // TODO: See about Error 207; they are quickly resolved and replaced in the Namechecker Phase
     private final static Object[] Index_200 = new Object[]
-            { Phase.DeclarationAssert.TypeDefined.class, ConstantDecl.class };
+            { Phase.DeclarationAssert.TypeDefined.class, ConstantDeclaration.class };
 
     private final static Object[] Index_201 = new Object[]
-            { Phase.DeclarationAssert.NonProcedureTypeDefined.class, ProcTypeDecl.class };
+            { Phase.DeclarationAssert.NonProcedureTypeDefined.class, ProcedureTypeDeclaration.class };
 
     private final static Object[] Index_202 = new Object[]
-            { Phase.DeclarationAssert.TypeDefined.class, ProcTypeDecl.class };
+            { Phase.DeclarationAssert.TypeDefined.class, ProcedureTypeDeclaration.class };
 
     private final static Object[] Index_203 = new Object[]
-            { Phase.DeclarationAssert.TypeDefined.class, ProtocolTypeDecl.class };
+            { Phase.DeclarationAssert.TypeDefined.class, ProtocolTypeDeclaration.class };
 
     private final static Object[] Index_204 = new Object[]
-            { Phase.DeclarationAssert.TypeDefined.class, RecordTypeDecl.class };
+            { Phase.DeclarationAssert.TypeDefined.class, RecordTypeDeclaration.class };
 
     private final static Object[] Index_205 = new Object[]
-            { Phase.DeclarationAssert.MobileProcedureSpecifiesNonVoidReturnType.class, ProcTypeDecl.class };
+            { Phase.DeclarationAssert.MobileProcedureSpecifiesNonVoidReturnType.class, ProcedureTypeDeclaration.class };
 
     private final static Object[] Index_206 = new Object[]
-            { Phase.DeclarationAssert.MobileProcedureOverloaded.class, ProcTypeDecl.class };
+            { Phase.DeclarationAssert.MobileProcedureOverloaded.class, ProcedureTypeDeclaration.class };
 
     private final static Object[] Index_208 = new Object[]
-            { Phase.DeclarationAssert.NonMobileProcedureTypeDefined.class, ProcTypeDecl.class };
+            { Phase.DeclarationAssert.NonMobileProcedureTypeDefined.class, ProcedureTypeDeclaration.class };
 
     //** --------------------------------------------------------------------------------------------------------- **//
     //** NameChecker                                                                                               **//
@@ -67,58 +82,58 @@ public class ErrorTable {
 
     // TODO: 401 & 407
     private final static Object[] Index_400 = new Object[]
-            { Phase.NameAssert.NameDefined.class, LocalDecl.class };
+            { Phase.NameAssert.NameDefined.class, LocalDeclaration.class };
 
     private final static Object[] Index_402 = new Object[]
-            { Phase.NameAssert.NameDefined.class, ParamDecl.class };
+            { Phase.NameAssert.NameDefined.class, ParameterDeclaration.class };
 
     private final static Object[] Index_403 = new Object[]
-            { Phase.NameAssert.NameNotDefined.class, Invocation.class };
+            { Phase.NameAssert.NameNotDefined.class, InvocationExpression.class };
 
     private final static Object[] Index_404 = new Object[]
-            { Phase.NameAssert.NonProcedureInvocation.class, Invocation.class };
+            { Phase.NameAssert.NonProcedureInvocation.class, InvocationExpression.class };
 
     private final static Object[] Index_405 = new Object[]
-            { Phase.NameAssert.NameNotDefined.class, NameExpr.class };
+            { Phase.NameAssert.NameNotDefined.class, NameExpression.class };
 
     private final static Object[] Index_406 = new Object[]
-            { Phase.NameAssert.NameNotDefined.class, NewMobile.class };
+            { Phase.NameAssert.NameNotDefined.class, NewMobileExpression.class };
 
     private final static Object[] Index_408 = new Object[]
-            { Phase.NameAssert.NameNotDefined.class, ProcTypeDecl.class };
+            { Phase.NameAssert.NameNotDefined.class, ProcedureTypeDeclaration.class };
 
     private final static Object[] Index_409 = new Object[]
-            { Phase.NameAssert.NameNotDefined.class, ProtocolLiteral.class };
+            { Phase.NameAssert.NameNotDefined.class, ProtocolLiteralExpression.class };
 
     private final static Object[] Index_410 = new Object[]
-            { Phase.NameAssert.NonProcedureImplements.class, ProcTypeDecl.class };
+            { Phase.NameAssert.NonProcedureImplements.class, ProcedureTypeDeclaration.class };
 
     private final static Object[] Index_412 = new Object[]
-            { Phase.NameAssert.NonProtocolName.class, ProtocolLiteral.class };
+            { Phase.NameAssert.NonProtocolName.class, ProtocolLiteralExpression.class };
 
     private final static Object[] Index_413 = new Object[]
-            { Phase.NameAssert.TagNotDefined.class, ProtocolLiteral.class };
+            { Phase.NameAssert.TagNotDefined.class, ProtocolLiteralExpression.class };
 
     private final static Object[] Index_414 = new Object[]
-            { Phase.NameAssert.NameNotDefined.class, ProtocolTypeDecl.class };
+            { Phase.NameAssert.NameNotDefined.class, ProtocolTypeDeclaration.class };
 
     private final static Object[] Index_415 = new Object[]
-            { Phase.NameAssert.NonProtocolName.class, ProtocolTypeDecl.class };
+            { Phase.NameAssert.NonProtocolName.class, ProtocolTypeDeclaration.class };
 
     private final static Object[] Index_416 = new Object[]
-            { Phase.NameAssert.NameNotDefined.class, RecordLiteral.class };
+            { Phase.NameAssert.NameNotDefined.class, RecordLiteralExpression.class };
 
     private final static Object[] Index_417 = new Object[]
-            { Phase.NameAssert.NonRecordName.class, RecordLiteral.class };
+            { Phase.NameAssert.NonRecordName.class, RecordLiteralExpression.class };
 
     private final static Object[] Index_418 = new Object[]
-            { Phase.NameAssert.NameNotDefined.class, RecordTypeDecl.class };
+            { Phase.NameAssert.NameNotDefined.class, RecordTypeDeclaration.class };
 
     private final static Object[] Index_419 = new Object[]
-            { Phase.NameAssert.NonRecordName.class, RecordTypeDecl.class };
+            { Phase.NameAssert.NonRecordName.class, RecordTypeDeclaration.class };
 
     private final static Object[] Index_420 = new Object[]
-            { Phase.NameAssert.ExtendDefined.class, RecordTypeDecl.class };
+            { Phase.NameAssert.ExtendDefined.class, RecordTypeDeclaration.class };
 
     private final static Object[] Index_421 = new Object[]
             { Phase.TypeAssert.SwitchLabelExpressionNotConstantOrProtocolTag.class, SwitchLabel.class };
@@ -128,43 +143,43 @@ public class ErrorTable {
     //** --------------------------------------------------------------------------------------------------------- **//
 
     private final static Object[] Index_800 = new Object[]
-            { ReachabilityAssert.BranchConditionalContextNotReachable.class, IfStat.class };
+            { ReachabilityAssert.BranchConditionalContextNotReachable.class, IfStatement.class };
 
     private final static Object[] Index_801 = new Object[]
-            { ReachabilityAssert.ConditionalContextNotReachable.class, IfStat.class };
+            { ReachabilityAssert.ConditionalContextNotReachable.class, IfStatement.class };
 
     private final static Object[] Index_802 = new Object[]
-            { ReachabilityAssert.EnclosingIterativeContextDoesNotTerminate.class, WhileStat.class, Statement.class };
+            { ReachabilityAssert.EnclosingIterativeContextDoesNotTerminate.class, WhileStatement.class, Statement.class };
 
     private final static Object[] Index_803 = new Object[]
-            { ReachabilityAssert.ContextDoesNotTerminate.class, StopStat.class, Block.class };
+            { ReachabilityAssert.ContextDoesNotTerminate.class, StopStatement.class, BlockStatement.class };
 
     private final static Object[] Index_804 = new Object[]
-            { ReachabilityAssert.EnclosingIterativeContextIsNotReachable.class, ForStat.class, Statement.class };
+            { ReachabilityAssert.EnclosingIterativeContextIsNotReachable.class, ForStatement.class, Statement.class };
 
     private final static Object[] Index_805 = new Object[]
-            { ReachabilityAssert.EnclosingIterativeContextDoesNotTerminate.class, ForStat.class, Statement.class };
+            { ReachabilityAssert.EnclosingIterativeContextDoesNotTerminate.class, ForStatement.class, Statement.class };
 
     private final static Object[] Index_806 = new Object[]
-            { ReachabilityAssert.NotEnclosedInBreakableContext.class, SymbolMap.Context.class, BreakStat.class };
+            { ReachabilityAssert.NotEnclosedInBreakableContext.class, SymbolMap.Context.class, BreakStatement.class };
 
     private final static Object[] Index_807 = new Object[]
-            { ReachabilityAssert.EnclosedInParallelContext.class, SymbolMap.Context.class, ReturnStat.class };
+            { ReachabilityAssert.EnclosedInParallelContext.class, SymbolMap.Context.class, ReturnStatement.class };
 
     private final static Object[] Index_808 = new Object[]
-            { ReachabilityAssert.EnclosedInParallelContext.class, ParBlock.class, BreakStat.class };
+            { ReachabilityAssert.EnclosedInParallelContext.class, ParBlock.class, BreakStatement.class };
 
     private final static Object[] Index_809 = new Object[]
-            { ReachabilityAssert.EnclosingIterativeContextDoesNotTerminate.class, DoStat.class, Statement.class };
+            { ReachabilityAssert.EnclosingIterativeContextDoesNotTerminate.class, DoStatement.class, Statement.class };
 
     private final static Object[] Index_810 = new Object[]
-            { ReachabilityAssert.EnclosingIterativeContextIsNotReachable.class, WhileStat.class, Statement.class };
+            { ReachabilityAssert.EnclosingIterativeContextIsNotReachable.class, WhileStatement.class, Statement.class };
 
     private final static Object[] Index_811 = new Object[]
-            { ReachabilityAssert.EnclosedInParallelContext.class, ParBlock.class, ContinueStat.class };
+            { ReachabilityAssert.EnclosedInParallelContext.class, ParBlock.class, ContinueStatement.class };
 
     private final static Object[] Index_812 = new Object[]
-            { ReachabilityAssert.NotEnclosedInIterativeContext.class, SymbolMap.Context.class, ContinueStat.class };
+            { ReachabilityAssert.NotEnclosedInIterativeContext.class, SymbolMap.Context.class, ContinueStatement.class };
 
     private final static Object[] Index_813 = new Object[]
             { SemanticAssert.ParallelContextEmpty.class, SymbolMap.Context.class };

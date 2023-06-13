@@ -290,7 +290,7 @@ non terminal ArrayLiteral   array_initializer;
 non terminal Sequence       variable_initializers_opt, variable_initializers;
 
 // 9.0 Blocks and Statements
-non terminal Block      block_opt, block;
+non terminal Block      block_opt, blockStatement;
 non terminal Sequence       block_statements_opt, block_statements;
 non terminal ParBlock       par_block;
 non terminal Sequence       barriers, block_statement, local_variable_declaration;
@@ -346,7 +346,7 @@ non terminal SkipStat       skip_statement;
 non terminal AltStat        alt_statement;
 non terminal Sequence       alt_body;
 non terminal AltCase        alt_case;
-non terminal Guard          guard;
+non terminal Guard          guardStatement;
 
 // 10.0 Expressions
 non terminal Expression     primary, primary_no_new_array_or_mobile;
@@ -369,7 +369,7 @@ non terminal Expression         record_access;
 non terminal ArrayAccessExpr    array_access;
 
 // 10.5 Invocation Expression
-non terminal Invocation     invocation;
+non terminal Invocation     invocationExpression;
 non terminal Sequence       argument_list_opt, argument_list;
 
 // 10.6 Expressions
@@ -383,7 +383,7 @@ non terminal Expression     multiplicative_expression, additive_expression, shif
 non terminal Expression     relational_expression, equality_expression, and_expression;
 non terminal Expression     exclusive_or_expression, inclusive_or_expression, conditional_and_expression;
 non terminal Expression     conditional_or_expression, conditional_expression, assignment_expression;
-non terminal Assignment     assignment;
+non terminal Assignment     assignmentExpression;
 non terminal Integer        assignment_operator;
 non terminal Expression     left_hand_side, expression_opt, expression, constant_expression;
 
@@ -484,7 +484,7 @@ range ::=
 
 // Block :> Statement :> AST
 body_opt ::=
-          block:b                                           {: RESULT = b; :}
+          blockStatement:b                                           {: RESULT = b; :}
         | SEMICOLON                                              {: RESULT = null; :} 
         ;
 
@@ -837,12 +837,12 @@ variable_initializers ::=
 
 //- Block :> Statment :> AST
 block_opt ::=
-          block:b        {: RESULT = b; :}
+          blockStatement:b        {: RESULT = b; :}
         | /* Epsilon */  {: RESULT = null; :}
         ;
 
 //- Block :> Statement :> AST
-block ::=
+blockStatement ::=
           LBRACE block_statements_opt:b RBRACE {: RESULT = new Block(b); :}
         ;
 
@@ -860,9 +860,9 @@ block_statements ::=
 
 //- ParBlock  :> Statement :> AST
 par_block ::= 
-          PAR block:bl                                 {: RESULT = new ParBlock(bl.stats(), new Sequence<Expression>()); :}
-        | PAR ENROLL barriers:b block:bl {: RESULT = new ParBlock(bl.stats(), b); :}
-        //| PAR ENROLL LPAREN barriers:b RPAREN block:bl {: RESULT = new ParBlock(bl.stats(), b); :}
+          PAR blockStatement:bl                                 {: RESULT = new ParBlock(bl.stats(), new Sequence<Expression>()); :}
+        | PAR ENROLL barriers:b blockStatement:bl {: RESULT = new ParBlock(bl.stats(), b); :}
+        //| PAR ENROLL LPAREN barriers:b RPAREN blockStatement:bl {: RESULT = new ParBlock(bl.stats(), b); :}
         ;
 
 //- Sequence[Expression :> AST] :> AST
@@ -920,13 +920,13 @@ statement_no_short_if ::=
 
 // Statement :> AST
 statement_without_trailing_substatement ::=
-          block:s                         {: RESULT = s; :}
+          blockStatement:s                         {: RESULT = s; :}
         | par_block:s                     {: RESULT = s; :}
         | empty_statement:s               {: RESULT = s; :}
         | do_statement:s                  {: RESULT = s; :}
         | barrier_sync_statement:s        {: RESULT = s; :}
         | timeout_statement:s SEMICOLON   {: RESULT = s; :}
-        | SEQ block:s                     {: RESULT = s; :}
+        | SEQ blockStatement:s                     {: RESULT = s; :}
         | suspend_statement:s             {: RESULT = s; :}
         | expression_statement:s          {: RESULT = s; :}
         | break_statement:s               {: RESULT = s; :}
@@ -1105,12 +1105,12 @@ expression_statement ::=
 
 // Expression :> AST
 statement_expression ::=
-          assignment:e                                      {: RESULT = e; :}
+          assignmentExpression:e                                      {: RESULT = e; :}
         | pre_increment_expression:e                        {: RESULT = e; :}
         | pre_decrement_expression:e                        {: RESULT = e; :}
         | post_increment_expression:e                       {: RESULT = e; :}
         | post_decrement_expression:e                       {: RESULT = e; :}
-        | invocation:e                                      {: RESULT = e; :}
+        | invocationExpression:e                                      {: RESULT = e; :}
         | primary:p DOT READ LPAREN block_opt:b RPAREN      {: RESULT = new ChannelReadExpr(p, b); :}
         | IDENTIFIER:id DOT READ LPAREN block_opt:b RPAREN  {: RESULT = new ChannelReadExpr(new NameExpr(new Name(id)), b); :}
         ;
@@ -1227,13 +1227,13 @@ alt_body ::=
 
 //- AltCase :> AST
 alt_case ::=
-          LPAREN expression:e RPAREN ANDAND guard:g COLON statement:s {: RESULT = new AltCase(e, g, s); :}
-        | guard:g COLON statement:s                                   {: RESULT = new AltCase(null, g, s); :}
+          LPAREN expression:e RPAREN ANDAND guardStatement:g COLON statement:s {: RESULT = new AltCase(e, g, s); :}
+        | guardStatement:g COLON statement:s                                   {: RESULT = new AltCase(null, g, s); :}
 	| alt_statement:as                                            {: RESULT = new AltCase(as); :}
 ;
 
 //- Guard (takes in a statement) :> AST
-guard ::=
+guardStatement ::=
           left_hand_side:l EQ chan_read_expression:e
             {: RESULT = new Guard(new ExprStat(new Assignment(l, e, Assignment.EQ))); :}
         | SKIP:s                      {: RESULT = new Guard(new SkipStat(s)); :}
@@ -1261,7 +1261,7 @@ primary_no_new_array_or_mobile ::=
           literal:e                       {: RESULT = e; :}
         | LPAREN expression:e RPAREN      {: RESULT = e; RESULT.hasParens = true; :}
         | record_access:e                 {: RESULT = e; :}
-        | invocation:e                    {: RESULT = e; :}
+        | invocationExpression:e                    {: RESULT = e; :}
         | array_access:e                  {: RESULT = e; :}
         ;
 
@@ -1356,7 +1356,7 @@ array_access ::=
 // **************************************************
 
 // Invocation :> Expression :> AST
-invocation ::=
+invocationExpression ::=
           IDENTIFIER:id LPAREN argument_list_opt:l RPAREN   {: RESULT = new Invocation(null, new Name(id), l); :}
         | FORK:f LPAREN argument_list:l RPAREN {: RESULT = new Invocation(null, new Name(f), l); :}
         | primary:p DOT IDENTIFIER:id LPAREN argument_list_opt:l RPAREN   {: RESULT = new Invocation(p, new Name(id), l); :}
@@ -1518,11 +1518,11 @@ conditional_expression ::=
 // Expression :> AST    
 assignment_expression ::=
           conditional_expression:e  {: RESULT = e; :}
-        | assignment:a              {: RESULT = a; :}
+        | assignmentExpression:a              {: RESULT = a; :}
         ; 
   
 // Assignment :> Expression :> AST
-assignment ::=
+assignmentExpression ::=
           left_hand_side:l assignment_operator:o assignment_expression:e {: RESULT = new Assignment(l, e, o); :}
         ;
              

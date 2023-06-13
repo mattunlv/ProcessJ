@@ -3,7 +3,7 @@ package org.processj.compiler.ast.expression;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.Token;
-import org.processj.compiler.ast.Type;
+import org.processj.compiler.ast.type.Type;
 
 public abstract class Expression extends AST {
 
@@ -18,7 +18,10 @@ public abstract class Expression extends AST {
     public Expression(AST a) {
         super(a);
     }
-
+    public Expression(final Name name, final Type type) {
+        super(name);
+        this.type = type;
+    }
     public Expression(final AST[] children) {
         super(children);
 

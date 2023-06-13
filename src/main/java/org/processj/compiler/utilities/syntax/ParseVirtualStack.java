@@ -5,8 +5,8 @@
  */
 package org.processj.compiler.utilities.syntax;
 
-import org.processj.compiler.ast.ExprStat;
-import org.processj.compiler.ast.Statement;
+import org.processj.compiler.ast.statement.ExpressionStatement;
+import org.processj.compiler.ast.statement.Statement;
 import org.processj.compiler.ast.Token;
 import org.processj.compiler.ast.expression.Expression;
 
@@ -89,8 +89,8 @@ public class ParseVirtualStack {
                 break;
             case ORACLE_STATEMENT:
                 Statement st = (Statement) symbol;
-                if (st instanceof ExprStat) {
-                    e = ((ExprStat) st).getExpression();
+                if (st instanceof ExpressionStatement) {
+                    e = ((ExpressionStatement) st).getExpression();
                     hasParens = e.hasParens;
                     stack.push(node);
                     node = new RuleCtx(new Token("*"));

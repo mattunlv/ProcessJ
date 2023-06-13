@@ -1,7 +1,5 @@
 package org.processj.compiler.utilities;
 
-import org.processj.compiler.ast.DefineTopLevelDecl;
-
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -15,7 +13,7 @@ import java.util.Hashtable;
  * A single symbol table may be used to hold all declarations of
  * methods with the same name but with different signatures.
  */
-public class SymbolTable implements DefineTopLevelDecl {
+public class SymbolTable {
 
     // This hook is used to hold on the global type table
     // and to transport the closest table from TopLevelDecls.

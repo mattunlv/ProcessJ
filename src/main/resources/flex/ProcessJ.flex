@@ -1,4 +1,4 @@
-package org.processj.compiler.phases.phase;
+package org.processj.compiler.phases.phase.generated;
 
 import org.processj.compiler.ast.Token;
 import org.processj.compiler.utilities.syntax.Types;

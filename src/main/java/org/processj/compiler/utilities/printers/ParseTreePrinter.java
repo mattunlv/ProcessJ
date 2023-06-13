@@ -1,14 +1,38 @@
 package org.processj.compiler.utilities.printers;
 
+import org.processj.compiler.ast.expression.access.ArrayAccessExpression;
+import org.processj.compiler.ast.expression.access.RecordAccessExpression;
+import org.processj.compiler.ast.expression.binary.AssignmentExpression;
+import org.processj.compiler.ast.expression.binary.BinaryExpression;
+import org.processj.compiler.ast.expression.constructing.NewArrayExpression;
+import org.processj.compiler.ast.expression.constructing.NewMobileExpression;
+import org.processj.compiler.ast.expression.literal.ArrayLiteralExpression;
+import org.processj.compiler.ast.expression.literal.PrimitiveLiteralExpression;
+import org.processj.compiler.ast.expression.literal.ProtocolLiteralExpression;
+import org.processj.compiler.ast.expression.literal.RecordLiteralExpression;
+import org.processj.compiler.ast.expression.resolve.ImplicitImportExpression;
+import org.processj.compiler.ast.expression.resolve.NameExpression;
+import org.processj.compiler.ast.expression.result.*;
+import org.processj.compiler.ast.expression.unary.*;
+import org.processj.compiler.ast.expression.yielding.ChannelEndExpression;
+import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
+import org.processj.compiler.ast.statement.*;
+import org.processj.compiler.ast.statement.alt.GuardStatement;
+import org.processj.compiler.ast.statement.conditional.*;
+import org.processj.compiler.ast.statement.control.*;
+import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
+import org.processj.compiler.ast.statement.declarative.ProtocolCase;
+import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
+import org.processj.compiler.ast.statement.switched.SwitchGroupStatement;
+import org.processj.compiler.ast.expression.result.SwitchLabel;
+import org.processj.compiler.ast.statement.switched.SwitchStatement;
+import org.processj.compiler.ast.statement.yielding.ChannelWriteStatement;
+import org.processj.compiler.ast.statement.yielding.ParBlock;
+import org.processj.compiler.ast.type.*;
 import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.alt.AltCase;
-import org.processj.compiler.ast.alt.AltStat;
-import org.processj.compiler.ast.alt.Guard;
-import org.processj.compiler.ast.expression.ArrayAccessExpr;
-import org.processj.compiler.ast.expression.ArrayLiteral;
-import org.processj.compiler.ast.expression.Assignment;
-import org.processj.compiler.ast.expression.BinaryExpr;
+import org.processj.compiler.ast.statement.alt.AltCase;
+import org.processj.compiler.ast.statement.alt.AltStatement;
 import org.processj.compiler.phases.phase.Visitor;
 
 public class ParseTreePrinter implements Visitor<AST> {
@@ -27,104 +51,104 @@ public class ParseTreePrinter implements Visitor<AST> {
     }
 
     // AltCase
-    public AST visitAltCase(AltCase ac) throws Phase.Error {
-        System.out.println(indent(ac.line) + "AltCase:");
+    public AST visitAltCase(AltCase altCase) throws Phase.Error {
+        System.out.println(indent(altCase.line) + "AltCase:");
         indent += 2;
-        Visitor.super.visitAltCase(ac);
+        Visitor.super.visitAltCase(altCase);
         indent -= 2;
         return null;
     }
     // AltStat
-    public AST visitAltStat(AltStat as) throws Phase.Error {
-        System.out.println(indent(as.line) + "AltStat:");
+    public AST visitAltStatement(AltStatement altStatement) throws Phase.Error {
+        System.out.println(indent(altStatement.line) + "AltStat:");
         indent += 2;
-        Visitor.super.visitAltStat(as);
+        Visitor.super.visitAltStatement(altStatement);
         indent -= 2;
         return null;
     }
     // ArrayAccessExpr
-    public AST visitArrayAccessExpr(ArrayAccessExpr ae) throws Phase.Error {
-        System.out.println(indent(ae.line) + "ArrayAccessExpr:");
+    public AST visitArrayAccessExpression(ArrayAccessExpression arrayAccessExpression) throws Phase.Error {
+        System.out.println(indent(arrayAccessExpression.line) + "ArrayAccessExpr:");
         indent += 2;
-        Visitor.super.visitArrayAccessExpr(ae);
+        Visitor.super.visitArrayAccessExpression(arrayAccessExpression);
         indent -=2;
         return null;
     }
     // ArrayLiteral
-    public AST visitArrayLiteral(ArrayLiteral al) throws Phase.Error {
-        System.out.println(indent(al.line) + "ArrayLiteral:");
+    public AST visitArrayLiteralExpression(ArrayLiteralExpression arrayLiteralExpression) throws Phase.Error {
+        System.out.println(indent(arrayLiteralExpression.line) + "ArrayLiteral:");
         indent += 2;
-        Visitor.super.visitArrayLiteral(al);
+        Visitor.super.visitArrayLiteralExpression(arrayLiteralExpression);
         indent -= 2;
         return null;
     }
     // ArrayType
-    public AST visitArrayType(ArrayType at) throws Phase.Error {
-        System.out.print(indent(at.line) + "ArrayType:");
-        for (int i=0;i<at.getDepth();i++)
+    public AST visitArrayType(ArrayType arrayType) throws Phase.Error {
+        System.out.print(indent(arrayType.line) + "ArrayType:");
+        for (int i = 0; i< arrayType.getDepth(); i++)
             System.out.print("[]");
         System.out.println();
         indent += 2;
-        Visitor.super.visitArrayType(at);
+        Visitor.super.visitArrayType(arrayType);
         indent -= 2;
         return null;
     }
     // Assignment
-    public AST visitAssignment(Assignment as) throws Phase.Error {
-        System.out.println(indent(as.line) + "Assignment:");
+    public AST visitAssignmentExpression(AssignmentExpression assignmentExpression) throws Phase.Error {
+        System.out.println(indent(assignmentExpression.line) + "Assignment:");
         indent += 2;
-        Visitor.super.visitAssignment(as);
-        System.out.println(indent(as.line) + "Operator: " + as.opString());
+        Visitor.super.visitAssignmentExpression(assignmentExpression);
+        System.out.println(indent(assignmentExpression.line) + "Operator: " + assignmentExpression.opString());
         indent -= 2;
         return null;
     }
     // BinaryExpr
-    public AST visitBinaryExpr(BinaryExpr be) throws Phase.Error {
-        System.out.println(indent(be.line) + "BinaryExpr:");
+    public AST visitBinaryExpression(BinaryExpression binaryExpression) throws Phase.Error {
+        System.out.println(indent(binaryExpression.line) + "BinaryExpr:");
         indent += 2;
-        Visitor.super.visitBinaryExpr(be);
-        System.out.println(indent(be.line) + "Operator: " + be.opString());
+        Visitor.super.visitBinaryExpression(binaryExpression);
+        System.out.println(indent(binaryExpression.line) + "Operator: " + binaryExpression.opString());
         indent -= 2;
         return null;
     }
     // Block
-    public AST visitBlock(Block bl) throws Phase.Error {
-        System.out.println(indent(bl.line) + "Block:");
+    public AST visitBlockStatement(BlockStatement blockStatement) throws Phase.Error {
+        System.out.println(indent(blockStatement.line) + "Block:");
         indent += 2;
-        Visitor.super.visitBlock(bl);
+        Visitor.super.visitBlockStatement(blockStatement);
         indent -= 2;
         return null;
     }
     // BreakStat
     /** BREAK STATEMENT */
-    public AST visitBreakStat(BreakStat bs) throws Phase.Error {
-        System.out.println(indent(bs.line) + "BreakStat");
+    public AST visitBreakStatement(BreakStatement breakStatement) throws Phase.Error {
+        System.out.println(indent(breakStatement.line) + "BreakStat");
         indent += 2;
-        Visitor.super.visitBreakStat(bs);
+        Visitor.super.visitBreakStatement(breakStatement);
         indent -= 2;
         return null;
     }
     // CastExpr
-    public AST visitCastExpr(CastExpr ce) throws Phase.Error {
-        System.out.println(indent(ce.line) + "CastExpr:");
+    public AST visitCastExpression(CastExpression castExpression) throws Phase.Error {
+        System.out.println(indent(castExpression.line) + "CastExpr:");
         indent += 2;
-        Visitor.super.visitCastExpr(ce);
+        Visitor.super.visitCastExpression(castExpression);
         indent -= 2;
         return null;
     }
     // ChannelType
-    public AST visitChannelType(ChannelType ct) throws Phase.Error {
-        System.out.println(indent(ct.line) + "ChannelType:");
+    public AST visitChannelType(ChannelType channelType) throws Phase.Error {
+        System.out.println(indent(channelType.line) + "ChannelType:");
         indent += 2;
-        Visitor.super.visitChannelType(ct);
+        Visitor.super.visitChannelType(channelType);
         indent -= 2;
         return null;
     }
     // ChannelEndExpr
-    public AST visitChannelEndExpr(ChannelEndExpr ce) throws Phase.Error {
-        System.out.println(indent(ce.line) + "ChannelEndExpr:");
+    public AST visitChannelEndExpression(ChannelEndExpression channelEndExpression) throws Phase.Error {
+        System.out.println(indent(channelEndExpression.line) + "ChannelEndExpr:");
         indent += 2;
-        Visitor.super.visitChannelEndExpr(ce);
+        Visitor.super.visitChannelEndExpression(channelEndExpression);
         indent -= 2;
         return null;
     }
@@ -137,294 +161,294 @@ public class ParseTreePrinter implements Visitor<AST> {
         return null;
     }
     // ChannelReadExpr
-    public AST visitChannelReadExpr(ChannelReadExpr cr) throws Phase.Error {
-        System.out.println(indent(cr.line) + "ChannelReadExpr:");
+    public AST visitChannelReadExpression(ChannelReadExpression channelReadExpression) throws Phase.Error {
+        System.out.println(indent(channelReadExpression.line) + "ChannelReadExpr:");
         indent += 2;
-        Visitor.super.visitChannelReadExpr(cr);
+        Visitor.super.visitChannelReadExpression(channelReadExpression);
         indent -= 2;
         return null;
     }
     // ChannelWriteStat
-    public AST visitChannelWriteStat(ChannelWriteStat cw) throws Phase.Error {
-        System.out.println(indent(cw.line) + "ChannelWriteStat:");
+    public AST visitChannelWriteStatement(ChannelWriteStatement channelWriteStatement) throws Phase.Error {
+        System.out.println(indent(channelWriteStatement.line) + "ChannelWriteStat:");
         indent += 2;
-        Visitor.super.visitChannelWriteStat(cw);
+        Visitor.super.visitChannelWriteStatement(channelWriteStatement);
         indent -= 2;
         return null;
     }
     // ClaimStat
-    public AST visitClaimStat(ClaimStat cs) throws Phase.Error {
-        System.out.println(indent(cs.line) + "ClaimStat:");
+    public AST visitClaimStatement(ClaimStatement claimStatement) throws Phase.Error {
+        System.out.println(indent(claimStatement.line) + "ClaimStat:");
         indent += 2;
-        Visitor.super.visitClaimStat(cs);
+        Visitor.super.visitClaimStatement(claimStatement);
         indent -= 2;
         return null;
     }
     // Compilation
-    public AST visitCompilation(Compilation co) throws Phase.Error {
-        System.out.println(indent(co.line) + "Compilation:");
+    public AST visitCompilation(Compilation compilation) throws Phase.Error {
+        System.out.println(indent(compilation.line) + "Compilation:");
         indent += 2;
-        Visitor.super.visitCompilation(co);
+        Visitor.super.visitCompilation(compilation);
         indent -= 2;
         return null;
     }
     // ConstantDecl
-    public AST visitConstantDecl(ConstantDecl cd) throws Phase.Error {
-        System.out.println(indent(cd.line) + "ConstantDecl:");
+    public AST visitConstantDeclaration(ConstantDeclaration constantDeclaration) throws Phase.Error {
+        System.out.println(indent(constantDeclaration.line) + "ConstantDecl:");
         indent += 2;
-        Visitor.super.visitConstantDecl(cd);
+        Visitor.super.visitConstantDeclaration(constantDeclaration);
         indent -= 2;
         return null;
     }
     // ContinueStat
-    public AST visitContinueStat(ContinueStat cs) throws Phase.Error {
-        System.out.println(indent(cs.line) + "Continue Statement");
+    public AST visitContinueStatement(ContinueStatement continueStatement) throws Phase.Error {
+        System.out.println(indent(continueStatement.line) + "Continue Statement");
         indent += 2;
-        Visitor.super.visitContinueStat(cs);
+        Visitor.super.visitContinueStatement(continueStatement);
         indent -= 2;
         return null;
     }
     // DoStat
-    public AST visitDoStat(DoStat ds) throws Phase.Error {
-        System.out.println(indent(ds.line) + "DoStat:");
+    public AST visitDoStatement(DoStatement doStatement) throws Phase.Error {
+        System.out.println(indent(doStatement.line) + "DoStat:");
         indent += 2;
-        Visitor.super.visitDoStat(ds);
+        Visitor.super.visitDoStatement(doStatement);
         indent -= 2;
         return null;
     }
     // ExprStat
-    public AST visitExprStat(ExprStat es) throws Phase.Error {
-        System.out.println(indent(es.line) + "ExprStat:");
+    public AST visitExpressionStatement(ExpressionStatement expressionStatement) throws Phase.Error {
+        System.out.println(indent(expressionStatement.line) + "ExprStat:");
         indent += 2;
-        Visitor.super.visitExprStat(es);
+        Visitor.super.visitExpressionStatement(expressionStatement);
         indent -= 2;
         return null;
     }
     // ExternType
-    public AST visitExternType(ExternType et) throws Phase.Error {
-        System.out.println(indent(et.line) + "ExternType:");
+    public AST visitExternType(ExternType externType) throws Phase.Error {
+        System.out.println(indent(externType.line) + "ExternType:");
         indent += 2;
-        Visitor.super.visitExternType(et);
+        Visitor.super.visitExternType(externType);
         indent -= 2;
         return null;
     }
     // ForStat
-    public AST visitForStat(ForStat fs) throws Phase.Error {
-        System.out.println(indent(fs.line) + "ForStat:");
+    public AST visitForStatement(ForStatement forStatement) throws Phase.Error {
+        System.out.println(indent(forStatement.line) + "ForStat:");
         indent += 2;
-        Visitor.super.visitForStat(fs);
+        Visitor.super.visitForStatement(forStatement);
         indent -= 2;
         return null;
     }
     // Guard
-    public AST visitGuard(Guard g) throws Phase.Error {
+    public AST visitGuardStatement(GuardStatement g) throws Phase.Error {
         System.out.println(indent(g.line) + "Guard:");
         indent += 2;
-        Visitor.super.visitGuard(g);
+        Visitor.super.visitGuardStatement(g);
         indent -= 2;
         return null;
     }
     // IfStat
-    public AST visitIfStat(IfStat is) throws Phase.Error {
-        System.out.println(indent(is.line) + "IfStat:");
+    public AST visitIfStatement(IfStatement ifStatement) throws Phase.Error {
+        System.out.println(indent(ifStatement.line) + "IfStat:");
         indent += 2;
-        Visitor.super.visitIfStat(is);
+        Visitor.super.visitIfStatement(ifStatement);
         indent -= 2;
         return null;
     }
     // ImplicitImport
-    public AST visitImplicitImport(ImplicitImport im) throws Phase.Error {
+    public AST visitImplicitImportExpression(ImplicitImportExpression im) throws Phase.Error {
         System.out.println(indent(im.line) + "ImplicitImport:");
         indent += 2;
-        Visitor.super.visitImplicitImport(im);
+        Visitor.super.visitImplicitImportExpression(im);
         indent -= 2;
         return null;
     }
     // Import
-    public AST visitImport(Import im) throws Phase.Error {
-        System.out.println(indent(im.line) + "Import:");
+    public AST visitImport(Import importName) throws Phase.Error {
+        System.out.println(indent(importName.line) + "Import:");
         indent += 2;
-        Visitor.super.visitImport(im);
+        Visitor.super.visitImport(importName);
         indent -= 2;
         return null;
     }
     // Invocation
-    public AST visitInvocation(Invocation in) throws Phase.Error {
-        System.out.println(indent(in.line) + "Invocation:");
+    public AST visitInvocationExpression(InvocationExpression invocationExpression) throws Phase.Error {
+        System.out.println(indent(invocationExpression.line) + "Invocation:");
         indent += 2;
-        Visitor.super.visitInvocation(in);
+        Visitor.super.visitInvocationExpression(invocationExpression);
         indent -= 2;
         return null;
     }
     // LocalDecl
-    public AST visitLocalDecl(LocalDecl ld) throws Phase.Error {
-        System.out.println(indent(ld.line) + "LocalDecl:");
+    public AST visitLocalDeclaration(LocalDeclaration localDeclaration) throws Phase.Error {
+        System.out.println(indent(localDeclaration.line) + "LocalDecl:");
         indent += 2;
-        Visitor.super.visitLocalDecl(ld);
+        Visitor.super.visitLocalDeclaration(localDeclaration);
         indent -= 2;
         return null;
     }
     // Modifier
-    public AST visitModifier(Modifier mo) throws Phase.Error {
-        System.out.println(indent(mo.line) + "Modifier (" + mo + ")");
+    public AST visitModifier(Modifier modifier) throws Phase.Error {
+        System.out.println(indent(modifier.line) + "Modifier (" + modifier + ")");
         return null;
     }
     // Name
-    public AST visitName(Name na) throws Phase.Error {
-        System.out.println(indent(na.line) + "Name = " + na);
+    public AST visitName(Name name) throws Phase.Error {
+        System.out.println(indent(name.line) + "Name = " + name);
         return null;
     }
     // NamedType
-    public AST visitNamedType(NamedType nt) throws Phase.Error {
-        System.out.println(indent(nt.line)+ "NamedType:");
+    public AST visitNamedType(NamedType namedType) throws Phase.Error {
+        System.out.println(indent(namedType.line)+ "NamedType:");
         indent += 2;
-        Visitor.super.visitNamedType(nt);
+        Visitor.super.visitNamedType(namedType);
         indent -= 2;
         return null;
     }
     // NameExpr
-    public AST visitNameExpr(NameExpr ne) throws Phase.Error {
-        System.out.println(indent(ne.line) + "NameExpr:");
+    public AST visitNameExpression(NameExpression nameExpression) throws Phase.Error {
+        System.out.println(indent(nameExpression.line) + "NameExpr:");
         indent += 2;
-        Visitor.super.visitNameExpr(ne);
+        Visitor.super.visitNameExpression(nameExpression);
         indent -= 2;
         return null;
     }
     // NewArray
-    public AST visitNewArray(NewArray ne) throws Phase.Error {
-        System.out.println(indent(ne.line) + "New Array");
+    public AST visitNewArrayExpression(NewArrayExpression newArrayExpression) throws Phase.Error {
+        System.out.println(indent(newArrayExpression.line) + "New Array");
         indent += 2;
-        Visitor.super.visitNewArray(ne);
+        Visitor.super.visitNewArrayExpression(newArrayExpression);
         indent -= 2;
         return null;
     }
     // NewMobile
-    public AST visitNMewMobile(NewMobile nm) throws Phase.Error {
+    public AST visitNMewMobile(NewMobileExpression nm) throws Phase.Error {
         System.out.println(indent(nm.line) + "NewMobile:");
         indent += 2;
-        Visitor.super.visitNewMobile(nm);
+        Visitor.super.visitNewMobileExpression(nm);
         indent -= 2;
         return null;
     }
     // ParamDecl
-    public AST visitParamDecl(ParamDecl pd) throws Phase.Error {
-        System.out.println(indent(pd.line) + "ParamDecl: ");
+    public AST visitParameterDeclaration(ParameterDeclaration parameterDeclaration) throws Phase.Error {
+        System.out.println(indent(parameterDeclaration.line) + "ParamDecl: ");
         indent += 2;
-        Visitor.super.visitParamDecl(pd);
+        Visitor.super.visitParameterDeclaration(parameterDeclaration);
         indent -= 2;
         return null;
     }
     // ParBlock
-    public AST visitParBlock(ParBlock pb) throws Phase.Error {
-        System.out.println(indent(pb.line) + "ParBlock:");
+    public AST visitParBlockStatement(ParBlock parBlock) throws Phase.Error {
+        System.out.println(indent(parBlock.line) + "ParBlock:");
         indent += 2;
-        Visitor.super.visitParBlock(pb);
+        Visitor.super.visitParBlockStatement(parBlock);
         indent -= 2;
         return null;
     }
     // Pragma
-    public AST visitPragma(Pragma p) throws Phase.Error {
-        System.out.println(indent(p.line) + "Pragma:");
+    public AST visitPragma(Pragma pragma) throws Phase.Error {
+        System.out.println(indent(pragma.line) + "Pragma:");
         indent += 2;
-        Visitor.super.visitPragma(p);
+        Visitor.super.visitPragma(pragma);
         indent -= 2;
         return null;
     }
     // PrimitiveLiteral
-    public AST visitPrimitiveLiteral(PrimitiveLiteral li) throws Phase.Error {
-        System.out.println(indent(li.line) + "PrimtiveLiteral = " + li);
+    public AST visitPrimitiveLiteralExpression(PrimitiveLiteralExpression primitiveLiteralExpression) throws Phase.Error {
+        System.out.println(indent(primitiveLiteralExpression.line) + "PrimtiveLiteral = " + primitiveLiteralExpression);
         indent += 2;
-        Visitor.super.visitPrimitiveLiteral(li);
+        Visitor.super.visitPrimitiveLiteralExpression(primitiveLiteralExpression);
         indent -= 2;
         return null;
     }
     // PrimitiveType
-    public AST visitPrimitiveType(PrimitiveType pt) throws Phase.Error {
-        System.out.println(indent(pt.line) + "PrimitiveType = " + pt);
+    public AST visitPrimitiveType(PrimitiveType primitiveType) throws Phase.Error {
+        System.out.println(indent(primitiveType.line) + "PrimitiveType = " + primitiveType);
         return null;
     }
     // ProcTypeDecl
-    public AST visitProcTypeDecl(ProcTypeDecl pd) throws Phase.Error {
-        System.out.println(indent(pd.line) + "ProcTypeDecl:");
+    public AST visitProcedureTypeDeclaration(ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error {
+        System.out.println(indent(procedureTypeDeclaration.line) + "ProcTypeDecl:");
         indent += 2;
 
-        System.out.println(indent(pd.line) + "Annotations: " + pd.getAnnotations().toString());
-        Visitor.super.visitProcTypeDecl(pd);
+        System.out.println(indent(procedureTypeDeclaration.line) + "Annotations: " + procedureTypeDeclaration.getAnnotations().toString());
+        Visitor.super.visitProcedureTypeDeclaration(procedureTypeDeclaration);
         indent -= 2;
         return null;
     }
     // ProtocolLiteral
-    public AST visitProtocolLiteral(ProtocolLiteral pl) throws Phase.Error {
-        System.out.println(indent(pl.line) + "ProtocolLiteral:");
+    public AST visitProtocolLiteralExpression(ProtocolLiteralExpression protocolLiteralExpression) throws Phase.Error {
+        System.out.println(indent(protocolLiteralExpression.line) + "ProtocolLiteral:");
         indent += 2;
-        Visitor.super.visitProtocolLiteral(pl);
+        Visitor.super.visitProtocolLiteralExpression(protocolLiteralExpression);
         indent -=2;
         return null;
     }
     // ProtocolCase
-    public AST visitProtocolCase(ProtocolCase pc) throws Phase.Error {
-        System.out.println(indent(pc.line) + "ProtocolCase:");
+    public AST visitProtocolCase(ProtocolCase protocolCase) throws Phase.Error {
+        System.out.println(indent(protocolCase.line) + "ProtocolCase:");
         indent += 2;
-        Visitor.super.visitProtocolCase(pc);
+        Visitor.super.visitProtocolCase(protocolCase);
         indent -=2;
         return null;
     }
     // ProtocolTypeDecl
-    public AST visitProtocolTypeDecl(ProtocolTypeDecl pd) throws Phase.Error {
-        System.out.println(indent(pd.line) + "ProtocolTypeDecl:");
+    public AST visitProtocolTypeDeclaration(ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error {
+        System.out.println(indent(protocolTypeDeclaration.line) + "ProtocolTypeDecl:");
         indent += 2;
-        Visitor.super.visitProtocolTypeDecl(pd);
+        Visitor.super.visitProtocolTypeDeclaration(protocolTypeDeclaration);
         indent -= 2;
         return null;
     }
     // RecordAccess
-    public AST visitRecordAccess(RecordAccess ra) throws Phase.Error {
-        System.out.println(indent(ra.line) + "RecordAccess:");
+    public AST visitRecordAccessExpression(RecordAccessExpression recordAccessExpression) throws Phase.Error {
+        System.out.println(indent(recordAccessExpression.line) + "RecordAccess:");
         indent += 2;
-        Visitor.super.visitRecordAccess(ra);
+        Visitor.super.visitRecordAccessExpression(recordAccessExpression);
         indent -= 2;
         return null;
     }
     // RecordLiteral
-    public AST visitRecordLiteral(RecordLiteral rl) throws Phase.Error {
-        System.out.println(indent(rl.line) + "RecordLiteral:");
+    public AST visitRecordLiteralExpression(RecordLiteralExpression recordLiteralExpression) throws Phase.Error {
+        System.out.println(indent(recordLiteralExpression.line) + "RecordLiteral:");
         indent += 2;
-        Visitor.super.visitRecordLiteral(rl);
+        Visitor.super.visitRecordLiteralExpression(recordLiteralExpression);
         indent -=2;
         return null;
     }
     // RecordMember
-    public AST visitRecordMember(RecordMember rm) throws Phase.Error {
-        System.out.println(indent(rm.line) + "RecordMember:");
+    public AST visitRecordMemberDeclaration(RecordMemberDeclaration recordMemberDeclaration) throws Phase.Error {
+        System.out.println(indent(recordMemberDeclaration.line) + "RecordMember:");
         indent +=2;
-        Visitor.super.visitRecordMember(rm);
+        Visitor.super.visitRecordMemberDeclaration(recordMemberDeclaration);
         indent -=2;
         return null;
     }
     // RecordTypeDecl
-    public AST visitRecordTypeDecl(RecordTypeDecl rt) throws Phase.Error {
-        System.out.println(indent(rt.line)+ "RecordTypeDecl:");
+    public AST visitRecordTypeDeclaration(RecordTypeDeclaration recordTypeDeclaration) throws Phase.Error {
+        System.out.println(indent(recordTypeDeclaration.line)+ "RecordTypeDecl:");
         indent += 2;
-        Visitor.super.visitRecordTypeDecl(rt);
+        Visitor.super.visitRecordTypeDeclaration(recordTypeDeclaration);
         indent -= 2;
         return null;
     }
     // ReturnStat
-    public AST visitReturnStat(ReturnStat rs) throws Phase.Error {
-        if (rs.getExpression() == null)
-            System.out.println(indent(rs.line) + "Return");
+    public AST visitReturnStatement(ReturnStatement returnStatement) throws Phase.Error {
+        if (returnStatement.getExpression() == null)
+            System.out.println(indent(returnStatement.line) + "Return");
         else
-            System.out.println(indent(rs.line) + "Return:");
+            System.out.println(indent(returnStatement.line) + "Return:");
         indent += 2;
-        Visitor.super.visitReturnStat(rs);
+        Visitor.super.visitReturnStatement(returnStatement);
         indent -= 2;
         return null;
     }
     // Sequence
-    public AST visitSequence(Sequence se) throws Phase.Error {
-        System.out.println(indent(se.line) + "Sequence:[" + se.size() + " nodes]");
+    public AST visitSequence(Sequence sequence) throws Phase.Error {
+        System.out.println(indent(sequence.line) + "Sequence:[" + sequence.size() + " nodes]");
         int i = 0;
-        for (Object a : se) {
+        for (Object a : sequence) {
             AST b = (AST)a;
             if (b != null) {
                 System.out.println(indent(b.line) + "Sequence[" + i++ + "]:");
@@ -436,100 +460,100 @@ public class ParseTreePrinter implements Visitor<AST> {
                 }
                 indent -= 2;
             } else
-                System.out.println(indent(se.line) + "Sequence[" + i++ + "]: = null");
+                System.out.println(indent(sequence.line) + "Sequence[" + i++ + "]: = null");
         }
         return null;
     }
     // SkipStat
-    public AST visitSkipStat(SkipStat ss) throws Phase.Error {
-        System.out.println(indent(ss.line) + "SkipStat");
+    public AST visitSkipStatement(SkipStatement skipStatement) throws Phase.Error {
+        System.out.println(indent(skipStatement.line) + "SkipStat");
         return null;
     }
     // StopStat
-    public AST visitStopStat(SkipStat ss) throws Phase.Error {
+    public AST visitStopStat(SkipStatement ss) throws Phase.Error {
         System.out.println(indent(ss.line) + "StopStat");
         return null;
     }
     // SuspendStat
-    public AST visitSuspendStat(SuspendStat ss) throws Phase.Error {
-        System.out.println(indent(ss.line) + "SuspendStat:");
+    public AST visitSuspendStatement(SuspendStatement suspendStatement) throws Phase.Error {
+        System.out.println(indent(suspendStatement.line) + "SuspendStat:");
         indent += 2;
-        Visitor.super.visitSuspendStat(ss);
+        Visitor.super.visitSuspendStatement(suspendStatement);
         indent -= 2;
         return null;
     }
     // SwitchGroup
-    public AST visitSwitchGroup(SwitchGroup sg) throws Phase.Error {
-        System.out.println(indent(sg.line) + "SwitchGroup:");
+    public AST visitSwitchGroupStatement(SwitchGroupStatement switchGroupStatement) throws Phase.Error {
+        System.out.println(indent(switchGroupStatement.line) + "SwitchGroup:");
         indent += 2;
-        Visitor.super.visitSwitchGroup(sg);
+        Visitor.super.visitSwitchGroupStatement(switchGroupStatement);
         indent -= 2;
         return null;
     }
     // SwitchLabel
-    public AST visitSwitchLabel(SwitchLabel sl) throws Phase.Error {
-        System.out.println(indent(sl.line) + "SwitchLabel:");
+    public AST visitSwitchLabelExpression(SwitchLabel switchLabel) throws Phase.Error {
+        System.out.println(indent(switchLabel.line) + "SwitchLabel:");
         indent += 2;
-        Visitor.super.visitSwitchLabel(sl);
+        Visitor.super.visitSwitchLabelExpression(switchLabel);
         indent -= 2;
         return null;
     }
     // SwitchStat
-    public AST visitSwitchStat(SwitchStat st) throws Phase.Error {
-        System.out.println(indent(st.line) + "SwitchStat:");
+    public AST visitSwitchStatement(SwitchStatement switchStatement) throws Phase.Error {
+        System.out.println(indent(switchStatement.line) + "SwitchStat:");
         indent += 2;
-        Visitor.super.visitSwitchStat(st);
+        Visitor.super.visitSwitchStatement(switchStatement);
         indent -= 2;
         return null;
     }
     // SyncStat
-    public AST visitSyncStat(SyncStat ss) throws Phase.Error {
+    public AST visitSyncStatement(SyncStatement ss) throws Phase.Error {
         System.out.println(indent(ss.line) + "SyncStat");
         indent += 2;
-        Visitor.super.visitSyncStat(ss);
+        Visitor.super.visitSyncStatement(ss);
         indent -= 2;
         return null;
     }
     // Ternary
-    public AST visitTernary(Ternary te) throws Phase.Error {
-        System.out.println(indent(te.line) + "Ternary:");
+    public AST visitTernaryExpression(TernaryExpression ternaryExpression) throws Phase.Error {
+        System.out.println(indent(ternaryExpression.line) + "Ternary:");
         indent += 2;
-        Visitor.super.visitTernary(te);
+        Visitor.super.visitTernaryExpression(ternaryExpression);
         indent -= 2;
         return null;
     }
     // TimeoutStat
-    public AST visitTimeoutStat(TimeoutStat ts) throws Phase.Error {
-        System.out.println(indent(ts.line) + "TimeoutStat:");
+    public AST visitTimeoutStatement(TimeoutStatement timeoutStatement) throws Phase.Error {
+        System.out.println(indent(timeoutStatement.line) + "TimeoutStat:");
         indent += 2;
-        Visitor.super.visitTimeoutStat(ts);
+        Visitor.super.visitTimeoutStatement(timeoutStatement);
         indent -= 2;
         return null;
     }
     // UnaryPostExpr
-    public AST visitUnaryPostExpr(UnaryPostExpr up) throws Phase.Error {
-        System.out.println(indent(up.line) + "UnaryPostExpr:");
+    public AST visitUnaryPostExpression(UnaryPostExpression unaryPostExpression) throws Phase.Error {
+        System.out.println(indent(unaryPostExpression.line) + "UnaryPostExpr:");
         indent += 2;
-        Visitor.super.visitUnaryPostExpr(up);
-	System.out.println(indent(up.line) + "Operator = " + up.opString());
+        Visitor.super.visitUnaryPostExpression(unaryPostExpression);
+	System.out.println(indent(unaryPostExpression.line) + "Operator = " + unaryPostExpression.opString());
         indent -= 2;
         return null;
     }
     // UnaryPreExpr
-    public AST visitUnaryPreExpr(UnaryPreExpr up) throws Phase.Error {
-        System.out.println(indent(up.line) + "UnaryPreExpr:");
+    public AST visitUnaryPreExpression(UnaryPreExpression unaryPreExpression) throws Phase.Error {
+        System.out.println(indent(unaryPreExpression.line) + "UnaryPreExpr:");
         indent += 2;
-        Visitor.super.visitUnaryPreExpr(up);
-        System.out.println(indent(up.line) + "Operator = " + up.opString());
+        Visitor.super.visitUnaryPreExpression(unaryPreExpression);
+        System.out.println(indent(unaryPreExpression.line) + "Operator = " + unaryPreExpression.opString());
         indent -= 2;
         return null;
     }
 
     // WhileStat
-    public AST visitWhileStat(WhileStat ws) throws Phase.Error {
-        System.out.println(indent(ws.line) + "WhileStat:");
+    public AST visitWhileStatement(WhileStatement whileStatement) throws Phase.Error {
+        System.out.println(indent(whileStatement.line) + "WhileStat:");
         indent += 2;
-        Visitor.super.visitWhileStat(ws);
+        Visitor.super.visitWhileStatement(whileStatement);
         indent -= 2;
         return null;
     }

@@ -164,7 +164,7 @@ public abstract class AST {
 
     public abstract <T> T visit(Visitor<T> v) throws Phase.Error;
 
-    public <T> T visit(final IVisitor<T> visitor) throws Phase.Error,
+    /**public <T> T visit(final IVisitor<T> visitor) throws Phase.Error,
             SymbolMap.Context.ContextDoesNotDefineScopeException {
 
         // Attempt to
@@ -189,7 +189,7 @@ public abstract class AST {
         // Return the result
         return null;
 
-    }
+    }**/
 
     /**
      * Visit all children of this node from left to right. Usually called from within a visitor

@@ -1,7 +1,7 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
+import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.phases.phase.Visitor;
 
 public class Var extends AST {
@@ -10,12 +10,13 @@ public class Var extends AST {
     /// Private Fields
 
     private final Expression initializationExpression   ;
-    private final Name          name                       ;
+    private final Name       name                       ;
 
     public Var(final Name name, final Expression init) {
-        super(new AST[] { name, init });
+
         this.initializationExpression   = init;
         this.name                       = name;
+
     }
 
     public Var(final Name name) {
@@ -37,19 +38,17 @@ public class Var extends AST {
 
     }
 
+    @Override
+    public <T> T visit(Visitor<T> v) throws Phase.Error {
+        return null;
+    }
+
     public final Name getName() {
         return this.name;
     }
 
     public final Expression getInitializationExpression() {
         return this.initializationExpression;
-    }
-
-    @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
-
-        return visitor.visitVar(this);
-
     }
 
 }

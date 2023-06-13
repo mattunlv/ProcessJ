@@ -1,5 +1,7 @@
 package org.processj.compiler.ast;
 
+import org.processj.compiler.ast.statement.conditional.BlockStatement;
+import org.processj.compiler.ast.type.Type;
 import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.phases.phase.Visitor;
 
@@ -121,6 +123,41 @@ public class Compilation extends AST implements SymbolMap.Context {
 
         return this.packageName;
 
+    }
+
+    @Override
+    public BlockStatement getMergeBody() {
+        return null;
+    }
+
+    @Override
+    public BlockStatement getClearedMergeBody() {
+        return null;
+    }
+
+    @Override
+    public boolean definesLabel() {
+        return false;
+    }
+
+    @Override
+    public boolean definesEndLabel() {
+        return false;
+    }
+
+    @Override
+    public String getLabel() {
+        return null;
+    }
+
+    @Override
+    public void setEndLabel(String label) {
+
+    }
+
+    @Override
+    public String getEndLabel() {
+        return null;
     }
 
 }

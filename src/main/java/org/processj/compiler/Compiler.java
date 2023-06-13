@@ -40,7 +40,7 @@ public class Compiler extends Phases.Executor {
             final Compiler compiler = new Compiler();
 
             // Execute the compilation with the requested FileSet
-            // TODO: Request from Phases
+            // TODO: Request files from Phases
             compiler.execute(new ArrayList<>());
 
         }
@@ -64,25 +64,7 @@ public class Compiler extends Phases.Executor {
         Compilation compilation = Phases.Executor.GetImported.Compilation(packageName);
 
         // Assert the Compilation is valid
-        if(compilation == null) {
-
-            // Initialize a Phase listener & a ProcessJSourceFile
-            // Initialize the phases TODO: Merge Validate Pragmas
-            final ProcessJSourceFile processJSourceFile = RequestOpen.File(filePath);
-            final ProcessJParser processJParser     = new ProcessJParser(this);
-            final ValidatePragmas validatePragmas   = new ValidatePragmas(this);
-
-            // Tokenize & parse the input file
-            processJParser.execute(processJSourceFile);
-            validatePragmas.execute(processJSourceFile);
-
-            // Update the result
-            compilation = processJSourceFile.getCompilation();
-
-            // Map the Compilation
-            Phases.Executor.SetImported.Compilation(packageName, compilation);
-
-        }
+        if(compilation == null) compilation = initialCompilationOf(filePath);
 
         // Return the transformed, preliminary result
         return compilation;
@@ -92,26 +74,23 @@ public class Compiler extends Phases.Executor {
     /// ---------------
     /// Private Methods
 
-    private Phase processPhaseFor(final ProcessJSourceFile processJSourceFile) throws Phase.Error {
+    private Compilation initialCompilationOf(final String filePath) throws Phase.Error {
 
-        // Request the current Phase
-        final Phase currentPhase = Phases.Executor.RequestPhase.For(processJSourceFile);
+        // Initialize a handle to the parsing Phase & the ProcessJSourceFile
+        final ProcessJSourceFile processJSourceFile = RequestOpen.File(filePath);
+        final ProcessJParser     processJParser     = new ProcessJParser(this);
 
-        // Assert the current Phase is valid, execute it
-        if(currentPhase != null)
-            currentPhase.execute(processJSourceFile);
+        // Tokenize & parse the input file
+        processJParser.execute(processJSourceFile);
 
-        // Initialize a handle to the Compilation
+        // Update the result
         final Compilation compilation = processJSourceFile.getCompilation();
 
-        // Assert the compilation is valid TODO: Maybe set Imported Once since this gets invoked every iteration
-        if(compilation != null)
-            Phases.Executor.SetImported.Compilation(compilation.getPackageName(), compilation);
+        // Map the Compilation
+        Phases.Executor.SetImported.Compilation(compilation.getPackageName(), compilation);
 
-        // TODO: Check Error Stack here
-
-        // Return the next Phase, if any
-        return (currentPhase != null) ? Phases.Executor.RequestPhase.For(processJSourceFile) : null;
+        // Return the result
+        return compilation;
 
     }
 
@@ -120,11 +99,23 @@ public class Compiler extends Phases.Executor {
         // Process every file
         for(final String path: inputFiles) {
 
-            // Open the file
+            // Execute the initial Compilation
+            this.initialCompilationOf(path);
+
+            // Initialize a handle to the ProcessJSourceFile
             final ProcessJSourceFile processJSourceFile = RequestOpen.File(path);
 
-            // Iterate
-            Phase phase; do { phase = this.processPhaseFor(processJSourceFile); } while(phase != null);
+            // Execute each Phase until done
+            Phase phase; do {
+
+                // Initialize a handle to the current Phase
+                phase = Phases.Executor.RequestPhase.For(processJSourceFile);
+
+                // If the Phase is valid, execute it
+                if(phase != null)
+                    phase.execute(processJSourceFile);
+
+            } while(phase != null);
 
         }
 

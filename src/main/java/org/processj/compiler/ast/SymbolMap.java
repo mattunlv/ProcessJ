@@ -1,5 +1,7 @@
 package org.processj.compiler.ast;
 
+import org.processj.compiler.ast.statement.conditional.BlockStatement;
+import org.processj.compiler.ast.type.ProcedureTypeDeclaration;
 import org.processj.compiler.phases.phase.Phase;
 
 import java.util.*;
@@ -63,27 +65,47 @@ public class SymbolMap {
     /**
      * <p>The set of {@link String}-{@link Object} pairs that compose the {@link SymbolMap}.</p>
      */
-    private final Map<String, Object>       entries         ;
+    private final Map<String, Object>       entries             ;
 
     /**
      * <p>The set of {@link String}-{@link Object} pairs of constructs that were not defined in the top-most scope.</p>
      */
-    private final Map<String, SymbolMap>    importedEntries ;
+    private final Map<String, SymbolMap>    importedEntries     ;
+
+    /**
+     * <p>The collection of {@link Pragma}s decoded from the highest order ancestor.</p>
+     */
+    private final Map<String, String>       pragmaMap           ;
 
     /**
      * <p>The scope that contains this {@link SymbolMap}.</p>
      */
-    private final SymbolMap                 enclosingScope  ;
+    private final SymbolMap                 enclosingScope      ;
 
     /**
      * <p>The representing {@link Context}.</p>
      */
-    private final Context                   context         ;
+    private final Context                   context             ;
 
     /**
      * <p>The package name corresponding with the {@link SymbolMap}.</p>
      */
-    private final String                    packageName     ;
+    private final String                    packageName         ;
+
+    /**
+     * <p>Flag indicating if the scope is specified as a native library</p>
+     */
+    private boolean                         isNativeLibrary     ;
+
+    /**
+     * <p>Flag indicating if the Scope is specified as native</p>
+     */
+    private boolean                         isNative            ;
+
+    /**
+     * <p>{@link List} containing generated values of native {@link ProcedureTypeDeclaration} signatures.</p>
+     */
+    private List<String>                    nativeSignatures    ;
 
     /// ------------
     /// Constructors
@@ -98,6 +120,10 @@ public class SymbolMap {
      */
     private SymbolMap(final SymbolMap parent, final Context context) {
 
+        this.nativeSignatures   = new ArrayList<>()                                                     ;
+        this.isNative           = false                                                                 ;
+        this.isNativeLibrary    = false                                                                 ;
+        this.pragmaMap          = new HashMap<>()                                                       ;
         this.entries            = new HashMap<>()                                                       ;
         this.enclosingScope     = parent                                                                ;
         this.context            = context                                                               ;
@@ -117,7 +143,11 @@ public class SymbolMap {
      */
     private SymbolMap(final SymbolMap parent, final Context context, final SymbolMap... symbolMaps) {
 
+        this.nativeSignatures   = new ArrayList<>()         ;
+        this.isNative           = false                     ;
+        this.isNativeLibrary    = false                     ;
         this.entries            = Merged(symbolMaps)        ;
+        this.pragmaMap          = new HashMap<>()           ;
         this.importedEntries    = parent.importedEntries    ;
         this.enclosingScope     = parent                    ;
         this.packageName        = parent.packageName        ;
@@ -295,9 +325,84 @@ public class SymbolMap {
 
     }
 
+    public final void setPragmasTo(final Map<String, String> decodedPragmaMap) {
+
+        // Assert the Collections are cleared
+        this.nativeSignatures.clear();
+        this.pragmaMap.clear();
+
+        // Assert the decoded Pragma Map is valid & emplace the decoded Pragmas
+        if(decodedPragmaMap != null) this.pragmaMap.putAll(decodedPragmaMap);
+
+        // Reinitialize the native lib specifications
+        this.isNative        = this.pragmaMap.containsKey("NATIVE")     ;
+        this.isNativeLibrary = this.pragmaMap.containsKey("NATIVELIB")  ;
+
+    }
+
     public final Context getContext() {
 
         return this.context;
+
+    }
+
+    public final boolean definesLibraryPragma() {
+
+        return this.pragmaMap.containsKey("LIBRARY");
+
+    }
+
+    public final boolean definesNativeSignatures() {
+
+        return this.nativeSignatures.isEmpty();
+
+    }
+
+    public final Map<String, String> getPragmaMap() {
+
+        return this.pragmaMap;
+
+    }
+
+    public final boolean isNative() {
+
+        return this.isNative;
+
+    }
+
+    public final String getNativeFilename() {
+
+        return this.pragmaMap.getOrDefault("FILE", "");
+
+    }
+
+    public final String getPackageName() {
+
+        return this.packageName;
+
+    }
+
+    public final boolean isNativeLibrary() {
+
+        return this.isNativeLibrary;
+
+    }
+
+    public final List<String> getNativeSignatures() {
+
+        return this.nativeSignatures;
+
+    }
+
+    public final String getNativeLibrary() {
+
+        return this.pragmaMap.getOrDefault("NATIVELIB", "");
+
+    }
+
+    public final void aggregateNativeSignature(final String signature) {
+
+        this.nativeSignatures.add(signature);
 
     }
 
@@ -415,7 +520,27 @@ public class SymbolMap {
 
         }
 
+        BlockStatement getMergeBody();
+
+        BlockStatement getClearedMergeBody();
+
+        default void clearMergeBody() {
+
+            this.getMergeBody().clear();
+
+        }
+
         default boolean setYields() { return false; }
+
+        boolean definesLabel();
+
+        boolean definesEndLabel();
+
+        String getLabel();
+
+        void setEndLabel(final String label);
+
+        String getEndLabel();
 
         default SymbolMap openScope(final SymbolMap symbolMap) throws ContextDoesNotDefineScopeException {
 
