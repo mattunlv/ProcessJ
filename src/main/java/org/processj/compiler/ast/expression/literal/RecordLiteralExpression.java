@@ -1,19 +1,16 @@
 package org.processj.compiler.ast.expression.literal;
 
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.statement.conditional.BlockStatement;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
-public class RecordLiteralExpression extends LiteralExpression implements SymbolMap.Context {
+public class RecordLiteralExpression extends LiteralExpression {
 
     private final Name name;
     private final Sequence<RecordMemberLiteralExpression> recordMemberLiterals;
 
     public RecordLiteralExpression(final Name name, final Sequence<RecordMemberLiteralExpression> members) {
-        super(name);
-        nchildren = 2;
-        children = new AST[] { name, (members != null) ? members : new Sequence<>() };
+        super(new AST[] { name, (members != null) ? members : new Sequence<>() });
         this.name = name;
         this.recordMemberLiterals = (Sequence<RecordMemberLiteralExpression>) this.children[1];
     }
@@ -33,51 +30,17 @@ public class RecordLiteralExpression extends LiteralExpression implements Symbol
         return this.recordMemberLiterals;
     }
 
-    public <S> S visit(final Visitor<S> visitor) throws Phase.Error {
-        // Open the scope
-        visitor.setScope(this.openScope(visitor.getScope()));
+    public void accept(final Visitor visitor) throws Phase.Error {
+
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
 
         // Visit
-        S result = visitor.visitRecordLiteralExpression(this);
+        visitor.visitRecordLiteralExpression(this);
 
         // Close the scope
-        visitor.setScope(visitor.getScope().getEnclosingScope());
-
-        return result;
-    }
-
-    @Override
-    public BlockStatement getMergeBody() {
-        return null;
-    }
-
-    @Override
-    public BlockStatement getClearedMergeBody() {
-        return null;
-    }
-
-    @Override
-    public boolean definesLabel() {
-        return false;
-    }
-
-    @Override
-    public boolean definesEndLabel() {
-        return false;
-    }
-
-    @Override
-    public String getLabel() {
-        return null;
-    }
-
-    @Override
-    public void setEndLabel(String label) {
+        visitor.setContext(this.closeContext());
 
     }
 
-    @Override
-    public String getEndLabel() {
-        return null;
-    }
 }

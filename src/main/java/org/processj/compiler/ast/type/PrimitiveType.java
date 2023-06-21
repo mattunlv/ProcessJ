@@ -3,8 +3,8 @@ package org.processj.compiler.ast.type;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Token;
 import org.processj.compiler.ast.expression.literal.PrimitiveLiteralExpression;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class PrimitiveType extends Type {
 
@@ -66,9 +66,10 @@ public class PrimitiveType extends Type {
     @Override
     public final String toString() {
 
-        return names[kind];
+        return names[this.kind];
 
     }
+
 
     /// --------------------
     /// org.processj.ast.AST
@@ -76,15 +77,13 @@ public class PrimitiveType extends Type {
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link PrimitiveType}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitPrimitiveType(PrimitiveType)} method.</p>
+     *
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor)
-            throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitPrimitiveType(this);
+        visitor.visitPrimitiveType(this);
 
     }
 

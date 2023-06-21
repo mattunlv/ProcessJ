@@ -3,8 +3,8 @@ package org.processj.compiler.ast.statement.declarative;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.type.Type;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class RecordMemberDeclaration extends AST {
 
@@ -44,7 +44,7 @@ public class RecordMemberDeclaration extends AST {
         return (Name) children[1];
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitRecordMemberDeclaration(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitRecordMemberDeclaration(this);
     }
 }

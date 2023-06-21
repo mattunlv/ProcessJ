@@ -1,6 +1,7 @@
-package org.processj.compiler.phases.phase.generated;
+package org.processj.compiler.phase.generated;
 
 import org.processj.compiler.ast.Token;
+import org.processj.compiler.phase.generated.sym;
 import org.processj.compiler.utilities.syntax.Types;
 
 %%

@@ -3,8 +3,6 @@ package org.processj.runtime;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.DelayQueue;
 
-import org.processj.compiler.utilities.Log;
-
 /**
  * An instance of a TimerQueue runs in its own Java Thread and handles all
  * timeout statements.
@@ -62,7 +60,7 @@ public class TimerQueue {
      * start() is called once from the Scheduler class.
      */
     public void start() {
-        Log.log("[TimerQueue] Timer Queue Running");
+        System.out.println("[TimerQueue] Timer Queue Running");
         this.timerThread.start();
     }
 

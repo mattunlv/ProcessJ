@@ -1,16 +1,25 @@
 package org.processj.compiler.ast.expression.access;
 
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.AST;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
 public class ArrayAccessExpression extends Expression {
 
-    public ArrayAccessExpression(Expression target, Expression index) {
-        super(target);
-        nchildren = 2;
-        children = new AST[] { target, index };
+    /// --------------
+    /// Private Fields
+
+    private final Expression targetExpression;
+
+    private final Expression indexExpression;
+
+    public ArrayAccessExpression(Expression targetExpression, Expression indexExpression) {
+        super(new AST[] { targetExpression, indexExpression });
+
+        this.targetExpression = targetExpression    ;
+        this.indexExpression  = indexExpression     ;
+
     }
 
     @Override
@@ -19,19 +28,22 @@ public class ArrayAccessExpression extends Expression {
     }
 
     @Override
-    public final <S> S visit(final Visitor<S> visitor)
-            throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitArrayAccessExpression(this);
+        visitor.visitArrayAccessExpression(this);
 
     }
 
     public final Expression getTargetExpression() {
-        return (Expression) children[0];
+
+        return this.targetExpression;
+
     }
 
     public final Expression getIndexExpression() {
-        return (Expression) children[1];
+
+        return this.indexExpression;
+
     }
 
 }

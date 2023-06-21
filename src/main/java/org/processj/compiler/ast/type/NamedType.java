@@ -1,8 +1,8 @@
 package org.processj.compiler.ast.type;
 
 import org.processj.compiler.ast.*;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class NamedType extends Type {
 
@@ -69,14 +69,13 @@ public class NamedType extends Type {
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link NamedType}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitNamedType(NamedType)} method.</p>
+     *
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitNamedType(this);
+        visitor.visitNamedType(this);
 
     }
 

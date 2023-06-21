@@ -1,13 +1,12 @@
 package org.processj.compiler.ast.statement.conditional;
 
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.statement.IterativeStatement;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
-public class DoStatement extends Statement implements IterativeStatement {
+public class DoStatement extends Statement implements IterativeContext {
 
     /// --------------
     /// Private Fields
@@ -18,9 +17,7 @@ public class DoStatement extends Statement implements IterativeStatement {
     /// Constructors
 
     public DoStatement(final Statement statement, final Expression evaluationExpression) {
-        super(evaluationExpression);
-        nchildren = 2;
-        children = new AST[] { (statement instanceof BlockStatement) ? statement : new BlockStatement(statement), evaluationExpression };
+        super(new AST[] { (statement instanceof BlockStatement) ? statement : new BlockStatement(statement), evaluationExpression });
         this.body = (BlockStatement) this.children[0];
     }
 
@@ -42,6 +39,11 @@ public class DoStatement extends Statement implements IterativeStatement {
     }
 
     @Override
+    public void clearMergeBody() {
+
+    }
+
+    @Override
     public final BlockStatement getClearedMergeBody() {
 
         return this.body.getClearedMergeBody();
@@ -52,7 +54,20 @@ public class DoStatement extends Statement implements IterativeStatement {
         return (Expression) children[1];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitDoStatement(this);
+    @Override
+    public final void accept(Visitor visitor) throws Phase.Error {
+
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
+
+        // Open a scope for the If Statement
+        this.openScope();
+
+        // Visit
+        visitor.visitDoStatement(this);
+
+        // Close the scope
+        visitor.setContext(this.closeContext());
+
     }
 }

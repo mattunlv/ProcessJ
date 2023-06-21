@@ -1,8 +1,7 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.utilities.Error;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class Modifier extends AST {
 
@@ -29,9 +28,18 @@ public class Modifier extends AST {
         this.modifier = modifier;
     }
 
+    public Modifier(final Token t) {
+        super(t);
+    }
+
     public Modifier(int modifier) {
         super((AST) null);
         this.modifier = modifier;
+    }
+
+    public Modifier() {
+
+
     }
 
     public int getModifier() {
@@ -60,25 +68,9 @@ public class Modifier extends AST {
 
     }
 
-    public static boolean hasModifierSet(Sequence<Modifier> mo, int modifier) {
-        for (Modifier m : mo) {
-            if (m.getModifier() == modifier)
-                return true;
-        }
-        return false;
-    }
+    public void accept(final Visitor visitor) throws Phase.Error {
 
-    public static void noRepeats(Sequence<Modifier> mo) {
-        int mods[] = new int[MAX_MODIFIER + 1];
-        for (Modifier m : mo) {
-            if (mods[m.getModifier()] == 1)
-                Error.error(mo, "Repeated modifier '" + mo + "'.");
-            else
-                mods[m.getModifier()] = 1;
-        }
-    }
+        visitor.visitModifier(this);
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitModifier(this);
     }
 }

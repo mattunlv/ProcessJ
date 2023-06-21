@@ -1,10 +1,7 @@
 package org.processj.compiler.utilities;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Files {
@@ -271,14 +268,14 @@ public class Files {
      * @return {@link List} containing all file paths in the specified paths as {@link String} values.
      * @since 0.1.0
      */
-    public static List<String> RetrieveMatchingFilesListFrom(final String path, final List<String> prefixes, final String regex) {
+    public static List<String> RetrieveMatchingFilesListFrom(final String path, final Set<String> prefixes, final String regex) {
 
         // Initialize the result
         final List<String> result = new ArrayList<>();
 
         // If we have a valid set of prefixes, add each of the files found in every prefix pair
-        if(prefixes != null) prefixes
-                .forEach(prefix -> result.addAll(RetrieveMatchingFilesListFrom(ValidPath(prefix) + path, regex)));
+        if(prefixes != null) prefixes.forEach(prefix ->
+                result.addAll(RetrieveMatchingFilesListFrom(ValidPath(prefix) + path, regex)));
 
         // Return the result
         return result;
@@ -296,14 +293,15 @@ public class Files {
      * @return {@link List} containing all file paths in the specified paths as {@link String} values.
      * @since 0.1.0
      */
-    public static List<String> RetrieveMatchingFilesListWithName(final String path, final String filename, final List<String> prefixes, final String regex) {
+    public static List<String> RetrieveMatchingFilesListWithName(final String path, final String filename,
+                                                                 final Set<String> prefixes, final String regex) {
 
         // Initialize the result
         final List<String> result = new ArrayList<>();
 
         // If we have a valid set of prefixes, add each of the files found in every prefix pair
-        if(prefixes != null) prefixes
-                .forEach(prefix -> result.addAll(RetrieveMatchingFilesListWithName(ValidPath(prefix) + path, filename, regex)));
+        if(prefixes != null) prefixes.forEach(prefix ->
+                result.addAll(RetrieveMatchingFilesListWithName(ValidPath(prefix) + path, filename, regex)));
 
         // Return the result
         return result;

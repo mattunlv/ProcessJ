@@ -57,7 +57,7 @@ public class PJPar {
     
     // TODO:
     public synchronized boolean shouldYield() {
-        if (processCount == 0)
+        if(processCount == 0)
             return false;
         process.setNotReady();
         return true;

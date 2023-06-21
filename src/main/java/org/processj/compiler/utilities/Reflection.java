@@ -45,13 +45,9 @@ public class Reflection {
      * @param arguments The arguments to give to the constructor
      * @return Type instance
      * @param <Type> The Type representing the class to instantiate
-     * @throws InstantiationException When an error occurred during instantiating the class
-     * @throws IllegalAccessException If access rights are not permitted
-     * @throws InvocationTargetException Any other error occurred
      */
     @SuppressWarnings("unchecked")
-    public static <Type> Type NewInstanceOf(final Class<Type> clazz, final Object... arguments)
-            throws InstantiationException, IllegalAccessException, InvocationTargetException {
+    public static <Type> Type NewInstanceOf(final Class<Type> clazz, final Object... arguments) {
 
         // Initialize the result
         Type result = null;
@@ -63,11 +59,16 @@ public class Reflection {
         for(final Constructor<Type> constructor: constructors)
             if(ParameterTypesMatch(constructor.getParameterTypes(), arguments)) {
 
-                // Instantiate the result
-                result = constructor.newInstance(arguments);
+                try {
 
-                // Leave
-                break;
+                    // Instantiate the result
+                    result = constructor.newInstance(arguments);
+
+                } catch(final InstantiationException | IllegalAccessException | InvocationTargetException exception){
+
+                    break;
+
+                }
 
             }
 

@@ -1,21 +1,18 @@
 package org.processj.compiler.ast.expression.literal;
 
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.statement.conditional.BlockStatement;
 import org.processj.compiler.ast.statement.declarative.ProtocolCase;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
-public class ProtocolLiteralExpression extends LiteralExpression implements SymbolMap.Context {
+public class ProtocolLiteralExpression extends LiteralExpression {
 
     private ProtocolCase protocolCase    ;
     private final Name name            ;
     private final Name      tag             ;
 
     public ProtocolLiteralExpression(final Name name, final Name tag, final Sequence<RecordMemberLiteralExpression> expressions) {
-        super(name);
-        nchildren = 3;
-        children = new AST[] { name, tag, expressions };
+        super(new AST[] { name, tag, expressions });
         this.tag            = tag;
         this.name           = name;
         this.protocolCase   = null;
@@ -54,53 +51,17 @@ public class ProtocolLiteralExpression extends LiteralExpression implements Symb
         return (Sequence<RecordMemberLiteralExpression>) children[2];
     }
 
-    public final <S> S visit(Visitor<S> visitor) throws Phase.Error {
+    public final void accept(Visitor visitor) throws Phase.Error {
 
         // Open the scope
-        visitor.setScope(this.openScope(visitor.getScope()));
+        visitor.setContext(this.openContext(visitor.getContext()));
 
         // Visit
-        S result = visitor.visitProtocolLiteralExpression(this);
+        visitor.visitProtocolLiteralExpression(this);
 
         // Close the scope
-        visitor.setScope(visitor.getScope().getEnclosingScope());
-
-        return result;
+        visitor.setContext(this.closeContext());
 
     }
 
-    @Override
-    public BlockStatement getMergeBody() {
-        return null;
-    }
-
-    @Override
-    public BlockStatement getClearedMergeBody() {
-        return null;
-    }
-
-    @Override
-    public boolean definesLabel() {
-        return false;
-    }
-
-    @Override
-    public boolean definesEndLabel() {
-        return false;
-    }
-
-    @Override
-    public String getLabel() {
-        return null;
-    }
-
-    @Override
-    public void setEndLabel(String label) {
-
-    }
-
-    @Override
-    public String getEndLabel() {
-        return null;
-    }
 }

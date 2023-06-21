@@ -2,14 +2,13 @@ package org.processj.compiler.ast.type;
 
 import org.processj.compiler.ast.*;
 import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
-import org.processj.compiler.ast.statement.conditional.BlockStatement;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class RecordTypeDeclaration extends Type implements SymbolMap.Context {
+public class RecordTypeDeclaration extends Type {
 
     /// --------------
     /// Private Fields
@@ -26,12 +25,10 @@ public class RecordTypeDeclaration extends Type implements SymbolMap.Context {
     /// ------------
     /// Constructors
 
-    public RecordTypeDeclaration(Sequence<Modifier> modifiers, Name name,
+    public RecordTypeDeclaration(Modifiers modifiers, Name name,
                                  Sequence<Name> extend, Annotations annotations,
                                  Sequence<RecordMemberDeclaration> body) {
-        super(name);
-        nchildren = 5;
-        children = new AST[] { modifiers, name, extend, annotations, body };
+        super(modifiers, name, extend, annotations, body);
         this.name = name;
         this.scope = null;
         this.extendTypes = new HashMap<>();
@@ -75,24 +72,23 @@ public class RecordTypeDeclaration extends Type implements SymbolMap.Context {
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link RecordTypeDeclaration}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitRecordTypeDeclaration(RecordTypeDeclaration)} method.</p>
+     *
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        // Open the scope
-        visitor.setScope(this.openScope(visitor.getScope()));
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
+
+        // Open a scope for the If Statement
+        this.openScope();
 
         // Visit
-        S result = visitor.visitRecordTypeDeclaration(this);
+        visitor.visitRecordTypeDeclaration(this);
 
         // Close the scope
-        visitor.setScope(visitor.getScope().getEnclosingScope());
-
-        return result;
-
+        visitor.setContext(this.closeContext());
     }
 
     /// ---------------------
@@ -194,41 +190,6 @@ public class RecordTypeDeclaration extends Type implements SymbolMap.Context {
             return false;
         RecordTypeDeclaration rt = (RecordTypeDeclaration) t;
         return rt.extendsRecord(this);
-    }
-
-    @Override
-    public BlockStatement getMergeBody() {
-        return null;
-    }
-
-    @Override
-    public BlockStatement getClearedMergeBody() {
-        return null;
-    }
-
-    @Override
-    public boolean definesLabel() {
-        return false;
-    }
-
-    @Override
-    public boolean definesEndLabel() {
-        return false;
-    }
-
-    @Override
-    public String getLabel() {
-        return null;
-    }
-
-    @Override
-    public void setEndLabel(String label) {
-
-    }
-
-    @Override
-    public String getEndLabel() {
-        return null;
     }
 
     @FunctionalInterface

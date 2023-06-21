@@ -3,8 +3,8 @@ package org.processj.compiler.ast.statement.control;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Sequence;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 // 4/19/16: the 'channels' Sequence ONLY holds one channel.
 public class ClaimStatement extends Statement {
@@ -21,8 +21,8 @@ public class ClaimStatement extends Statement {
         return (Statement) children[1];
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitClaimStatement(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitClaimStatement(this);
     }
 
 }

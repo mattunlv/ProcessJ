@@ -1,11 +1,10 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.ast.statement.conditional.BlockStatement;
 import org.processj.compiler.ast.type.Type;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
-public class Compilation extends AST implements SymbolMap.Context {
+public class Compilation extends AST {
 
     public String fileName = "";    // The name of the file that caused this compilation to exist. Read by the ProcTypeDel.
 
@@ -16,7 +15,6 @@ public class Compilation extends AST implements SymbolMap.Context {
     private final String            packageName ;
     private final Sequence<Import>  imports     ;
     private final Sequence<Type>    types       ;
-    private SymbolMap               scope       ;
 
     /// ------------
     /// Constructors
@@ -32,9 +30,9 @@ public class Compilation extends AST implements SymbolMap.Context {
         this.imports            = (imports != null) ? imports : new Sequence<>();
         this.types              = (types != null) ? types : new Sequence<>();
         this.packageName        = (packageName != null) ? packageName.synthesizeStringWith(".") : "";
-        this.scope              = null;
 
     }
+
     @Override
     public final String toString() {
 
@@ -47,24 +45,27 @@ public class Compilation extends AST implements SymbolMap.Context {
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link Compilation}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitCompilation(Compilation)} method.</p>
+     *
      * @param visitor The {@link Visitor} to dispatch.
      * @throws Phase.Error if the {@link Visitor#visitCompilation(Compilation)} visitation invocation operation
-     * failed.
+     *                     failed.
      * @since 0.1.0
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        // Open the scope
-        visitor.setScope(this.openScope());
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
+
+        // Open a scope for the If Statement
+        this.openScope();
 
         // Visit
-        S result = visitor.visitCompilation(this);
+        visitor.visitCompilation(this);
 
         // Close the scope
-        visitor.setScope(visitor.getScope().getEnclosingScope());
+        visitor.setContext(this.closeContext());
 
-        return result;
     }
 
     public final Sequence<Pragma> getPragmas() {
@@ -123,41 +124,6 @@ public class Compilation extends AST implements SymbolMap.Context {
 
         return this.packageName;
 
-    }
-
-    @Override
-    public BlockStatement getMergeBody() {
-        return null;
-    }
-
-    @Override
-    public BlockStatement getClearedMergeBody() {
-        return null;
-    }
-
-    @Override
-    public boolean definesLabel() {
-        return false;
-    }
-
-    @Override
-    public boolean definesEndLabel() {
-        return false;
-    }
-
-    @Override
-    public String getLabel() {
-        return null;
-    }
-
-    @Override
-    public void setEndLabel(String label) {
-
-    }
-
-    @Override
-    public String getEndLabel() {
-        return null;
     }
 
 }

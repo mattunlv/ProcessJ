@@ -1,12 +1,12 @@
 package org.processj.compiler.ast.statement.conditional;
 
 import org.processj.compiler.ast.Sequence;
-import org.processj.compiler.ast.SymbolMap;
+import org.processj.compiler.ast.statement.BreakableContext;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
-public class BlockStatement extends Statement implements SymbolMap.Context {
+public class BlockStatement extends Statement implements BreakableContext {
 
     /// --------------
     /// Private Fields
@@ -70,6 +70,7 @@ public class BlockStatement extends Statement implements SymbolMap.Context {
         ((Sequence<Statement>) this.statements).append(statement);
 
     }
+
     public final BlockStatement getBody() {
 
         return this.mergeBody;
@@ -79,6 +80,14 @@ public class BlockStatement extends Statement implements SymbolMap.Context {
     @Override
     public BlockStatement getMergeBody() {
         return null;
+    }
+
+    @Override
+    public void clearMergeBody() {
+
+        if(this.mergeBody != null)
+            this.mergeBody.clear();
+
     }
 
     @Override
@@ -93,18 +102,19 @@ public class BlockStatement extends Statement implements SymbolMap.Context {
     }
 
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        // Open the scope
-        visitor.setScope(this.openScope(visitor.getScope()));
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
+
+        // If the BlockStatement didn't inherit a scope, open one up
+        if(this.getScope() == null) this.openScope();
 
         // Visit
-        S result = visitor.visitBlockStatement(this);
+        visitor.visitBlockStatement(this);
 
         // Close the scope
-        visitor.setScope(visitor.getScope().getEnclosingScope());
-
-        return result;
+        visitor.setContext(this.closeContext());
 
     }
 

@@ -2,8 +2,8 @@ package org.processj.compiler.ast.expression.unary;
 
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class UnaryPostExpression extends Expression {
 
@@ -14,10 +14,8 @@ public class UnaryPostExpression extends Expression {
     private int kind;
 
     public UnaryPostExpression(Expression expr, int op) {
-        super(expr);
-        nchildren = 1;
+        super(new AST[] { expr });
         kind = op;
-        children = new AST[] { expr };
     }
 
     public String opString() {
@@ -36,7 +34,7 @@ public class UnaryPostExpression extends Expression {
         return getExpression().toString() + opSyms[kind];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitUnaryPostExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitUnaryPostExpression(this);
     }
 }

@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.processj.compiler.utilities.PJBugManager;
-import org.processj.compiler.utilities.Pair;
-import org.processj.compiler.utilities.PJUtil;
 
 /**
  * @author ben
@@ -34,7 +32,7 @@ public class PJRecord {
                 if (o instanceof PJRecord) {
                     Pair<Object, Integer> tuple = getField(hm, o);
                     if (tuple != null) {
-                        String fname = PJUtil.addChar('*', ++count);
+                        String fname = "*".repeat(++count);
                         sb.append(fields[i].getName());
                         sb.append(":");
                         sb.append(fname);
@@ -45,7 +43,7 @@ public class PJRecord {
                         String s = ((PJRecord) o).toString(hm, count);
                         tuple = getField(hm, o);
                         if (tuple != null) {
-                            String fname = PJUtil.addChar('*', tuple.getValue());
+                            String fname = "*".repeat(tuple.getValue());
                             s = fname + s;
                         }
                         sb.append(fields[i].getName());

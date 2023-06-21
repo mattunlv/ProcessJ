@@ -32,10 +32,10 @@ public enum PJBugManager {
     private int infoNum;
     
     /** Last registered message */
-    private PJBugMessage postPonedMessage = null;
+    private PJMessage postPonedMessage = null;
     
     /** List of errors/warning messages */
-    private Stack<PJBugMessage> trace;
+    private Stack<PJMessage> trace;
     
     /** Input file that contains error/warning messages */
     private String fileName = "";
@@ -47,41 +47,31 @@ public enum PJBugManager {
         errorNum = 0;
         trace = new Stack<>();
     }
-    
-    private void addMessageAndExit(PJBugMessage bug, MessageNumber msg) {
-        if (msg != null) {
-            ErrorSeverity severity = msg.getErrorSeverity();
+
+    public static void ReportMessageAndExit(final Object... arguments) {
+
+        INSTANCE.reportMessageAndExit(new PJMessage.Builder().addArguments(arguments).build(), PJMessage.MessageType.PRINT_STOP);
+
+    }
+
+    public void reportMessageAndExit(PJMessage bug, PJMessage.MessageType type) {
+        assert bug != null;
+        boolean stop = false;
+        if (bug.getMessageNumber() != null) {
+            PJMessage.ErrorSeverity severity = bug.getMessageNumber().getErrorSeverity();
             switch (severity) {
-            case INFO:
-                ++infoNum;
-            case WARNING:
-                ++warningNum;
-                break;
-            case ERROR:
-                ++errorNum;
-                break;
+                case INFO:
+                    ++infoNum;
+                case WARNING:
+                    ++warningNum;
+                    break;
+                case ERROR:
+                    ++errorNum;
+                    break;
             }
         } else
             ++errorNum;
         trace.push(bug);
-    }
-
-    public static void ReportMessageAndExit(final Object... arguments) {
-
-        INSTANCE.reportMessageAndExit(arguments);
-
-    }
-
-    public void reportMessageAndExit(final Object... arguments) {
-
-        this.reportMessageAndExit(new PJMessage.Builder().addArguments(arguments).build(), MessageType.PRINT_STOP);
-
-    }
-
-    public void reportMessageAndExit(PJBugMessage bug, MessageType type) {
-        bug = Assert.nonNull(bug, "Compiler error message cannot be null");
-        boolean stop = false;
-        addMessageAndExit(bug, bug.getMessageNumber());
         switch(type) {
         case PRINT_STOP:
             stop = true;
@@ -97,10 +87,24 @@ public enum PJBugManager {
         }
     }
 
-    public void reportErrorAndExitWithUsage(PJBugMessage bug, MessageType type) {
-        bug = Assert.nonNull(bug, "Compiler error message cannot be null");
+    public void reportErrorAndExitWithUsage(PJMessage bug, PJMessage.MessageType type) {
+        assert bug != null;
         boolean stop = false;
-        addMessageAndExit(bug, bug.getMessageNumber());
+        if (bug.getMessageNumber() != null) {
+            PJMessage.ErrorSeverity severity = bug.getMessageNumber().getErrorSeverity();
+            switch (severity) {
+                case INFO:
+                    ++infoNum;
+                case WARNING:
+                    ++warningNum;
+                    break;
+                case ERROR:
+                    ++errorNum;
+                    break;
+            }
+        } else
+            ++errorNum;
+        trace.push(bug);
         switch(type) {
             case PRINT_STOP:
                 stop = true;
@@ -120,8 +124,8 @@ public enum PJBugManager {
         }
     }
 
-    public void reportMessage(PJBugMessage bug) {
-        MessageType type = MessageType.PRINT_STOP;
+    public void reportMessage(PJMessage bug) {
+        PJMessage.MessageType type = PJMessage.MessageType.PRINT_STOP;
         if (bug.getMessageNumber() != null)
             type = bug.getMessageNumber().getMessageType();
         reportMessageAndExit(bug, type);
@@ -131,14 +135,14 @@ public enum PJBugManager {
         System.out.println("The application panicked! (crashed).");
         System.out.println("Location: " + src);
         System.out.println("Message:");
-        String line = PJUtil.addChar('-', 30);
+        String line = "-".repeat(30);
         String header = line + " BACKTRACE " + line;
         System.out.println(header);
         System.out.println("| (" + errorNum + " post panic error messages)");
         System.out.println("| (" + warningNum + " post warning messages)");
         System.out.println("| (" + infoNum + " post info messages)");
         System.out.println("...");
-        Iterator<PJBugMessage> it = trace.iterator();
+        Iterator<PJMessage> it = trace.iterator();
         while (it.hasNext()) {
             System.out.println(it.next().getRenderedMessage());
             if (it.hasNext())
@@ -153,34 +157,14 @@ public enum PJBugManager {
     public String getPackageName() {
         return packageName;
     }
-    
-    public void setPackageName(String name) {
-        // First strip the 'Xxx.pj' part
-        String str = name.replaceAll("\\.pj$", "");
-        // Now remove the absolute path
-        String absPath = new File("").getAbsolutePath() + "/";
-        str = str.replaceAll(absPath, "");
-        // Replace all '/' with '.'
-        str = str.replaceAll("/", "\\.");
-        packageName = str;
-    }
-    
-    public void setFileName(String name) {
-        // Remove all double '//:'
-        String str = name.replaceAll("//","/");
-        // Now remove the absolute path
-        String absPath = new File("").getAbsolutePath() + "/";
-        str = str.replaceAll(absPath,"");
-        fileName = str;
-    }
-    
+
     public void writeBugsToFile(String dir) {
         // Write to current directory if none is provided
         if (dir == null || "".equals(dir))
             dir = new File("").getAbsolutePath() + File.separator;
         String outfile = dir + OUTFILE_NAME + ".txt";
         StringBuilder sb = new StringBuilder();
-        for (PJBugMessage msg : trace) {
+        for (PJMessage msg : trace) {
             sb.append(msg.getMessageNumber().getNumber());
             sb.append("\n");
         }

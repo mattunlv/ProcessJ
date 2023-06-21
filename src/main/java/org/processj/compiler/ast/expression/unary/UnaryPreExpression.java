@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class UnaryPreExpression extends Expression {
 
@@ -20,10 +20,8 @@ public class UnaryPreExpression extends Expression {
     private int kind;
 
     public UnaryPreExpression(Expression expr, int op) {
-        super(expr);
-        nchildren = 1;
+        super(new AST[] { expr });
         kind = op;
-        children = new AST[] { expr };
     }
 
     public Expression getExpression() {
@@ -61,7 +59,7 @@ public class UnaryPreExpression extends Expression {
         return null;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitUnaryPreExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitUnaryPreExpression(this);
     }
 }

@@ -1,7 +1,7 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 /**
  * Package Access (The ::) can be used for:
@@ -41,7 +41,7 @@ public class Name extends AST {
     /// Constructors
 
     public Name(final String name) {
-        super(0, 0);
+        super(new Token(name));
 
         this.name           = (name != null) ? name : ""    ;
         this.packageName    = ""                            ;
@@ -50,7 +50,7 @@ public class Name extends AST {
     }
 
     public Name(final Name name, final int arrayDepth) {
-        super(name.line, name.charBegin);
+        super(name);
 
         this.name           = name.getName()        ;
         this.packageName    = name.getPackageName() ;
@@ -59,16 +59,16 @@ public class Name extends AST {
     }
 
     public Name(final Token token, final Sequence<Name> packageName) {
-        super(token.line, token.start);
+        super(token);
 
-        this.name           = token.lexeme                                   ;
+        this.name           = token.lexeme                          ;
         this.packageName    = packageName.synthesizeStringWith(".") ;
-        this.arrayDepth     = 0                                              ;
+        this.arrayDepth     = 0                                     ;
 
     }
 
     public Name(final Token token) {
-        super(token.line, token.start);
+        super(token);
 
         this.name           = token.lexeme  ;
         this.packageName    = ""            ;
@@ -98,14 +98,13 @@ public class Name extends AST {
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link Name}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitName(Name)} method.</p>
+     *
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(Visitor<S> visitor) throws Phase.Error {
+    public final void accept(Visitor visitor) throws Phase.Error {
 
-        return visitor.visitName(this);
+        visitor.visitName(this);
 
     }
 

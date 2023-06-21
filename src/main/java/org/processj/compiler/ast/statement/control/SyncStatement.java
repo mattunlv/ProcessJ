@@ -2,23 +2,38 @@ package org.processj.compiler.ast.statement.control;
 
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
 public class SyncStatement extends Statement {
 
-    public SyncStatement(final Expression barrier) {
-        super(barrier);
-        nchildren = 1;
-        children = new AST[] { barrier };
+    /// --------------
+    /// Private Fields
+
+    private Expression barrierExpression;
+
+
+    public SyncStatement(final Expression barrierExpression) {
+        super(new AST[] { barrierExpression });
+        this.barrierExpression = barrierExpression;
     }
 
-    public Expression getBarrierExpression() {
-        return (Expression) children[0];
+    public final Expression getBarrierExpression() {
+
+        return this.barrierExpression;
+
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitSyncStatement(this);
+    public final void setBarrierExpression(final Expression barrierExpression) {
+
+        this.barrierExpression  = barrierExpression;
+        this.children[0]        = barrierExpression;
+
+    }
+
+    @Override
+    public void accept(final Visitor visitor) throws Phase.Error {
+        visitor.visitSyncStatement(this);
     }
 }

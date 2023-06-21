@@ -1,7 +1,7 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 /**
  * <p>Class that represents a {@link Pragma}.</p>
@@ -85,14 +85,13 @@ public class Pragma extends AST {
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link Pragma}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitPragma} method.</p>
+     *
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
      */
     @Override
-    public <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitPragma(this);
+        visitor.visitPragma(this);
 
     }
 

@@ -2,14 +2,13 @@ package org.processj.compiler.ast.statement.conditional;
 
 import org.processj.compiler.ast.*;
 import org.processj.compiler.ast.statement.ExpressionStatement;
-import org.processj.compiler.ast.statement.IterativeStatement;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 import java.util.ArrayList;
 
-public class ForStatement extends Statement implements IterativeStatement {
+public class ForStatement extends Statement implements IterativeContext {
 
     /// --------------
     /// Private Fields
@@ -23,23 +22,15 @@ public class ForStatement extends Statement implements IterativeStatement {
     /* Note that init() and incr() can be null */
     public boolean par;
 
-    private SymbolMap scope;
-
     public ForStatement(Token t, Sequence<Statement> init,
                         Expression expr,
                         Sequence<ExpressionStatement> incr ,
                         Sequence<Expression> barriers,
                         Statement stat,
                         boolean par) {
-        super(t);
+        super(init, expr, incr, barriers, (stat instanceof BlockStatement) ? stat : new BlockStatement(stat));
         this.par = par;
-        this.scope = null;
-
-        if(stat instanceof BlockStatement) this.body = (BlockStatement) stat;
-
-        else this.body = new BlockStatement(new Sequence<>(stat));
-        nchildren = 5;
-        children = new AST[] { init, expr, incr, barriers, this.body };
+        this.body = (BlockStatement) this.children[4];
 
     }
 
@@ -52,6 +43,11 @@ public class ForStatement extends Statement implements IterativeStatement {
     @Override
     public BlockStatement getMergeBody() {
         return null;
+    }
+
+    @Override
+    public void clearMergeBody() {
+
     }
 
     @Override
@@ -115,18 +111,19 @@ public class ForStatement extends Statement implements IterativeStatement {
     }
 
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        // Open the scope
-        visitor.setScope(this.openScope(visitor.getScope()));
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
+
+        // Open a scope for the If Statement
+        this.openScope();
 
         // Visit
-        S result = visitor.visitForStatement(this);
+        visitor.visitForStatement(this);
 
         // Close the scope
-        visitor.setScope(visitor.getScope().getEnclosingScope());
-
-        return result;
+        visitor.setContext(this.closeContext());
 
     }
 

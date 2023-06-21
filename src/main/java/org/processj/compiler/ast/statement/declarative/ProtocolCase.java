@@ -3,16 +3,13 @@ package org.processj.compiler.ast.statement.declarative;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.Sequence;
-import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class ProtocolCase extends AST {
 
     public ProtocolCase(Name caseName, Sequence<RecordMemberDeclaration> body) {
-        super(caseName);
-        nchildren = 2;
-        children = new AST[] { caseName, body };
+        super(new AST[] { caseName, body });
     }
 
     public Name getName() {
@@ -27,9 +24,9 @@ public class ProtocolCase extends AST {
 
     }
 
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitProtocolCase(this);
+        visitor.visitProtocolCase(this);
 
     }
 

@@ -1,7 +1,7 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class Annotation extends AST {
 
@@ -20,7 +20,7 @@ public class Annotation extends AST {
         return value;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitAnnotation(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitAnnotation(this);
     }
 }

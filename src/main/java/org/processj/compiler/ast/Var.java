@@ -1,8 +1,8 @@
 package org.processj.compiler.ast;
 
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class Var extends AST {
 
@@ -39,8 +39,8 @@ public class Var extends AST {
     }
 
     @Override
-    public <T> T visit(Visitor<T> v) throws Phase.Error {
-        return null;
+    public void accept(Visitor v) throws Phase.Error {
+
     }
 
     public final Name getName() {

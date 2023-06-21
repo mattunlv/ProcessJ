@@ -13,7 +13,7 @@
 /** Package Declaration                                                                                             **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-package org.processj.compiler.phases.phase.generated;
+package org.processj.compiler.phase.generated;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** Imports                                                                                                         **/
@@ -30,13 +30,12 @@ import org.processj.compiler.ast.expression.result.*;
 import org.processj.compiler.ast.expression.unary.*;
 import org.processj.compiler.ast.expression.yielding.*;
 import org.processj.compiler.ast.statement.*;
-import org.processj.compiler.ast.statement.alt.*;
 import org.processj.compiler.ast.statement.conditional.*;
 import org.processj.compiler.ast.statement.control.*;
 import org.processj.compiler.ast.statement.declarative.*;
-import org.processj.compiler.ast.statement.switched.*;
 import org.processj.compiler.ast.statement.yielding.*;
 import org.processj.compiler.ast.type.*;
+import org.processj.compiler.ast.modifier.*;
 
 import java.io.FileReader;
 
@@ -420,8 +419,8 @@ non terminal Import                     import_declaration                      
 /** 6.0 Modifiers                                                                                                   **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-non terminal Sequence                   modifiers_opt                           ;
-non terminal Sequence                   modifiers                               ;
+non terminal Modifiers                  modifiers_opt                           ;
+non terminal Modifiers                  modifiers                               ;
 non terminal Modifier                   modifier                                ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -715,7 +714,7 @@ procedure_type_declaration
     RPAREN
     annotations_opt:a
     implements_opt:i
-    body_opt:b                          {: RESULT = new ProcedureTypeDeclaration(m, t, new Name(id), f, i, a, b)    ;:}
+    body_opt:b                          {: RESULT = new ProcedureTypeDeclaration(a, m, t, new Name(id), f, i, b)    ;:}
 |   modifiers_opt:m
     // PROC
     VOID:t
@@ -725,8 +724,8 @@ procedure_type_declaration
     RPAREN
     annotations_opt:a
     implements_opt:i
-    body_opt:b                          {: RESULT = new ProcedureTypeDeclaration(m, new PrimitiveType(t, PrimitiveType.VoidKind),
-                                                        new Name(id), f, i, a, b)                       ;:}
+    body_opt:b                          {: RESULT = new ProcedureTypeDeclaration(a, m, new PrimitiveType(t, PrimitiveType.VoidKind),
+                                                        new Name(id), f, i, b)                       ;:}
 ;
 
 // Annotations <: AST
@@ -1147,26 +1146,26 @@ import_declaration
 modifiers_opt
 ::=
     modifiers:m                         {: RESULT = m                                                       ;:}
-|   /* Epsilon */                       {: RESULT = new Sequence<Modifier>()                                ;:}
+|   /* Epsilon */                       {: RESULT = new Modifiers()                                         ;:}
 ;
 
 // Sequence[Modifier <: AST] <: AST
 modifiers
 ::=
     modifiers:lst
-    modifier:e                          {: RESULT = lst.append(e)                                           ;:}
-|   modifier:e                          {: RESULT = new Sequence<Modifier>(e)                               ;:}
+    modifier:e                          {: RESULT = lst.add(e)                                              ;:}
+|   modifier:e                          {: RESULT = new Modifiers(e)                                        ;:}
 ;
 
 // Modifier <: AST
 modifier
 ::=
-    MOBILE:m                            {: RESULT = new Modifier(m, Modifier.MOBILE)                        ;:}
-|   CONST:m                             {: RESULT = new Modifier(m, Modifier.CONST)                         ;:}
-|   NATIVE:m                            {: RESULT = new Modifier(m, Modifier.NATIVE)                        ;:}
-|   PUBLIC:m                            {: RESULT = new Modifier(m, Modifier.PUBLIC)                        ;:}
-|   PRIVATE:m                           {: RESULT = new Modifier(m, Modifier.PRIVATE)                       ;:}
-|   PROTECTED:m                         {: RESULT = new Modifier(m, Modifier.PROTECTED)                     ;:}
+    MOBILE:m                            {: RESULT = new Mobile(m)                                           ;:}
+|   CONST:m                             {: RESULT = new Constant(m)                                         ;:}
+|   NATIVE:m                            {: RESULT = new Native(m)                                           ;:}
+|   PUBLIC:m                            {: RESULT = new Public(m)                                           ;:}
+|   PRIVATE:m                           {: RESULT = new Private(m)                                          ;:}
+|   PROTECTED:m                         {: RESULT = new Protected(m)                                        ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/

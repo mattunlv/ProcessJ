@@ -33,57 +33,55 @@ public class Error {
     }
 
     public static void error(AST e, String msg) {
-//        System.out.println(fileName + ":" + e.line + ": " + msg);
-        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
+
+        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e + ": " + msg);
     }
 
     public static void error(String msg) {
-//        System.out.println(fileName + ": " + msg);
+
         PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ": " + msg);
 
     }
 
     public static void error(AST e, String msg, boolean terminate) {
-//        System.out.println(fileName + ":" + e.line + ": " + msg);
-        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
+
+        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e + ": " + msg);
 
     }
 
     public static void error(AST e, String msg, boolean terminate, int errorno) {
 
-        //if(terminate)
-        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg
+        PJBugManager.ReportMessageAndExit(PJBugManager.INSTANCE.getFileName() + ":" + e + ": " + msg
                 + "\nError number: " + errorno);
 
             errorCount++;
-//            errors += "\n" + fileName + ":" + e.line + ": " + msg;
-            errors += "\n" + PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg;
+            errors += "\n" + PJBugManager.INSTANCE.getFileName() + ":" + e + ": " + msg;
             errors += "\n" + "Error number: " + errorno;
 
     }
 
     public static void warning(AST e, String msg, int errorno) {
-//        System.out.print(fileName + ":" + e.line + ": " + msg);
-        System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
+
+        System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + e + ": " + msg);
         System.out.print("Warning number: " + errorno);
-//        errors += "\n" + fileName + ":" + e.line + ": " + msg;
-        errors += "\n" + PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg;
+
+        errors += "\n" + PJBugManager.INSTANCE.getFileName() + ":" + e + ": " + msg;
         errors += "\n" + "Warning number: " + errorno;
     }
 
     public static Type addError(AST e, String msg, int errorno) {
-//        System.out.print(fileName + ":" + e.line + ": " + msg);
-        System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg);
+
+        System.out.println(PJBugManager.INSTANCE.getFileName() + ":" + e + ": " + msg);
         System.out.println("Error number: " + errorno);
         errorCount++;
-//        errors += "\n" + fileName + ":" + e.line + ": " + msg;
-        errors += "\n" + PJBugManager.INSTANCE.getFileName() + ":" + e.line + ": " + msg;
+
+        errors += "\n" + PJBugManager.INSTANCE.getFileName() + ":" + e + ": " + msg;
         errors += "\n" + "Error number: " + errorno;
         return new ErrorType();
     }
 
     public static void error(String msg, boolean terminate) {
-//        System.out.println(fileName + ": " + msg);
+
         System.out.println(PJBugManager.INSTANCE.getFileName() + ": " + msg);
         if(terminate)
             PJBugManager.ReportMessageAndExit("");

@@ -4,22 +4,20 @@ import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.Token;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class ContinueStatement extends Statement {
 
     public ContinueStatement(Token t, Name target) {
-        super(t);
-        nchildren = 1;
-        children = new AST[] { target };
+        super(new AST[] { target });
     }
 
     public Name getTarget() {
         return (Name) children[0];
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitContinueStatement(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitContinueStatement(this);
     }
 }

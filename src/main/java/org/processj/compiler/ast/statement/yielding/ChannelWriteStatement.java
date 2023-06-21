@@ -2,9 +2,9 @@ package org.processj.compiler.ast.statement.yielding;
 
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
 public class ChannelWriteStatement extends Statement {
 
@@ -36,7 +36,7 @@ public class ChannelWriteStatement extends Statement {
 
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitChannelWriteStatement(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitChannelWriteStatement(this);
     }
 }

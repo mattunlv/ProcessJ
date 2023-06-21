@@ -1,7 +1,7 @@
 package org.processj.compiler.ast.type;
 
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class ErrorType extends Type {
 
@@ -52,14 +52,14 @@ public class ErrorType extends Type {
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ChannelEndType}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitErrorType(ErrorType)} method.</p>
+     *
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
+     * @param <S>     Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitErrorType(this);
+        visitor.visitErrorType(this);
 
     }
 

@@ -1,8 +1,8 @@
 package org.processj.compiler.ast.statement;
 
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
 public class ExpressionStatement extends Statement {
     public ExpressionStatement(Expression expr) {
@@ -18,7 +18,7 @@ public class ExpressionStatement extends Statement {
         return (Expression) children[0];
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitExpressionStatement(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitExpressionStatement(this);
     }
 }

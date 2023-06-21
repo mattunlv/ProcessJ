@@ -4,8 +4,8 @@ import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.ast.type.Type;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class NameExpression extends Expression {
 
@@ -18,9 +18,7 @@ public class NameExpression extends Expression {
         this.name = name;
     }
     public NameExpression(Name name) {
-        super(name);
-        nchildren = 1;
-        children = new AST[] { name };
+        super(new AST[] { name });
         this.name = name;
     }
     public final String getPackageName() {
@@ -40,7 +38,7 @@ public class NameExpression extends Expression {
         return (Name) children[0];
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitNameExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitNameExpression(this);
     }
 }

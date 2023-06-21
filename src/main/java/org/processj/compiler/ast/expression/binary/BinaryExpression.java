@@ -1,8 +1,8 @@
 package org.processj.compiler.ast.expression.binary;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.AST;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
 import java.math.*;
 
@@ -38,29 +38,27 @@ public class BinaryExpression extends Expression {
     private int kind;
 
     public BinaryExpression(Expression left, Expression right, int op) {
-        super(left);
-        nchildren = 2;
+        super(new AST[] { left, right});
         kind = op;
-        children = new AST[] { left, right};
     }
 
-    public Expression getLeft()  { return (Expression)children[0]; }
-    public Expression getRight() { return (Expression)children[1]; }
+    public Expression getLeftExpression()  { return (Expression)children[0]; }
+    public Expression getRightExpression() { return (Expression)children[1]; }
     public int op()           { return kind; }
 
     public String opString() { return opSyms[kind]; }
 
     public boolean isConstant() {
-        return getLeft().isConstant() && getRight().isConstant();
+        return getLeftExpression().isConstant() && getRightExpression().isConstant();
     }
 
 
     // This method should ONLY be called if both the left and the right expressions
     // are sure to be constant value - otherwise this method will crash!
     public Object constantValue() {
-        if (getLeft().type.isBooleanType() && getRight().type.isBooleanType()) {
-            boolean lval = (Boolean) getLeft().constantValue();
-            boolean rval = (Boolean) getRight().constantValue();
+        if (getLeftExpression().type.isBooleanType() && getRightExpression().type.isBooleanType()) {
+            boolean lval = (Boolean) getLeftExpression().constantValue();
+            boolean rval = (Boolean) getRightExpression().constantValue();
 
 
             switch(kind) {
@@ -74,15 +72,15 @@ public class BinaryExpression extends Expression {
             }
         }
 
-        BigDecimal lval = (BigDecimal) getLeft().constantValue();
-        BigDecimal rval = (BigDecimal) getRight().constantValue();
+        BigDecimal lval = (BigDecimal) getLeftExpression().constantValue();
+        BigDecimal rval = (BigDecimal) getRightExpression().constantValue();
 
         switch(kind) {
             case PLUS:  return lval.add(rval);
             case MINUS: return lval.subtract(rval);
             case MULT:  return lval.multiply(rval);
             case DIV:
-                if (getLeft().type.isIntegralType() && getRight().type.isIntegralType())
+                if (getLeftExpression().type.isIntegralType() && getRightExpression().type.isIntegralType())
                     return new BigDecimal(lval.toBigInteger().divide(rval.toBigInteger()));
                 new BigDecimal(lval.doubleValue()/rval.doubleValue());
 
@@ -117,11 +115,11 @@ public class BinaryExpression extends Expression {
 
 
     public String toString() {
-        return getLeft() + " " +  opSyms[op()] + " " + getRight();
+        return getLeftExpression() + " " +  opSyms[op()] + " " + getRightExpression();
     }
 
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitBinaryExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitBinaryExpression(this);
     }
 }

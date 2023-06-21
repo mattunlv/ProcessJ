@@ -3,8 +3,8 @@ package org.processj.compiler.ast.expression.literal;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class RecordMemberLiteralExpression extends AST {
 
@@ -30,8 +30,7 @@ public class RecordMemberLiteralExpression extends AST {
 	return (Expression) children[1];
     }
 
-
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitRecordMemberLiteral(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitRecordMemberLiteral(this);
     }
 }

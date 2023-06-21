@@ -23,15 +23,15 @@ import org.processj.compiler.ast.statement.declarative.ProtocolCase;
 import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
 import org.processj.compiler.ast.statement.yielding.ChannelWriteStatement;
 import org.processj.compiler.ast.statement.yielding.ParBlock;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.ast.statement.alt.AltCase;
-import org.processj.compiler.ast.statement.alt.AltStatement;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.ast.statement.yielding.AltCase;
+import org.processj.compiler.ast.statement.yielding.AltStatement;
 import org.processj.compiler.ast.type.ArrayType;
 import org.processj.compiler.ast.type.ChannelEndType;
 import org.processj.compiler.ast.type.ChannelType;
 import org.processj.compiler.ast.Compilation;
 import org.processj.compiler.ast.type.ConstantDeclaration;
-import org.processj.compiler.ast.statement.alt.GuardStatement;
+import org.processj.compiler.ast.statement.yielding.GuardStatement;
 import org.processj.compiler.ast.Import;
 import org.processj.compiler.ast.Modifier;
 import org.processj.compiler.ast.Name;
@@ -43,12 +43,12 @@ import org.processj.compiler.ast.type.ProcedureTypeDeclaration;
 import org.processj.compiler.ast.type.ProtocolTypeDeclaration;
 import org.processj.compiler.ast.type.RecordTypeDeclaration;
 import org.processj.compiler.ast.Sequence;
-import org.processj.compiler.ast.statement.switched.SwitchGroupStatement;
+import org.processj.compiler.ast.statement.conditional.SwitchGroupStatement;
 import org.processj.compiler.ast.expression.result.SwitchLabel;
-import org.processj.compiler.ast.statement.switched.SwitchStatement;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.ast.statement.conditional.SwitchStatement;
+import org.processj.compiler.phase.Visitor;
 
-public class PrettyPrinter implements Visitor<Void> {
+public class PrettyPrinter implements Visitor {
 	public static int indent = 0;
 
 	int lineno = 1;
@@ -78,108 +78,108 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitAltCase(AltCase altCase) {
+    public final void visitAltCase(AltCase altCase) {
 		System.out.print(tab());
 		if (altCase.getPreconditionExpression() != null) {
 			System.out.print("(");
             try {
-                altCase.getPreconditionExpression().visit(this);
+                altCase.getPreconditionExpression().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
             System.out.print(") && ");
 		}
         try {
-            altCase.getGuard().visit(this);
+            altCase.getGuard().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" : ");
 		indent += 2;
         try {
-            altCase.getBody().visit(this);
+            altCase.getBody().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitAltStatement(AltStatement altStatement) throws Phase.Error {
+    public final void visitAltStatement(AltStatement altStatement) throws Phase.Error {
 		p("alt {");
 		indent += 2;
 		altStatement.visitChildren(this);
 		indent -= 2;
 		p("}");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitArrayAccessExpression(ArrayAccessExpression arrayAccessExpression) {
+    public final void visitArrayAccessExpression(ArrayAccessExpression arrayAccessExpression) {
         try {
-            arrayAccessExpression.getTargetExpression().visit(this);
+            arrayAccessExpression.getTargetExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print("[");
         try {
-            arrayAccessExpression.getIndexExpression().visit(this);
+            arrayAccessExpression.getIndexExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print("]");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitArrayLiteralExpression(ArrayLiteralExpression arrayLiteralExpression) throws Phase.Error{
+    public final void visitArrayLiteralExpression(ArrayLiteralExpression arrayLiteralExpression) throws Phase.Error{
 		// TODO
-		return arrayLiteralExpression.visitChildren(this);
+        arrayLiteralExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitArrayType(ArrayType arrayType) {
+    public final void visitArrayType(ArrayType arrayType) {
 
 		System.out.print(arrayType.toString());
 
-		return null;
+
 
 	}
 
 	@Override
-    public final Void visitAssignmentExpression(AssignmentExpression assignmentExpression) {
+    public final void visitAssignmentExpression(AssignmentExpression assignmentExpression) {
         try {
-            assignmentExpression.getLeftExpression().visit(this);
+            assignmentExpression.getLeftExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" " + assignmentExpression.opString() + " ");
         try {
-            assignmentExpression.getRightExpression().visit(this);
+            assignmentExpression.getRightExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitBinaryExpression(BinaryExpression binaryExpression) {
+    public final void visitBinaryExpression(BinaryExpression binaryExpression) {
         try {
-            binaryExpression.getLeft().visit(this);
+            binaryExpression.getLeftExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" " + binaryExpression.opString() + " ");
         try {
-            binaryExpression.getRight().visit(this);
+            binaryExpression.getRightExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitBlockStatement(BlockStatement blockStatement) {
+    public final void visitBlockStatement(BlockStatement blockStatement) {
 		System.out.println(tab() + "{");
 		indent += 2;
 		for (Statement st : blockStatement.getStatements()) {
@@ -188,7 +188,7 @@ public class PrettyPrinter implements Visitor<Void> {
 				System.out.println(tab() + ";");
 			} else {
                 try {
-                    st.visit(this);
+                    st.accept(this);
                 } catch (Phase.Error error) {
                     throw new RuntimeException(error);
                 }
@@ -198,75 +198,75 @@ public class PrettyPrinter implements Visitor<Void> {
 		}
 		indent -= 2;
 		System.out.println(tab() + "}");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitBreakStatement(BreakStatement breakStatement) {
+    public final void visitBreakStatement(BreakStatement breakStatement) {
 		System.out.print(tab() + "break");
 		if (breakStatement.getTarget() != null) {
 			System.out.print(" ");
             try {
-                breakStatement.getTarget().visit(this);
+                breakStatement.getTarget().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
         }
 		System.out.println(";");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitCastExpression(CastExpression castExpression) throws Phase.Error {
+    public final void visitCastExpression(CastExpression castExpression) throws Phase.Error {
 		// TODO
-		return castExpression.visitChildren(this);
+        castExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitChannelType(ChannelType channelType) {
+    public final void visitChannelType(ChannelType channelType) {
 		String modString = channelType.modString();
 		System.out.print(modString);
 		if (!modString.equals(""))
 			System.out.print(" ");
 		System.out.print("chan<");
         try {
-            channelType.getComponentType().visit(this);
+            channelType.getComponentType().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(">");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitChannelEndExpression(ChannelEndExpression channelEndExpression) {
+    public final void visitChannelEndExpression(ChannelEndExpression channelEndExpression) {
         try {
-            channelEndExpression.getChannelType().visit(this);
+            channelEndExpression.getChannelType().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print("." + (channelEndExpression.isRead() ? "read" : "write"));
-		return null;
+
 	}
 
 	@Override
-    public final Void visitChannelEndType(ChannelEndType channelEndType) {
+    public final void visitChannelEndType(ChannelEndType channelEndType) {
 		if (channelEndType.isSharedEnd())
 			System.out.print("shared ");
 		System.out.print("chan<");
         try {
-            channelEndType.getComponentType().visit(this);
+            channelEndType.getComponentType().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(">." + (channelEndType.isReadEnd() ? "read" : "write"));
-		return null;
+
 	}
 
 	@Override
-    public final Void visitChannelReadExpression(ChannelReadExpression channelReadExpression) {
+    public final void visitChannelReadExpression(ChannelReadExpression channelReadExpression) {
         try {
-            channelReadExpression.getChannelExpression().visit(this);
+            channelReadExpression.getTargetExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -275,7 +275,7 @@ public class PrettyPrinter implements Visitor<Void> {
 			System.out.println("{");
 			indent += 2;
             try {
-                channelReadExpression.getExtendedRendezvous().getStatements().visit(this);
+                channelReadExpression.getExtendedRendezvous().getStatements().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -283,113 +283,113 @@ public class PrettyPrinter implements Visitor<Void> {
 			System.out.print("}");
 		}
 		System.out.print(")");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitChannelWriteStatement(ChannelWriteStatement channelWriteStatement) {
+    public final void visitChannelWriteStatement(ChannelWriteStatement channelWriteStatement) {
 		System.out.print(tab());
 
         try {
-            channelWriteStatement.getTargetExpression().visit(this);
+            channelWriteStatement.getTargetExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(".write(");
         try {
-            channelWriteStatement.getWriteExpression().visit(this);
+            channelWriteStatement.getWriteExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(");");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitClaimStatement(ClaimStatement claimStatement) throws Phase.Error {
+    public final void visitClaimStatement(ClaimStatement claimStatement) throws Phase.Error {
 		// TODO
-		return claimStatement.visitChildren(this);
+        claimStatement.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitCompilation(Compilation compilation) throws Phase.Error  {
+    public final void visitCompilation(Compilation compilation) throws Phase.Error  {
 		System.out.println("Compilation");
-		return compilation.visitChildren(this);
+        compilation.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitConstantDeclaration(ConstantDeclaration constantDeclaration) {
+    public final void visitConstantDeclaration(ConstantDeclaration constantDeclaration) {
 		System.out.print(tab());
-		printModifierSequence(constantDeclaration.modifiers());
-		if (constantDeclaration.modifiers().size() > 0)
-			System.out.print(" ");
+		//printModifierSequence(constantDeclaration.getModifiers());
+		//if (constantDeclaration.getModifiers().size() > 0)
+			//System.out.print(" ");
         try {
-            constantDeclaration.getType().visit(this);
+            constantDeclaration.getType().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
         try {
-            constantDeclaration.getName().visit(this);
+            constantDeclaration.getName().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         try {
-            constantDeclaration.getInitializationExpression().visit(this);
+            constantDeclaration.getInitializationExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(";");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitContinueStatement(ContinueStatement continueStatement) {
+    public final void visitContinueStatement(ContinueStatement continueStatement) {
 		System.out.print("continue");
 		if (continueStatement.getTarget() != null) {
 			System.out.print(" ");
             try {
-                continueStatement.getTarget().visit(this);
+                continueStatement.getTarget().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
         }
-		return null;
+
 	}
 
 	@Override
-    public final Void visitDoStatement(DoStatement doStatement) throws Phase.Error {
+    public final void visitDoStatement(DoStatement doStatement) throws Phase.Error {
 		System.out.print(tab() + "do ");
 
 			System.out.println("{");
 			indent += 2;
 
-            doStatement.getBody().visit(this);
+            doStatement.getBody().accept(this);
             indent -= 2;
 			System.out.print(tab() + "} while (");
 
-            doStatement.getEvaluationExpression().visit(this);
+            doStatement.getEvaluationExpression().accept(this);
 
             System.out.print(")");
 
 		System.out.println("");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitExpressionStatement(ExpressionStatement expressionStatement) {
+    public final void visitExpressionStatement(ExpressionStatement expressionStatement) {
 		System.out.print(tab());
         try {
-            expressionStatement.getExpression().visit(this);
+            expressionStatement.getExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(";");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitForStatement(ForStatement forStatement) throws Phase.Error {
+    public final void visitForStatement(ForStatement forStatement) throws Phase.Error {
 		System.out.print(tab());
 		System.out.print("for (");
 		if (forStatement.getInitializationStatements() != null) {
@@ -401,12 +401,12 @@ public class PrettyPrinter implements Visitor<Void> {
 					for (int i = 0; i < forStatement.getInitializationStatements().size(); i++) {
 						ld = (LocalDeclaration) forStatement.getInitializationStatements().child(i);
                         try {
-                            ld.getName().visit(this);
+                            ld.getName().accept(this);
                         } catch (Phase.Error error) {
                             throw new RuntimeException(error);
                         }
                         try {
-                            ld.getInitializationExpression().visit(this);
+                            ld.getInitializationExpression().accept(this);
                         } catch (Phase.Error error) {
                             throw new RuntimeException(error);
                         }
@@ -416,7 +416,7 @@ public class PrettyPrinter implements Visitor<Void> {
 				} else {
 					for (Statement es : forStatement.getInitializationStatements())
                         try {
-                            es.visit(this);
+                            es.accept(this);
                         } catch (Phase.Error error) {
                             throw new RuntimeException(error);
                         }
@@ -426,7 +426,7 @@ public class PrettyPrinter implements Visitor<Void> {
 		System.out.print(";");
 		if (forStatement.getEvaluationExpression() != null)
             try {
-                forStatement.getEvaluationExpression().visit(this);
+                forStatement.getEvaluationExpression().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -436,7 +436,7 @@ public class PrettyPrinter implements Visitor<Void> {
 				if (forStatement.getIncrementStatements().child(i) instanceof ExpressionStatement) {
 					ExpressionStatement es = (ExpressionStatement) forStatement.getIncrementStatements().child(i);
                     try {
-                        es.getExpression().visit(this);
+                        es.getExpression().accept(this);
                     } catch (Phase.Error error) {
                         throw new RuntimeException(error);
                     }
@@ -448,17 +448,17 @@ public class PrettyPrinter implements Visitor<Void> {
 
         System.out.println(" {");
         indent += 2;
-        forStatement.getBody().visit(this);
+        forStatement.getBody().accept(this);
         indent -= 2;
         System.out.println(tab() + "}");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitGuardStatement(GuardStatement guardStatement) {
+    public final void visitGuardStatement(GuardStatement guardStatement) {
 		if (guardStatement.getStatement() instanceof ExpressionStatement)
             try {
-                ((ExpressionStatement) guardStatement.getStatement()).getExpression().visit(this);
+                ((ExpressionStatement) guardStatement.getStatement()).getExpression().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -467,27 +467,27 @@ public class PrettyPrinter implements Visitor<Void> {
 		else if (guardStatement.getStatement() instanceof TimeoutStatement) {
 			TimeoutStatement ts = (TimeoutStatement) guardStatement.getStatement();
             try {
-                ts.getTimerExpression().visit(this);
+                ts.getTimerExpression().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
             System.out.print(".timeout(");
             try {
-                ts.getDelayExpression().visit(this);
+                ts.getDelayExpression().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
             System.out.print(")");
 		}
-		return null;
+
 	}
 
 	@Override
-    public final Void visitIfStatement(IfStatement ifStatement) throws Phase.Error {
+    public final void visitIfStatement(IfStatement ifStatement) throws Phase.Error {
 		System.out.print(tab());
 		System.out.print("if (");
         try {
-            ifStatement.getEvaluationExpression().visit(this);
+            ifStatement.getEvaluationExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -495,7 +495,7 @@ public class PrettyPrinter implements Visitor<Void> {
 		System.out.println(" {");
 		indent += 2;
 
-        ifStatement.getThenBody().visit(this);
+        ifStatement.getThenBody().accept(this);
 
         indent -= 2;
 
@@ -505,83 +505,83 @@ public class PrettyPrinter implements Visitor<Void> {
 
 		System.out.println(" {");
         indent += 2;
-        ifStatement.getElseBody().visit(this);
+        ifStatement.getElseBody().accept(this);
 
         indent -= 2;
 		System.out.println(tab() + "}");
 
-		return null;
+
 	}
 
 	@Override
-    public final Void visitImport(Import importName) {
+    public final void visitImport(Import importName) {
 		// System.out.print(tab() + "import " + im.packageName() + ".");
 		// if (im.all())
 		// System.out.println("*;");
 		// else
 		// System.out.println(im.file() + ";");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitInvocationExpression(InvocationExpression invocationExpression) {
+    public final void visitInvocationExpression(InvocationExpression invocationExpression) {
 		if (invocationExpression.getTarget() != null)
             try {
-                invocationExpression.getTarget().visit(this);
+                invocationExpression.getTarget().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
         System.out.print(invocationExpression.getProcedureName() + "(");
-		for (int i = 0; i < invocationExpression.getParameters().size(); i++) {
+		for (int i = 0; i < invocationExpression.getParameterExpressions().size(); i++) {
             try {
-                invocationExpression.getParameters().child(i).visit(this);
+                invocationExpression.getParameterExpressions().child(i).accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
-            if (i < invocationExpression.getParameters().size() - 1)
+            if (i < invocationExpression.getParameterExpressions().size() - 1)
 				System.out.print(",");
 		}
 		System.out.print(")");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitLocalDeclaration(LocalDeclaration localDeclaration) {
+    public final void visitLocalDeclaration(LocalDeclaration localDeclaration) {
 		System.out.print(tab());
 		if (localDeclaration.isConstant())
 			System.out.print("const ");
 
         try {
-            localDeclaration.getType().visit(this);
+            localDeclaration.getType().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
         try {
-            localDeclaration.getName().visit(this);
+            localDeclaration.getName().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         try {
-            localDeclaration.getInitializationExpression().visit(this);
+            localDeclaration.getInitializationExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(";");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitModifier(Modifier modifier) {
+    public final void visitModifier(Modifier modifier) {
 		System.out.print(modifier.toString());
-		return null;
+
 	}
 
 	public void printModifierSequence(Sequence<Modifier> mods) {
 		int i = 0;
 		for (Modifier m : mods) {
             try {
-                m.visit(this);
+                m.accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -592,105 +592,104 @@ public class PrettyPrinter implements Visitor<Void> {
 	}
 
 	@Override
-    public final Void visitName(Name name) {
+    public final void visitName(Name name) {
 		System.out.print(name);
-		return null;
+
 	}
 
 	@Override
-    public final Void visitNamedType(NamedType namedType) {
+    public final void visitNamedType(NamedType namedType) {
         try {
-            namedType.getName().visit(this);
+            namedType.getName().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitNameExpression(NameExpression nameExpression) {
+    public final void visitNameExpression(NameExpression nameExpression) {
         try {
-            nameExpression.getName().visit(this);
+            nameExpression.getName().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitNewArrayExpression(NewArrayExpression newArrayExpression)  throws Phase.Error {
+    public final void visitNewArrayExpression(NewArrayExpression newArrayExpression)  throws Phase.Error {
 		// TODO
-		return newArrayExpression.visitChildren(this);
+        newArrayExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitNewMobileExpression(NewMobileExpression newMobileExpression) {
+    public final void visitNewMobileExpression(NewMobileExpression newMobileExpression) {
 		System.out.print(tab() + "new mobile ");
         try {
-            newMobileExpression.name().visit(this);
+            newMobileExpression.name().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitParameterDeclaration(ParameterDeclaration parameterDeclaration) {
-		if (parameterDeclaration.isConstant())
+    public final void visitParameterDeclaration(ParameterDeclaration parameterDeclaration) {
+		if (parameterDeclaration.isDeclaredConstant())
 			System.out.print("const ");
         try {
-            parameterDeclaration.getType().visit(this);
+            parameterDeclaration.getType().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
         System.out.print(parameterDeclaration.getName());
 
-        return null;
 	}
 
 	@Override
-    public final Void visitParBlockStatement(ParBlock parBlock) {
+    public final void visitParBlockStatement(ParBlock parBlock) {
 
 		// TODO - don't forget that there are barriers to enroll on.
 		System.out.println(tab() + "par {");
 		indent += 2;
         try {
-            parBlock.getBody().visit(this);
+            parBlock.getBody().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         indent -= 2;
 		System.out.println(tab() + "}");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitPragma(Pragma pragma) {
+    public final void visitPragma(Pragma pragma) {
 		System.out.println(tab() + "#pragma " + pragma + " " + (pragma.getValue() == null ? "" : pragma.getValue()));
-		return null;
+
 	}
 
 	@Override
-    public final Void visitPrimitiveLiteralExpression(PrimitiveLiteralExpression primitiveLiteralExpression) {
+    public final void visitPrimitiveLiteralExpression(PrimitiveLiteralExpression primitiveLiteralExpression) {
 		System.out.print(primitiveLiteralExpression.getText());
-		return null;
+
 	}
 
 	@Override
-    public final Void visitPrimitiveType(PrimitiveType primitiveType) {
+    public final void visitPrimitiveType(PrimitiveType primitiveType) {
 		System.out.print(primitiveType.toString());
-		return null;
+
 	}
 
 	@Override
-    public final Void visitProcedureTypeDeclaration(ProcedureTypeDeclaration procedureTypeDeclaration) {
+    public final void visitProcedureTypeDeclaration(ProcedureTypeDeclaration procedureTypeDeclaration) {
 		System.out.print(tab());
-		printModifierSequence(procedureTypeDeclaration.modifiers());
-		if (procedureTypeDeclaration.modifiers().size() > 0)
+		printModifierSequence(procedureTypeDeclaration.getModifiers());
+		if (procedureTypeDeclaration.getModifiers().size() > 0)
 			System.out.print(" ");
         try {
-            procedureTypeDeclaration.getReturnType().visit(this);
+            procedureTypeDeclaration.getReturnType().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -699,7 +698,7 @@ public class PrettyPrinter implements Visitor<Void> {
 		System.out.print("(");
 		for (int i = 0; i < procedureTypeDeclaration.getParameters().size(); i++) {
             try {
-                procedureTypeDeclaration.getParameters().child(i).visit(this);
+                procedureTypeDeclaration.getParameters().child(i).accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -711,7 +710,7 @@ public class PrettyPrinter implements Visitor<Void> {
 			System.out.print(" implements ");
 			for (int i = 0; i < procedureTypeDeclaration.getImplements().size(); i++) {
                 try {
-                    procedureTypeDeclaration.getImplements().child(i).visit(this);
+                    procedureTypeDeclaration.getImplements().child(i).accept(this);
                 } catch (Phase.Error error) {
                     throw new RuntimeException(error);
                 }
@@ -724,7 +723,7 @@ public class PrettyPrinter implements Visitor<Void> {
 			System.out.println(" {");
 			indent += 2;
             try {
-                procedureTypeDeclaration.getBody().getStatements().visit(this);
+                procedureTypeDeclaration.getBody().getStatements().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
@@ -733,69 +732,69 @@ public class PrettyPrinter implements Visitor<Void> {
 		} else
 			System.out.println(" ;");
 
-		return null;
+
 	}
 
 	@Override
-    public final Void visitProtocolLiteralExpression(ProtocolLiteralExpression protocolLiteralExpression)  throws Phase.Error {
+    public final void visitProtocolLiteralExpression(ProtocolLiteralExpression protocolLiteralExpression)  throws Phase.Error {
 		// TODO
-		return protocolLiteralExpression.visitChildren(this);
+        protocolLiteralExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitProtocolCase(ProtocolCase protocolCase)  throws Phase.Error {
+    public final void visitProtocolCase(ProtocolCase protocolCase)  throws Phase.Error {
 		// TODO
-		return protocolCase.visitChildren(this);
+        protocolCase.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitProtocolTypeDeclaration(ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error  {
+    public final void visitProtocolTypeDeclaration(ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error  {
 		// TODO
-		return protocolTypeDeclaration.visitChildren(this);
+		protocolTypeDeclaration.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
+    public final void visitRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
         try {
-            recordAccessExpression.getTarget().visit(this);
+            recordAccessExpression.getTarget().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(".)");
         try {
-            recordAccessExpression.field().visit(this);
+            recordAccessExpression.field().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitRecordLiteralExpression(RecordLiteralExpression recordLiteralExpression)  throws Phase.Error {
+    public final void visitRecordLiteralExpression(RecordLiteralExpression recordLiteralExpression)  throws Phase.Error {
 		// TODO
-		return recordLiteralExpression.visitChildren(this);
+        recordLiteralExpression.visitChildren(this);
 	}
 
 	@Override
-    public final Void visitRecordMemberDeclaration(RecordMemberDeclaration recordMemberDeclaration) {
+    public final void visitRecordMemberDeclaration(RecordMemberDeclaration recordMemberDeclaration) {
 		System.out.print(tab());
         try {
-            recordMemberDeclaration.getType().visit(this);
+            recordMemberDeclaration.getType().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ");
         try {
-            recordMemberDeclaration.getName().visit(this);
+            recordMemberDeclaration.getName().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(";");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitRecordTypeDeclaration(RecordTypeDeclaration recordTypeDeclaration) {
+    public final void visitRecordTypeDeclaration(RecordTypeDeclaration recordTypeDeclaration) {
 		System.out.print(tab());
 		printModifierSequence(recordTypeDeclaration.modifiers());
 		if (recordTypeDeclaration.modifiers().size() > 0)
@@ -806,7 +805,7 @@ public class PrettyPrinter implements Visitor<Void> {
 			System.out.print(" extends ");
 			for (int i = 0; i < recordTypeDeclaration.getExtends().size(); i++) {
                 try {
-                    recordTypeDeclaration.getExtends().child(i).visit(this);
+                    recordTypeDeclaration.getExtends().child(i).accept(this);
                 } catch (Phase.Error error) {
                     throw new RuntimeException(error);
                 }
@@ -817,192 +816,192 @@ public class PrettyPrinter implements Visitor<Void> {
 		System.out.println(" {");
 		indent += 2;
         try {
-            recordTypeDeclaration.getBody().visit(this);
+            recordTypeDeclaration.getBody().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         indent -= 2;
 		System.out.println(tab() + "}");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitReturnStatement(ReturnStatement returnStatement) {
+    public final void visitReturnStatement(ReturnStatement returnStatement) {
 		System.out.print(tab() + "return");
 		if (returnStatement.getExpression() != null) {
 			System.out.print(" ");
             try {
-                returnStatement.getExpression().visit(this);
+                returnStatement.getExpression().accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
             }
         }
-		return null;
+
 	}
 
 	@Override
-    public final Void visitSequence(Sequence sequence) {
+    public final void visitSequence(Sequence sequence) {
 		// se.visitChildren(this);
 		for (int i = 0; i < sequence.size(); i++) {
 			if (sequence.child(i) != null)
                 try {
-                    sequence.child(i).visit(this);
+                    sequence.child(i).accept(this);
                 } catch (Phase.Error error) {
                     throw new RuntimeException(error);
                 }
         }
-		return null;
+
 	}
 
 	@Override
-    public final Void visitSkipStatement(SkipStatement skipStatement) {
+    public final void visitSkipStatement(SkipStatement skipStatement) {
 		System.out.println("skip;");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitStopStatement(StopStatement stopStatement) {
+    public final void visitStopStatement(StopStatement stopStatement) {
 		System.out.println("stop;");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitSuspendStatement(SuspendStatement suspendStatement) {
+    public final void visitSuspendStatement(SuspendStatement suspendStatement) {
 		System.out.print("suspend resume with (");
         try {
-            suspendStatement.getParameters().visit(this);
+            suspendStatement.getParameters().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(")");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitSwitchGroupStatement(SwitchGroupStatement switchGroupStatement) {
+    public final void visitSwitchGroupStatement(SwitchGroupStatement switchGroupStatement) {
         try {
-            switchGroupStatement.getLabels().visit(this);
+            switchGroupStatement.getLabels().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         indent += 2;
         try {
-            switchGroupStatement.getStatements().visit(this);
+            switchGroupStatement.getStatements().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         indent -= 2;
-		return null;
+
 	}
 
 	@Override
-    public final Void visitSwitchLabelExpression(SwitchLabel switchLabel) {
+    public final void visitSwitchLabelExpression(SwitchLabel switchLabel) {
 		if (switchLabel.isDefault())
 			System.out.println(tab() + "default:");
 		else
 			System.out.println(tab() + "case " + switchLabel.getExpression() + ":");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitSwitchStatement(SwitchStatement switchStatement) {
+    public final void visitSwitchStatement(SwitchStatement switchStatement) {
 		System.out.print(tab() + "switch (");
         try {
-            switchStatement.getEvaluationExpression().visit(this);
+            switchStatement.getEvaluationExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(") {");
 		indent += 2;
         try {
-            switchStatement.getBody().visit(this);
+            switchStatement.getBody().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         indent -= 2;
 		System.out.println(tab() + "}");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitSyncStatement(SyncStatement syncStatement) {
+    public final void visitSyncStatement(SyncStatement syncStatement) {
 		System.out.print(tab());
         try {
-            syncStatement.getBarrierExpression().visit(this);
+            syncStatement.getBarrierExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(".sync();");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitTernaryExpression(TernaryExpression ternaryExpression) {
+    public final void visitTernaryExpression(TernaryExpression ternaryExpression) {
         try {
-            ternaryExpression.getEvaluationExpression().visit(this);
+            ternaryExpression.getEvaluationExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" ? ");
         try {
-            ternaryExpression.thenPart().visit(this);
+            ternaryExpression.getThenExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(" : ");
         try {
-            ternaryExpression.elsePart().visit(this);
+            ternaryExpression.getElseExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitTimeoutStatement(TimeoutStatement timeoutStatement) {
+    public final void visitTimeoutStatement(TimeoutStatement timeoutStatement) {
 		System.out.print(tab());
         try {
-            timeoutStatement.getTimerExpression().visit(this);
+            timeoutStatement.getTimerExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(".timeout(");
         try {
-            timeoutStatement.getDelayExpression().visit(this);
+            timeoutStatement.getDelayExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.println(");");
-		return null;
+
 	}
 
 	@Override
-    public final Void visitUnaryPostExpression(UnaryPostExpression unaryPostExpression) {
+    public final void visitUnaryPostExpression(UnaryPostExpression unaryPostExpression) {
         try {
-            unaryPostExpression.getExpression().visit(this);
+            unaryPostExpression.getExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
         System.out.print(unaryPostExpression.opString());
-		return null;
+
 	}
 
 	@Override
-    public final Void visitUnaryPreExpression(UnaryPreExpression unaryPreExpression) {
+    public final void visitUnaryPreExpression(UnaryPreExpression unaryPreExpression) {
 		System.out.print(unaryPreExpression.opString());
         try {
-            unaryPreExpression.getExpression().visit(this);
+            unaryPreExpression.getExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
-        return null;
+
 	}
 
 	@Override
-    public final Void visitWhileStatement(WhileStatement whileStatement) throws Phase.Error {
+    public final void visitWhileStatement(WhileStatement whileStatement) throws Phase.Error {
 		System.out.print(tab() + "while (");
         try {
-            whileStatement.getEvaluationExpression().visit(this);
+            whileStatement.getEvaluationExpression().accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -1010,10 +1009,9 @@ public class PrettyPrinter implements Visitor<Void> {
 
         System.out.println(" {");
         indent += 2;
-        whileStatement.getBody().visit(this);
+        whileStatement.getBody().accept(this);
         indent -= 2;
         System.out.println(tab() + "}");
 
-        return null;
 	}
 }

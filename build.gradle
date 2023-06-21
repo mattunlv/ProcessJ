@@ -116,7 +116,7 @@ tasks.register('lexer', JavaExec) {
     // Initialize the classpath, entry point, & arguments
     classpath   = sourceSets.main.runtimeClasspath
     mainClass   = 'jflex.Main'
-    args        = ['-d', 'src/main/java/org/processj/compiler/phases/phase/generated/',
+    args        = ['-d', 'src/main/java/org/processj/compiler/phase/generated/',
                    'src/main/resources/flex/ProcessJ.flex']
 
 }
@@ -135,8 +135,8 @@ tasks.register('parser', JavaExec) {
     mainClass   = 'java_cup.Main'
     args        = ['-parser', 'Parser',
                    '-progress',
-                   '-package', 'src/main/java/org/processj/compiler/phases/phase/generated/',
-                   '-destdir', 'src/main/java/org/processj/compiler/phases/phase/generated/',
+                   '-package', 'src/main/java/org/processj/compiler/phase/generated/',
+                   '-destdir', 'src/main/java/org/processj/compiler/phase/generated/',
                    'src/main/resources/cup/ProcessJ.cup']
 
     dependsOn('lexer')

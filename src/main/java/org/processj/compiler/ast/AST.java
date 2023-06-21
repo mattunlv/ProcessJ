@@ -1,104 +1,42 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.utilities.syntax.NodeCtx;
-import org.processj.compiler.utilities.Log;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+public abstract class AST extends Context {
 
-public abstract class AST {
-    /*implements java.io.Serializable*/// temporarily removed.
-    public Compilation myCompilation = null; // Points to the compilation in which this node is defines. Only used for nodes that implement TopLevelDecl.
-    public NodeCtx ctx = null; // this is used for sytanx-error and static code analysis (not all nodes generate a token!)
+    private final int line      ;
+    private final int column    ;
+    public final AST[] children;
 
-    public String myPackage; // set this field to the name of the package in which the parse tree node lives! (only for top level decls)
-    public int line, charBegin;
-    public int nchildren = 0;
-    public AST[] children;
-    
-    // This variable is used in the rewriting phase to indicate that
-    // an expression has already been rewritten.
-    public boolean rewrite = false;
+    public AST(final Token token, final AST... children) {
 
-    public AST() {
-        // this constructor must ONLY be used in ErrorType
-    }
+        // Initialize the children first
+        this.children = (children != null) ? children : new AST[0];
 
-    public AST(int p_line, int p_charBegin) {
-        line = p_line;
-        charBegin = p_charBegin;
-    }
+        int line    = (token != null) ? token.line   : 0 ;
+        int column  = (token != null) ? token.column : 0 ;
 
-    public AST(Token t) {
-        ctx = t;
-        line = t.line;
-        charBegin = t.start;
-    }
+        // Iterate through the children
+        if(token == null) for(final AST child: this.children)
+            if(child != null) {
 
-    public AST(AST n) {
-        if (n == null) {
-            line = 0;
-            charBegin = 0;
-        } else {
-            line = n.line;
-            charBegin = n.charBegin;
-        }
-    }
+                // The first non-null child will set the line & column
+                line    = child.line    ;
+                column  = child.column  ;
 
-    public AST(final AST[] children) {
+                break;
 
-        this.children   = children                                  ;
-        this.nchildren  = (children != null) ? children.length : 0  ;
-        this.line       = GetLineStartFrom(children);
-        this.charBegin  = GetCharBeginFrom(children);
+            }
+
+        // Initialize the line & column
+        this.line   = line   ;
+        this.column = column ;
 
     }
 
-    public AST(final AST[] children, final Token token) {
-
-        this.children   = children                                  ;
-        this.nchildren  = (children != null) ? children.length : 0  ;
-        this.line       = token.line                                ;
-        this.charBegin  = token.start                               ;
-
-    }
-
-    private static int GetLineStartFrom(final AST[] children) {
-
-        int result = 0;
-
-        if(children != null)
-            for(final AST child: children)
-                if(child != null) {
-
-                    result = child.line;
-
-                    break;
-
-                }
-
-        return result;
-
-    }
-
-    private static int GetCharBeginFrom(final AST[] children) {
-
-        int result = 0;
-
-        if(children != null)
-            for(final AST child: children)
-                if(child != null) {
-
-                    result = child.charBegin;
-
-                    break;
-
-                }
-
-        return result;
-
+    public AST(final AST... children) {
+        this(null, children);
     }
 
     public final int getLine() {
@@ -109,39 +47,30 @@ public abstract class AST {
 
     public final int getColumn() {
 
-        return this.charBegin;
+        return this.column;
 
     }
 
-    public String getname() {
-        return "Blah.";
+    public final AST getChildAt(final int index) {
+
+        return (index < this.children.length) ? this.children[index] : null;
+
     }
 
     public String toString() {
         return "";
     }
 
-    private void tab(java.io.PrintStream out, int amount) {
-        int i;
-        for (i = 0; i < amount; i++)
-            out.print(" ");
-    }
-
-    private String intToString(int i, int w) {
-        String s = "                    " + Integer.toString(i);
-        int length = s.length();
-        return s.substring(length - w);
-    }
-
     public void print(java.io.PrintStream out, int depth) {
-        out.print("line " + this.intToString(line, 3) + ": ");
-        tab(out, depth * 2);
-        Log.log(this.getClass().getName() + " " + this.toString());
-        for (int c = 0; c < nchildren; c++) {
+        out.print("line " + " ".repeat(20) + line + ": ");
+        out.print(" ".repeat(depth * 2));
+
+        org.processj.compiler.Compiler.Info(this.getClass().getName() + " " + this);
+        for (int c = 0; c < this.children.length; c++) {
             if (children[c] == null) {
-                out.print("line " + this.intToString(line, 3) + ": ");
-                tab(out, depth * 2 + 2);
-                Log.log("empty");
+                out.print("line " + " ".repeat(20) + line + ": ");
+                out.print(" ".repeat(depth * 2 + 2));
+                org.processj.compiler.Compiler.Info("empty");
             } else {
                 children[c].print(out, depth + 1);
             }
@@ -162,42 +91,14 @@ public abstract class AST {
     /* **                                                       ** */
     /* *********************************************************** */
 
-    public abstract <T> T visit(Visitor<T> v) throws Phase.Error;
-
-    /**public <T> T visit(final IVisitor<T> visitor) throws Phase.Error,
-            SymbolMap.Context.ContextDoesNotDefineScopeException {
-
-        // Attempt to
-        try {
-
-            // Retrieve the corresponding visitor method
-            Method visitorMethod = visitor.getClass().getDeclaredMethod(
-                    "visit" + this.getClass().getSimpleName(), this.getClass());
-
-            // And then Invoke it
-            visitorMethod.invoke(visitor,this);
-
-        // Otherwise
-        } catch(final NoSuchMethodException | InvocationTargetException | IllegalAccessException ignored) {
-
-        }
-
-        // And now, the children
-        for(int index = 0; (this.children != null) && (index < this.nchildren); index++)
-            if(this.children[index] != null) this.children[index].visit(visitor);
-
-        // Return the result
-        return null;
-
-    }**/
+    public abstract void accept(final Visitor visitor) throws Phase.Error;
 
     /**
      * Visit all children of this node from left to right. Usually called from within a visitor
      */
-    public <T> T visitChildren(Visitor<T> v) throws Phase.Error {
-        for(int c = 0; c < nchildren; c++) {
-            if(children[c] != null) children[c].visit(v);
-
+    public <T> T visitChildren(final Visitor visitor) throws Phase.Error {
+        for(int c = 0; c < this.children.length; c++) {
+            if(children[c] != null) children[c].accept(visitor);
         }
         return null;
     }

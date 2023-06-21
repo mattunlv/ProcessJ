@@ -1,16 +1,16 @@
 package org.processj.compiler.ast.statement.declarative;
 
 import org.processj.compiler.ast.AST;
+import org.processj.compiler.ast.InitializedContext;
 import org.processj.compiler.ast.Name;
-import org.processj.compiler.ast.Var;
 import org.processj.compiler.ast.statement.Statement;
 import org.processj.compiler.ast.type.ConstantDeclaration;
 import org.processj.compiler.ast.type.Type;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
-public class LocalDeclaration extends Statement {
+public class LocalDeclaration extends Statement implements InitializedContext {
 
     private final boolean   isConstant                  ;
     private Name name                        ;
@@ -48,6 +48,7 @@ public class LocalDeclaration extends Statement {
      * @return Flag indicatind if the {@link LocalDeclaration} is initialized.
      * @since 0.1.0
      */
+    @Override
     public final boolean isInitialized() {
 
         return this.initializationExpression != null;
@@ -105,9 +106,9 @@ public class LocalDeclaration extends Statement {
     }
 
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitLocalDeclaration(this);
+        visitor.visitLocalDeclaration(this);
 
     }
 

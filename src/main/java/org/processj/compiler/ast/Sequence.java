@@ -5,15 +5,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class Sequence<T extends AST> extends AST implements Iterable<T> {
 
     public ArrayList<T> children = new ArrayList<T>();
 
     public Sequence() {
-        super(0, 0);
+        super();
     }
 
     public Sequence(T element) {
@@ -162,7 +162,7 @@ public class Sequence<T extends AST> extends AST implements Iterable<T> {
 
     }
 
-    public <W extends Object> W visit(Visitor<W> v) throws Phase.Error {
-        return v.visitSequence(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitSequence(this);
     }
 }

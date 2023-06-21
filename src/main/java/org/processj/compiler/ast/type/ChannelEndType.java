@@ -1,8 +1,8 @@
 package org.processj.compiler.ast.type;
 
-import org.processj.compiler.ast.AST;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.ast.Context;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class ChannelEndType extends Type {
 
@@ -18,21 +18,21 @@ public class ChannelEndType extends Type {
     /// Private Fields
 
     private Type  componentType       ;
-    private final int   shared              ;
-    private final int   end                 ;
+    private final int shared    ;
+    private final int end       ;
 
     /// ------------
     /// Constructors
 
     public ChannelEndType(final int shared, final Type componentType, final int end) {
-        super(new AST[] { componentType });
+        super(componentType);
         this.componentType  = componentType ;
         this.shared         = shared        ;
         this.end            = end           ;
     }
 
-    /// ----------------
-    /// java.lang.Object
+    /// ------
+    /// Object
 
     /**
      * <p>Returns a flag indicating if the specified {@link Object} is an instance of {@link ChannelEndType} & both
@@ -40,12 +40,13 @@ public class ChannelEndType extends Type {
      * @param that The {@link Object} instance to check.
      * @return Flag indicating if the specified {@link Object} is an instance of {@link ChannelEndType} & both
      *         represent the same {@link Type} via name.
-     * @since 0.1.0
+     * @since 1.0.0
+     * @see Type
+     * @see Object
      */
     @Override
     public boolean equals(final Object that) {
 
-        // Check Type & Strings (and potentially recur), then trivial checks, then component checks.
         return super.equals(that) && (that instanceof ChannelEndType)
                 && ((this.shared == ((ChannelEndType) that).shared) || (this.end == ((ChannelEndType) that).end))
                 && this.componentType.equals(((ChannelEndType) that).componentType);
@@ -55,7 +56,10 @@ public class ChannelEndType extends Type {
     /**
      * <p>Returns a literal {@link String} representation of the {@link ChannelEndType}.</p>
      * @return Literal {@link String} representation of the {@link ChannelEndType}.
-     * @since 0.1.0
+     * @since 1.0.0
+     * @see ChannelType
+     * @see Type
+     * @see Object
      */
     @Override
     public String toString() {
@@ -64,20 +68,23 @@ public class ChannelEndType extends Type {
 
     }
 
-    /// --------------------
-    /// org.processj.ast.AST
-
+    /// ---
+    /// AST
+    
     /**
-     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ChannelEndType}.
-     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitChannelEndType(ChannelEndType)} method.</p>
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ChannelEndType}; Updates the
+     * {@link Visitor}'s {@link Context} & dispatches the {@link Visitor}'s
+     * {@link Visitor#visitChannelEndType(ChannelEndType)} method.</p>
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
+     * @since 1.0.0
+     * @see Visitor
+     * @see Phase.Error
+     * @see Context
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitChannelEndType(this);
+        visitor.visitChannelEndType(this);
 
     }
 
@@ -89,10 +96,10 @@ public class ChannelEndType extends Type {
      * @return The internal {@link String} signature representing the {@link ChannelEndType}.
      * @since 0.1.0
      */
-    // TODO: perhaps the base type of a channel end type ought to be a channel ;->
     @Override
     public final String getSignature() {
 
+        // TODO: perhaps the base type of a channel end type ought to be a channel ;->
         return "{" + getComponentType().getSignature() + ";" + (isReadEnd() ? "?" : "!");
 
     }

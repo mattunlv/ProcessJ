@@ -1,18 +1,16 @@
 package org.processj.compiler.ast.statement.conditional;
 
-import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.statement.ConditionalStatement;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
-public class IfStatement extends Statement implements ConditionalStatement {
+public class IfStatement extends Statement implements ConditionalContext {
 
     /// --------------
     /// Private Fields
 
-    private Expression  expression  ;
+    private Expression evaluationExpression;
     private final BlockStatement thenBody    ;
     private final BlockStatement elseBody    ;
 
@@ -24,12 +22,12 @@ public class IfStatement extends Statement implements ConditionalStatement {
      * */
 
     public IfStatement(final String label, final Expression evaluationExpression, final Statement thenPart, final Statement elsePart) {
-        super(label, evaluationExpression);
-        nchildren = 3;
-        children = new AST[] { evaluationExpression, (thenPart instanceof BlockStatement) ? thenPart : new BlockStatement(thenPart), new BlockStatement(elsePart)};
-        this.expression = evaluationExpression          ;
-        this.thenBody   = (BlockStatement) this.children[1]      ;
-        this.elseBody   = (BlockStatement) this.children[2]      ;
+        super(evaluationExpression, ((thenPart instanceof BlockStatement) ? thenPart : new BlockStatement(thenPart)),
+                ((elsePart instanceof BlockStatement) ? elsePart : new BlockStatement(elsePart)));
+
+        this.evaluationExpression   = evaluationExpression                   ;
+        this.thenBody               = (BlockStatement) this.children[1]      ;
+        this.elseBody               = (BlockStatement) this.children[2]      ;
     }
 
     public IfStatement(final String label, final Expression evaluationExpression, final Statement thenPart) {
@@ -46,13 +44,26 @@ public class IfStatement extends Statement implements ConditionalStatement {
 
 
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitIfStatement(this);
+    @Override
+    public void accept(final Visitor visitor) throws Phase.Error {
+
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
+
+        // Open a scope for the If Statement
+        this.openScope();
+
+        // Visit
+        visitor.visitIfStatement(this);
+
+        // Close the scope
+        visitor.setContext(this.closeContext());
+
     }
 
     public final Expression getEvaluationExpression() {
 
-        return this.expression;
+        return this.evaluationExpression;
 
     }
 
@@ -96,6 +107,11 @@ public class IfStatement extends Statement implements ConditionalStatement {
     @Override
     public BlockStatement getMergeBody() {
         return null;
+    }
+
+    @Override
+    public void clearMergeBody() {
+
     }
 
     @Override

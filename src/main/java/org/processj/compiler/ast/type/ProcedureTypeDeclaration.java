@@ -1,90 +1,75 @@
 package org.processj.compiler.ast.type;
 
 import org.processj.compiler.ast.*;
+import org.processj.compiler.ast.modifier.Native;
 import org.processj.compiler.ast.statement.conditional.BlockStatement;
 import org.processj.compiler.ast.statement.Statement;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context {
+public class ProcedureTypeDeclaration extends Type {
 
     /// --------------
     /// Private Fields
 
-    private final Annotations annotations             ;
-    private final Sequence<Modifier> modifiers               ;
+    private final Annotations   annotations ;
+    private final Modifiers     modifiers   ;
+    private Type                returnType  ;
 
     /**
      * <p>{@link String} value of the {@link ProcedureTypeDeclaration}'s name.</p>
      */
-    private final Name                      name                    ;
-    private final BlockStatement body                    ;
-    private final Sequence<ParameterDeclaration>       parameters              ;
-    private final Sequence<Name>            implement               ;
+    private final Name                              name            ;
+    private final BlockStatement                    body            ;
+    private final Sequence<ParameterDeclaration>    parameters      ;
+    private final Sequence<Name>                    implement       ;
     private final Map<String, SymbolMap>    implementCandidates     ;
     private final Map<String, Type>         parameterTypes          ;
-    private String                          packageName             ;
     private boolean                         isDeclaredNative        ;
     private boolean                         isDeclaredMobile        ;
-    private SymbolMap                       scope                   ;
-    private Type                            returnType              ;
     private BlockStatement mergeBody               ;
 
     /// ------------
     /// Constructors
 
-    public ProcedureTypeDeclaration(final Sequence<Modifier> modifiers,
+    public ProcedureTypeDeclaration(final Annotations annotations,
+                                    final Modifiers modifiers,
                                     final Type returnType,
                                     final Name name,
-                                    final Sequence<ParameterDeclaration> parameter,
+                                    final Sequence<ParameterDeclaration> parameters,
                                     final Sequence<Name> implement,
-                                    final Annotations annotations,
                                     final BlockStatement body) {
-        super(new AST[] { modifiers, returnType, name, parameter, implement, annotations,
-                (body != null) ? body : new BlockStatement(new Sequence<>()) });
+        super(annotations, modifiers, returnType, name, parameters, implement,
+                (body != null) ? body : new BlockStatement(new Sequence<>()));
 
-        this.modifiers              = modifiers                             ;
         this.annotations            = annotations                           ;
+        this.modifiers              = modifiers                             ;
+        this.returnType             = returnType                            ;
         this.name                   = (name != null) ? name : new Name("")  ;
-        this.parameters             = parameter                             ;
+        this.parameters             = parameters                            ;
         this.implement              = implement                             ;
         this.body                   = body                                  ;
-        this.packageName            = ""                                    ;
+
         this.isDeclaredNative       = false                                 ;
         this.isDeclaredMobile       = false                                 ;
-        this.returnType             = returnType                            ;
         this.implementCandidates    = new HashMap<>()                       ;
         this.parameterTypes         = new HashMap<>()                       ;
-        this.mergeBody              = new BlockStatement()                           ;
+        this.mergeBody              = new BlockStatement()                  ;
 
     }
 
-    /// ----------------
-    /// java.lang.Object
+    /// ------
+    /// Object
 
     /**
-     * <p>Returns a flag indicating if the specified {@link Object} is an instance of {@link ProcedureTypeDeclaration} & both
-     * represent the same {@link Type} via name.</p>
-     * @param that The {@link Object} instance to check.
-     * @return Flag indicating if the specified {@link Object} is an instance of {@link ProcedureTypeDeclaration} & both
-     *         represent the same {@link Type} via name.
-     * @since 0.1.0
-     */
-    @Override
-    public final boolean equals(final Object that) {
-
-        // TODO: Check Parameters?
-        return super.equals(that) && (that instanceof ProcedureTypeDeclaration);
-
-    }
-
-    /**
-     * <p>Returns a literal {@link String} representation of the {@link ProcedureTypeDeclaration}.</p>
-     * @return Literal {@link String} representation of the {@link ProcedureTypeDeclaration}.
-     * @since 0.1.0
+     * <p>Returns the {@link String} value of the {@link ProcedureTypeDeclaration}'s name.</p>
+     * @return {@link String} value of the {@link ProcedureTypeDeclaration}'s name.
+     * @since 1.0.0
+     * @see Name
+     * @see String
      */
     @Override
     public final String toString() {
@@ -93,29 +78,52 @@ public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context 
 
     }
 
-    /// --------------------
-    /// org.processj.ast.AST
-    
+    /// ---
+    /// AST
+
     /**
-     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ProcedureTypeDeclaration}.
-     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitProcedureTypeDeclaration(ProcedureTypeDeclaration)} method.</p>
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ProcedureTypeDeclaration}; Updates the
+     * {@link Visitor}'s {@link Context}, opens a new scope, & dispatches the {@link Visitor}'s
+     * {@link Visitor#visitProcedureTypeDeclaration(ProcedureTypeDeclaration)} method.</p>
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
+     * @since 1.0.0
+     * @see Visitor
+     * @see Phase.Error
+     * @see Context
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        // Open the scope
-        visitor.setScope(this.openScope(visitor.getScope()));
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
 
-        // Visit
-        S result = visitor.visitProcedureTypeDeclaration(this);
+        // Force a new Scope for the ProcedureTypeDeclaration if one does not already exist
+        this.openScope();
 
-        // Close the scope
-        visitor.setScope(visitor.getScope().getEnclosingScope());
+        // Dispatch ourselves
+        visitor.visitProcedureTypeDeclaration(this);
 
-        return result;
+        // Reset the context
+        visitor.setContext(this.closeContext());
+
+    }
+
+    /// ----------------
+    /// java.lang.Object
+
+    /**
+     * <p>Returns a flag indicating if the specified {@link Object} is an instance of {@link ProcedureTypeDeclaration}
+     * & both represent the same {@link Type} via {@link Name}, return {@link Type}, & implements {@link Name}s.</p>
+     * @param that The {@link Object} instance to check.
+     * @return Flag indicating if the specified {@link Object} is an instance of {@link ProcedureTypeDeclaration} & both
+     *         represent the same {@link Type} via {@link Name}, return {@link Type}, & implements {@link Name}s.
+     * @since 1.0.0
+     */
+    @Override
+    public final boolean equals(final Object that) {
+
+        // TODO: Check Parameters?
+        return super.equals(that) && (that instanceof ProcedureTypeDeclaration);
 
     }
 
@@ -172,7 +180,7 @@ public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context 
     public final boolean isMobile() {
 
         // Iterate through the modifiers
-        for(final Modifier modifier: this.modifiers()) {
+        for(final Modifier modifier: this.getModifiers()) {
 
             // Check for break
             if(this.isDeclaredMobile) break;
@@ -195,7 +203,7 @@ public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context 
     public final boolean isNative() {
 
         // Iterate through the modifiers
-        for(final Modifier modifier: this.modifiers()) {
+        for(final Modifier modifier: this.getModifiers()) {
 
             // Check for break
             if(this.isDeclaredNative) break;
@@ -233,30 +241,6 @@ public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context 
 
     }
 
-    /**
-     * <p>Returns the {@link String} value of the {@link ProcedureTypeDeclaration}'s package name.</p>
-     * @return {@link String} value of the {@link ProcedureTypeDeclaration}'s package name.
-     * @since 0.1.0
-     */
-    public final String getPackageName() {
-
-        return this.packageName;
-
-    }
-
-    @Override
-    public BlockStatement getMergeBody() {
-        return this.body.getMergeBody();
-    }
-
-    @Override
-    public BlockStatement getClearedMergeBody() {
-
-        return this.body.getClearedMergeBody();
-
-    }
-
-
     public final BlockStatement getBody() {
 
         return this.body;
@@ -275,12 +259,6 @@ public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context 
 
     }
 
-    public final Type getTypeForParameter(final Name name) {
-
-        return this.parameterTypes.get(name.toString());
-
-    }
-
     /**
      * <p>Marks the {@link ProcedureTypeDeclaration} as 'yielding' (i.e. annotated with the 'yield' {@link Annotation} by
      * aggregating a 'yield' {@link Annotation} if it doesn't already contain one.</p>
@@ -296,31 +274,6 @@ public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context 
 
     }
 
-    @Override
-    public boolean definesLabel() {
-        return false;
-    }
-
-    @Override
-    public boolean definesEndLabel() {
-        return false;
-    }
-
-    @Override
-    public String getLabel() {
-        return null;
-    }
-
-    @Override
-    public void setEndLabel(String label) {
-
-    }
-
-    @Override
-    public String getEndLabel() {
-        return null;
-    }
-
     /**
      * <p>Marks the {@link ProcedureTypeDeclaration} as 'native' (i.e. defined with the 'native' {@link Modifier} by aggregating
      * a 'native' {@link Modifier} if it doesn't already contain one.</p>
@@ -329,19 +282,7 @@ public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context 
     public final void setNative() {
 
         if(!this.isNative())
-            this.modifiers.append(new Modifier(Modifier.NATIVE));
-
-    }
-
-    /**
-     * <p>Mutates the {@link ProcedureTypeDeclaration}'s package name.</p>
-     * @param packageName The {@link String} value of the desired package name.
-     * @since 0.1.0
-     */
-    public final void setPackageName(final String packageName) {
-
-        if(packageName != null)
-            this.packageName = packageName;
+            this.modifiers.add(new Native());
 
     }
 
@@ -394,31 +335,7 @@ public class ProcedureTypeDeclaration extends Type implements SymbolMap.Context 
 
     }
 
-    public final void forEachModifier(final ModifierCallback modifierCallback) throws Phase.Error {
-
-        if((this.modifiers != null) && (modifierCallback != null)) {
-
-            // Iterate through each Modifier & Invoke the ModifierCallback
-            for(final Modifier modifier: this.modifiers)
-                modifierCallback.Invoke(modifier);
-
-        }
-
-    }
-
-    public final void forEachStatement(final StatementCallback statementCallback) throws Phase.Error {
-
-        if((this.body.getStatements() != null) && (statementCallback != null)) {
-
-            // Iterate through each Statement & Invoke the StatementCallback
-            for(final Statement statement: this.body.getStatements())
-                statementCallback.Invoke(statement);
-
-        }
-
-    }
-
-    public Sequence<Modifier> modifiers() {
+    public Sequence<Modifier> getModifiers() {
         return (Sequence<Modifier>) children[0];
     }
 

@@ -1,12 +1,55 @@
-source                  ::= compilation_unit
-compilation_unit        ::= pragmas package_declaration import_declaration type_declarations
+source                  ::= compilation_unit?
 
-pragmas                 ::= pragma pragmas | ε
-pragma                  ::= '#pragma' identifier string_optional ';'
+compilation_unit        ::= pragma* package_declaration? import_declaration* type_declaration*
 
-package_declaration     ::= 'package' package_access ';' | ε
+/// -------
+/// Pragmas
 
-package_access          ::= identifier package_access_trail
-package_access_trail    ::= '.' identifier package_access_trail | ε
+pragma                  ::= '#pragma' identifier string_literal? ';'
 
-string_optional         ::= string | ε
+string_literal          ::= 'regexp:"([^"\\]|\\.)*"'
+
+package_declaration     ::= 'package' identifier {'.' identifier}* ';'
+
+import_declaration      ::= 'import' identifier {'.' identifier}* {'.*'}? ';'
+
+type_declaration        ::= procedure_type_declaration
+
+procedure_type_declaration  ::= modifier* type identifier '(' ')' body
+
+modifier                    ::=   'const'
+                                | 'mobile'
+                                | 'native'
+                                | 'private'
+                                | 'protected'
+                                | 'public'
+
+type ::=  primitive_type array_type
+        | identifier array_type
+        | channel_type array_type
+        | channel_end_type array_type
+
+array_type ::= {'[]' array_type}?
+
+primitive_type          ::=   'boolean'
+                            | 'char'
+                            | 'byte'
+                            | 'short'
+                            | 'int'
+                            | 'long'
+                            | 'float'
+                            | 'double'
+                            | 'string'
+                            | 'barrier'
+                            | 'timer'
+
+identifier              ::= 'regexp:\p{Alpha}\w*'
+
+channel_type            ::= 'shared'? {'read' | 'write'}? 'chan<' type '>'
+channel_end_type        ::= 'shared'? 'chan<' type '>.' {'read' | 'write'}
+
+body                    ::= block | ';'
+
+block                   ::= '{' block_statements? '}'
+
+block_statements        ::=

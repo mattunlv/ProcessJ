@@ -1,7 +1,7 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class Import extends AST {
 
@@ -16,7 +16,7 @@ public class Import extends AST {
     /// Constructors
 
     public Import(final Sequence<Name> packageName) {
-        super(packageName.line, packageName.charBegin);
+        super(packageName);
 
         this.symbol             = packageName.getLast().getName()                    ;
         this.packageName        = packageName.synthesizeStringWith(".")     ;
@@ -35,9 +35,9 @@ public class Import extends AST {
     }
 
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitImport(this);
+        visitor.visitImport(this);
 
     }
 

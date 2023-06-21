@@ -1,9 +1,9 @@
 package org.processj.compiler.ast.expression.binary;
 
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.AST;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
 public class AssignmentExpression extends Expression {
 
@@ -27,10 +27,8 @@ public class AssignmentExpression extends Expression {
 
     public AssignmentExpression(Expression /* Name, FieldRef or ArrayAccess only */left,
                                 Expression right, int op) {
-        super(left);
-        nchildren = 2;
+        super(new AST[] { left, right });
         kind = op;
-        children = new AST[] { left, right };
     }
 
     public Expression getLeftExpression() {
@@ -49,8 +47,7 @@ public class AssignmentExpression extends Expression {
         return opSyms[kind];
     }
 
-    public <S extends Object> S visit(Visitor<S> v)
-            throws Phase.Error {
-        return v.visitAssignmentExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitAssignmentExpression(this);
     }
 }

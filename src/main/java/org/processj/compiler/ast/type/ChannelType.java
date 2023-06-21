@@ -1,8 +1,8 @@
 package org.processj.compiler.ast.type;
 
 import org.processj.compiler.ast.AST;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class ChannelType extends Type {
 
@@ -72,14 +72,13 @@ public class ChannelType extends Type {
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ChannelType}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitChannelType(ChannelType)} method.</p>
+     *
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitChannelType(this);
+        visitor.visitChannelType(this);
 
     }
 

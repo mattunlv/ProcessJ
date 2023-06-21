@@ -18,10 +18,10 @@ package org.processj.compiler.utilities;
  */
 public class ANSICode {
     
-    public static final String ANSI_PREFIX = "\033[";
-    public static final String ANSI_POSTFIX = "m";
-    public static final String ANSI_COMMA = ";";
-    public static final String ANSI_RESET = "\033[0m";
+    public static final String Prefix       = "\033[";
+    public static final String Suffix       = "m";
+    public static final String Semicolon    = ";";
+    public static final String Reset        = "\033[0m";
     
     /**
      * The enum AnsiForeground represents each ansi foreground color code.
@@ -114,11 +114,11 @@ public class ANSICode {
         }
     }
     
-    public static String setColor(String tag, ErrorSeverity severity) {
+    public static String setColor(String tag, PJMessage.ErrorSeverity severity) {
         StringBuilder sb = new StringBuilder();
-        sb.append(ANSI_PREFIX);
+        sb.append(Prefix);
         sb.append(Attribute.BOLD);
-        sb.append(ANSI_COMMA);
+        sb.append(Semicolon);
         switch (severity) {
         case WARNING:
             sb.append(ANSIForeground.YELLOW);
@@ -129,9 +129,9 @@ public class ANSICode {
         default:
             break;
         }
-        sb.append(ANSI_POSTFIX);
+        sb.append(Suffix);
         sb.append(tag);
-        sb.append(ANSI_RESET);
+        sb.append(Reset);
         return sb.toString();
     }
 }

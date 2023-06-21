@@ -19,14 +19,14 @@ public abstract class Type extends AST {
         this.name = new Name("");
     }
 
+    public Type(final AST... children) {
+        super(children);
+        this.name = new Name("");
+    }
+
     public Type(Token t) {
         super(t);
         this.name = new Name(t.lexeme);
-    }
-
-    public Type(final AST[] children) {
-        super(children);
-        this.name = new Name("");
     }
 
     public Type(final Name name) {
@@ -118,11 +118,11 @@ public abstract class Type extends AST {
 
     }
 
-    public abstract boolean typeEqual(Type other);
+    public boolean typeEqual(Type other) { return false; }
 
-    public abstract boolean typeEquivalent(Type other);
+    public boolean typeEquivalent(Type other) { return false; }
 
-    public abstract boolean typeAssignmentCompatible(Type other);
+    public boolean typeAssignmentCompatible(Type other) { return false;}
     
     /*
      * NOTE: the general implementation of all these should be to return 'false'.

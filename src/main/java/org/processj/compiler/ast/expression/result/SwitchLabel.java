@@ -1,18 +1,16 @@
 package org.processj.compiler.ast.expression.result;
 
 import org.processj.compiler.ast.AST;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
 public class SwitchLabel extends AST {
 
     private boolean isDefault;
 
     public SwitchLabel(final Expression constantExpression, boolean def) {
-        super(constantExpression);
-        nchildren = 1;
-        children = new AST[] { constantExpression };
+        super(new AST[] { constantExpression });
         isDefault = def;
     }
 
@@ -24,7 +22,7 @@ public class SwitchLabel extends AST {
         return isDefault;
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitSwitchLabelExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitSwitchLabelExpression(this);
     }
 }

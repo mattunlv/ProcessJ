@@ -6,8 +6,8 @@ import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.ast.expression.literal.ArrayLiteralExpression;
 import org.processj.compiler.ast.type.Type;
 import org.processj.compiler.ast.type.ArrayType;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class NewArrayExpression extends Expression {
 
@@ -71,8 +71,8 @@ public class NewArrayExpression extends Expression {
         return "" + getComponentType() + " " + getBracketExpressions() + " " + dims();
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitNewArrayExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitNewArrayExpression(this);
     }
 
     public final boolean definesBracketExpressions() {

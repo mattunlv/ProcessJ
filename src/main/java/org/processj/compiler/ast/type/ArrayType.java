@@ -1,33 +1,19 @@
 package org.processj.compiler.ast.type;
 
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.expression.constructing.NewArrayExpression;
-import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.ast.expression.access.ArrayAccessExpression;
-import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.TypeChecker;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 /**
- * Where is ArrayType constructed?
- *  {@link Parser}
- *      - primitiveType Array
- *      - ChannelType Array
- *      - Name with Dims identifier[][]...[]
- *      - Package Type (Static Import)
- *  {@link ArrayTypeRewrite}
- *  {@link TypeChecker}
- *      {@link TypeChecker#visitArrayAccessExpression(ArrayAccessExpression)}
- *      {@link TypeChecker#arrayAssignmentCompatible(Type, Expression)}
- *      {@link TypeChecker#visitNewArrayExpression(NewArrayExpression)}
- * Which Order do these occur?
- *      1) Parser
- *      2) ArrayTypeConstructor
- *      3) TypeChecker
- *      As {@link ParameterDeclaration}, {@link LocalDeclaration}, {@link ConstantDeclaration}
- *
- * Also Check {@link NewArrayExpression}, {@link ArrayAccessExpression} & {@link ArraysRewrite}
+ * <p>Encapsulates an {@link ArrayType}.</p>
+ * @author Jan B. Pedersen
+ * @author Cabel Shrestha
+ * @author Benjamin Cisneros
+ * @author Carlos L. Cuenca
+ * @version 1.0.0
+ * @since 1.0.0
+ * @see AST
+ * @see Type
  */
 public class ArrayType extends Type {
 
@@ -35,30 +21,44 @@ public class ArrayType extends Type {
     /// Private Fields
 
     /**
-     * <p>The specified {@link Integer} value corresponding to the {@link ArrayType}'s depth. Must be greater than
-     * 1.</p>
+     * <p>The integer value corresponding to the {@link ArrayType}'s depth as specified with '[]' in the source file.
+     * </p>
+     * @since 1.0.0
      */
     private final int   depth           ;
 
     /**
      * <p>The {@link ArrayType}'s component (base) {@link Type}. Must not be an instance of {@link ArrayType}.</p>
+     * @since 1.0.0
+     * @see Type
      */
-    private Type  componentType   ;
+    private Type        componentType   ;
 
     /// ------------
     /// Constructors
 
-    public ArrayType(final Type type, final int depth) {
-        super(new AST[] { type });
+    /**
+     * <p>Initializes the {@link ArrayType} to its' default state with the specified {@link Type} & integer depth.
+     * If the specified {@link Type} is an {@link ArrayType}, this will aggregate its' depth & set the
+     * {@link ArrayType}'s component {@link Type} to the same component {@link Type} of the specified
+     * {@link ArrayType}.</p>
+     * @param componentType The {@link Type} to bind to the {@link ConstantDeclaration}.
+     * @param depth The integer value of the {@link ArrayType}'s depth as specified by '[]'.
+     * @since 1.0.0
+     * @see AST
+     * @see Type
+     */
+    public ArrayType(final Type componentType, final int depth) {
+        super(componentType);
 
-        this.componentType = type.getComponentType()        ;
-        this.depth         = ((type instanceof ArrayType) ?
-                ((ArrayType) type).getDepth() : 0) + depth  ;
+        this.componentType = componentType.getComponentType();
+        this.depth         = ((componentType instanceof ArrayType)
+                ? ((ArrayType) componentType).getDepth() : 0) + depth  ;
 
     }
 
-    /// ----------------
-    /// java.lang.Object
+    /// ------
+    /// Object
 
     /**
      * <p>Returns a flag indicating if the specified {@link Object} is an instance of {@link ArrayType} & both
@@ -66,21 +66,24 @@ public class ArrayType extends Type {
      * @param that The {@link Object} instance to check.
      * @return Flag indicating if the specified {@link Object} is an instance of {@link ArrayType} & both
      *         represent the same {@link Type} via name.
-     * @since 0.1.0
+     * @since 1.0.0
+     * @see Object
+     * @see Type
      */
     @Override
     public final boolean equals(final Object that) {
 
-        // The extra check is done to be sure any named types aren't trying to undermine the check
-        return super.equals(that) && (that instanceof ArrayType)
+        return super.equals(that)
+                && (that instanceof ArrayType)
                 && this.componentType.equals(((ArrayType) that).componentType);
 
     }
 
     /**
-     * <p>Returns a literal {@link String} representation of the {@link RecordTypeDeclaration}.</p>
-     * @return Literal {@link String} representation of the {@link RecordTypeDeclaration}.
-     * @since 0.1.0
+     * <p>Returns a literal {@link String} representation of the {@link ArrayType}.</p>
+     * @return Literal {@link String} representation of the {@link ArrayType}.
+     * @since 1.0.0
+     * @see String
      */
     @Override
     public final String toString() {
@@ -89,30 +92,39 @@ public class ArrayType extends Type {
 
     }
 
-    /// --------------------
-    /// org.processj.ast.AST
+    /// ---
+    /// AST
 
     /**
-     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ArrayType}.
-     * This method will dispatch the {@link Visitor}'s {@link Visitor#visitArrayType} method.</p>
+     * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ArrayType}; Updates the
+     * {@link Visitor}'s {@link Context} & dispatches the {@link Visitor}'s
+     * {@link Visitor#visitArrayType(ArrayType)} method.</p>
      * @param visitor The {@link Visitor} to dispatch.
-     * @return Type result of the visitation.
-     * @param <S> Parametric type parameter.
+     * @since 1.0.0
+     * @see Visitor
+     * @see Phase.Error
+     * @see Context
      */
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        return visitor.visitArrayType(this);
+        visitor.setContext(this.openContext(visitor.getContext()));
+
+        visitor.visitArrayType(this);
+
+        visitor.setContext(this.closeContext());
 
     }
 
-    /// ---------------------
-    /// org.processj.ast.Type
+    /// ----
+    /// Type
 
     /**
      * <p>Returns the internal {@link String} signature representing the {@link ArrayType}.</p>
      * @return The internal {@link String} signature representing the {@link ArrayType}.
-     * @since 0.1.0
+     * @since 1.0.0
+     * @see Type
+     * @see String
      */
     @Override
     public final String getSignature() {
@@ -133,11 +145,10 @@ public class ArrayType extends Type {
     /// Public Methods
 
     /**
-     * <p>Returns the component (base) {@link Type} composing the {@link ArrayType}; can never be an instance of
-     * {@link ArrayType}.</p>
+     * <p>Returns the component (base) {@link Type} composing the {@link ArrayType}.</p>
      * @return The component (base) {@link Type} composing the {@link ArrayType}.
+     * @since 1.0.0
      * @see Type
-     * @since 0.1.0
      */
     public final Type getComponentType() {
 
@@ -146,10 +157,9 @@ public class ArrayType extends Type {
     }
 
     /**
-     * <p>Returns the {@link Integer} value corresponding with the {@link ArrayType}'s length. Must always be greater
-     * than 1.</p>
-     * @return The {@link Integer} value corresponding with the {@link ArrayType}'s length.
-     * @since 0.1.0
+     * <p>Returns the integer value corresponding with the {@link ArrayType}'s depth..</p>
+     * @return The integer value corresponding with the {@link ArrayType}'s depth.
+     * @since 1.0.0
      */
     public final int getDepth() {
 
@@ -157,13 +167,18 @@ public class ArrayType extends Type {
 
     }
 
+    /**
+     * <p>Mutates the {@link ArrayType}'s component {@link Type}.</p>
+     * @param componentType The {@link Type} to update.
+     * @since 1.0.0
+     * @see Type
+     */
     public final void setComponentType(final Type componentType) {
 
         this.componentType = componentType;
         this.children[0] = componentType;
 
     }
-
 
     // *************************************************************************
     // ** Type Related Methods

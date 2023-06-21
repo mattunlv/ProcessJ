@@ -14,5 +14,8 @@ public abstract class LiteralExpression extends Expression {
     public LiteralExpression(AST a) {
         super(a);
     }
+    public LiteralExpression(AST[] a) {
+        super(a);
+    }
 
 }

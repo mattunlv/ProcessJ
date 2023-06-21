@@ -4,8 +4,8 @@ import org.processj.compiler.ast.*;
 import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.ast.type.ProcedureTypeDeclaration;
 import org.processj.compiler.ast.type.Type;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,9 +22,7 @@ public class InvocationExpression extends Expression {
     public boolean ignore = false; // This is used to ignore invocations for 'labels' and 'gotos' in the org.processj.codegen phase.
 
     public InvocationExpression(final Expression target, final Name name, final Sequence<Expression> parameters) {
-        super(name);
-        nchildren = 3;
-        children            = new AST[] { target, name, parameters };
+        super(new AST[] { target, name, parameters });
         this.name           = name              ;
         this.target         = target            ;
         this.parameters     = parameters        ;
@@ -48,9 +46,9 @@ public class InvocationExpression extends Expression {
     public String toString() {
         String s = (getTarget() == null ? "" : getTarget() + ".") + getProcedureName()
             + "(";
-        for (int i = 0; i < getParameters().size(); i++) {
-            s += getParameters().child(i);
-            if (i < getParameters().size() - 1)
+        for (int i = 0; i < getParameterExpressions().size(); i++) {
+            s += getParameterExpressions().child(i);
+            if (i < getParameterExpressions().size() - 1)
                 s += ",";
         }
         s += ")";
@@ -122,7 +120,7 @@ public class InvocationExpression extends Expression {
 
     }
 
-    public Sequence<Expression> getParameters() {
+    public Sequence<Expression> getParameterExpressions() {
         return (Sequence<Expression>) children[2];
     }
 
@@ -132,8 +130,8 @@ public class InvocationExpression extends Expression {
 
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitInvocationExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitInvocationExpression(this);
     }
 
     public final void setTypeForEachParameter(final TypeReturnCallback typeReturnCallback) throws Phase.Error {

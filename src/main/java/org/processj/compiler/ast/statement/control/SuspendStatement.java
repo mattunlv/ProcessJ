@@ -5,15 +5,13 @@ import org.processj.compiler.ast.statement.Statement;
 import org.processj.compiler.ast.type.ParameterDeclaration;
 import org.processj.compiler.ast.Sequence;
 import org.processj.compiler.ast.Token;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class SuspendStatement extends Statement {
 
     public SuspendStatement(Token t, Sequence<ParameterDeclaration> params) {
-        super(t);
-        nchildren = 1;
-        children = new AST[] { params };
+        super(new AST[] { params });
     }
 
     public Sequence<ParameterDeclaration> getParameters() {
@@ -28,7 +26,7 @@ public class SuspendStatement extends Statement {
         return s;
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitSuspendStatement(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitSuspendStatement(this);
     }
 }

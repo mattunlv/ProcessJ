@@ -66,26 +66,11 @@ public abstract class NodeCtx {
     public NodeCtx set(int index, NodeCtx n) {
         throw new AssertionError("set() is not supported for this type of node");
     }
-    
-    public void addChildrenOf(NodeCtx n) {
-        for (int i = 1; i < n.size(); ++i)
-            add(n.get(i));
-    }
-    
+
     public NodeCtx getLeaf() {
         throw new AssertionError("getLeaf() is not supported for this type of node");
     }
-    
-    public void printContext() {
-        Token root = getRoot();
-        System.out.print(root.getText() + " ");
-        if (children() > 0) {
-            int count = size();
-            for (int i = 1; i < count; ++i)
-                System.out.print(get(i).getText() + " ");
-        }
-    }
-    
+
     public String printLISPformat() {
         StringBuilder sb = new StringBuilder();
         Token root = getRoot();

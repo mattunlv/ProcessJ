@@ -38,7 +38,7 @@ public abstract class Statement extends AST {
         this.endLabel = "";
     }
 
-    public Statement(final AST[] children) {
+    public Statement(final AST... children) {
         super(children);
         this.barrierSet = new LinkedHashSet<>();
         this.barriers   = new Sequence<>();
@@ -112,6 +112,12 @@ public abstract class Statement extends AST {
     public boolean definesEndLabel() {
 
         return !this.endLabel.isBlank();
+
+    }
+
+    public void clear() {
+
+        // Clear here
 
     }
 

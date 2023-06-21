@@ -5,16 +5,13 @@ import java.math.BigDecimal;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.ast.type.Type;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class CastExpression extends Expression {
 
     public CastExpression(Type ct, Expression expr) {
-        super(ct);
-        nchildren = 2;
-        children = new AST[] { ct, expr };
-
+        super(new AST[] { ct, expr });
     }
 
     public Type getCastType() {
@@ -44,7 +41,7 @@ public class CastExpression extends Expression {
         return getExpression().constantValue();
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitCastExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitCastExpression(this);
     }
 }

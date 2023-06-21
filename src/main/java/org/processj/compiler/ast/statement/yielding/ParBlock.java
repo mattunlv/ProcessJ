@@ -3,25 +3,22 @@ package org.processj.compiler.ast.statement.yielding;
 import java.util.*;
 
 import org.processj.compiler.ast.Sequence;
-import org.processj.compiler.ast.SymbolMap;
 import org.processj.compiler.ast.statement.Statement;
 import org.processj.compiler.ast.statement.conditional.BlockStatement;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
-public class ParBlock extends Statement implements SymbolMap.Context {
+public class ParBlock extends Statement implements YieldingContext {
     
     public  final Map<String, Integer>  enrolls                 ;
-    private BlockStatement body                    ;
-    private SymbolMap                   scope                   ;
+    private BlockStatement              body                    ;
     private Set<String>                 readSet                 ;
     private Set<String>                 writeSet                ;
 
     // TODO: Maybe construct with Block
     public ParBlock(final Sequence<? extends Statement> statements, final Sequence<Expression> barriers) {
         super(statements);
-        this.scope      = null;
         this.body       = (BlockStatement) this.children[0];
         this.enrolls    = new HashMap<>();
         this.readSet    = new LinkedHashSet<>();
@@ -83,24 +80,30 @@ public class ParBlock extends Statement implements SymbolMap.Context {
     }
 
     @Override
-    public final <S> S visit(final Visitor<S> visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
-        // Open the scope
-        visitor.setScope(this.openScope(visitor.getScope()));
+        // Open the Context
+        visitor.setContext(this.openContext(visitor.getContext()));
+
+        // Open a scope for the Par Block
+        this.openScope();
 
         // Visit
-        S result = visitor.visitParBlockStatement(this);
+        visitor.visitParBlockStatement(this);
 
         // Close the scope
-        visitor.setScope(visitor.getScope().getEnclosingScope());
-
-        return result;
+        visitor.setContext(this.closeContext());
 
     }
 
     @Override
     public BlockStatement getMergeBody() {
         return this.body.getMergeBody();
+    }
+
+    @Override
+    public void clearMergeBody() {
+
     }
 
     @Override

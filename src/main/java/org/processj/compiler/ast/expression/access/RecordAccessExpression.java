@@ -3,8 +3,8 @@ package org.processj.compiler.ast.expression.access;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class RecordAccessExpression extends Expression {
 
@@ -14,9 +14,7 @@ public class RecordAccessExpression extends Expression {
     private final Expression record;
 
     public RecordAccessExpression(Expression record, Name field) {
-        super(record);
-        nchildren = 2;
-        children = new AST[] { record, field };
+        super(new AST[] { record, field });
         this.field = field;
         this.record = record;
     }
@@ -33,7 +31,7 @@ public class RecordAccessExpression extends Expression {
         return this.record + "." + this.field;
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitRecordAccessExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitRecordAccessExpression(this);
     }
 }

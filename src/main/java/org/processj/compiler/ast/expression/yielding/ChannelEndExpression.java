@@ -2,8 +2,8 @@ package org.processj.compiler.ast.expression.yielding;
 
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
 public class ChannelEndExpression extends Expression {
 
@@ -13,10 +13,8 @@ public class ChannelEndExpression extends Expression {
     private int end;
 
     public ChannelEndExpression(Expression channel, int end) {
-        super(channel);
+        super(new AST[] { channel });
         this.end = end;
-        nchildren = 1;
-        children = new AST[] { channel };
     }
 
     public boolean isRead() {
@@ -35,7 +33,7 @@ public class ChannelEndExpression extends Expression {
         return end;
     }
 
-    public <S> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitChannelEndExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitChannelEndExpression(this);
     }
 }

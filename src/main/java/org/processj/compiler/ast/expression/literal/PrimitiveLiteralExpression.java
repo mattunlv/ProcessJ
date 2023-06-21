@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 import org.processj.compiler.ast.type.PrimitiveType;
 import org.processj.compiler.ast.Token;
-import org.processj.compiler.phases.phase.Phase;
+import org.processj.compiler.phase.Phase;
 import org.processj.compiler.utilities.Error;
-import org.processj.compiler.phases.phase.Visitor;
+import org.processj.compiler.phase.Visitor;
 
 public class PrimitiveLiteralExpression extends LiteralExpression {
 
@@ -40,7 +40,6 @@ public class PrimitiveLiteralExpression extends LiteralExpression {
         this.text = p_t.lexeme;
         this.rawtext = p_t.lexeme;
         this.type = new PrimitiveType(kind);
-        nchildren = 0;
 
         if (kind == CharKind)
             text = Integer.valueOf(text).toString(); // TODO: Redundant conversion to verify range?
@@ -268,7 +267,7 @@ public class PrimitiveLiteralExpression extends LiteralExpression {
                kind == FloatKind  ? 'f' : 'l';
     }
 
-    public <S extends Object> S visit(Visitor<S> v) throws Phase.Error {
-        return v.visitPrimitiveLiteralExpression(this);
+    public void accept(Visitor v) throws Phase.Error {
+        v.visitPrimitiveLiteralExpression(this);
     }
 }
