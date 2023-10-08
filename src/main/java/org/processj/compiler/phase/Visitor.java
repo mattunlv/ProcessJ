@@ -95,12 +95,6 @@ public interface Visitor {
 
     }
 
-    default void visitPragma(final Pragma pragma) throws Phase.Error {
-
-        pragma.accept(this);
-
-    }
-
     default void visitSequence(final Sequence sequence) throws Phase.Error {
 
         for(int index = 0; index < sequence.size(); index++)

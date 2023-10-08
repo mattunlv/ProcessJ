@@ -308,6 +308,7 @@ public class PrettyPrinter implements Visitor {
 	@Override
     public final void visitCompilation(Compilation compilation) throws Phase.Error  {
 		System.out.println("Compilation");
+        // TODO: Print Pragmas
         compilation.visitChildren(this);
 	}
 
@@ -655,12 +656,6 @@ public class PrettyPrinter implements Visitor {
         }
         indent -= 2;
 		System.out.println(tab() + "}");
-
-	}
-
-	@Override
-    public final void visitPragma(Pragma pragma) {
-		System.out.println(tab() + "#pragma " + pragma + " " + (pragma.getValue() == null ? "" : pragma.getValue()));
 
 	}
 

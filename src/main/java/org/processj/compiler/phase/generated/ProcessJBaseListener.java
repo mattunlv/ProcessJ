@@ -65,18 +65,6 @@ public class ProcessJBaseListener implements ProcessJListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterModifiers(ProcessJParser.ModifiersContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitModifiers(ProcessJParser.ModifiersContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterPragma(ProcessJParser.PragmaContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -108,6 +96,30 @@ public class ProcessJBaseListener implements ProcessJListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitImportDeclaration(ProcessJParser.ImportDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterModifier(ProcessJParser.ModifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitModifier(ProcessJParser.ModifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterModifiers(ProcessJParser.ModifiersContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitModifiers(ProcessJParser.ModifiersContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -336,18 +348,6 @@ public class ProcessJBaseListener implements ProcessJListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitChannelEndType(ProcessJParser.ChannelEndTypeContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterModifier(ProcessJParser.ModifierContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitModifier(ProcessJParser.ModifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

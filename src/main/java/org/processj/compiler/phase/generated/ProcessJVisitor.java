@@ -35,12 +35,6 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitName(ProcessJParser.NameContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#modifiers}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitModifiers(ProcessJParser.ModifiersContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#pragma}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -58,6 +52,18 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitImportDeclaration(ProcessJParser.ImportDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#modifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitModifier(ProcessJParser.ModifierContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#modifiers}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitModifiers(ProcessJParser.ModifiersContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#typeDeclaration}.
 	 * @param ctx the parse tree
@@ -172,12 +178,6 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitChannelEndType(ProcessJParser.ChannelEndTypeContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#modifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitModifier(ProcessJParser.ModifierContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#variableDeclaration}.
 	 * @param ctx the parse tree

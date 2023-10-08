@@ -186,6 +186,7 @@ public class ParseTreePrinter implements Visitor {
         System.out.println("Compilation:");
         indent += 2;
         Visitor.super.visitCompilation(compilation);
+        // TODO: Print Pragma
         indent -= 2;
 
     }
@@ -340,14 +341,6 @@ public class ParseTreePrinter implements Visitor {
         System.out.println("ParBlock:");
         indent += 2;
         Visitor.super.visitParBlockStatement(parBlock);
-        indent -= 2;
-
-    }
-    // Pragma
-    public void visitPragma(Pragma pragma) throws Phase.Error {
-        System.out.println("Pragma:");
-        indent += 2;
-        Visitor.super.visitPragma(pragma);
         indent -= 2;
 
     }

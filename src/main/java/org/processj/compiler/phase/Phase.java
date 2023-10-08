@@ -3538,9 +3538,7 @@ public abstract class Phase implements Visitor {
 
         }
 
-        protected static void Declares(final Phase phase,
-                                       final Type type)
-                throws Phase.Error {
+        protected static void Declares(final Phase phase, final Type type) throws Phase.Error {
 
             if(!phase.getScope().put(type.toString(), type))
                 TypeDefined.Assert(phase, type);

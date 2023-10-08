@@ -132,7 +132,7 @@ public abstract class AST extends Context {
     /* **                                                       ** */
     /* *********************************************************** */
 
-    public abstract void accept(final Visitor visitor) throws Phase.Error;
+    public void accept(final Visitor visitor) throws Phase.Error {}
 
     /**
      * Visit all children of this node from left to right. Usually called from within a visitor

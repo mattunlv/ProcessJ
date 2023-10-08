@@ -206,7 +206,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     }
 
-
     // TODO: Maybe don't do this here
     /**
      * <p>Imports the package corresponding with the {@link Import}'s package name if it's defined.</p>
@@ -221,8 +220,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
         if(!importName.isEmpty())
             ImportAssert.ImportSpecified(this, importName.toString());
-
-
 
     }
 
@@ -348,8 +345,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
         // Resolve the Protocol Type
         protocolType.getBody().accept(this);
 
-
-
     }
 
     /**
@@ -372,8 +367,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
         // Resolve the Record Type
         recordType.getBody().accept(this);
-
-
 
     }
 

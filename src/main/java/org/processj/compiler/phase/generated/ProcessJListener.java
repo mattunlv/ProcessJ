@@ -48,16 +48,6 @@ public interface ProcessJListener extends ParseTreeListener {
 	 */
 	void exitName(ProcessJParser.NameContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#modifiers}.
-	 * @param ctx the parse tree
-	 */
-	void enterModifiers(ProcessJParser.ModifiersContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#modifiers}.
-	 * @param ctx the parse tree
-	 */
-	void exitModifiers(ProcessJParser.ModifiersContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#pragma}.
 	 * @param ctx the parse tree
 	 */
@@ -87,6 +77,26 @@ public interface ProcessJListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitImportDeclaration(ProcessJParser.ImportDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#modifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterModifier(ProcessJParser.ModifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#modifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitModifier(ProcessJParser.ModifierContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#modifiers}.
+	 * @param ctx the parse tree
+	 */
+	void enterModifiers(ProcessJParser.ModifiersContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#modifiers}.
+	 * @param ctx the parse tree
+	 */
+	void exitModifiers(ProcessJParser.ModifiersContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#typeDeclaration}.
 	 * @param ctx the parse tree
@@ -277,16 +287,6 @@ public interface ProcessJListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitChannelEndType(ProcessJParser.ChannelEndTypeContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#modifier}.
-	 * @param ctx the parse tree
-	 */
-	void enterModifier(ProcessJParser.ModifierContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#modifier}.
-	 * @param ctx the parse tree
-	 */
-	void exitModifier(ProcessJParser.ModifierContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#variableDeclaration}.
 	 * @param ctx the parse tree

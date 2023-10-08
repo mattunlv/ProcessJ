@@ -9,9 +9,7 @@ import org.processj.compiler.phase.Visitor;
  *      Identifiers     NameExpr
  *      Invocations     Invocation
  *      Type Members? (For Protocol & Records)? NamedType
- *
  *      NamedType is contained in CastExpr, ExternTypeDeclaration?, ArrayType, NewArrayExpression
- *
  *      Note: Extern Types kind of end right then and there. They are coupled with Name
  */
 public class Name extends AST {
@@ -67,6 +65,13 @@ public class Name extends AST {
     public final String toString() {
 
         return this.name;
+
+    }
+
+    @Override
+    public final int hashCode() {
+
+        return this.name.hashCode();
 
     }
     
