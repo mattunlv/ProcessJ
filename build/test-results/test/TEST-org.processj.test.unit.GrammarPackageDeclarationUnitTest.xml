@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.processj.test.unit.GrammarPackageDeclarationUnitTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2023-10-08T21:36:29" hostname="Carloss-MBP" time="0.004">
+  <properties/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeContainsNonEmptyPackageName_01()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.001"/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeContainsNonEmptyPackageName_02()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.0"/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeContainsNonEmptyPackageName_03()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.0"/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeDefinesPackageName_01()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.0"/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeDefinesPackageName_02()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.0"/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeDefinesPackageName_03()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.0"/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeContainsNonNullPackageName_01()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.0"/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeContainsNonNullPackageName_02()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.0"/>
+  <testcase name="WHEN_packageDeclaration_IS_present_THEN_parseTreeContainsNonNullPackageName_03()" classname="org.processj.test.unit.GrammarPackageDeclarationUnitTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
