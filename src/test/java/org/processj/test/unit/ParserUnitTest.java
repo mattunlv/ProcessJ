@@ -189,6 +189,21 @@ public class ParserUnitTest extends ProcessJTest {
 
     /**
      * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration07}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration07_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration07);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
      * {@link ProcessJTest.Case#PackageDeclaration01}
      * @see Compilation
      * @see Pragmas
@@ -399,6 +414,22 @@ public class ParserUnitTest extends ProcessJTest {
     public void CompilationFor_importDeclaration06_containsNonEmptyImports() {
 
         final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertContainsNonEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration07}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration07_containsNonEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration07);
 
         AssertContainsNonEmptyImports(compilation);
 
@@ -932,6 +963,21 @@ public class ParserUnitTest extends ProcessJTest {
 
     /**
      * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration07} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration07_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration07);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration07);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
      * {@link ProcessJTest.Case#PackageDeclaration01} test.
      * @see Compilation
      * @see Pragmas
@@ -1357,6 +1403,22 @@ public class ParserUnitTest extends ProcessJTest {
 
     /**
      * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration07} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration07_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration07);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
      * {@link ProcessJTest.Case#PackageDeclaration01} test.
      * @see Compilation
      * @see Pragmas
@@ -1582,6 +1644,24 @@ public class ParserUnitTest extends ProcessJTest {
     public void CompilationFor_importDeclaration06_containsNoPragmas() {
 
         final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#ImportDeclaration07} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_importDeclaration07_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration07);
 
         AssertNonNullPragmas(compilation);
         AssertContainsEmptyPragmas(compilation);

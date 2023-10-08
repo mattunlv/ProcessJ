@@ -236,6 +236,8 @@ public class ProcessJTest extends Phase.Listener {
                 = new SourceFile("src/test/resources/code/test/ImportDeclaration05.pj");
         public final static SourceFile ImportDeclaration06
                 = new SourceFile("src/test/resources/code/test/ImportDeclaration06.pj");
+        public final static SourceFile ImportDeclaration07
+                = new SourceFile("src/test/resources/code/test/ImportDeclaration07.pj");
         public final static SourceFile PackageDeclaration01
                 = new SourceFile("src/test/resources/code/test/PackageDeclaration01.pj");
         public final static SourceFile PackageDeclaration02
@@ -261,6 +263,7 @@ public class ProcessJTest extends Phase.Listener {
                 public final static String ImportDeclaration04 = "";
                 public final static String ImportDeclaration05 = "";
                 public final static String ImportDeclaration06 = "";
+                public final static String ImportDeclaration07 = "";
                 public final static String PackageDeclaration01 = "org.processj.test";
                 public final static String PackageDeclaration02 = "org.processj";
                 public final static String PackageDeclaration03 = "org";
