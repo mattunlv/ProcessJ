@@ -489,6 +489,141 @@ public class ParserUnitTest extends ProcessJTest {
     }
 
     /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration01}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration02}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration03}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration04}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration05}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration06}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration01_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration02_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration03_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
      * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma01 test.
      * @see Compilation
      * @see Pragmas
@@ -539,51 +674,6 @@ public class ParserUnitTest extends ProcessJTest {
     public void CompilationFor_pragma04_containsNonNullPragmas() {
 
         final Compilation compilation = CompilationFor(Case.Pragma04);
-
-        AssertNonNullPragmas(compilation);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
-     * {@link ProcessJTest.Case#PackageDeclaration01} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_packageDeclaration01_containsNonNullPragmas() {
-
-        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
-
-        AssertNonNullPragmas(compilation);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
-     * {@link ProcessJTest.Case#PackageDeclaration02} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_packageDeclaration02_containsNonNullPragmas() {
-
-        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
-
-        AssertNonNullPragmas(compilation);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
-     * {@link ProcessJTest.Case#PackageDeclaration03} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_packageDeclaration03_containsNonNullPragmas() {
-
-        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
 
         AssertNonNullPragmas(compilation);
 
