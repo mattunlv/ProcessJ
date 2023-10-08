@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.EndToEndTests" tests="78" skipped="0" failures="77" errors="0" timestamp="2023-10-08T21:36:28" hostname="Carloss-MBP" time="0.582">
+<testsuite name="org.processj.test.EndToEndTests" tests="78" skipped="0" failures="77" errors="0" timestamp="2023-10-08T21:37:06" hostname="Carloss-MBP" time="0.614">
   <properties/>
-  <testcase name="testCode_chapter4Section2While_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.144">
+  <testcase name="testCode_chapter4Section2While_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.157">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -95,7 +95,7 @@
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section7Integrate_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.012">
+  <testcase name="testCode_chapter3Section7Integrate_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.014">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -283,7 +283,7 @@
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_empty_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
+  <testcase name="testCode_empty_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008">
     <failure message="java.lang.RuntimeException: java.lang.StringIndexOutOfBoundsException: index -1, length 0" type="java.lang.RuntimeException">java.lang.RuntimeException: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at jdk.compiler/com.sun.tools.javac.api.JavacTaskImpl.invocationHelper(JavacTaskImpl.java:168)
 	at jdk.compiler/com.sun.tools.javac.api.JavacTaskImpl.doCall(JavacTaskImpl.java:100)
@@ -392,7 +392,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	... 89 more
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section9Output_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.012">
+  <testcase name="testCode_chapter3Section9Output_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.01">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -486,7 +486,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_santa02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.011">
+  <testcase name="testCode_santa02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.014">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -580,7 +580,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter1Section2SynchronizedCommunication_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008">
+  <testcase name="testCode_chapter1Section2SynchronizedCommunication_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.009">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -674,7 +674,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section7Fibonacci_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.007">
+  <testcase name="testCode_chapter3Section7Fibonacci_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -768,7 +768,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter4Section1Switch_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008">
+  <testcase name="testCode_chapter4Section1Switch_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.009">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -862,7 +862,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_santa01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008">
+  <testcase name="testCode_santa01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.009">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -1050,7 +1050,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section8FourBitAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
+  <testcase name="testCode_chapter3Section8FourBitAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -1238,7 +1238,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_protocol03_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_protocol03_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -1426,7 +1426,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section7Fifo6_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_chapter3Section7Fifo6_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -1614,7 +1614,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_channelArray02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.007">
+  <testcase name="testCode_channelArray02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -1802,7 +1802,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_protocol02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
+  <testcase name="testCode_protocol02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -1896,7 +1896,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter4Section3Repetition_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.007">
+  <testcase name="testCode_chapter4Section3Repetition_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -1990,7 +1990,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_channelEndArray01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.007">
+  <testcase name="testCode_channelEndArray01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -2084,7 +2084,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_switch01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.012">
+  <testcase name="testCode_switch01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -2178,7 +2178,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section7Squares_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_chapter3Section7Squares_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -2272,7 +2272,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_channelArray01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_channelArray01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -2554,7 +2554,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section8OneBitAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_chapter3Section8OneBitAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.009">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -2742,7 +2742,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section7Numbers_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_chapter3Section7Numbers_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -2930,7 +2930,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_channelRead02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.008">
+  <testcase name="testCode_channelRead02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.007">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -3306,7 +3306,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_channelRead01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_channelRead01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -3400,7 +3400,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_record02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.007">
+  <testcase name="testCode_record02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -3494,7 +3494,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_par01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
+  <testcase name="testCode_par01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -3588,7 +3588,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter4Section4Alt_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.007">
+  <testcase name="testCode_chapter4Section4Alt_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4152,7 +4152,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_timer01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_timer01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4246,7 +4246,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section8EightBitAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_chapter3Section8EightBitAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4340,7 +4340,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter4Section2For_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_chapter4Section2For_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4434,7 +4434,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_sharedChannelRead01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_sharedChannelRead01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4528,7 +4528,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_barrier02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_barrier02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4622,7 +4622,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_for01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_for01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4716,7 +4716,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter3Section7Pairs_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_chapter3Section7Pairs_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4810,7 +4810,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_barrier01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_barrier01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -4904,7 +4904,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_sortPump_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_sortPump_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -5092,7 +5092,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_channelWrite04_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_channelWrite04_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -5186,7 +5186,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_pragma01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_pragma01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -5280,7 +5280,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_channelWrite03_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_channelWrite03_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -5468,7 +5468,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_sharedChannel01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_sharedChannel01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -5657,7 +5657,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_sharedChannelWrite01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_sharedChannelWrite01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -5845,7 +5845,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_channelWrite02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_channelWrite02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -5939,7 +5939,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_array01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_array01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -6033,7 +6033,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_mandelbrot03_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_mandelbrot03_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -6127,7 +6127,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_localDeclaration01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_localDeclaration01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -6221,7 +6221,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter4Section4Mux_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_chapter4Section4Mux_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -6409,7 +6409,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_fullAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
+  <testcase name="testCode_fullAdder_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.006">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -6503,7 +6503,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_mandelbrot02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_mandelbrot02_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -6691,7 +6691,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_mandelbrot01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_mandelbrot01_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
@@ -6879,7 +6879,7 @@ Caused by: java.lang.StringIndexOutOfBoundsException: index -1, length 0
 	at app//worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 </failure>
   </testcase>
-  <testcase name="testCode_chapter4Section4TimeoutGuard_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.004">
+  <testcase name="testCode_chapter4Section4TimeoutGuard_endToEnd()" classname="org.processj.test.EndToEndTests" time="0.005">
     <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
 	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
 	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)

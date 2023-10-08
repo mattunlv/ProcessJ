@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.unit.GrammarRecordTypeDeclarationUnitTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2023-10-08T21:36:29" hostname="Carloss-MBP" time="0.005">
+<testsuite name="org.processj.test.unit.GrammarRecordTypeDeclarationUnitTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2023-10-08T21:37:07" hostname="Carloss-MBP" time="0.051">
   <properties/>
-  <testcase name="WHEN_recordDeclaration_IS_present_THEN_parseTreeContainsNonEmptyTypes()" classname="org.processj.test.unit.GrammarRecordTypeDeclarationUnitTest" time="0.005">
+  <testcase name="WHEN_recordDeclaration_IS_present_THEN_parseTreeContainsNonEmptyTypes()" classname="org.processj.test.unit.GrammarRecordTypeDeclarationUnitTest" time="0.051">
     <failure message="java.lang.StackOverflowError" type="java.lang.StackOverflowError">java.lang.StackOverflowError
-	at org.processj.compiler.phase.generated.ProcessJParser$RecordMemberContext.accept(ProcessJParser.java:1571)
 	at org.processj.compiler.phase.Parser.visitRecordMember(Parser.java:1651)
 	at org.processj.compiler.phase.Parser.visitRecordMember(Parser.java:89)
 	at org.processj.compiler.phase.generated.ProcessJParser$RecordMemberContext.accept(ProcessJParser.java:1571)
@@ -1027,6 +1026,7 @@
 	at org.processj.compiler.phase.Parser.visitRecordMember(Parser.java:1651)
 	at org.processj.compiler.phase.Parser.visitRecordMember(Parser.java:89)
 	at org.processj.compiler.phase.generated.ProcessJParser$RecordMemberContext.accept(ProcessJParser.java:1571)
+	at org.processj.compiler.phase.Parser.visitRecordMember(Parser.java:1651)
 </failure>
   </testcase>
   <system-out><![CDATA[]]></system-out>
