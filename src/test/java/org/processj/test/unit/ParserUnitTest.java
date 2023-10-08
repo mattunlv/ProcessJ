@@ -9,6 +9,8 @@ import org.processj.compiler.ast.Name;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.processj.compiler.ast.Compilation;
+import org.processj.compiler.ast.type.RecordType;
+import org.processj.compiler.ast.type.Type;
 import org.processj.test.ProcessJTest;
 
 public class ParserUnitTest extends ProcessJTest {
@@ -75,6 +77,24 @@ public class ParserUnitTest extends ProcessJTest {
     private static void AssertContainsPragmas(final Compilation compilation, final int expectedPragmas) {
 
         Assertions.assertEquals(expectedPragmas, compilation.getPragmas().size());
+
+    }
+
+    private static void AssertContainsTypeName(final Compilation compilation, final String name) {
+
+        String foundTypeName = "";
+
+        for(final Type type: compilation.getTypeDeclarations())
+            if(type.toString().equals(name)) foundTypeName = name;
+
+        Assertions.assertEquals(name, foundTypeName);
+
+    }
+
+    private static void AssertContainsRecordType(final Compilation compilation, final String recordTypeName) {
+
+        for(final Type type: compilation.getTypeDeclarations())
+            if(type.toString().equals(recordTypeName)) Assertions.assertTrue(type instanceof RecordType);
 
     }
 
@@ -1791,6 +1811,15 @@ public class ParserUnitTest extends ProcessJTest {
         AssertNonNullPragmas(compilation);
         AssertContainsNonEmptyPragmas(compilation);
         AssertContainsPragmas(compilation, 33);
+
+    }
+
+    @Test
+    public void CompilationFor_record01_containsCarRecord() {
+
+        final Compilation compilation = CompilationFor(Case.Record01);
+
+        AssertContainsRecordType(compilation, Case.Check.RecordType.Record01);
 
     }
 

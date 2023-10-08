@@ -1606,7 +1606,7 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     @Override
     public final AST visitRecordTypeDeclaration(final RecordTypeDeclarationContext recordTypeDeclarationContext) {
 
-        final Name name = new Name(recordTypeDeclarationContext.Identifier().getText());
+        final Name name = (Name) recordTypeDeclarationContext.name().accept(this);
 
         final Modifiers modifiers = (recordTypeDeclarationContext.modifiers() != null)
                 ? (Modifiers) recordTypeDeclarationContext.modifiers().accept(this)
@@ -1667,19 +1667,21 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     public final AST visitRecordMember(final RecordMemberContext recordMemberContext) {
 
         // Initialize the Type, Names, block statement, & list
-        final Type type = (Type) recordMemberContext.accept(this);
+        final Type type = (Type) recordMemberContext.type().accept(this);
         final Names names = (Names) recordMemberContext.names().accept(this);
         final BlockStatement recordMembers = new BlockStatement();
-        final List<VariableDeclaration> variableDeclarations = new ArrayList<>();
 
         // Aggregate each name
-        names.forEach(name -> recordMembers.append(
-                new VariableDeclaration(new Modifiers(), type, name, null)));
+        names.forEach(name -> recordMembers.append(new RecordType.Member(type, name)));
 
         // Return the result
         return recordMembers;
 
     }
+
+
+
+
 
 
     @Override

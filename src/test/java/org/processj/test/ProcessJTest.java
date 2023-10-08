@@ -180,16 +180,6 @@ public class ProcessJTest extends Phase.Listener {
             = new SourceFile("src/test/resources/code/test/Protocol02.pj");
     protected final static SourceFile Protocol03
             = new SourceFile("src/test/resources/code/test/Protocol03.pj");
-    protected final static SourceFile Record01
-            = new SourceFile("src/test/resources/code/test/Record01.pj");
-    protected final static SourceFile Record02
-            = new SourceFile("src/test/resources/code/test/Record02.pj");
-    protected final static SourceFile Record03
-            = new SourceFile("src/test/resources/code/test/Record03.pj");
-    protected final static SourceFile Record04
-            = new SourceFile("src/test/resources/code/test/Record04.pj");
-    protected final static SourceFile Record05
-            = new SourceFile("src/test/resources/code/test/Record05.pj");
     protected final static SourceFile Santa01
             = new SourceFile("src/test/resources/code/test/Santa01.pj");
     protected final static SourceFile Santa02
@@ -252,6 +242,16 @@ public class ProcessJTest extends Phase.Listener {
                 = new SourceFile("src/test/resources/code/test/Pragma03.pj");
         public final static SourceFile Pragma04
                 = new SourceFile("src/test/resources/code/test/Pragma04.pj");
+        public final static SourceFile Record01
+                = new SourceFile("src/test/resources/code/test/Record01.pj");
+        public final static SourceFile Record02
+                = new SourceFile("src/test/resources/code/test/Record02.pj");
+        public final static SourceFile Record03
+                = new SourceFile("src/test/resources/code/test/Record03.pj");
+        public final static SourceFile Record04
+                = new SourceFile("src/test/resources/code/test/Record04.pj");
+        public final static SourceFile Record05
+                = new SourceFile("src/test/resources/code/test/Record05.pj");
         public static class Check {
 
             public static class PackageName {
@@ -285,6 +285,11 @@ public class ProcessJTest extends Phase.Listener {
 
             }
 
+            public static class RecordType {
+
+                public final static String Record01 = "Car";
+
+            }
 
         }
 

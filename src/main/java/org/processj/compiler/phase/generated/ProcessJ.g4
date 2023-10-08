@@ -115,7 +115,7 @@ protocolCase
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 recordTypeDeclaration
-    : modifiers? 'record' Identifier extends? annotations? recordBody
+    : modifiers? 'record' name extends? annotations? recordBody
     ;
 
 extends
