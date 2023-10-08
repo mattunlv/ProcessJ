@@ -1,6 +1,5 @@
 package org.processj.test.unit;
 
-import com.ibm.icu.impl.Assert;
 import org.processj.compiler.ast.packages.Pragmas;
 import org.processj.compiler.ast.packages.Pragma;
 import org.processj.compiler.ast.packages.Import;

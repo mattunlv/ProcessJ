@@ -128,48 +128,13 @@ sourceSets {
 }
 
 /** --------------------------------------------------------------------------------------------------------------- **/
-/** Lexer Task                                                                                                      **/
-/** --------------------------------------------------------------------------------------------------------------- **/
-
-/**
- * <p>Generates the ProcessJ lexer with the specified .flex file.</p>
- */
-tasks.register('lexer', JavaExec) {
-
-    // Initialize the classpath, entry point, & arguments
-    classpath   = sourceSets.main.runtimeClasspath
-    mainClass   = 'jflex.Main'
-    args        = ['-d', 'src/main/java/org/processj/compiler/phase/generated/',
-                   'src/main/resources/flex/ProcessJ.flex']
-
-}
-
-/** --------------------------------------------------------------------------------------------------------------- **/
 /** Parser Task                                                                                                     **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 /**
- * <p>Generates the ProcessJ parser with the specified .cup file.</p>
+ * <p>Generates the ProcessJ parser with the specified .g4 file.</p>
  */
 tasks.register('parser', JavaExec) {
-
-    // Initialize the classpath, entry point, & arguments
-    classpath   = sourceSets.main.runtimeClasspath
-    mainClass   = 'java_cup.Main'
-    args        = ['-parser', 'Parser',
-                   '-progress',
-                   '-package', 'src/main/java/org/processj/compiler/phase/generated/',
-                   '-destdir', 'src/main/java/org/processj/compiler/phase/generated/',
-                   'src/main/resources/cup/test.cup']
-
-    dependsOn('lexer')
-
-}
-
-/**
- * <p>Generates the ProcessJ parser with the specified .cup file.</p>
- */
-tasks.register('antlr', JavaExec) {
 
     // Initialize the classpath, entry point, & arguments
     classpath   = sourceSets.main.runtimeClasspath
@@ -196,7 +161,7 @@ compileJava {
     classpath   = sourceSets.main.compileClasspath
 
     // Specify its' dependencies
-    dependsOn('antlr')
+    dependsOn('parser')
 
 }
 
