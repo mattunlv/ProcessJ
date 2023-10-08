@@ -43,9 +43,21 @@ public class ParserUnitTest extends ProcessJTest {
 
     }
 
+    private static void AssertContainsEmptyImports(final Compilation compilation) {
+
+        Assertions.assertTrue(compilation.getImports().isEmpty());
+
+    }
+
     private static void AssertContainsNonEmptyPragmas(final Compilation compilation) {
 
         Assertions.assertFalse(compilation.getPragmas().isEmpty());
+
+    }
+
+    private static void AssertContainsNonEmptyImports(final Compilation compilation) {
+
+        Assertions.assertFalse(compilation.getImports().isEmpty());
 
     }
 
@@ -265,6 +277,230 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Case.Pragma04);
 
         AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#Empty}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_empty_containsEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.Empty);
+
+        AssertContainsEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration01}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsNonEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertContainsNonEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration02}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsNonEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertContainsNonEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration03}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsNonEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertContainsNonEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration04}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsNonEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertContainsNonEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration05}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsNonEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertContainsNonEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration06}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsNonEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertContainsNonEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#PackageDeclaration01}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_packageDeclaration01_containsEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
+
+        AssertContainsEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#PackageDeclaration02}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_packageDeclaration02_containsEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
+
+        AssertContainsEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#PackageDeclaration03}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_packageDeclaration03_containsEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
+
+        AssertContainsEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#Pragma01}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_pragma01_containsEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma01);
+
+        AssertContainsEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#Pragma02}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_pragma02_containsEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma02);
+
+        AssertContainsEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#Pragma03}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_pragma03_containsEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma03);
+
+        AssertContainsEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is empty for the
+     * {@link ProcessJTest.Case#Pragma04}
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_pragma04_containsEmptyImports() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma04);
+
+        AssertContainsEmptyImports(compilation);
 
     }
 
