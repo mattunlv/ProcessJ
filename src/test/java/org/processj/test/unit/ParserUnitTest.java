@@ -2,6 +2,8 @@ package org.processj.test.unit;
 
 import org.processj.compiler.ast.packages.Pragmas;
 import org.processj.compiler.ast.packages.Pragma;
+import org.processj.compiler.ast.packages.Import;
+import org.processj.compiler.ast.packages.Imports;
 import org.processj.compiler.ast.Name;
 
 import org.junit.jupiter.api.Assertions;
@@ -10,6 +12,12 @@ import org.processj.compiler.ast.Compilation;
 import org.processj.test.ProcessJTest;
 
 public class ParserUnitTest extends ProcessJTest {
+
+    private static void AssertNonNullImports(final Compilation compilation) {
+
+        Assertions.assertNotNull(compilation.getImports());
+
+    }
 
     private static void AssertNonNullPragmas(final Compilation compilation) {
 
@@ -44,6 +52,219 @@ public class ParserUnitTest extends ProcessJTest {
     private static void AssertContainsPragmas(final Compilation compilation, final int expectedPragmas) {
 
         Assertions.assertEquals(expectedPragmas, compilation.getPragmas().size());
+
+    }
+
+    /// ----------------------------------------------------------------------------------------------------------- ///
+    /// Import Declaration Sanity Tests                                                                             ///
+    /// ----------------------------------------------------------------------------------------------------------- ///
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the Empty test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_empty_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.Empty);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration01}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration02}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration03}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration04}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration05}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration06}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration01}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration01_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration02}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration02_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration03}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration03_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#Pragma01}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma01_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma01);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#Pragma02}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma02_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma02);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#Pragma03}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma03_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma03);
+
+        AssertNonNullImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance is non-null for the
+     * {@link ProcessJTest.Case#Pragma04}
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma04_containsNonNullImports() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma04);
+
+        AssertNonNullImports(compilation);
 
     }
 
@@ -277,6 +498,96 @@ public class ParserUnitTest extends ProcessJTest {
 
     /**
      * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration01);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration02);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration03);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration04} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration04);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration05} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration05);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration06} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration06);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
      * {@link ProcessJTest.Case#PackageDeclaration01} test.
      * @see Compilation
      * @see Pragmas
@@ -377,96 +688,6 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Case.Pragma04);
 
         AssertExpectedPackageName(compilation, Case.Check.PackageName.Pragma04);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
-     * {@link ProcessJTest.Case#ImportDeclaration01} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_importDeclaration01_containsExpectedPackageName() {
-
-        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
-
-        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration01);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
-     * {@link ProcessJTest.Case#ImportDeclaration02} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_importDeclaration02_containsExpectedPackageName() {
-
-        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
-
-        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration02);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
-     * {@link ProcessJTest.Case#ImportDeclaration03} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_importDeclaration03_containsExpectedPackageName() {
-
-        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
-
-        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration03);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
-     * {@link ProcessJTest.Case#ImportDeclaration04} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_importDeclaration04_containsExpectedPackageName() {
-
-        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
-
-        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration04);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
-     * {@link ProcessJTest.Case#ImportDeclaration05} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_importDeclaration05_containsExpectedPackageName() {
-
-        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
-
-        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration05);
-
-    }
-
-    /**
-     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
-     * {@link ProcessJTest.Case#ImportDeclaration06} test.
-     * @see Compilation
-     * @see Pragmas
-     */
-    @Test
-    public void CompilationFor_importDeclaration06_containsExpectedPackageName() {
-
-        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
-
-        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration06);
 
     }
 
@@ -909,6 +1130,114 @@ public class ParserUnitTest extends ProcessJTest {
     public void CompilationFor_empty_containsNoPragmas() {
 
         final Compilation compilation = CompilationFor(Case.Empty);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#ImportDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#ImportDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#ImportDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#ImportDeclaration04} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#ImportDeclaration05} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#ImportDeclaration06} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
 
         AssertNonNullPragmas(compilation);
         AssertContainsEmptyPragmas(compilation);
