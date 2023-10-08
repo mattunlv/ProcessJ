@@ -224,34 +224,43 @@ public class ProcessJTest extends Phase.Listener {
 
         public final static SourceFile Empty
                 = new SourceFile("src/test/resources/code/test/Empty.pj");
-
+        public final static SourceFile ImportDeclaration01
+                = new SourceFile("src/test/resources/code/test/ImportDeclaration01.pj");
+        public final static SourceFile ImportDeclaration02
+                = new SourceFile("src/test/resources/code/test/ImportDeclaration02.pj");
+        public final static SourceFile ImportDeclaration03
+                = new SourceFile("src/test/resources/code/test/ImportDeclaration03.pj");
+        public final static SourceFile ImportDeclaration04
+                = new SourceFile("src/test/resources/code/test/ImportDeclaration04.pj");
+        public final static SourceFile ImportDeclaration05
+                = new SourceFile("src/test/resources/code/test/ImportDeclaration05.pj");
+        public final static SourceFile ImportDeclaration06
+                = new SourceFile("src/test/resources/code/test/ImportDeclaration06.pj");
         public final static SourceFile PackageDeclaration01
                 = new SourceFile("src/test/resources/code/test/PackageDeclaration01.pj");
-
         public final static SourceFile PackageDeclaration02
                 = new SourceFile("src/test/resources/code/test/PackageDeclaration02.pj");
-
         public final static SourceFile PackageDeclaration03
                 = new SourceFile("src/test/resources/code/test/PackageDeclaration03.pj");
-
         public final static SourceFile Pragma01
                 = new SourceFile("src/test/resources/code/test/Pragma01.pj");
-
         public final static SourceFile Pragma02
                 = new SourceFile("src/test/resources/code/test/Pragma02.pj");
-
         public final static SourceFile Pragma03
                 = new SourceFile("src/test/resources/code/test/Pragma03.pj");
-
         public final static SourceFile Pragma04
                 = new SourceFile("src/test/resources/code/test/Pragma04.pj");
-
         public static class Check {
 
             public static class PackageName {
 
                 public final static String Empty = "";
-
+                public final static String ImportDeclaration01 = "";
+                public final static String ImportDeclaration02 = "";
+                public final static String ImportDeclaration03 = "";
+                public final static String ImportDeclaration04 = "";
+                public final static String ImportDeclaration05 = "";
+                public final static String ImportDeclaration06 = "";
                 public final static String PackageDeclaration01 = "org.processj.test";
                 public final static String PackageDeclaration02 = "org.processj";
                 public final static String PackageDeclaration03 = "org";

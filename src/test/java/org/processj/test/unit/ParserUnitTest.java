@@ -67,6 +67,96 @@ public class ParserUnitTest extends ProcessJTest {
 
     /**
      * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration01} Test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration02} Test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration03} Test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration04} Test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration05} Test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#ImportDeclaration06} Test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
      * {@link ProcessJTest.Case#PackageDeclaration01} test.
      * @see Compilation
      * @see Pragmas
@@ -287,6 +377,96 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Case.Pragma04);
 
         AssertExpectedPackageName(compilation, Case.Check.PackageName.Pragma04);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration01);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration02);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration03);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration04} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration04);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration05} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration05);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#ImportDeclaration06} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.ImportDeclaration06);
 
     }
 
@@ -603,7 +783,7 @@ public class ParserUnitTest extends ProcessJTest {
         AssertContainsPragmas(compilation, 0);
 
     }
-    
+
     /**
      * Assert that the {@link Compilation}'s {@link Pragmas} instance contains 1 {@link Pragma} instance for the
      * Pragma01 test.
