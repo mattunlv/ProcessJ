@@ -278,6 +278,6 @@ jar {
     }
 
     // Specify its' dependencies
-    dependsOn('compileJava')
+    dependsOn('test')
 
 }

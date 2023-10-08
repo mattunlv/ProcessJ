@@ -1328,7 +1328,8 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     @Override
     public final AST visitImportDeclaration(final ImportDeclarationContext importDeclarationContext) {
 
-        return new Import((Name) importDeclarationContext.qualifiedName().accept(this));
+        return new Import((Name) importDeclarationContext.qualifiedName().accept(this),
+                importDeclarationContext.getText().contains(".*"));
 
     }
 

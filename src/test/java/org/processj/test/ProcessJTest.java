@@ -271,6 +271,17 @@ public class ProcessJTest extends Phase.Listener {
 
             }
 
+            public static class ImportName {
+
+                public final static String ImportDeclaration01 = "org.processj.test";
+                public final static String ImportDeclaration02 = "org.processj";
+                public final static String ImportDeclaration03 = "org";
+                public final static String ImportDeclaration04 = "org.processj.test.*";
+                public final static String ImportDeclaration05 = "org.processj.*";
+                public final static String ImportDeclaration06 = "org.*";
+
+            }
+
 
         }
 

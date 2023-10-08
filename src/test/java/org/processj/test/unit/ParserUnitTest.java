@@ -1,5 +1,6 @@
 package org.processj.test.unit;
 
+import com.ibm.icu.impl.Assert;
 import org.processj.compiler.ast.packages.Pragmas;
 import org.processj.compiler.ast.packages.Pragma;
 import org.processj.compiler.ast.packages.Import;
@@ -34,6 +35,17 @@ public class ParserUnitTest extends ProcessJTest {
     private static void AssertExpectedPackageName(final Compilation compilation, final String expectedPackageName) {
 
         Assertions.assertEquals(expectedPackageName, compilation.getPackageName());
+
+    }
+
+    private static void AssertContainsExpectedImportName(final Compilation compilation, final String expectedImportName) {
+
+        String foundName = "";
+
+        for(final Import importDeclaration: compilation.getImports())
+            if(expectedImportName.equals(importDeclaration.toString())) foundName = importDeclaration.toString();
+
+        Assertions.assertEquals(expectedImportName, foundName);
 
     }
 
@@ -501,6 +513,102 @@ public class ParserUnitTest extends ProcessJTest {
         final Compilation compilation = CompilationFor(Case.Pragma04);
 
         AssertContainsEmptyImports(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance contains the expected {@link String} as
+     * an import name for test {@link ProcessJTest.Case#ImportDeclaration01}.
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsExpectedImportName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertContainsExpectedImportName(compilation, Case.Check.ImportName.ImportDeclaration01);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance contains the expected {@link String} as
+     * an import name for test {@link ProcessJTest.Case#ImportDeclaration02}.
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsExpectedImportName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertContainsExpectedImportName(compilation, Case.Check.ImportName.ImportDeclaration02);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance contains the expected {@link String} as
+     * an import name for test {@link ProcessJTest.Case#ImportDeclaration03}.
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsExpectedImportName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertContainsExpectedImportName(compilation, Case.Check.ImportName.ImportDeclaration03);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance contains the expected {@link String} as
+     * an import name for test {@link ProcessJTest.Case#ImportDeclaration04}.
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsExpectedImportName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertContainsExpectedImportName(compilation, Case.Check.ImportName.ImportDeclaration04);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance contains the expected {@link String} as
+     * an import name for test {@link ProcessJTest.Case#ImportDeclaration05}.
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsExpectedImportName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertContainsExpectedImportName(compilation, Case.Check.ImportName.ImportDeclaration05);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Imports} instance contains the expected {@link String} as
+     * an import name for test {@link ProcessJTest.Case#ImportDeclaration06}.
+     * @see Compilation
+     * @see Imports
+     * @see Import
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsExpectedImportName() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertContainsExpectedImportName(compilation, Case.Check.ImportName.ImportDeclaration06);
 
     }
 

@@ -10,19 +10,19 @@ public class Import extends AST {
     /// --------------
     /// Private Fields
 
-    private final String symbol             ;
     private final String packageName        ;
     private final String path               ;
+    private final boolean isWildcard ;
 
     /// ------------
     /// Constructors
 
-    public Import(final Name packageName) {
+    public Import(final Name packageName, final boolean isWildcard) {
         super(packageName);
 
-        this.symbol             = packageName.toString()                    ;
-        this.packageName        = ""     ;
+        this.packageName        = packageName.toString();
         this.path               = this.packageName.replace('.', '/') ;
+        this.isWildcard         = isWildcard;
 
     }
 
@@ -32,7 +32,7 @@ public class Import extends AST {
     @Override
     public final String toString() {
 
-        return this.packageName;
+        return this.packageName + ((this.isWildcard) ? ".*" : "");
 
     }
 
@@ -50,7 +50,7 @@ public class Import extends AST {
      */
     public final boolean isEmpty() {
 
-        return this.path.isEmpty() || this.path.isBlank();
+        return this.path.isEmpty();
 
     }
 
@@ -61,7 +61,7 @@ public class Import extends AST {
      */
     public final boolean isWildcard() {
 
-        return this.symbol.equals("*");
+        return this.isWildcard;
 
     }
 
