@@ -696,6 +696,102 @@ public class ParserUnitTest extends ProcessJTest {
 
     /**
      * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration01_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration01);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration02_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration02);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration03_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration03);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration04} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration04_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration04);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration05} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration05_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration05);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#ImportDeclaration06} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_importDeclaration06_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.ImportDeclaration06);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
      * {@link ProcessJTest.Case#PackageDeclaration01} test.
      * @see Compilation
      * @see Pragmas
