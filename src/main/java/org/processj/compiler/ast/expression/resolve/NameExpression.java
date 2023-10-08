@@ -35,7 +35,7 @@ public class NameExpression extends Expression {
     }
 
     public Name getName() {
-        return (Name) children[0];
+        return this.name;
     }
 
     public void accept(Visitor v) throws Phase.Error {

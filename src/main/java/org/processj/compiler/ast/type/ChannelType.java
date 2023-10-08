@@ -1,10 +1,11 @@
 package org.processj.compiler.ast.type;
 
 import org.processj.compiler.ast.AST;
+import org.processj.compiler.ast.Name;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
-public class ChannelType extends Type {
+public class ChannelType extends AST implements Type {
 
     // These are the different values the field `shared' can take.
     public static final int SHARED_READ         = 0;
@@ -21,16 +22,33 @@ public class ChannelType extends Type {
 
     private final int   shared              ;
 
+    private final boolean isShared;
+    private final boolean isRead;
+
     /// ------------
     /// Constructors
 
     public ChannelType(final Type componentType, final int shared) {
-        super(new AST[] { componentType });
+        super(new AST[] { });
 
         this.componentType  = componentType     ;
         this.shared         = shared            ;
+        this.isShared       = false             ;
+        this.isRead         = false             ;
 
     }
+
+    public ChannelType(final Type componentType, final boolean isShared, final boolean isRead) {
+        super(new AST[] { });
+
+        this.componentType  = componentType     ;
+        this.shared         = 0                 ;
+        this.isShared       = isShared          ;
+        this.isRead         = isRead            ;
+
+
+    }
+
 
     /// ----------------
     /// java.lang.Object
@@ -48,7 +66,7 @@ public class ChannelType extends Type {
 
         // TODO: Maybe replace with .equals(); it may or may not intrude with .typeEqual()
         return (that instanceof ChannelType)
-                && (this.componentType.typeEqual(((ChannelType) that).componentType))
+                && (this.componentType.isTypeEqualTo(((ChannelType) that).componentType))
                 && (this.shared == ((ChannelType) that).shared);
 
     }
@@ -82,8 +100,58 @@ public class ChannelType extends Type {
 
     }
 
+    @Override
+    public boolean isTypeEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeEquivalentTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeCeilingOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isSubTypeOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isAssignmentCompatibleTo(Object that) {
+        return false;
+    }
+
     /// ---------------------
     /// org.processj.ast.Type
+
+    @Override
+    public Name getName() {
+        return null;
+    }
 
     /**
      * <p>Returns the internal {@link String} signature representing the {@link ChannelType}.</p>
@@ -97,9 +165,23 @@ public class ChannelType extends Type {
 
     }
 
+    @Override
+    public Type addDimension() {
+        return null;
+    }
+
+    @Override
+    public Type clearDepth() {
+        return null;
+    }
+
+    @Override
+    public int getDepth() {
+        return 0;
+    }
+
     // if α = Channel(t1, a1) ∧ β = Channel(t2, a2)
     // α =T β ⇔ Channel?(α) ∧ Channel?(β) ∧ (t1 =T t2) ∧ (a1 = a2)
-    @Override
     public final boolean typeEqual(final Type that) {
 
         // Channel?(β) -- is t a channel?
@@ -110,7 +192,6 @@ public class ChannelType extends Type {
     }
 
     // α ∼T β ⇔ α =T β
-    @Override
     public final boolean typeEquivalent(final Type that) {
 
         return this.equals(that);
@@ -118,7 +199,6 @@ public class ChannelType extends Type {
     }
 
     // Channels cannot be assigned.
-    @Override
     public final boolean typeAssignmentCompatible(final Type that) {
 
         return false;
@@ -149,7 +229,6 @@ public class ChannelType extends Type {
     public final void setComponentType(final Type componentType) {
 
         this.componentType = componentType;
-        this.children[0] = componentType;
 
     }
 

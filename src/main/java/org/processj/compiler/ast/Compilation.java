@@ -1,6 +1,9 @@
 package org.processj.compiler.ast;
 
-import org.processj.compiler.ast.type.Type;
+import org.processj.compiler.ast.packages.Imports;
+import org.processj.compiler.ast.packages.Pragma;
+import org.processj.compiler.ast.packages.Pragmas;
+import org.processj.compiler.ast.type.Types;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
@@ -11,32 +14,32 @@ public class Compilation extends AST {
     /// --------------
     /// Private Fields
 
-    private final Sequence<Pragma>  pragmas     ;
-    private final String            packageName ;
-    private final Sequence<Import>  imports     ;
-    private final Sequence<Type>    types       ;
+    private final Pragmas pragmas;
+    private final Name packageName;
+    private final Imports imports;
+    private final Types types;
 
     /// ------------
     /// Constructors
 
-    public Compilation(final Sequence<Pragma> pragmas,
-                       final Sequence<Name> packageName,
-                       final Sequence<Import> imports,
-                       final Sequence<Type> types) {
-        super(new AST[] { (pragmas != null) ? pragmas : new Sequence<>(), imports, types });
+    public Compilation(final Pragmas pragmas,
+                       final Name packageName,
+                       final Imports imports,
+                       final Types types) {
+        super(pragmas, packageName, imports, types);
 
         // TODO: AST.line & AST.charBegin was originally derived from typeDecls             ;
-        this.pragmas            = (pragmas != null) ? pragmas : new Sequence<>();
-        this.imports            = (imports != null) ? imports : new Sequence<>();
-        this.types              = (types != null) ? types : new Sequence<>();
-        this.packageName        = (packageName != null) ? packageName.synthesizeStringWith(".") : "";
+        this.pragmas = pragmas;
+        this.imports = imports;
+        this.types = types;
+        this.packageName = packageName;
 
     }
 
     @Override
     public final String toString() {
 
-        return this.packageName;
+        return this.packageName.toString();
 
     }
     /// --------------------
@@ -68,19 +71,19 @@ public class Compilation extends AST {
 
     }
 
-    public final Sequence<Pragma> getPragmas() {
+    public final Pragmas getPragmas() {
 
         return this.pragmas;
 
     }
 
-    public final Sequence<Import> getImports() {
+    public final Imports getImports() {
 
         return this.imports;
 
     }
 
-    public final Sequence<Type> getTypeDeclarations() {
+    public final Types getTypeDeclarations() {
 
         return this.types;
 
@@ -99,7 +102,7 @@ public class Compilation extends AST {
      */
     public final boolean definesPackageName() {
 
-        return (this.packageName != null) && !this.packageName.isEmpty() && !this.packageName.isBlank();
+        return (this.packageName != null);// && !this.packageName.isEmpty() && !this.packageName.isBlank();
 
     }
 
@@ -122,7 +125,7 @@ public class Compilation extends AST {
      */
     public final String getPackageName() {
 
-        return this.packageName;
+        return this.packageName.toString();
 
     }
 

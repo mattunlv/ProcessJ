@@ -2,7 +2,6 @@ package org.processj.compiler.ast.modifier;
 
 
 import org.processj.compiler.ast.AST;
-import org.processj.compiler.ast.Modifier;
 import org.processj.compiler.ast.Name;
 import org.processj.compiler.ast.Token;
 

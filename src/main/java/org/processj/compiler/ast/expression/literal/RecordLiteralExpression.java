@@ -10,9 +10,9 @@ public class RecordLiteralExpression extends LiteralExpression {
     private final Sequence<RecordMemberLiteralExpression> recordMemberLiterals;
 
     public RecordLiteralExpression(final Name name, final Sequence<RecordMemberLiteralExpression> members) {
-        super(new AST[] { name, (members != null) ? members : new Sequence<>() });
+        super(name);
         this.name = name;
-        this.recordMemberLiterals = (Sequence<RecordMemberLiteralExpression>) this.children[1];
+        this.recordMemberLiterals = (members != null) ? members : new Sequence<>();
     }
 
     @Override
@@ -23,7 +23,7 @@ public class RecordLiteralExpression extends LiteralExpression {
     }
 
     public Name getName() {
-        return (Name) children[0];
+        return this.name;
     }
 
     public Sequence<RecordMemberLiteralExpression> getRecordMemberLiterals() {

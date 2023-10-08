@@ -3,31 +3,35 @@ package org.processj.compiler.ast;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 public abstract class AST extends Context {
 
     private final int line      ;
     private final int column    ;
-    public final AST[] children;
 
-    public AST(final Token token, final AST... children) {
+    public final List<AST> children;
+    public final Set<Token> tokens;
 
-        // Initialize the children first
-        this.children = (children != null) ? children : new AST[0];
+    public AST(final Token... tokens) {
 
-        int line    = (token != null) ? token.line   : 0 ;
-        int column  = (token != null) ? token.column : 0 ;
+        this.children   = new ArrayList<>();
+        this.tokens     = new LinkedHashSet<>();
 
-        // Iterate through the children
-        if(token == null) for(final AST child: this.children)
-            if(child != null) {
+        int line    = 0x7fffffff;
+        int column  = 0x7fffffff;
 
-                // The first non-null child will set the line & column
-                line    = child.line    ;
-                column  = child.column  ;
+        for(final Token token: tokens) {
 
-                break;
+            this.tokens.add(token);
 
-            }
+            line    = Math.min(line, token.line)    ;
+            column  = Math.min(line, token.column)  ;
+
+        }
 
         // Initialize the line & column
         this.line   = line   ;
@@ -36,8 +40,39 @@ public abstract class AST extends Context {
     }
 
     public AST(final AST... children) {
-        this(null, children);
+
+        this.children   = new ArrayList<>();
+        this.tokens     = new LinkedHashSet<>();
+
+        int line    = 0x7fffffff;
+        int column  = 0x7fffffff;
+
+        for(final AST child: children) {
+
+            line    = Math.min(line, (child != null) ? child.line : -1)    ;
+            column  = Math.min(line, (child != null) ? child.column : -1)  ;
+
+            this.children.add(child);
+
+        }
+
+        // Initialize the line & column
+        this.line   = line   ;
+        this.column = column ;
+
     }
+
+    public AST() {
+
+        this.children   = new ArrayList<>();
+        this.tokens     = new LinkedHashSet<>();
+
+        // Initialize the line & column
+        this.line   = 0x7FFFFFFF ;
+        this.column = 0xFFFFFFFF ;
+
+    }
+
 
     public final int getLine() {
 
@@ -51,9 +86,15 @@ public abstract class AST extends Context {
 
     }
 
+    protected final Set<Token> getTokens() {
+
+        return this.tokens;
+
+    }
+
     public final AST getChildAt(final int index) {
 
-        return (index < this.children.length) ? this.children[index] : null;
+        return this.children.get(index);
 
     }
 
@@ -66,13 +107,13 @@ public abstract class AST extends Context {
         out.print(" ".repeat(depth * 2));
 
         org.processj.compiler.Compiler.Info(this.getClass().getName() + " " + this);
-        for (int c = 0; c < this.children.length; c++) {
-            if (children[c] == null) {
+        for (int c = 0; c < this.children.size(); c++) {
+            if (children.get(c) == null) {
                 out.print("line " + " ".repeat(20) + line + ": ");
                 out.print(" ".repeat(depth * 2 + 2));
                 org.processj.compiler.Compiler.Info("empty");
             } else {
-                children[c].print(out, depth + 1);
+                children.get(c).print(out, depth + 1);
             }
         }
     }
@@ -97,8 +138,8 @@ public abstract class AST extends Context {
      * Visit all children of this node from left to right. Usually called from within a visitor
      */
     public <T> T visitChildren(final Visitor visitor) throws Phase.Error {
-        for(int c = 0; c < this.children.length; c++) {
-            if(children[c] != null) children[c].accept(visitor);
+        for(int c = 0; c < this.children.size(); c++) {
+            if(children.get(c) != null) children.get(c).accept(visitor);
         }
         return null;
     }

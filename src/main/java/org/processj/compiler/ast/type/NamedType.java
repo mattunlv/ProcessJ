@@ -4,7 +4,7 @@ import org.processj.compiler.ast.*;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
-public class NamedType extends Type {
+public class NamedType implements Type {
 
     /// --------------
     /// Private Fields
@@ -28,7 +28,6 @@ public class NamedType extends Type {
     }
 
     public NamedType(final Name name, final Type type) {
-        super(new AST[] { name });
         this.name           = name;
         this.resolvedType   = type;
     }
@@ -48,6 +47,16 @@ public class NamedType extends Type {
     public final boolean equals(final Object that) {
 
         return super.equals(that) && (this.resolvedType != null) && this.resolvedType.equals(that);
+
+        // Trivial check
+        //return (that instanceof Type)
+                // And if the specified Instance is a NamedType
+                //&& ((that instanceof NamedType)
+                // Join the result with the recurred invocation
+                //? this.equals(((NamedType) that).getType())
+                // Otherwise, with something acceptable
+                //: this.toString().equals(that.toString()));
+
 
     }
 
@@ -79,6 +88,51 @@ public class NamedType extends Type {
 
     }
 
+    @Override
+    public boolean isTypeEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeEquivalentTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeCeilingOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isSubTypeOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isAssignmentCompatibleTo(Object that) {
+        return false;
+    }
+
     /// ---------------------
     /// org.processj.ast.Type
 
@@ -95,6 +149,20 @@ public class NamedType extends Type {
     }
 
     @Override
+    public Type addDimension() {
+        return null;
+    }
+
+    @Override
+    public Type clearDepth() {
+        return null;
+    }
+
+    @Override
+    public int getDepth() {
+        return 0;
+    }
+
     public final String getPackageName() {
 
         return this.name.getPackageName();
@@ -123,7 +191,6 @@ public class NamedType extends Type {
     }
 
     // TODO
-    @Override
     public boolean typeEqual(final Type that) {
 
         return this.equals(that);
@@ -131,7 +198,6 @@ public class NamedType extends Type {
     }
 
     // TODO
-    @Override
     public boolean typeEquivalent(final Type that) {
 
         return this.equals(that);
@@ -139,7 +205,6 @@ public class NamedType extends Type {
     }
 
     // TODO
-    @Override
     public boolean typeAssignmentCompatible(final Type that) {
 
         return this.equals(that);

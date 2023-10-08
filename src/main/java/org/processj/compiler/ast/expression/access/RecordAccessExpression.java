@@ -20,11 +20,11 @@ public class RecordAccessExpression extends Expression {
     }
 
     public Expression getTarget() {
-        return (Expression) children[0];
+        return this.record;
     }
 
     public Name field() {
-        return (Name) children[1];
+        return this.field;
     }
 
     public String toString() {

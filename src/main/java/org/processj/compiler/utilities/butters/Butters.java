@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.processj.compiler.ast.Compilation;
-import org.processj.compiler.ast.Pragma;
+import org.processj.compiler.ast.packages.Pragma;
 
 public class Butters {
 

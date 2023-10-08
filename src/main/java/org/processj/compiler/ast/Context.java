@@ -1,7 +1,8 @@
 package org.processj.compiler.ast;
 
 import org.processj.compiler.ast.expression.resolve.NameExpression;
-import org.processj.compiler.ast.type.ProcedureTypeDeclaration;
+import org.processj.compiler.ast.packages.Pragma;
+import org.processj.compiler.ast.type.ProcedureType;
 import org.processj.compiler.phase.Phase;
 
 import java.util.*;
@@ -18,21 +19,10 @@ public abstract class Context {
     private Context enclosingContext;
     private SymbolMap scope;
 
-
     public void openScope() {
 
-        if((this.scope == null) || (this != this.scope.owningContext))
+        if(this.scope == null)
             this.scope = new SymbolMap(this.enclosingContext);
-
-    }
-
-    public boolean setYields() {
-        return false;
-    }
-
-    public String getPackageName() {
-
-        return "";
 
     }
 
@@ -52,6 +42,16 @@ public abstract class Context {
 
         // Return ourselves
         return this;
+
+    }
+
+    public boolean setYields() {
+        return false;
+    }
+
+    public String getPackageName() {
+
+        return "";
 
     }
 
@@ -213,7 +213,7 @@ public abstract class Context {
         private boolean isNative;
 
         /**
-         * <p>{@link List} containing generated values of native {@link ProcedureTypeDeclaration} signatures.</p>
+         * <p>{@link List} containing generated values of native {@link ProcedureType} signatures.</p>
          */
         private List<String> nativeSignatures;
 

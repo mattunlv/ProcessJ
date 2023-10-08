@@ -9,14 +9,16 @@ import org.processj.compiler.phase.Visitor;
 public class NewMobileExpression extends Expression {
 
     private SymbolMap candidates      ;
+    private final Name name;
 
     public NewMobileExpression(Name name) {
         super(new AST[] { name });
+        this.name = name;
         this.candidates = null;
     }
 
     public Name name() {
-        return (Name) children[0];
+        return this.name;
     }
 
     public void accept(Visitor v) throws Phase.Error {

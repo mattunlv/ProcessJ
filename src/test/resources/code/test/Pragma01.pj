@@ -4,4 +4,3 @@
  * @author Carlos L. Cuenca
  **/
 #pragma LIBRARY;
-#pragma LANGUAGE "C";

@@ -1,9 +1,10 @@
 package org.processj.compiler.ast.type;
 
+import org.processj.compiler.ast.Name;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
-public class ErrorType extends Type {
+public class ErrorType implements Type {
 
     /// ------------
     /// Constructors
@@ -49,12 +50,36 @@ public class ErrorType extends Type {
     /// --------------------
     /// org.processj.ast.AST
 
+    @Override
+    public Name getName() {
+        return null;
+    }
+
+    @Override
+    public String getSignature() {
+        return null;
+    }
+
+    @Override
+    public Type addDimension() {
+        return null;
+    }
+
+    @Override
+    public Type clearDepth() {
+        return null;
+    }
+
+    @Override
+    public int getDepth() {
+        return 0;
+    }
+
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link ChannelEndType}.
      * This method will dispatch the {@link Visitor}'s {@link Visitor#visitErrorType(ErrorType)} method.</p>
      *
      * @param visitor The {@link Visitor} to dispatch.
-     * @param <S>     Parametric type parameter.
      */
     @Override
     public final void accept(final Visitor visitor) throws Phase.Error {
@@ -63,23 +88,65 @@ public class ErrorType extends Type {
 
     }
 
+    @Override
+    public boolean isTypeEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeEquivalentTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeCeilingOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isSubTypeOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isAssignmentCompatibleTo(Object that) {
+        return false;
+    }
+
     // *************************************************************************
     // ** Type Related Methods
 
     // Error types should not be checked like this...
-    @Override 
     public final boolean typeEqual(Type t) {
         return false;
     }
 
     // Error types should not be checked like this...
-    @Override 
     public final boolean typeEquivalent(Type t) {
         return false;
     }
 
     // Error types should not be checked like this...
-    @Override 
     public final boolean typeAssignmentCompatible(Type t) {
         return false;
     }

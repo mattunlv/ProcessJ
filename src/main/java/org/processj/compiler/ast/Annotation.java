@@ -1,13 +1,15 @@
 package org.processj.compiler.ast;
 
+import org.processj.compiler.ast.expression.Expression;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
 public class Annotation extends AST {
 
-    private String name, value;
+    private final String name;
+    private Expression  value;
 
-    public Annotation(String name, String value) {
+    public Annotation(String name, Expression value) {
         this.name = name;
         this.value = value;
     }
@@ -17,7 +19,7 @@ public class Annotation extends AST {
     }
 
     public String getValue() {
-        return value;
+        return name;
     }
 
     public void accept(Visitor v) throws Phase.Error {

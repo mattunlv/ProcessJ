@@ -18,9 +18,9 @@ public class NewArrayExpression extends Expression {
 
     public NewArrayExpression(final Type type, final Sequence<Expression> bracketExpressions,
                               final Sequence<AST> dims, final ArrayLiteralExpression arrayLiteralExpression) {
-        super(new AST[] { type.getComponentType(), bracketExpressions, arrayLiteralExpression });
+        super(new AST[] { bracketExpressions, arrayLiteralExpression });
 
-        this.componentType          = (Type) this.children[0]               ;
+        this.componentType          = type               ;
         this.bracketExpressions     = bracketExpressions                    ;
         this.arrayLiteralExpression = arrayLiteralExpression                ;
         this.depth                  = ((dims != null) ? dims.size() : 0)    ;
@@ -28,10 +28,10 @@ public class NewArrayExpression extends Expression {
     }
 
     public NewArrayExpression(final Type type, final ArrayLiteralExpression arrayLiteralExpression) {
-        super(new AST[] { type.getComponentType(), new Sequence<>(), arrayLiteralExpression });
+        super(new AST[] { new Sequence<>(), arrayLiteralExpression });
 
-        this.componentType          = (Type) this.children[0]                                           ;
-        this.bracketExpressions     = (Sequence<Expression>) this.children[1]                           ;
+        this.componentType          = type                                          ;
+        this.bracketExpressions     = new Sequence<>()                                                  ;
         this.arrayLiteralExpression = arrayLiteralExpression                                            ;
         this.depth                  = (type instanceof ArrayType) ? ((ArrayType) type).getDepth() : 0   ;
 
@@ -39,8 +39,7 @@ public class NewArrayExpression extends Expression {
 
     public final void setComponentType(final Type componentType) {
 
-        this.componentType  = componentType.getComponentType();
-        this.children[0]    = componentType.getComponentType();
+        this.componentType = componentType;
 
     }
 
@@ -52,19 +51,19 @@ public class NewArrayExpression extends Expression {
     }
 
     public Type getComponentType() {
-        return (Type) children[0];
+        return this.componentType;
     }
 
     public Sequence<Expression> getBracketExpressions() {
-        return (Sequence<Expression>) children[1];
+        return this.bracketExpressions;
     }
 
-    public Sequence<AST> dims() {
-        return (Sequence<AST>) children[2];
+    public Sequence<Expression> dims() {
+        return this.bracketExpressions;
     }
 
     public ArrayLiteralExpression getInitializationExpression() {
-        return (ArrayLiteralExpression) children[3];
+        return this.arrayLiteralExpression;
     }
 
     public String toString() {

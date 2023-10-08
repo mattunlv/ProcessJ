@@ -1,0 +1,6 @@
+/**
+ * @test PackageDeclaration02.pj
+ * @description Simple Package Declaration Test
+ * @author Carlos L. Cuenca
+ **/
+package org;

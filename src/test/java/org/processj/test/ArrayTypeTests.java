@@ -1,24 +1,24 @@
 package org.processj.test;
 
 import org.junit.jupiter.api.Test;
-import org.processj.compiler.phases.phase.Phase;
 import org.processj.compiler.ast.Compilation;
-import org.processj.compiler.ast.IVisitor;
-import org.processj.compiler.ast.SymbolMap;
+import org.processj.compiler.ast.Context;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.phase.Visitor;
 
-public class ArrayTypeTests extends ProcessJTest implements IVisitor<Void> {
+public class ArrayTypeTests extends ProcessJTest implements Visitor {
 
-    private SymbolMap currentScope;
+    private Context.SymbolMap currentScope;
 
     @Override
-    public SymbolMap getScope() {
+    public Context.SymbolMap getScope() {
 
         return this.currentScope;
 
     }
 
     @Override
-    public void setScope(final SymbolMap symbolMap) {
+    public void setScope(final Context.SymbolMap symbolMap) {
 
         this.currentScope = symbolMap;
 
@@ -33,7 +33,7 @@ public class ArrayTypeTests extends ProcessJTest implements IVisitor<Void> {
 
         final Compilation compilation = CompilationFor(Array01);
 
-        compilation.visit(this);
+        compilation.accept(this);
 
     }
 

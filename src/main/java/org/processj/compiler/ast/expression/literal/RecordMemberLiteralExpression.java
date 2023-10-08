@@ -9,10 +9,12 @@ import org.processj.compiler.phase.Visitor;
 public class RecordMemberLiteralExpression extends AST {
 
     private final Name name;
+    private final Expression expression;
 
     public RecordMemberLiteralExpression(Name name, Expression expr) {
-        super(new AST[] { name, expr });
+        super(name);
         this.name = name;
+        this.expression = expr;
     }
 
     @Override
@@ -23,11 +25,11 @@ public class RecordMemberLiteralExpression extends AST {
     }
 
     public Name getName() {
-        return (Name) children[0];
+        return this.name;
     }
 
     public Expression getExpression() {
-	return (Expression) children[1];
+	return this.expression;
     }
 
     public void accept(Visitor v) throws Phase.Error {

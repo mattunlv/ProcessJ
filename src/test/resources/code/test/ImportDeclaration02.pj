@@ -1,0 +1,6 @@
+/**
+ * @test ImportDeclaration02.pj
+ * @description Simple Import Declaration Test
+ * @author Carlos L. Cuenca
+ **/
+import org.processj;

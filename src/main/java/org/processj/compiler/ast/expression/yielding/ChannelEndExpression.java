@@ -11,10 +11,12 @@ public class ChannelEndExpression extends Expression {
     public static final int WRITE = 1;
 
     private int end;
+    private final Expression channelExpression;
 
     public ChannelEndExpression(Expression channel, int end) {
         super(new AST[] { channel });
         this.end = end;
+        this.channelExpression = channel;
     }
 
     public boolean isRead() {
@@ -25,8 +27,8 @@ public class ChannelEndExpression extends Expression {
         return end == WRITE;
     }
 
-    public Expression getChannelType() {
-        return (Expression) children[0];
+    public Expression getChannelExpression() {
+        return this.channelExpression;
     }
     
     public int endType() {

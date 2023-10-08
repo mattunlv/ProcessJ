@@ -1,21 +1,23 @@
 package org.processj.compiler.ast.expression.literal;
 
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.statement.declarative.ProtocolCase;
+import org.processj.compiler.ast.type.ProtocolType;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
 public class ProtocolLiteralExpression extends LiteralExpression {
 
-    private ProtocolCase protocolCase    ;
+    private ProtocolType.Case aCase;
     private final Name name            ;
     private final Name      tag             ;
+    private final Sequence<RecordMemberLiteralExpression> expressions;
 
     public ProtocolLiteralExpression(final Name name, final Name tag, final Sequence<RecordMemberLiteralExpression> expressions) {
         super(new AST[] { name, tag, expressions });
         this.tag            = tag;
         this.name           = name;
-        this.protocolCase   = null;
+        this.aCase = null;
+        this.expressions = expressions;
     }
 
     @Override
@@ -26,7 +28,7 @@ public class ProtocolLiteralExpression extends LiteralExpression {
     }
 
     public Name getTag() {
-        return (Name) children[1];
+        return this.tag;
     }
 
     public final Name getName() {
@@ -41,14 +43,14 @@ public class ProtocolLiteralExpression extends LiteralExpression {
 
     }
 
-    public final void setProtocolCase(final ProtocolCase protocolCase) {
+    public final void setProtocolCase(final ProtocolType.Case aCase) {
 
-        this.protocolCase = protocolCase;
+        this.aCase = aCase;
 
     }
 
     public final Sequence<RecordMemberLiteralExpression> getExpressions() {
-        return (Sequence<RecordMemberLiteralExpression>) children[2];
+        return this.expressions;
     }
 
     public final void accept(Visitor visitor) throws Phase.Error {

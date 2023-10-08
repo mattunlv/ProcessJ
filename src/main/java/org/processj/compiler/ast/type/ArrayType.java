@@ -1,6 +1,7 @@
 package org.processj.compiler.ast.type;
 
 import org.processj.compiler.ast.*;
+import org.processj.compiler.ast.statement.declarative.ConstantDeclaration;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
@@ -15,7 +16,7 @@ import org.processj.compiler.phase.Visitor;
  * @see AST
  * @see Type
  */
-public class ArrayType extends Type {
+public class ArrayType extends AST implements Type {
 
     /// --------------
     /// Private Fields
@@ -49,9 +50,8 @@ public class ArrayType extends Type {
      * @see Type
      */
     public ArrayType(final Type componentType, final int depth) {
-        super(componentType);
 
-        this.componentType = componentType.getComponentType();
+        this.componentType = componentType;
         this.depth         = ((componentType instanceof ArrayType)
                 ? ((ArrayType) componentType).getDepth() : 0) + depth  ;
 
@@ -108,16 +108,66 @@ public class ArrayType extends Type {
     @Override
     public final void accept(final Visitor visitor) throws Phase.Error {
 
-        visitor.setContext(this.openContext(visitor.getContext()));
+        //visitor.setContext(this.openContext(visitor.getContext()));
 
         visitor.visitArrayType(this);
 
-        visitor.setContext(this.closeContext());
+        //visitor.setContext(this.closeContext());
 
+    }
+
+    @Override
+    public boolean isTypeEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeEquivalentTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeCeilingOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isSubTypeOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isAssignmentCompatibleTo(Object that) {
+        return false;
     }
 
     /// ----
     /// Type
+
+    @Override
+    public Name getName() {
+        return null;
+    }
 
     /**
      * <p>Returns the internal {@link String} signature representing the {@link ArrayType}.</p>
@@ -139,6 +189,16 @@ public class ArrayType extends Type {
         // Return the result
         return stringBuilder.toString();
 
+    }
+
+    @Override
+    public Type addDimension() {
+        return null;
+    }
+
+    @Override
+    public Type clearDepth() {
+        return null;
     }
 
     /// --------------
@@ -176,7 +236,6 @@ public class ArrayType extends Type {
     public final void setComponentType(final Type componentType) {
 
         this.componentType = componentType;
-        this.children[0] = componentType;
 
     }
 
@@ -185,21 +244,18 @@ public class ArrayType extends Type {
 
     // if α=Array(t1,I1) ∧ β=Array(t2,I2)
     // α =T β ⇔ Array?(α) ∧ Array?(β) ∧ (t1 =T t2) ∧ ((I1 =I2) ∨ (I1 =⊥) ∨ (I2 =⊥))
-    @Override
     public boolean typeEqual(final Type type) {
 
         return this.equals(type);
 
     }
 
-    @Override
     public boolean typeEquivalent(Type t) {
 
         return this.equals(t);
 
     }
 
-    @Override
     public boolean typeAssignmentCompatible(Type t) {
 
         return this.equals(t);

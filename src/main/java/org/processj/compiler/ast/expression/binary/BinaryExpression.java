@@ -1,5 +1,7 @@
 package org.processj.compiler.ast.expression.binary;
 import org.processj.compiler.ast.expression.Expression;
+import org.processj.compiler.ast.type.primitive.BooleanType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.IntegralType;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.AST;
 import org.processj.compiler.phase.Visitor;
@@ -36,14 +38,18 @@ public class BinaryExpression extends Expression {
             "&&", "||" };
 
     private int kind;
+    private final Expression leftExpression;
+    private final Expression rightExpression;
 
     public BinaryExpression(Expression left, Expression right, int op) {
         super(new AST[] { left, right});
         kind = op;
+        this.leftExpression = left;
+        this.rightExpression = right;
     }
 
-    public Expression getLeftExpression()  { return (Expression)children[0]; }
-    public Expression getRightExpression() { return (Expression)children[1]; }
+    public Expression getLeftExpression()  { return this.leftExpression; }
+    public Expression getRightExpression() { return this.rightExpression; }
     public int op()           { return kind; }
 
     public String opString() { return opSyms[kind]; }
@@ -56,7 +62,7 @@ public class BinaryExpression extends Expression {
     // This method should ONLY be called if both the left and the right expressions
     // are sure to be constant value - otherwise this method will crash!
     public Object constantValue() {
-        if (getLeftExpression().type.isBooleanType() && getRightExpression().type.isBooleanType()) {
+        if (getLeftExpression().getType() instanceof BooleanType && getRightExpression().getType() instanceof BooleanType) {
             boolean lval = (Boolean) getLeftExpression().constantValue();
             boolean rval = (Boolean) getRightExpression().constantValue();
 
@@ -80,7 +86,7 @@ public class BinaryExpression extends Expression {
             case MINUS: return lval.subtract(rval);
             case MULT:  return lval.multiply(rval);
             case DIV:
-                if (getLeftExpression().type.isIntegralType() && getRightExpression().type.isIntegralType())
+                if (getLeftExpression().getType() instanceof IntegralType && getRightExpression().getType() instanceof IntegralType)
                     return new BigDecimal(lval.toBigInteger().divide(rval.toBigInteger()));
                 new BigDecimal(lval.doubleValue()/rval.doubleValue());
 

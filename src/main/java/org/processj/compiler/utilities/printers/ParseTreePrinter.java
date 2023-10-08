@@ -16,23 +16,23 @@ import org.processj.compiler.ast.expression.result.*;
 import org.processj.compiler.ast.expression.unary.*;
 import org.processj.compiler.ast.expression.yielding.ChannelEndExpression;
 import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
+import org.processj.compiler.ast.modifier.Modifier;
+import org.processj.compiler.ast.packages.Import;
+import org.processj.compiler.ast.packages.Pragma;
 import org.processj.compiler.ast.statement.*;
-import org.processj.compiler.ast.statement.yielding.GuardStatement;
+import org.processj.compiler.ast.statement.declarative.*;
 import org.processj.compiler.ast.statement.conditional.*;
 import org.processj.compiler.ast.statement.control.*;
-import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
-import org.processj.compiler.ast.statement.declarative.ProtocolCase;
-import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
-import org.processj.compiler.ast.statement.conditional.SwitchGroupStatement;
-import org.processj.compiler.ast.expression.result.SwitchLabel;
 import org.processj.compiler.ast.statement.conditional.SwitchStatement;
+import org.processj.compiler.ast.type.ProcedureType;
+import org.processj.compiler.ast.type.ProtocolType;
 import org.processj.compiler.ast.statement.yielding.ChannelWriteStatement;
-import org.processj.compiler.ast.statement.yielding.ParBlock;
+import org.processj.compiler.ast.statement.conditional.ParBlock;
 import org.processj.compiler.ast.type.*;
+import org.processj.compiler.ast.type.primitive.PrimitiveType;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.statement.yielding.AltCase;
-import org.processj.compiler.ast.statement.yielding.AltStatement;
+import org.processj.compiler.ast.statement.conditional.AltStatement;
 import org.processj.compiler.phase.Visitor;
 
 public class ParseTreePrinter implements Visitor {
@@ -51,10 +51,10 @@ public class ParseTreePrinter implements Visitor {
     }
 
     // AltCase
-    public void visitAltCase(AltCase altCase) throws Phase.Error {
-        System.out.println(altCase + "AltCase:");
+    public void visitAltStatementCase(AltStatement.Case aCase) throws Phase.Error {
+        System.out.println(aCase + "AltCase:");
         indent += 2;
-        Visitor.super.visitAltCase(altCase);
+        Visitor.super.visitAltStatementCase(aCase);
         indent -= 2;
 
     }
@@ -238,7 +238,7 @@ public class ParseTreePrinter implements Visitor {
 
     }
     // Guard
-    public void visitGuardStatement(GuardStatement g) throws Phase.Error {
+    public void visitGuardStatement(AltStatement.Case.Guard g) throws Phase.Error {
         System.out.println("Guard:");
         indent += 2;
         Visitor.super.visitGuardStatement(g);
@@ -365,12 +365,12 @@ public class ParseTreePrinter implements Visitor {
 
     }
     // ProcTypeDecl
-    public void visitProcedureTypeDeclaration(ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error {
+    public void visitProcedureTypeDeclaration(ProcedureType procedureType) throws Phase.Error {
         System.out.println("ProcTypeDecl:");
         indent += 2;
 
-        System.out.println("Annotations: " + procedureTypeDeclaration.getAnnotations().toString());
-        Visitor.super.visitProcedureTypeDeclaration(procedureTypeDeclaration);
+        System.out.println("Annotations: " + procedureType.getAnnotations().toString());
+        Visitor.super.visitProcedureTypeDeclaration(procedureType);
         indent -= 2;
 
     }
@@ -383,18 +383,18 @@ public class ParseTreePrinter implements Visitor {
 
     }
     // ProtocolCase
-    public void visitProtocolCase(ProtocolCase protocolCase) throws Phase.Error {
+    public void visitProtocolCase(ProtocolType.Case aCase) throws Phase.Error {
         System.out.println("ProtocolCase:");
         indent += 2;
-        Visitor.super.visitProtocolCase(protocolCase);
+        Visitor.super.visitProtocolCase(aCase);
         indent -=2;
 
     }
     // ProtocolTypeDecl
-    public void visitProtocolTypeDeclaration(ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error {
+    public void visitProtocolTypeDeclaration(ProtocolType protocolType) throws Phase.Error {
         System.out.println("ProtocolTypeDecl:");
         indent += 2;
-        Visitor.super.visitProtocolTypeDeclaration(protocolTypeDeclaration);
+        Visitor.super.visitProtocolTypeDeclaration(protocolType);
         indent -= 2;
 
     }
@@ -415,18 +415,18 @@ public class ParseTreePrinter implements Visitor {
 
     }
     // RecordMember
-    public void visitRecordMemberDeclaration(RecordMemberDeclaration recordMemberDeclaration) throws Phase.Error {
+    public void visitRecordTypeDeclarationMember(RecordType.Member member) throws Phase.Error {
         System.out.println("RecordMember:");
         indent +=2;
-        Visitor.super.visitRecordMemberDeclaration(recordMemberDeclaration);
+        Visitor.super.visitRecordTypeDeclarationMember(member);
         indent -=2;
 
     }
     // RecordTypeDecl
-    public void visitRecordTypeDeclaration(RecordTypeDeclaration recordTypeDeclaration) throws Phase.Error {
+    public void visitRecordTypeDeclaration(RecordType recordType) throws Phase.Error {
         System.out.println("RecordTypeDecl:");
         indent += 2;
-        Visitor.super.visitRecordTypeDeclaration(recordTypeDeclaration);
+        Visitor.super.visitRecordTypeDeclaration(recordType);
         indent -= 2;
 
     }
@@ -480,18 +480,18 @@ public class ParseTreePrinter implements Visitor {
 
     }
     // SwitchGroup
-    public void visitSwitchGroupStatement(SwitchGroupStatement switchGroupStatement) throws Phase.Error {
+    public void visitSwitchStatementGroup(SwitchStatement.Group group) throws Phase.Error {
         System.out.println("SwitchGroup:");
         indent += 2;
-        Visitor.super.visitSwitchGroupStatement(switchGroupStatement);
+        Visitor.super.visitSwitchStatementGroup(group);
         indent -= 2;
 
     }
     // SwitchLabel
-    public void visitSwitchLabelExpression(SwitchLabel switchLabel) throws Phase.Error {
+    public void visitSwitchLabelExpression(SwitchStatement.Group.Case aCase) throws Phase.Error {
         System.out.println("SwitchLabel:");
         indent += 2;
-        Visitor.super.visitSwitchLabelExpression(switchLabel);
+        Visitor.super.visitSwitchLabelExpression(aCase);
         indent -= 2;
 
     }

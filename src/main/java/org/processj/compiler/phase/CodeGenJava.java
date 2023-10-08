@@ -3,6 +3,7 @@ package org.processj.compiler.phase;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.sun.jdi.LongType;
 import org.processj.compiler.ast.expression.access.ArrayAccessExpression;
 import org.processj.compiler.ast.expression.access.RecordAccessExpression;
 import org.processj.compiler.ast.expression.binary.AssignmentExpression;
@@ -14,22 +15,28 @@ import org.processj.compiler.ast.expression.result.*;
 import org.processj.compiler.ast.expression.unary.*;
 import org.processj.compiler.ast.expression.yielding.ChannelEndExpression;
 import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
+import org.processj.compiler.ast.modifier.Modifiers;
+import org.processj.compiler.ast.packages.Import;
 import org.processj.compiler.ast.statement.*;
 import org.processj.compiler.ast.statement.conditional.*;
 import org.processj.compiler.ast.statement.control.*;
-import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
-import org.processj.compiler.ast.statement.declarative.ProtocolCase;
-import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
-import org.processj.compiler.ast.statement.conditional.SwitchGroupStatement;
-import org.processj.compiler.ast.expression.result.SwitchLabel;
+import org.processj.compiler.ast.statement.declarative.*;
 import org.processj.compiler.ast.statement.conditional.SwitchStatement;
+import org.processj.compiler.ast.type.ProcedureType;
+import org.processj.compiler.ast.type.ProtocolType;
 import org.processj.compiler.ast.statement.yielding.ChannelWriteStatement;
-import org.processj.compiler.ast.statement.yielding.ParBlock;
+import org.processj.compiler.ast.statement.conditional.ParBlock;
 import org.processj.compiler.ast.type.*;
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.statement.yielding.AltCase;
-import org.processj.compiler.ast.statement.yielding.AltStatement;
+import org.processj.compiler.ast.statement.conditional.AltStatement;
 import org.processj.compiler.ast.expression.*;
+import org.processj.compiler.ast.type.primitive.*;
+import org.processj.compiler.ast.type.primitive.numeric.DoubleType;
+import org.processj.compiler.ast.type.primitive.numeric.FloatType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.ByteType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.CharType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.IntegerType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.ShortType;
 import org.processj.runtime.*;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
@@ -217,29 +224,29 @@ public class CodeGenJava extends Phase {
         assert type != null;
         Class<?> typeName = null;
 
-        if (type.isIntegerType())
+        if (type instanceof IntegerType)
             typeName = Integer.class;
-        else if (type.isByteType())
+        else if (type instanceof ByteType)
             typeName = Byte.class;
-        else if (type.isLongType())
+        else if (type instanceof LongType)
             typeName = Long.class;
-        else if (type.isDoubleType())
+        else if (type instanceof DoubleType)
             typeName = Double.class;
-        else if (type.isFloatType())
+        else if (type instanceof FloatType)
             typeName = Float.class;
-        else if (type.isBooleanType())
+        else if (type instanceof BooleanType)
             typeName = Boolean.class;
-        else if (type.isCharType())
+        else if (type instanceof CharType)
             typeName = Character.class;
-        else if (type.isShortType())
+        else if (type instanceof ShortType)
             typeName = Short.class;
-        else if (type instanceof RecordTypeDeclaration)
+        else if (type instanceof RecordType)
             typeName = PJRecord.class;
         else if (type instanceof ChannelType || type instanceof ChannelEndType)
             typeName = PJChannel.class;
-        else if (type.isTimerType())
+        else if (type instanceof TimerType)
             typeName = PJTimer.class;
-        else if (type.isBarrierType())
+        else if (type instanceof BarrierType)
             typeName = PJBarrier.class;
 
         return typeName;
@@ -277,7 +284,7 @@ public class CodeGenJava extends Phase {
         // Reference to all remaining types
         ArrayList<String> body = new ArrayList<>();
         // Holds all top-level declarations
-        Sequence<Type> typeDecls = compilation.getTypeDeclarations();
+        //Sequence<Type> typeDecls = compilation.getTypeDeclarations();
         // Package name for this source file
         String packagename = compilation.getPackageName();
 
@@ -286,22 +293,22 @@ public class CodeGenJava extends Phase {
                     //importFiles.add((String) im.visit(this));
         }
 
-        for (AST decl : typeDecls) {
-            if (decl instanceof Type) {
+        //for (AST decl : typeDecls) {
+            //if (decl instanceof Type) {
                 // Collect procedures, records, protocols, external types, etc.
-                String t = ""; //(String) ((Type) decl).visit(this);
+                //String t = ""; //(String) ((Type) decl).visit(this);
 
-                if (t != null)
-                    body.add(t);
-            } else if (decl instanceof ConstantDeclaration) {
+                //if (t != null)
+                    //body.add(t);
+            //} else if (decl instanceof ConstantDeclaration) {
                 // Iterate over remaining declarations, which is anything that
                 // comes after top-level declarations
                 //((ConstantDeclaration) decl).visit(this);
 
                 //if (cd != null)
                     //body.add(cd);
-            }
-        }
+            //}
+        //}
 
         stCompilation.add("pathName", packagename);
         stCompilation.add("fileName", compilation.fileName);
@@ -369,9 +376,9 @@ public class CodeGenJava extends Phase {
     }
 
     @Override
-    public final void visitProcedureTypeDeclaration(final ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error  {
+    public final void visitProcedureTypeDeclaration(final ProcedureType procedureType) throws Phase.Error  {
 
-        org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "Visiting a ProcTypeDecl (" + procedureTypeDeclaration + ")");
+        org.processj.compiler.Compiler.Info(procedureType + "Visiting a ProcTypeDecl (" + procedureType + ")");
 
         ST stProcTypeDecl = null;
 
@@ -382,7 +389,7 @@ public class CodeGenJava extends Phase {
         if(!switchCases.isEmpty()) switchCases = new ArrayList<>();
 
         // Name of the invoked procedure
-        currentProcName = paramToVarNames.getOrDefault(procedureTypeDeclaration.toString(), procedureTypeDeclaration.toString());
+        currentProcName = paramToVarNames.getOrDefault(procedureType.toString(), procedureType.toString());
 
         // Procedures are static classes which belong to the same package and
         // class. To avoid having classes with the same name, we generate a
@@ -404,7 +411,7 @@ public class CodeGenJava extends Phase {
             //String[] body = (String[]) procedureTypeDeclaration.getBody().visit(this);
 
             stProcTypeDecl.add("parBlock", currentParBlock);
-            stProcTypeDecl.add("syncBody", procedureTypeDeclaration.getBody());
+            stProcTypeDecl.add("syncBody", procedureType.getBody());
             stProcTypeDecl.add("isPar", inParFor);
 
             // Add the barrier this procedure should resign from
@@ -440,18 +447,18 @@ public class CodeGenJava extends Phase {
             //String[] modifiers = (String[]) procedureTypeDeclaration.modifiers().visit(this);
 
             // Formal parameters that must be passed to the procedure
-            Sequence<ParameterDeclaration> formals = procedureTypeDeclaration.getParameters();
+            //Sequence<ParameterDeclaration> formals = procedureType.getParameters();
 
             // Do we have any parameters?
-            if((formals != null) && formals.size() > 0) {
+            //if((formals != null) && formals.size() > 0) {
                 // Iterate through and visit every parameter declaration.
                 // Retrieve the name and type of each parameter specified in
                 // a list of comma-separated arguments. Note that we ignored
                 // the value returned by this visitor
-                for(int i = 0; i < formals.size(); ++i)
-                    formals.child(i).accept(this);
+                //for(int i = 0; i < formals.size(); ++i)
+                   // formals.child(i).accept(this);
 
-            }
+            //}
 
             // Visit all declarations that appear in the procedure
             String[] body = null;
@@ -461,7 +468,7 @@ public class CodeGenJava extends Phase {
 
             // The procedure's annotation determines if we have a yielding procedure
             // or a Java method (a non-yielding procedure)
-            boolean doesProcYield = procedureTypeDeclaration.doesYield();
+            boolean doesProcYield = procedureType.doesYield();
 
             // Set the template to the correct instance value and then initialize
             // its attributes
@@ -469,7 +476,7 @@ public class CodeGenJava extends Phase {
 
                 // This procedure yields! Grab the instance of a yielding procedure
                 // from the string template in order to define a new class
-                procName = makeVariableName(currentProcName + hashSignature(procedureTypeDeclaration), 0, Tag.PROCEDURE_NAME);
+                procName = makeVariableName(currentProcName + hashSignature(procedureType), 0, Tag.PROCEDURE_NAME);
                 stProcTypeDecl = stGroup.getInstanceOf("ProcClass");
                 stProcTypeDecl.add("name", procName);
                 stProcTypeDecl.add("syncBody", body);
@@ -477,7 +484,7 @@ public class CodeGenJava extends Phase {
             } else {
 
                 // Otherwise, grab the instance of a non-yielding procedure to define a new static Java method
-                procName = makeVariableName(currentProcName + hashSignature(procedureTypeDeclaration), 0, Tag.METHOD_NAME);
+                procName = makeVariableName(currentProcName + hashSignature(procedureType), 0, Tag.METHOD_NAME);
                 stProcTypeDecl = stGroup.getInstanceOf("Method");
                 stProcTypeDecl.add("name", procName);
                 //stProcTypeDecl.add("type", procType);
@@ -491,7 +498,7 @@ public class CodeGenJava extends Phase {
 
             // Create an entry point for the ProcessJ program, which is just
             // a Java main method that is called by the JVM
-            if(currentProcName.equals("main") && procedureTypeDeclaration.getSignature().equals(Tag.MAIN_NAME.toString())) {
+            if(currentProcName.equals("main") && procedureType.getSignature().equals(Tag.MAIN_NAME.toString())) {
                 // Create an instance of a Java main method template
                 ST stMain = stGroup.getInstanceOf("Main");
                 stMain.add("class", currentCompilation.fileNoExtension());
@@ -540,11 +547,11 @@ public class CodeGenJava extends Phase {
     }
 
     @Override
-    public final void visitProtocolTypeDeclaration(final ProtocolTypeDeclaration protocolTypeDeclaration) {
+    public final void visitProtocolTypeDeclaration(final ProtocolType protocolType) {
 
         ST stProtocolClass = stGroup.getInstanceOf("ProtocolClass");
         // TODO: Used to be paramForAnon
-        String name = paramToVarNames.getOrDefault(protocolTypeDeclaration.toString(), protocolTypeDeclaration.toString());
+        String name = paramToVarNames.getOrDefault(protocolType.toString(), protocolType.toString());
 
         ArrayList<String> modifiers = new ArrayList<>();
         ArrayList<String> body      = new ArrayList<>();
@@ -555,14 +562,14 @@ public class CodeGenJava extends Phase {
 
         currentProtocol = name;
         // We use tags to associate parent and child protocols
-        if (protocolTypeDeclaration.extend().size() > 0) {
-            for (Name n : protocolTypeDeclaration.extend()) {
-                ProtocolTypeDeclaration ptd = (ProtocolTypeDeclaration) getScope().get(n.toString());
-                for (ProtocolCase pc : ptd.getBody())
-                    protocolNameToProtocolTag.put(String.format("%s.%s", protocolTypeDeclaration, pc),
-                            ptd.toString());
-            }
-        }
+        //if (protocolType.getExtends().size() > 0) {
+            //for (Name n : protocolType.getExtends()) {
+                //ProtocolType ptd = (ProtocolType) getScope().get(n.toString());
+                //for (ProtocolType.Case pc : ptd.getBody())
+                    //protocolNameToProtocolTag.put(String.format("%s.%s", protocolType, pc),
+                            //ptd.toString());
+            //}
+        //}
 
         // The scope in which all protocol members appear
         //if (protocolTypeDeclaration.getBody() != null)
@@ -576,23 +583,23 @@ public class CodeGenJava extends Phase {
     }
 
     @Override
-    public final void visitRecordTypeDeclaration(final RecordTypeDeclaration recordTypeDeclaration) {
+    public final void visitRecordTypeDeclaration(final RecordType recordType) {
 
         // TODO: Used to be paramsForAnon
-        String recName = paramToVarNames.getOrDefault(recordTypeDeclaration.toString(),
-                recordTypeDeclaration.toString());
+        String recName = paramToVarNames.getOrDefault(recordType.toString(),
+                recordType.toString());
 
         // Initialize a handle to the interface name and modifier & extends StringBuilders
-        final String        interfaceName           = "interface I_" + recordTypeDeclaration    ;
+        final String        interfaceName           = "interface I_" + recordType;
         final StringBuilder modifierStringBuilder   = new StringBuilder();
         final StringBuilder extendsStringBuilder    = new StringBuilder();
 
         // Synthesize the modifiers & the extends
         // TODO: Make sure we don't specify 'protected' by default or always
-        recordTypeDeclaration.modifiers().forEach(
-                modifier -> modifierStringBuilder.append(modifier).append(" "));
-        recordTypeDeclaration.getExtends().forEach(
-                extend -> extendsStringBuilder.append(extend).append(", "));
+        //recordType.getModifiers().forEach(
+                //modifier -> modifierStringBuilder.append(modifier).append(" "));
+        //recordType.getExtends().forEach(
+                //extend -> extendsStringBuilder.append(extend).append(", "));
 
         // Initialize a handle to the interface name & modifier string
         final String modifierSet    = modifierStringBuilder.toString();
@@ -606,7 +613,7 @@ public class CodeGenJava extends Phase {
         this.sourceBuilder
                 .append(modifierSet)
                 .append("static class ")
-                .append(recordTypeDeclaration)
+                .append(recordType)
                 .append(" extends PJRecord implements ")
                 .append(implementSet)
                 // TODO: Check that if the RecordTypeDecl extends anything, this isn't used.
@@ -620,26 +627,26 @@ public class CodeGenJava extends Phase {
         final StringBuilder initializerSet  = new StringBuilder();
 
         // Iterate through the RecordMembers
-        for(final RecordMemberDeclaration recordMemberDeclaration : recordTypeDeclaration.getBody()) {
+        //for(final RecordType.Member member : recordType.getBody()) {
 
             // Initialize a handle to the type name
-            final String typeName = (recordMemberDeclaration.getType() instanceof ProtocolTypeDeclaration)
-                    ? PJProtocolCase.class.getSimpleName() : recordMemberDeclaration.getType().toString();
-            final String name = recordMemberDeclaration.getName().toString();
+            //final String typeName = (member.getType() instanceof ProtocolType)
+                    //? PJProtocolCase.class.getSimpleName() : member.getType().toString();
+            //final String name = member.getName().toString();
 
-            this.sourceBuilder
-                    .append(ClassMemberDeclarationOf(indent, "public", typeName, name))
-                    .append("\n");
+            //this.sourceBuilder
+                    //.append(ClassMemberDeclarationOf(indent, "public", typeName, name))
+                    //.append("\n");
 
-            initializerSet
-                    .append(ClassFieldInitializationExpression(indent + 4, name, name))
-                    .append("\n");
+            //initializerSet
+                    //.append(ClassFieldInitializationExpression(indent + 4, name, name))
+                    //.append("\n");
 
-            parameterSet
-                    .append(ParameterDeclarationOf("final", typeName, name))
-                    .append(", ");
+            //parameterSet
+                    //.append(ParameterDeclarationOf("final", typeName, name))
+                    //.append(", ");
 
-        }
+        //}
 
         // TODO: Append Constructor & toString declarations
 
@@ -666,9 +673,9 @@ public class CodeGenJava extends Phase {
         boolean isConstant = localDeclaration.isConstant();
 
         // Is it a protocol or a record type?
-        if (localDeclaration.getType() instanceof RecordTypeDeclaration)
+        if (localDeclaration.getType() instanceof RecordType)
             type = localDeclaration.getType().toString();
-        if (localDeclaration.getType() instanceof ProtocolTypeDeclaration)
+        if (localDeclaration.getType() instanceof ProtocolType)
             type = PJProtocolCase.class.getSimpleName();
         // Update the type for record and protocol types
         String chanType = type; // TODO: is this needed?
@@ -695,7 +702,7 @@ public class CodeGenJava extends Phase {
             if (localDeclaration.getType() instanceof PrimitiveType)
                 val = "";//(String) expr.visit(this);
 
-            else if (localDeclaration.getType() instanceof RecordTypeDeclaration || localDeclaration.getType() instanceof ProtocolTypeDeclaration)
+            else if (localDeclaration.getType() instanceof RecordType || localDeclaration.getType() instanceof ProtocolType)
                 val = ""; //(String) expr.visit(this);
 
             else if (localDeclaration.getType() instanceof ArrayType) {
@@ -708,7 +715,7 @@ public class CodeGenJava extends Phase {
 
         // Is it a barrier declaration? If so, we must generate code
         // that creates a barrier object
-        if (localDeclaration.getType().isBarrierType() && expr == null) {
+        if (localDeclaration.getType() instanceof BarrierType && expr == null) {
             ST stBarrierDecl = stGroup.getInstanceOf("BarrierDecl");
             val = stBarrierDecl.render();
         }
@@ -724,12 +731,12 @@ public class CodeGenJava extends Phase {
         // in which it was declared, we return iff this local variable
         // is not initialized
         if (expr == null) {
-            if (!localDeclaration.getType().isBarrierType() && (localDeclaration.getType() instanceof PrimitiveType || (localDeclaration.getType() instanceof ArrayType) || // Could be an
+            if (!(localDeclaration.getType() instanceof BarrierType) && (localDeclaration.getType() instanceof PrimitiveType || (localDeclaration.getType() instanceof ArrayType) || // Could be an
                     // uninitialized
                     // array
                     // declaration
-                    localDeclaration.getType() instanceof RecordTypeDeclaration || // Could be a record or protocol declaration
-                    localDeclaration.getType() instanceof ProtocolTypeDeclaration)); // The 'null' value is used to removed empty
+                    localDeclaration.getType() instanceof RecordType || // Could be a record or protocol declaration
+                    localDeclaration.getType() instanceof ProtocolType)); // The 'null' value is used to removed empty
                 // return sequences in the generated code
         }
 
@@ -770,9 +777,9 @@ public class CodeGenJava extends Phase {
         // Silly fix for channel types
         if (parameterDeclaration.getType() instanceof ChannelType || parameterDeclaration.getType() instanceof ChannelEndType)
             type = PJChannel.class.getSimpleName() + type.substring(type.indexOf("<"), type.length());
-        else if (parameterDeclaration.getType() instanceof RecordTypeDeclaration)
+        else if (parameterDeclaration.getType() instanceof RecordType)
             type = parameterDeclaration.getType().toString();
-        else if (parameterDeclaration.getType() instanceof ProtocolTypeDeclaration)
+        else if (parameterDeclaration.getType() instanceof ProtocolType)
             type = parameterDeclaration.getType().toString();
 
         // Create a tag for this parameter and then add it to the collection
@@ -787,11 +794,11 @@ public class CodeGenJava extends Phase {
     }
 
     @Override
-    public final void visitAltCase(AltCase altCase)  {
-        org.processj.compiler.Compiler.Info(altCase + "Visiting an AltCase");
+    public final void visitAltStatementCase(AltStatement.Case aCase)  {
+        org.processj.compiler.Compiler.Info(aCase + "Visiting an AltCase");
 
         ST stAltCase = stGroup.getInstanceOf("AltCase");
-        Statement stat = altCase.getGuard().getStatement();
+        Statement stat = aCase.getGuardStatement().getStatement();
 //        String guard = (String) stat.visit(this);
         String guard = ""; //stat instanceof TimeoutStatement ? null : (String) stat.visit(this);
 
@@ -804,7 +811,7 @@ public class CodeGenJava extends Phase {
             stAltCase.add("dynamicAlt", stRepLocalVars.render());
         }
         // -->
-        stAltCase.add("number", altCase.getCaseNumber());
+        stAltCase.add("number", aCase.getCaseNumber());
         stAltCase.add("guardExpr", guard);
         stAltCase.add("stats", stats);
 
@@ -895,15 +902,13 @@ public class CodeGenJava extends Phase {
         if(doStatement.getEvaluationExpression() != null)
             expr = ""; //((String) doStatement.getEvaluationExpression().visit(this));
 
-        if (doStatement.getBody() != null) {
-            //Object o = doStatement.getBody().visit(this);
+        //Object o = doStatement.getBody().visit(this);
 
-            //if (o instanceof String) {
-                //stats = new String[] { (String) o };
-            //} else {
-                //stats = (String[]) o;
-            //}
-        }
+        //if (o instanceof String) {
+            //stats = new String[] { (String) o };
+        //} else {
+            //stats = (String[]) o;
+        //}
 
         stDoStat.add("expr", expr);
         stDoStat.add("body", stats);
@@ -933,7 +938,7 @@ public class CodeGenJava extends Phase {
         String[] stats = null;
 
         boolean preParFor = inParFor;
-        inParFor = forStatement.isPar() || preParFor;
+        inParFor = forStatement.isParallel() || preParFor;
 
         if (forStatement.getInitializationStatements() != null) {
             init = new ArrayList<>();
@@ -952,8 +957,8 @@ public class CodeGenJava extends Phase {
 
         }
 
-        if (!forStatement.isPar()) {
-            if (forStatement.getBody() != null) {
+        if (!forStatement.isParallel()) {
+
                 //Object o = forStatement.getBody().visit(this);
 
                 //if (o instanceof String) {
@@ -961,7 +966,7 @@ public class CodeGenJava extends Phase {
                 //} else {
                     //stats = (String[]) o;
                 //}
-            }
+
 
             stForStat = stGroup.getInstanceOf("ForStat");
             stForStat.add("init", init);
@@ -991,8 +996,8 @@ public class CodeGenJava extends Phase {
        // for(final Expression expression: forStatement.getBarriers())
             //barriers.add((String) expression.visit(this));
 
-        Sequence<Expression> se = forStatement.getBarrierExpressions();
-        for (Statement st : forStatement.getBody().getStatements()) {
+        BarrierSet se = forStatement.getBarrierSet();
+        for (Statement st : forStatement) {
             // An expression is any valid unit of code that resolves to a value,
             // that is, it can be a combination of variables, operations and values
             // that org.processj.yield a result. An statement is a line of code that performs
@@ -1045,7 +1050,7 @@ public class CodeGenJava extends Phase {
 
         thenStats = new String[0]; //(String[]) ifStatement.getThenBody().visit(this);
 
-        if(ifStatement.getElseBody() != null) {
+        if(ifStatement.getElseStatement() != null) {
 
             // TODO: Else Body is always a Sequence; Make sure we can
             // TODO: Generate s String from the statements
@@ -1062,7 +1067,7 @@ public class CodeGenJava extends Phase {
     @Override
     public final void visitParBlockStatement(ParBlock parBlock) throws Phase.Error {
 
-        org.processj.compiler.Compiler.Info(parBlock + "Visiting a ParBlock with " + parBlock.getBody().getStatements().size() + " statements.");
+        org.processj.compiler.Compiler.Info(parBlock + "Visiting a ParBlock with " + parBlock.size() + " statements.");
 
         // Don't generate code for an empty par statement
         //if(parBlock.getBody().getStatements().size() == 0)
@@ -1079,7 +1084,7 @@ public class CodeGenJava extends Phase {
         // Since this is a new par-block, we need to create a variable
         // inside the process in which this par-block was declared
         stParBlock.add("name", currentParBlock);
-        stParBlock.add("count", parBlock.getBody().getStatements().size());
+        stParBlock.add("count", parBlock.size());
         stParBlock.add("process", "this");
 
         // Increment the jump label and add it to the switch-stmt list
@@ -1087,14 +1092,14 @@ public class CodeGenJava extends Phase {
         switchCases.add(renderSwitchCase(jumpLabel));
 
         // Add the barrier this par-block enrolls in
-        if(parBlock.getBarrierSet().size() > 0) {
+        if(!parBlock.getBarrierSet().isEmpty()) {
 
             HashMap<String, Integer> parBlockBarrierSet = new HashMap<>();
 
-            for(Expression e: parBlock.getBarrierSet()) {
+            for(Map.Entry<Expression, Integer> entry: parBlock.getBarrierSet()) {
 
                 String name = ""; //(String) e.visit(this);
-                parBlockBarrierSet.put(name, parBlock.getEnrolls().get(((NameExpression) e).toString()));
+                parBlockBarrierSet.put(name, entry.getValue());
 
             }
 
@@ -1104,7 +1109,7 @@ public class CodeGenJava extends Phase {
         }
 
         // Visit the sequence of statements in the par-block
-        Sequence<Statement> statements = (Sequence<Statement>) parBlock.getBody().getStatements();
+        BlockStatement statements = parBlock;
 
         // Rendered the value of each statement
         ArrayList<String> stmts = new ArrayList<String>();
@@ -1113,16 +1118,16 @@ public class CodeGenJava extends Phase {
             if(st == null)
                 continue;
 
-            Sequence<Expression> se = new Sequence<>();
-            st.getBarrierSet().forEach(se::append);
+            //Sequence<Expression> se = new Sequence<>();
+            //st.getBarrierSet().forEach(se::append);
 
-            if(se != null) {
-                barriers = new ArrayList<>();
+            //if(se != null) {
+                //barriers = new ArrayList<>();
 
                 //for(Expression e: se)
                     //barriers.add((String) e.visit(this));
 
-            }
+            //}
 
             if(st instanceof ExpressionStatement && ((ExpressionStatement) st).getExpression() instanceof InvocationExpression) {
 
@@ -1154,8 +1159,8 @@ public class CodeGenJava extends Phase {
     }
 
     @Override
-    public final void visitProtocolCase(ProtocolCase protocolCase)  {
-        org.processj.compiler.Compiler.Info(protocolCase + "Visiting a ProtocolCase (" + protocolCase + ")");
+    public final void visitProtocolCase(ProtocolType.Case aCase)  {
+        org.processj.compiler.Compiler.Info(aCase + "Visiting a ProtocolCase (" + aCase + ")");
 
         ST stProtocolType = stGroup.getInstanceOf("ProtocolType");
         // Since we are keeping the name of a tag as is, this (in theory)
@@ -1166,12 +1171,12 @@ public class CodeGenJava extends Phase {
         recordMemberToField.clear();
 
         // The scope in which all members of this tag appeared
-        for (RecordMemberDeclaration rm : protocolCase.getBody())
-            try {
-                rm.accept(this);
-            } catch (Phase.Error error) {
-                throw new RuntimeException(error);
-            }
+        //for (RecordType.Member rm : aCase.getBody())
+            //try {
+                //rm.accept(this);
+            //} catch (Phase.Error error) {
+                //throw new RuntimeException(error);
+            //}
 
         // The list of fields passed to the constructor of the static
         // class that the record belongs to
@@ -1205,7 +1210,7 @@ public class CodeGenJava extends Phase {
 
         ST stSwitchStat = stGroup.getInstanceOf("SwitchStat");
         // Is this a protocol tag?
-        if (switchStatement.getEvaluationExpression().type instanceof ProtocolTypeDeclaration)
+        if (switchStatement.getEvaluationExpression().type instanceof ProtocolType)
             isProtocolCase = true;
 
         String expr = ""; //(String) switchStatement.getEvaluationExpression().visit(this);
@@ -1225,8 +1230,8 @@ public class CodeGenJava extends Phase {
     }
 
     @Override
-    public final void visitSwitchLabelExpression(SwitchLabel switchLabel)  {
-        org.processj.compiler.Compiler.Info(switchLabel + "Visiting a SwitchLabel");
+    public final void visitSwitchLabelExpression(SwitchStatement.Group.Case aCase)  {
+        org.processj.compiler.Compiler.Info(aCase + "Visiting a SwitchLabel");
 
         ST stSwitchLabel = stGroup.getInstanceOf("SwitchLabel");
 
@@ -1246,8 +1251,8 @@ public class CodeGenJava extends Phase {
     }
 
     @Override
-    public final void visitSwitchGroupStatement(SwitchGroupStatement switchGroupStatement)  {
-        org.processj.compiler.Compiler.Info(switchGroupStatement + "Visit a SwitchGroup");
+    public final void visitSwitchStatementGroup(SwitchStatement.Group group)  {
+        org.processj.compiler.Compiler.Info(group + "Visit a SwitchGroup");
 
         ST stSwitchGroup = stGroup.getInstanceOf("SwitchGroup");
 
@@ -1256,7 +1261,7 @@ public class CodeGenJava extends Phase {
             //labels.add((String) sl.visit(this));
 
         ArrayList<String> stats = new ArrayList<>();
-        for (Statement st : switchGroupStatement.getStatements()) {
+        for (Statement st : group) {
             if (st != null) {
                 //Object stmt = st.visit(this);
 
@@ -1318,7 +1323,7 @@ public class CodeGenJava extends Phase {
         //if(whileStatement.getEvaluationExpression() != null)
             //expr = ((String) whileStatement.getEvaluationExpression().visit(this));
 
-        if(whileStatement.getBody() != null) {
+
             //Object o = whileStatement.getBody().visit(this);
 
             //if(o instanceof String) {
@@ -1326,7 +1331,7 @@ public class CodeGenJava extends Phase {
             //} else {
                 //stats = (String[]) o;
             //}
-        }
+
 
         stWhileStat.add("expr", expr);
         stWhileStat.add("body", stats);
@@ -1374,9 +1379,9 @@ public class CodeGenJava extends Phase {
             // done in Java. Thus we need need to cast - unnecessarily - the returned
             // value of a channel read expression
             if (assignmentExpression.getLeftExpression().type != null) {
-                if (assignmentExpression.getLeftExpression().type instanceof RecordTypeDeclaration)
+                if (assignmentExpression.getLeftExpression().type instanceof RecordType)
                     type = assignmentExpression.getLeftExpression().type.toString();
-                else if (assignmentExpression.getLeftExpression().type instanceof ProtocolTypeDeclaration)
+                else if (assignmentExpression.getLeftExpression().type instanceof ProtocolType)
                     type = PJProtocolCase.class.getSimpleName();
                 //else type = (String) assignmentExpression.getLeftExpression().type.visit(this);
 
@@ -1422,7 +1427,7 @@ public class CodeGenJava extends Phase {
                 && ((NameExpression) binaryExpression.getRightExpression()).myDecl instanceof LocalDeclaration)) {
             LocalDeclaration ld1 = (LocalDeclaration) ((NameExpression) binaryExpression.getLeftExpression()).myDecl;
             LocalDeclaration ld2 = (LocalDeclaration) ((NameExpression) binaryExpression.getRightExpression()).myDecl;
-            if (ld1.getType().isStringType() && ld2.getType().isStringType()) {
+            if (ld1.getType() instanceof StringType && ld2.getType() instanceof StringType) {
                 stBinaryExpr = stGroup.getInstanceOf("StringCompare");
                 stBinaryExpr.add("str1", lhs);
                 stBinaryExpr.add("str2", rhs);
@@ -1438,7 +1443,7 @@ public class CodeGenJava extends Phase {
         if ("instanceof".equals(op) && localToFields.containsKey(lhs)) {
             String namedType = localToFields.get(lhs);
             Object o = getScope().get(namedType);
-            if (o instanceof RecordTypeDeclaration) {
+            if (o instanceof RecordType) {
                 stBinaryExpr = stGroup.getInstanceOf("RecordExtend");
                 stBinaryExpr.add("name", lhs);
                 stBinaryExpr.add("type", String.format("I_%s", rhs));
@@ -1530,7 +1535,7 @@ public class CodeGenJava extends Phase {
 
         ST stInvocation = null;
         // Target procedure
-        ProcedureTypeDeclaration pd = invocationExpression.targetProc;
+        ProcedureType pd = invocationExpression.targetProc;
         // Name of invoked procedure
         String pdName = pd.toString();
 
@@ -1572,10 +1577,7 @@ public class CodeGenJava extends Phase {
         // For an invocation of a procedure that yields and one which
         // is not inside par-block, we wrap the procedure in a par-block
         if(pd.doesYield() && currentParBlock == null) {
-             (new ParBlock(new Sequence(new ExpressionStatement(invocationExpression)), // Statements
-                        new Sequence())) // Barriers
-                        .accept(this); // Return a procedure wrapped in a par-block
-
+            new ParBlock(new ExpressionStatement(invocationExpression), new BarrierSet()).accept(this);
         }
 
         // Does this procedure yield?
@@ -1621,7 +1623,7 @@ public class CodeGenJava extends Phase {
         final Type      targetType = recordAccessExpression.getTarget().getType();
         final String    name        = ""; //(String) recordAccessExpression.getTarget().visit(this); // Reference to inner class type
 
-        if(targetType instanceof RecordTypeDeclaration) {
+        if(targetType instanceof RecordType) {
 
             stAccessor = stGroup.getInstanceOf("RecordAccessor");
 
@@ -1630,13 +1632,13 @@ public class CodeGenJava extends Phase {
             stAccessor.add("name", name);
             stAccessor.add("member", field);
 
-        } else if(targetType instanceof ProtocolTypeDeclaration) {
+        } else if(targetType instanceof ProtocolType) {
 
             stAccessor = stGroup.getInstanceOf("ProtocolAccess");
 
             String field = recordAccessExpression.toString(); // Field in inner class
 
-            ProtocolTypeDeclaration pt = (ProtocolTypeDeclaration) targetType;
+            ProtocolType pt = (ProtocolType) targetType;
             String protocName = paramToVarNames.getOrDefault(pt.toString(), pt.toString());
 
             // Cast a protocol to a super-type if needed
@@ -1807,11 +1809,11 @@ public class CodeGenJava extends Phase {
         // Initialize a handle to the ProtocolType Declaration & the Protocol Case
         // TODO: Make sure that the ProtocolTypeDeclaration outputs its' defined members in-order
         // TODO: Maybe Visit Children?
-        final ProtocolTypeDeclaration protocolTypeDeclaration = (ProtocolTypeDeclaration) this.getScope().get(name.toString());
-        final ProtocolCase      target                  = protocolTypeDeclaration.getCase(tag.toString());
+        //final ProtocolType protocolType = (ProtocolType) this.getScope().get(name.toString());
+        //final ProtocolType.Case target                  = protocolType.getCase(tag.toString());
 
         // Aggregate the Expressions to match RecordTypeDeclaration's order
-        target.getBody().forEach(sourceContext::resolveOrder);
+        //target.getBody().forEach(sourceContext::resolveOrder);
 
         // Pop the previous SourceContext
         this.sourceContext = this.sourceContexts.pop();
@@ -1841,10 +1843,10 @@ public class CodeGenJava extends Phase {
         // Initialize a handle to the ProtocolType Declaration & the Protocol Case
         // TODO: Make sure that the ProtocolTypeDeclaration outputs its' defined members in-order
         // TODO: Maybe Visit Children?
-        final RecordTypeDeclaration recordTypeDeclaration = (RecordTypeDeclaration) this.getScope().get(name.toString());
+        //final RecordType recordType = (RecordType) this.getScope().get(name.toString());
 
         // Aggregate the Expressions to match RecordTypeDeclaration's order
-        recordTypeDeclaration.getBody().forEach(recordLiteralSourceContext::resolveOrder);
+        //recordType.getBody().forEach(recordLiteralSourceContext::resolveOrder);
 
         // Pop the previous SourceContext
         this.sourceContext = this.sourceContexts.pop();
@@ -2230,16 +2232,16 @@ public class CodeGenJava extends Phase {
 
         }
 
-        public final void resolveOrder(final RecordMemberDeclaration recordMemberDeclaration) {
+        public final void resolveOrder(final RecordType.Member member) {
 
-            if(recordMemberDeclaration != null) {
+            if(member != null) {
 
                 // Initialize a handle to the Expression
                 final JavaSourceContext javaSourceContext =
-                        this.recordMemberLiterals.get(recordMemberDeclaration.toString());
+                        this.recordMemberLiterals.get(member.toString());
 
                 // TODO: Assert the Expression was found
-                this.recordMemberLiterals.remove(recordMemberDeclaration.toString());
+                this.recordMemberLiterals.remove(member.toString());
 
                 // Aggregate the Expression
                 this.children.add(javaSourceContext);
@@ -2311,16 +2313,16 @@ public class CodeGenJava extends Phase {
 
         }
 
-        public final void resolveOrder(final RecordMemberDeclaration recordMemberDeclaration) {
+        public final void resolveOrder(final RecordType.Member member) {
 
-            if(recordMemberDeclaration != null) {
+            if(member != null) {
 
                 // Initialize a handle to the Expression
                 final JavaSourceContext javaSourceContext =
-                        this.recordMemberLiterals.get(recordMemberDeclaration.toString());
+                        this.recordMemberLiterals.get(member.toString());
 
                 // TODO: Assert the Expression was found
-                this.recordMemberLiterals.remove(recordMemberDeclaration.toString());
+                this.recordMemberLiterals.remove(member.toString());
 
                 // Aggregate the Expression
                 this.children.add(javaSourceContext);
@@ -2421,10 +2423,10 @@ public class CodeGenJava extends Phase {
                 // Truncate the <
                 type = type.substring(0, type.indexOf("<"));// + "<?>";
 
-            else if (arrayType.getComponentType() instanceof RecordTypeDeclaration)
+            else if (arrayType.getComponentType() instanceof RecordType)
                 type = arrayType.getComponentType().toString();
 
-            else if (arrayType.getComponentType() instanceof ProtocolTypeDeclaration)
+            else if (arrayType.getComponentType() instanceof ProtocolType)
                 type = PJProtocolCase.class.getSimpleName();
             //else if (componentType instanceof PrimitiveType)
             //    ;
@@ -2590,13 +2592,13 @@ public class CodeGenJava extends Phase {
 
             String string = this.primitiveType.toString();
 
-            if(this.primitiveType.isStringType())
+            if(this.primitiveType instanceof StringType)
                 string = "String";
 
-            else if (this.primitiveType.isTimerType())
+            else if (this.primitiveType instanceof TimerType)
                 string = PJTimer.class.getSimpleName();
 
-            else if (this.primitiveType.isBarrierType())
+            else if (this.primitiveType instanceof BarrierType)
                 string = PJBarrier.class.getSimpleName();
 
             return string;
@@ -2682,7 +2684,7 @@ public class CodeGenJava extends Phase {
             org.processj.compiler.Compiler.Info(altStatement + "Visiting a Dynamic or Replicated Alt");
             // This queue contains the number of cases found in the alt stmt
             ArrayDeque<Integer> queue = new ArrayDeque<>();
-            Sequence<AltCase> reAltCase = altStatement.getBody();
+            Sequence<AltStatement.Case> reAltCase = new Sequence<>(); //altStatement.getBody();
             // This section belongs to the generated code for the ForStat
             // The ST for the ForStat pertaining to an AltCase should be
             // created only for replicated Alts
@@ -2693,20 +2695,20 @@ public class CodeGenJava extends Phase {
                 queue.add(i);
             // Rewrite guards that are not part of an altStat
             for (int i = 0; i < reAltCase.size(); ++i) {
-                AltCase ac = reAltCase.child(i);
+                AltStatement.Case ac = reAltCase.child(i);
                 if (!ac.isNestedAltStatement())
                     reAltCase.insert(i, createDynamicAltStat(ac));
             }
             int childIndex = 0;
             for (int altCaseIndex = queue.remove();;) {
 //                System.err.println("[" + altCaseIndex + "]");
-                AltCase ac = reAltCase.child(childIndex);
+                AltStatement.Case ac = reAltCase.child(childIndex);
                 ac.setCaseNumber(altCaseIndex);
                 if (ac.isNestedAltStatement()) {
-                    ST stForStat = (ST) createAltForStat((AltStatement) ((BlockStatement) ac.getBody()).getStatements().child(0));
+                    ST stForStat = (ST) createAltForStat((AltStatement) ac.getFirst());
                     arrayOfReplicatedAltLoop.add(stForStat);
-                    AltStatement as2 = (AltStatement) ((BlockStatement) ac.getBody()).getStatements().child(0);
-                    reAltCase = as2.getBody();
+                    AltStatement as2 = (AltStatement) ac.getFirst();
+                    //reAltCase = as2;
 //                    altCaseIndex = 0;
                     childIndex = 0;
                 } else {
@@ -2734,15 +2736,16 @@ public class CodeGenJava extends Phase {
                         // This is for expressions that evaluate to a boolean value.
                         // Such expressions become local variables (or, in our case, fields)
                         Name n = new Name("btemp");
-                        LocalDeclaration ld = new LocalDeclaration(new PrimitiveType(PrimitiveType.BooleanKind),
-                                n, ac.getPreconditionExpression(), false /* not constant */);
+                        final Modifiers modifiers = new Modifiers();
+                        LocalDeclaration ld = new LocalDeclaration(modifiers, new BooleanType(),
+                                n, ac.getPreconditionExpression());
                         //listOfReplicatedAltLocals.add((String) ld.visit(this));
 
                         bguard = ""; //(String) n.visit(this);
 
                     }
 
-                    Statement stat = ac.getGuard().getStatement();
+                    Statement stat = ac.getGuardStatement().getStatement();
                     // TODO: What if the expression is not an array??
                     // Is it just a channel read expression?
                     if (stat instanceof ExpressionStatement) {
@@ -2792,7 +2795,7 @@ public class CodeGenJava extends Phase {
                     // *************************************
                     // *************************************
                     if (!queue.isEmpty()) {
-                        reAltCase = altStatement.getBody();
+                        reAltCase = new Sequence<>(); //altStatement;
                         arrayOfReplicatedAltLoop.clear();
                         indexSetOfAltCase.clear();
                         altCaseIndex = queue.remove();
@@ -2809,7 +2812,7 @@ public class CodeGenJava extends Phase {
             // code
             Name n = new Name("index" + (++indexForAltStat));
             try {
-                new LocalDeclaration(new PrimitiveType(PrimitiveType.IntKind), n, null, false /* not constant */)
+                new LocalDeclaration(new Modifiers(), new IntegerType(), n, null)
                         .accept(this);
             } catch (Phase.Error error) {
                 throw new RuntimeException(error);
@@ -2852,7 +2855,7 @@ public class CodeGenJava extends Phase {
         ST stBooleanGuards = stGroup.getInstanceOf("BooleanGuards");
         ST stObjectGuards = stGroup.getInstanceOf("ObjectGuards");
 
-        Sequence<AltCase> cases = altStatement.getBody();
+        Sequence<AltStatement.Case> cases = new Sequence<>(); //altStatement.getBody();
         ArrayList<String> blocals = new ArrayList<>(); // Variables for pre-guard expressions
         ArrayList<String> bguards = new ArrayList<>(); // Default boolean guards
         ArrayList<String> guards = new ArrayList<>(); // Guard statements
@@ -2861,7 +2864,7 @@ public class CodeGenJava extends Phase {
 
         // Set boolean guards
         for (int i = 0; i < cases.size(); ++i) {
-            AltCase ac = cases.child(i);
+            AltStatement.Case ac = cases.child(i);
             if (ac.getPreconditionExpression() == null)
                 bguards.add(String.valueOf(true));
             else if (ac.getPreconditionExpression() instanceof LiteralExpression){
@@ -2871,8 +2874,8 @@ public class CodeGenJava extends Phase {
                 // This is for expressions that evaluate to a boolean value.
                 // Such expressions become local variables (or, in our case, fields)
                 Name n = new Name("btemp");
-                LocalDeclaration ld = new LocalDeclaration(new PrimitiveType(PrimitiveType.BooleanKind),
-                        n, ac.getPreconditionExpression(), false /* not constant */);
+                LocalDeclaration ld = new LocalDeclaration(new Modifiers(), new BooleanType(),
+                        n, ac.getPreconditionExpression());
                 // blocals.add((String) ld.visit(this));
 
                 //bguards.add((String) n.visit(this));
@@ -2891,8 +2894,8 @@ public class CodeGenJava extends Phase {
             cases.child(i).setCaseNumber(i);
         // Visit all guards
         for (int i = 0; i < cases.size(); ++i) {
-            AltCase ac = cases.child(i);
-            Statement stat = ac.getGuard().getStatement();
+            AltStatement.Case ac = cases.child(i);
+            Statement stat = ac.getGuardStatement().getStatement();
             // Channel read expression?
             if (stat instanceof ExpressionStatement) {
                 Expression e = ((ExpressionStatement) stat).getExpression();
@@ -2934,7 +2937,7 @@ public class CodeGenJava extends Phase {
         // This is needed because of the StackMapTable for the generated Java bytecode
         Name n = new Name("index");
         try {
-            new LocalDeclaration(new PrimitiveType(PrimitiveType.IntKind), n, null, false /* not constant */).accept(this);
+            new LocalDeclaration(new Modifiers(), new IntegerType(), n, null).accept(this);
         } catch (Phase.Error error) {
             throw new RuntimeException(error);
         }
@@ -2983,7 +2986,7 @@ public class CodeGenJava extends Phase {
             for (String str : init)
                 indexSetOfAltCase.add(str.substring(0, str.indexOf("=")).trim());
         }
-        if(as.evaluationExpression() != null)
+        if(as.definesEvaluationExpression())
             expr = ""; //(String) as.evaluationExpression().visit(this);
 
         if (as.getIncrementStatements() != null) {
@@ -3009,9 +3012,9 @@ public class CodeGenJava extends Phase {
      */
     private String getChannelType(Type t) throws Phase.Error  {
         String baseType = null;
-        if (t instanceof RecordTypeDeclaration) {
+        if (t instanceof RecordType) {
             baseType = t.toString();
-        } else if (t instanceof ProtocolTypeDeclaration) {
+        } else if (t instanceof ProtocolType) {
             baseType = PJProtocolCase.class.getSimpleName();
         } else if (t instanceof PrimitiveType) {
             // This is needed because we can only have wrapper class
@@ -3057,14 +3060,14 @@ public class CodeGenJava extends Phase {
      * @return An 'anonymous' procedure.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private ProcedureTypeDeclaration createAnonymousProcTypeDecl(Statement st)  {
-        return new ProcedureTypeDeclaration(null,
+    private ProcedureType createAnonymousProcTypeDecl(Statement st)  {
+        return new ProcedureType(null,
                 new Modifiers(), // Modifiers
                 null, // Return type
                 new Name("Anonymous"), // Procedure name
-                new Sequence(), // Formal parameters
-                new Sequence(), // Implement
-                new BlockStatement(new Sequence(st))); // Body
+                new Parameters(), // Formal parameters
+                new Names(), // Implement
+                new BlockStatement(st)); // Body
     }
 
     int index = 0;
@@ -3074,8 +3077,7 @@ public class CodeGenJava extends Phase {
         Name n = new Name(localDeclName);
         NameExpression ne = new NameExpression(n);
         PrimitiveLiteralExpression pl = new PrimitiveLiteralExpression(new Token(0, "0", 0, 0, 0), 4 /* kind */);
-        LocalDeclaration ld = new LocalDeclaration(new PrimitiveType(PrimitiveType.IntKind), n, null,
-                false /* not constant */);
+        LocalDeclaration ld = new LocalDeclaration(new Modifiers(), new IntegerType(), n, null);
         try {
             ld.accept(this);
         } catch (Phase.Error error) {
@@ -3164,7 +3166,7 @@ public class CodeGenJava extends Phase {
         //chanEndName = (String) chanExpr.visit(this);
 
         // Is it a timer read expression?
-        if (chanExpr.type.isTimerType()) {
+        if (chanExpr.getType() instanceof TimerType) {
             ST stTimerRedExpr = stGroup.getInstanceOf("TimerRedExpr");
             stTimerRedExpr.add("name", lhs);
             return stTimerRedExpr.render();
@@ -3202,12 +3204,11 @@ public class CodeGenJava extends Phase {
         return stChannelReadExpr.render();
     }
 
-    public AltCase createDynamicAltStat(AltCase ac) {
+    public AltStatement.Case createDynamicAltStat(AltStatement.Case ac) {
         Name n = new Name("tmp_i");
         NameExpression ne = new NameExpression(n);
         PrimitiveLiteralExpression pl = new PrimitiveLiteralExpression(new Token(0, "0", 0, 0, 0), 4 /* kind */);
-        LocalDeclaration ld = new LocalDeclaration(new PrimitiveType(PrimitiveType.IntKind), n, null,
-                false /* not constant */);
+        LocalDeclaration ld = new LocalDeclaration(new Modifiers(), new IntegerType(), n, null);
         try {
             ld.accept(this);
         } catch (Phase.Error error) {
@@ -3216,22 +3217,16 @@ public class CodeGenJava extends Phase {
         PrimitiveLiteralExpression pl2 = new PrimitiveLiteralExpression(new Token(0, "1", 0, 0, 0), 4 /* kind */);
         BinaryExpression be = new BinaryExpression(ne, pl2, BinaryExpression.LT);
         ExpressionStatement es = new ExpressionStatement(new UnaryPreExpression(ne, UnaryPreExpression.PLUSPLUS));
-        Sequence<Statement> init = new Sequence<>();
-        init.append(new ExpressionStatement((Expression) new AssignmentExpression(ne, pl, AssignmentExpression.EQ)));
-        Sequence<ExpressionStatement> incr = new Sequence<>();
-        incr.append(es);
-        Sequence<AltCase> body = new Sequence<>();
-        body.append(ac);
-        AltStatement as = new AltStatement(init, be, incr, body, false);
-        as.setReplicated(true);
-        ac = new AltCase(null, null, new BlockStatement(new Sequence<>(as)));
-        ac.setNestedAltStatement();
+        Statements initializationStatements = new Statements(new ExpressionStatement(new AssignmentExpression(ne, pl, AssignmentExpression.EQ)));
+        Statements incrementStatements = new Statements(es);
+        AltStatement as = new AltStatement(initializationStatements, be, incrementStatements, ac, false);
+        ac = new AltStatement.Case(null, null, new BlockStatement(as));
         return ac;
     }
 
     // Returns a string representing the signature of the wrapper
     // class or Java method that encapsulates a PJProcess
-    public String hashSignature(ProcedureTypeDeclaration pd) {
+    public String hashSignature(ProcedureType pd) {
         String signature = pd.getSignature();
         return String.valueOf(signature.hashCode()).replace('-', '$');
     }
@@ -3384,7 +3379,7 @@ public class CodeGenJava extends Phase {
 
                 // TODO: is this appropriate? is there another way?
                 if(rewritten == true) {
-                    invocationExpression.children[2] = newParams;
+                    invocationExpression.children.set(2, newParams);
                 }
             }
 
@@ -3442,7 +3437,7 @@ public class CodeGenJava extends Phase {
                             org.processj.compiler.Compiler.Info("array of NamedTypes");
                         } else if (t instanceof PrimitiveType) {
                             org.processj.compiler.Compiler.Info("array of PrimitiveTypes");
-                            if (((PrimitiveType)t).getKind() == PrimitiveType.StringKind) {
+                            if (t instanceof StringType) {
                                 org.processj.compiler.Compiler.Info(params.child(i).toString() + " is string PrimitiveLiteral");
                                 if (be != null) {
                                     org.processj.compiler.Compiler.Info("Appending to new BinaryExpr " + be.toString() + " to rebuiltParams");

@@ -1,0 +1,2181 @@
+/**
+ * <p>ProcessJ Grammar.</p>
+ * <p>This grammar defines the specification for ProcessJ source code.</p>
+ * @author Jan B. Pedersen
+ * @author Cabel Shrestha
+ * @author Benjamin Cisneros
+ * @author Carlos L. Cuenca
+ * @version %I%, %G%
+ * @since 0.1.0
+ */
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Package Declaration                                                                                             **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+package org.processj.compiler.phase.generated;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Imports                                                                                                         **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+import org.processj.compiler.ast.*;
+import org.processj.compiler.ast.expression.*;
+import org.processj.compiler.ast.expression.access.*;
+import org.processj.compiler.ast.expression.binary.*;
+import org.processj.compiler.ast.expression.constructing.*;
+import org.processj.compiler.ast.expression.literal.*;
+import org.processj.compiler.ast.expression.resolve.*;
+import org.processj.compiler.ast.expression.result.*;
+import org.processj.compiler.ast.expression.unary.*;
+import org.processj.compiler.ast.expression.yielding.*;
+import org.processj.compiler.ast.packages.*;
+import org.processj.compiler.ast.statement.*;
+import org.processj.compiler.ast.statement.conditional.*;
+import org.processj.compiler.ast.statement.control.*;
+import org.processj.compiler.ast.statement.declarative.*;
+import org.processj.compiler.ast.statement.yielding.*;
+import org.processj.compiler.ast.type.*;
+import org.processj.compiler.ast.type.primitive.*;
+import org.processj.compiler.ast.type.primitive.numeric.*;
+import org.processj.compiler.ast.type.primitive.numeric.integral.*;
+import org.processj.compiler.ast.modifier.*;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.io.FileReader;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Scanning Method                                                                                                 **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+scan with {:
+
+    return lexer.next_token();
+
+:};
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Lexer Initialization Code                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+init with {: :}
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Parser Method & Variable Declarations                                                                           **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+parser code {:
+
+    public  Lexer   lexer   ;
+    private Handler handler ;
+
+    public Parser(final FileReader fileReader, final Handler handler) {
+        this();
+
+        this.lexer      = new Lexer(fileReader) ;
+        this.handler    = handler               ;
+
+    }
+
+    public void syntax_error(java_cup.runtime.Symbol current) {
+
+        // Delegate this to the Handler
+        this.handler.onSyntaxError((Token) current.value,
+            Lexer.LineCount, Lexer.CurrentLine.length() + 1, Lexer.LineCount);
+
+    }
+
+    public interface Handler {
+
+        void onSyntaxError(final Token token, final int line, final int lineLength, final int lineCount);
+
+        void onIllegalCastExpression(final Expression expression, final int lineLength, final int lineCount);
+
+        void onMalformedPackageAccessExpression(final Expression expression, final int lineLength, final int lineCount);
+
+    }
+
+    public final Compilation getParsedCompilation() throws Exception {
+
+        return (Compilation) this.parse().value;
+
+    }
+
+
+:};
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Action Code                                                                                                     **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+action code {: :}
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Terminals                                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Modifiers                                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token MOBILE       ; // "mobile"
+terminal Token NATIVE       ; // "native"
+terminal Token PUBLIC       ; // "public"
+terminal Token PRIVATE      ; // "private"
+terminal Token PROTECTED    ; // "protected"
+terminal Token CONST        ; // "const"
+terminal Token EXTERN       ; // "extern"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Keywords                                                                                                        **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token BREAK        ; // "break"
+terminal Token CASE         ; // "case"
+terminal Token CONTINUE     ; // "continue"
+terminal Token DO           ; // "do"
+terminal Token DEFAULT      ; // "default"
+terminal Token ELSE         ; // "else"
+terminal Token EXTENDS      ; // "extends"
+terminal Token FOR          ; // "for"
+terminal Token IF           ; // "if"
+terminal Token IMPLEMENTS   ; // "implements"
+terminal Token IMPORT       ; // "import"
+terminal Token IS           ; // "instanceof"
+terminal Token NEW          ; // "new"
+terminal Token PACKAGE      ; // "package"
+terminal Token RETURN       ; // "return"
+terminal Token SWITCH       ; // "switch"
+terminal Token WHILE        ; // "while"
+terminal Token PRAGMA       ; // "pragma"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Process Keywords                                                                                                **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token ALT          ; // "alt"
+terminal Token CHAN         ; // "chan"
+terminal Token CLAIM        ; // "claim"
+terminal Token ENROLL       ; // "enroll"
+terminal Token FORK         ; // "fork"
+terminal Token PAR          ; // "par"
+terminal Token PRI          ; // "pri"
+terminal Token PROC         ; // "proc"
+terminal Token PROTOCOL     ; // "protocol"
+terminal Token READ         ; // "read"
+terminal Token RECORD       ; // "record"
+terminal Token RESUME       ; // "resume"
+terminal Token SEQ          ; // "seq"
+terminal Token SHARED       ; // "shared"
+terminal Token SKIP         ; // "skip"
+terminal Token STOP         ; // "stop"
+terminal Token SYNC         ; // "sync"
+terminal Token SUSPEND      ; // "suspend"
+terminal Token TIMEOUT      ; // "timeout"
+terminal Token WITH         ; // "with"
+terminal Token WRITE        ; // "write"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Separators                                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token LPAREN       ; // "("
+terminal Token RPAREN       ; // ")"
+terminal Token LBRACK       ; // "["
+terminal Token RBRACK       ; // "]"
+terminal Token LBRACE       ; // "{"
+terminal Token RBRACE       ; // "}"
+terminal Token SEMICOLON    ; // ";"
+terminal Token COMMA        ; // ","
+terminal Token DOT          ; // "."
+terminal Token QUEST        ; // "?"
+terminal Token COLON        ; // ":"
+terminal Token COLONCOLON   ; // "::"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Unary Operators                                                                                                 **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token NOT          ; // "!"
+terminal Token COMP         ; // "~"
+terminal Token PLUSPLUS     ; // "++"
+terminal Token MINUSMINUS   ; // "--"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Bitwise Operators                                                                                               **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token AND          ; // "&"
+terminal Token XOR          ; // "^"
+terminal Token OR           ; // "|"
+terminal Token LSHIFT       ; // "<<"
+terminal Token RSHIFT       ; // ">>"
+terminal Token RRSHIFT      ; // ">>>"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Logical Operators                                                                                               **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token ANDAND       ; // "&&"
+terminal Token OROR         ; // "||"
+terminal Token EQEQ         ; // "=="
+terminal Token NOTEQ        ; // "!="
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Relational Operators                                                                                            **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token GT           ; // ">"
+terminal Token LT           ; // "<"
+terminal Token LTEQ         ; // "<="
+terminal Token GTEQ         ; // ">="
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Arithmetic Operators                                                                                            **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token PLUS         ; // "+"
+terminal Token MINUS        ; // "-"
+terminal Token MULT         ; // "*"
+terminal Token DIV          ; // "/"
+terminal Token MOD          ; // "%"
+terminal Token EQ           ; // "="
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Compound Assignment Operators                                                                                   **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token ANDEQ        ; // "&="
+terminal Token XOREQ        ; // "^="
+terminal Token OREQ         ; // "|="
+terminal Token LSHIFTEQ     ; // "<<="
+terminal Token RSHIFTEQ     ; // ">>="
+terminal Token RRSHIFTEQ    ; // ">>>="
+terminal Token PLUSEQ       ; // "+="
+terminal Token MINUSEQ      ; // "-="
+terminal Token MULTEQ       ; // "*="
+terminal Token DIVEQ        ; // "/="
+terminal Token MODEQ        ; // "%="
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Atomic Types                                                                                                    **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token BOOLEAN      ; // "boolean"
+terminal Token BYTE         ; // "byte"
+terminal Token CHAR         ; // "char"
+terminal Token DOUBLE       ; // "double"
+terminal Token FLOAT        ; // "float"
+terminal Token INT          ; // "int"
+terminal Token LONG         ; // "long"
+terminal Token SHORT        ; // "short"
+terminal Token STRING       ; // "string"
+terminal Token VOID         ; // "void"
+terminal Token BARRIER      ; // "barrier"
+terminal Token TIMER        ; // "timer"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Boolean Literals                                                                                                **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token BOOLEAN_LITERAL      ; // "true" or "false"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Boolean Literals                                                                                                **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token NULL_LITERAL         ; // "null"
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Numeric Literals                                                                                                **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token INTEGER_LITERAL      ;
+terminal Token LONG_LITERAL         ;
+terminal Token FLOAT_LITERAL        ;
+terminal Token DOUBLE_LITERAL       ;
+terminal Token CHARACTER_LITERAL    ;
+terminal Token STRING_LITERAL       ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Identifier                                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+terminal Token IDENTIFIER           ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Non-Terminals                                                                                                   **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 1.0 Source                                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Compilation                compilation_unit                        ;
+non terminal Name                       qualified_name                          ;
+non terminal Names                      names                                   ;
+non terminal Name                       name                                    ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 1.1 Pragmas                                                                                                     **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Pragmas                    pragmas_opt                             ;
+non terminal Pragmas                    pragmas                                 ;
+non terminal Pragma                     pragma                                  ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 1.2 Package Declaration                                                                                         **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Name                       package_declaration_opt                 ;
+non terminal Name                       package_declaration                     ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 1.3 Import Declaration                                                                                          **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Sequence                   import_declarations_opt                 ;
+non terminal Sequence                   import_declarations                     ;
+non terminal Import                     import_declaration                      ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 2.0 Type Declarations                                                                                           **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Types                      type_declarations_opt                   ;
+non terminal Types                      type_declarations                       ;
+non terminal Type                       type_declaration                        ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 2.1 Procedure Type Declarations                                                                                 **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal ProcedureType              procedure_type_declaration              ;
+non terminal BlockStatement             body_opt                                ;
+non terminal Names                      implements_opt                          ;
+non terminal Parameters                 formal_parameters_opt                   ;
+non terminal Parameters                 formal_parameters                       ;
+non terminal ParameterDeclaration       formal_parameter                        ;
+non terminal Annotations                annotations_opt                         ;
+non terminal Sequence                   annotations                             ;
+non terminal Annotation                 annotation                              ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 2.2 Protocol Type Declarations                                                                                  **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal ProtocolType               protocol_type_declaration               ;
+non terminal Names                      extends_opt                             ;
+non terminal BlockStatement             protocol_body                           ;
+non terminal BlockStatement             protocol_cases                          ;
+non terminal ProtocolType.Case          protocol_case                           ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 2.3 Record Type Declarations                                                                                    **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal RecordType                 record_type_declaration                 ;
+non terminal BlockStatement             record_body                             ;
+non terminal BlockStatement             member_declarations                     ;
+non terminal List<RecordType.Member>    member_declaration                      ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 3.0 Types                                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Type                       type                                    ;
+non terminal Type                       type_without_dims                       ;
+non terminal Type                       type_with_dims                          ;
+non terminal PrimitiveType              primitive_type                          ;
+non terminal ChannelType                channel_type                            ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 4.0 Modifiers                                                                                                   **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Modifiers                  modifiers_opt                           ;
+non terminal Modifiers                  modifiers                               ;
+non terminal Modifier                   modifier                                ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 5.0 Constants & Variable Declarations                                                                           **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal List<VariableDeclaration>  variable_declaration                    ;
+non terminal List<Var>                  variable_declarators                    ;
+non terminal Var                        variable_declarator                     ;
+non terminal Name                       variable_declarator_identifier          ;
+non terminal Expression                 variable_initializer                    ;
+non terminal Modifiers variable_modifiers_opt;
+non terminal Modifiers variable_modifiers;
+non terminal Modifier variable_modifier;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 6.0 Arrays                                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal ArrayLiteralExpression     array_initializer                       ;
+non terminal Sequence                   variable_initializers_opt               ;
+non terminal Sequence                   variable_initializers                   ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.0 Blocks & Statements                                                                                         **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal BlockStatement             block_opt                               ;
+non terminal BlockStatement             block                                   ;
+non terminal Statements                 block_statements_opt                    ;
+non terminal Statements                 block_statements                        ;
+non terminal ParBlock                   par_block                               ;
+non terminal BarrierSet                 barriers                                ;
+non terminal Statement                  statement                               ;
+non terminal Statement                  statement_no_short_if                   ;
+non terminal Statement                  statement_without_trailing_substatement ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.1 If Statements                                                                                               **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal IfStatement                if_then_statement                       ;
+non terminal IfStatement                if_then_else_statement                  ;
+non terminal IfStatement                if_then_else_statement_no_short_if      ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.2 While/For/Do Statements                                                                                     **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal WhileStatement             while_statement                         ;
+non terminal WhileStatement             while_statement_no_short_if             ;
+non terminal ForStatement               for_statement                           ;
+non terminal ForStatement               for_statement_no_short_if               ;
+non terminal Sequence                   for_init_opt                            ;
+non terminal Sequence                   for_init                                ;
+non terminal Sequence                   for_update_opt                          ;
+non terminal Sequence                   for_update                              ;
+non terminal Sequence                   statement_expressions                   ;
+non terminal DoStatement                do_statement                            ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.3 Claim Statement                                                                                             **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal ClaimStatement             claim_statement                         ;
+non terminal ClaimStatement             claim_statement_no_short_if             ;
+non terminal Sequence                   channels                                ;
+non terminal AST                        channel                                 ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.5 Barrier Sync & Timeout Statements                                                                           **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal SyncStatement              barrier_sync_statement                  ;
+non terminal TimeoutStatement           timeout_statement                       ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.6 Suspend Statement                                                                                           **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal SuspendStatement           suspend_statement                       ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.7 Expression Statement & Labelled Statements                                                                  **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Expression                 statement_expression                    ;
+non terminal Statement                  labeled_statement                       ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.8 Break/Continue/Return Statements                                                                            **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal BreakStatement             break_statement                         ;
+non terminal ContinueStatement          continue_statement                      ;
+non terminal Name                       identifier_opt                          ;
+non terminal ReturnStatement            return_statement                        ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.9 Switch Statement                                                                                            **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal SwitchStatement            switch_statement                        ;
+non terminal Sequence                   switch_block                            ;
+non terminal Sequence                   switch_block_statement_groups_opt       ;
+non terminal Sequence                   switch_block_statement_groups           ;
+non terminal SwitchGroupStatement       switch_block_statement_group            ;
+non terminal Sequence                   switch_labels                           ;
+non terminal SwitchLabel                switch_label                            ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.10 Skip/Stop Statements                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal StopStatement              stop_statement                          ;
+non terminal SkipStatement              skip_statement                          ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.11 Alt Statement                                                                                              **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal AltStatement               alt_statement                           ;
+non terminal Sequence                   alt_body                                ;
+non terminal AltCase                    alt_case                                ;
+non terminal GuardStatement             guard                                   ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.0 Expressions                                                                                                 **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Expression                 expression_opt                          ;
+non terminal Expression                 expression                              ;
+non terminal AssignmentExpression       assignment_expression                   ;
+non terminal Expression                 conditional_expression                  ;
+non terminal Expression                 conditional_or_expression               ;
+non terminal Expression                 conditional_and_expression              ;
+non terminal Expression                 inclusive_or_expression                 ;
+non terminal Expression                 exclusive_or_expression                 ;
+non terminal Expression                 and_expression                          ;
+non terminal Expression                 equality_expression                     ;
+non terminal Expression                 relational_expression                   ;
+non terminal Expression                 shift_expression                        ;
+non terminal Expression                 additive_expression                     ;
+non terminal Expression                 multiplicative_expression               ;
+non terminal Expression                 unary_expression                        ;
+non terminal UnaryPreExpression         pre_increment_expression                ;
+non terminal UnaryPreExpression         pre_decrement_expression                ;
+non terminal Expression                 unary_expression_not_plus_minus         ;
+non terminal Expression                 postfix_expression                      ;
+non terminal UnaryPostExpression        post_increment_expression               ;
+non terminal UnaryPostExpression        post_decrement_expression               ;
+non terminal CastExpression             cast_expression                         ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.1 Primary Expressions                                                                                         **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Expression                 primary_expression                      ;
+non terminal Expression                 primary_expression_no_creation          ;
+non terminal Expression                 left_hand_side_expression               ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.2 Array Creation Expression                                                                                   **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal NewArrayExpression         new_array_expression                    ;
+non terminal Sequence                   dim_exprs                               ;
+non terminal Expression                 dim_expr                                ;
+non terminal Sequence                   dims_opt                                ;
+non terminal Sequence                   dims                                    ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.3 Record Creation Expression                                                                                  **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal RecordLiteralExpression    new_record_expression                   ;
+non terminal Sequence                   new_record_expression_arguments_opt     ;
+non terminal Sequence                   new_record_expression_arguments         ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.4 Protocol Creation Expression                                                                                **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal ProtocolLiteralExpression  new_protocol_expression                 ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.5 Mobile Creation Expression                                                                                  **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal NewMobileExpression        new_mobile_expression                   ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.6 Channel Expression                                                                                          **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal ChannelEndExpression       channel_end_expression                  ;
+non terminal ChannelReadExpression      channel_read_expression                 ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.7 Structure Access                                                                                            **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal Expression                 record_access_expression                ;
+non terminal ArrayAccessExpression      array_access_expression                 ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.8 Invocation Expression                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal InvocationExpression       invocation_expression                   ;
+non terminal Sequence                   arguments_opt                           ;
+non terminal Sequence                   arguments                               ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 11.0 Literal Expressions                                                                                        **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+non terminal LiteralExpression          literal                                 ;
+non terminal Integer                    assignment_operator                     ;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** Productions                                                                                                     **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+start with compilation_unit;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 1.0 Source                                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+compilation_unit
+::=
+    pragmas_opt:_pragmas
+    package_declaration_opt:_package_declaration
+    import_declarations_opt:_import_declarations
+    type_declarations_opt:_type_declarations
+    {: RESULT = new Compilation(_pragmas, _package_declaration, _import_declarations, _type_declarations); :}
+;
+
+qualified_name
+::=
+    qualified_name:_qualified_name
+    DOT
+    name:_name {: RESULT = _name.append(_qualified_name); :}
+|   name:_name {: RESULT = _name; :}
+;
+
+names
+::=
+    names:_names
+    COMMA
+    name:_name {: RESULT = _names.append(_name) ;:}
+|   name:_name {: RESULT = new Names(_name); :}
+;
+
+name
+::=
+    IDENTIFIER:_identifier {: RESULT = new Name(_identifier); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 1.1 Pragmas                                                                                                     **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+pragmas_opt
+::=
+    pragmas:_pragmas {: RESULT = _pragmas; :}
+|   {: RESULT = new Pragmas(); :}
+;
+
+pragmas
+::=
+    pragmas:_pragmas
+    pragma:_pragma {: RESULT = _pragmas.append(_pragma); :}
+|   pragma:_pragma {: RESULT = new Pragmas(_pragma); :}
+;
+
+pragma
+::=
+    PRAGMA
+    IDENTIFIER:_identifier
+    STRING_LITERAL:_string
+    SEMICOLON {: RESULT = new Pragma(new Name(_identifier), _string.lexeme); :}
+|   PRAGMA
+    IDENTIFIER:_identifier
+    SEMICOLON {: RESULT = new Pragma(new Name(_identifier), null); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 1.2 Package Declaration                                                                                         **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+package_declaration_opt
+::=
+    package_declaration:_package_declaration {: RESULT = p; :}
+|   {: RESULT = null; :}
+;
+
+package_declaration
+::=
+    PACKAGE
+    qualified_name:_qualified_name
+    SEMICOLON {: RESULT = _qualified_name; :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 1.3 Import Declaration                                                                                          **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+import_declarations_opt
+::=
+    import_declarations:_import_declarations {: RESULT = _import_declarations; :}
+|   {: RESULT = new Sequence<Import>(); :}
+;
+
+import_declarations
+::=
+    import_declarations:_import_declarations
+    import_declaration:_import_declaration {: RESULT = _import_declarations.append(_import_declaration); :}
+|   import_declaration:_import_declaration {: RESULT = new Sequence<Import>(_import_declaration); :}
+;
+
+import_declaration
+::=
+    IMPORT
+    qualified_name:_qualified_name
+    SEMICOLON {: RESULT = new Import(_qualified_name); :}
+|   IMPORT
+    qualified_name:_qualified_name
+    DOT
+    MULT:_wildcard
+    SEMICOLON {: RESULT = new Import(new Name(_wildcard, _qualified_name)); :}
+;
+
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 2.0 Type Declarations                                                                                           **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+// TODO: Constants (Variables) not able to be declared in global scope, fix this
+type_declarations_opt
+::=
+    type_declarations:_type_declarations {: RESULT = _type_declarations; :}
+|   {: RESULT = new Types(); :}
+;
+
+type_declarations
+::=
+    type_declarations:_type_declarations
+    type_declaration:_type_declaration {: RESULT = _type_declarations.append(_type_declaration); :}
+|   type_declaration:_type_declaration {: RESULT = new Types(_type_declaration); :}
+;
+
+type_declaration
+::=
+    procedure_type_declaration:_procedure_type_declaration {: RESULT = _procedure_type_declaration; :}
+|   protocol_type_declaration:_protocol_type_declaration {: RESULT = _protocol_type_declaration; :}
+|   record_type_declaration:_record_type_declaration {: RESULT = _record_type_declaration; :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 2.1 Procedure Types                                                                                             **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+procedure_type_declaration
+::=
+    type:_type
+    IDENTIFIER:_identifier
+    LPAREN
+    formal_parameters_opt:_formal_parameters
+    RPAREN
+    annotations_opt:_annotations
+    implements_opt:_implements
+    body_opt:_body
+    {: RESULT = new ProcedureType(_annotations, new Modifiers(), _type, new Name(_identifier), _formal_parameters, _implements, _body); :}
+;
+
+annotations_opt
+::=
+    LBRACK
+    annotations:_annotations
+    RBRACK {: RESULT = new Annotations(_annotations); :}
+|   {: RESULT = new Annotations(); :}
+;
+
+annotations
+::=
+    annotations:_annotations
+    COMMA
+    annotation:_annotation {: RESULT = _annotations.append(_annotation); :}
+|   annotation:_annotation {: RESULT = new Sequence(_annotation); :}
+;
+
+annotation
+::=
+    IDENTIFIER:_key EQ IDENTIFIER:_identifier {: RESULT = new Annotation(_key.lexeme, _identifier.lexeme); :}
+|   IDENTIFIER:_key EQ BOOLEAN_LITERAL:_boolean_literal {: RESULT = new Annotation(_key.lexeme, _boolean_literal.lexeme); :}
+|   IDENTIFIER:_key EQ INTEGER_LITERAL:_integer_literal {: RESULT = new Annotation(_key.lexeme, _integer_literal.lexeme); :}
+|   IDENTIFIER:_key EQ LONG_LITERAL:_long_literal {: RESULT = new Annotation(_key.lexeme, _long_literal.lexeme); :}
+|   IDENTIFIER:_key EQ FLOAT_LITERAL:_float_literal {: RESULT = new Annotation(_key.lexeme, _float_literal.lexeme); :}
+|   IDENTIFIER:_key EQ DOUBLE_LITERAL:_double_literal {: RESULT = new Annotation(_key.lexeme, _double_literal.lexeme); :}
+;
+
+body_opt
+::=
+    block:_block {: RESULT = _block; :}
+|   SEMICOLON {: RESULT = null; :}
+;
+
+implements_opt
+::=
+    IMPLEMENTS
+    names:_names {: RESULT = _names; :}
+|   {: RESULT = new Names(); :}
+;
+
+formal_parameters_opt
+::=
+    formal_parameters:_parameters {: RESULT = _parameters; :}
+|   {: RESULT = new Parameters(); :}
+;
+
+formal_parameters
+::=
+    formal_parameters:_parameters
+    COMMA
+    formal_parameter:_parameter {: RESULT = _parameters.append(_parameter); :}
+|   formal_parameter:_parameter {: RESULT = new Parameters(_parameter); :}
+;
+
+formal_parameter
+::=
+    modifiers_opt:_modifiers
+    type:_type
+    variable_declarator_identifier:_variable_declarator_identifier
+    {: RESULT = new ParameterDeclaration(_modifiers, _type, _variable_declarator_identifier); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 2.2 Protocol Types                                                                                              **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+protocol_type_declaration
+::=
+    modifiers_opt:_modifiers
+    PROTOCOL
+    IDENTIFIER:_identifier
+    extends_opt:_extends
+    annotations_opt:_annotations
+    protocol_body:_protocol_body
+    {: RESULT = new ProtocolType(_modifiers, new Name(_identifier), _extends, _annotations, _protocol_body); :}
+|   modifiers_opt:_modifiers
+    PROTOCOL
+    IDENTIFIER:_identifier
+    extends_opt:_extends
+    annotations_opt:_annotations
+    {: RESULT = new ProtocolType(_modifiers, new Name(_identifier), _extends, _annotations, null); :}
+;
+
+extends_opt
+::=
+    EXTENDS
+    names:_names {: RESULT = _names; :}
+|   {: RESULT = new Names();:}
+;
+
+protocol_body
+::=
+    LBRACE
+    protocol_cases:_cases
+    RBRACE {: RESULT = _cases; :}
+;
+
+protocol_cases
+::=
+    protocol_cases:_cases
+    protocol_case:_case {: RESULT = _cases.append(_case); :}
+|   protocol_case:_case {: RESULT = new BlockStatement(_case); :}
+;
+
+protocol_case
+::=
+    IDENTIFIER:_identifier
+    COLON
+    LBRACE
+    member_declarations:_member_declarations
+    RBRACE {: RESULT = new ProtocolType.Case(new Name(_identifier), _member_declarations); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 2.3 Record Types                                                                                                **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+record_type_declaration
+::=
+    modifiers_opt:_modifiers
+    RECORD
+    IDENTIFIER:_identifier
+    extends_opt:_extends
+    annotations_opt:_annotations
+    record_body:_body {: RESULT = new RecordType(_modifiers, new Name(_identifier), _extends, _annotations, _body); :}
+;
+
+record_body
+::=
+    LBRACE
+    member_declarations:_member_declarations
+    RBRACE {: RESULT = _member_declarations; :}
+|   LBRACE
+    RBRACE {: RESULT = new BlockStatement(); :}
+;
+
+member_declarations
+::=
+    member_declarations:_member_declarations
+    member_declaration:_member_declaration
+        {:
+            for(final RecordType.Member member: _member_declaration)
+                _member_declarations.append(member);
+            RESULT = _member_declarations;
+        :}
+|   member_declaration:_member_declaration
+        {:
+            final BlockStatement body = new BlockStatement();
+            for(final RecordType.Member member: _member_declaration)
+                body.append(member);
+            RESULT = body;
+        :}
+;
+
+member_declaration
+::=
+    type:_type
+    names:_names
+    SEMICOLON
+    {:
+        final List<RecordType.Member> members = new ArrayList();
+        for(final Name name: _names)
+            members.add(new RecordType.Member(_type, name));
+        RESULT = members;
+    :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 3.0 Types                                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+type
+::=
+    type_without_dims:_type_without_dims {: RESULT = _type_without_dims; :}
+|   type_with_dims:_type_with_dims
+    {:
+        int depth = _type_with_dims.getDepth();
+        RESULT = new ArrayType(_type.clearDepth(), depth);
+    :}
+;
+
+type_without_dims
+::=
+    primitive_type:_primitive_type {: RESULT = _primitive_type; :}
+|   channel_type:_channel_type {: RESULT = _channel_type; :}
+|   name:_name {: RESULT = _name; :}
+;
+
+type_with_dims
+::=
+    type_with_dims:_type_with_dims
+    LBRACK
+    RBRACK {: RESULT = _type_with_dims.addDimension(); :}
+|   type_without_dims:_type_without_dims
+    LBRACK
+    RBRACK {: RESULT = _type_without_dims.addDimension(); :}
+;
+
+primitive_type
+::=
+    BOOLEAN:_boolean {: RESULT = new BooleanType(_boolean); :}
+|   CHAR:_char {: RESULT = new CharType(_char); :}
+|   BYTE:_byte {: RESULT = new ByteType(_byte); :}
+|   SHORT:_short {: RESULT = new ShortType(_short); :}
+|   INT:_int {: RESULT = new IntegerType(_int); :}
+|   LONG:_long {: RESULT = new LongType(_long); :}
+|   FLOAT:_float {: RESULT = new FloatType(_float); :}
+|   DOUBLE:_double {: RESULT = new DoubleType(_double); :}
+|   STRING:_string {: RESULT = new StringType(_string); :}
+|   BARRIER:_barrier {: RESULT = new BarrierType(_barrier); :}
+|   TIMER:_timer {: RESULT = new TimerType(_timer); :}
+|   VOID:_void {: RESULT = new VoidType(_void); :}
+;
+
+channel_type
+::=
+    SHARED
+    READ
+    CHAN
+    LT
+    type:t
+    GT                                  {: RESULT = new ChannelType(t, ChannelType.SHARED_READ)         ;:}
+|   SHARED
+    WRITE
+    CHAN
+    LT
+    type:t
+    GT                                  {: RESULT = new ChannelType(t, ChannelType.SHARED_WRITE)        ;:}
+|   SHARED
+    CHAN
+    LT
+    type:t
+    GT                                  {: RESULT = new ChannelType(t, ChannelType.SHARED_READ_WRITE)   ;:}
+|   CHAN
+    LT
+    type:t
+    GT                                  {: RESULT = new ChannelType(t, ChannelType.NOT_SHARED)          ;:}
+|   CHAN
+    LT
+    type:t
+    GT
+    DOT
+    READ                                {: RESULT = new ChannelEndType(ChannelEndType.NOT_SHARED, t, ChannelEndType.READ_END)   ;:}
+|   CHAN
+    LT
+    type:t
+    GT
+    DOT
+    WRITE                               {: RESULT = new ChannelEndType(ChannelEndType.NOT_SHARED, t, ChannelEndType.WRITE_END)  ;:}
+|   SHARED
+    CHAN
+    LT
+    type:t
+    GT
+    DOT
+    READ                                {: RESULT = new ChannelEndType(ChannelEndType.SHARED, t, ChannelEndType.READ_END)       ;:}
+|   SHARED
+    CHAN
+    LT
+    type:t
+    GT
+    DOT
+    WRITE                               {: RESULT = new ChannelEndType(ChannelEndType.SHARED, t, ChannelEndType.WRITE_END)      ;:}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 4.0 Modifiers                                                                                                   **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+modifiers_opt
+::=
+    modifiers:_modifiers {: RESULT = _modifiers; :}
+|   {: RESULT = new Modifiers(); :}
+;
+
+modifiers
+::=
+    modifiers:_modifiers
+    modifier:_modifier {: RESULT = _modifiers.add(_modifier); :}
+|   modifier:_modifier {: RESULT = new Modifiers(_modifier); :}
+;
+
+modifier
+::=
+    MOBILE:_modifier {: RESULT = new Mobile(_modifier); :}
+|   CONST:_modifier {: RESULT = new Constant(_modifier); :}
+|   NATIVE:_modifier {: RESULT = new Native(_modifier); :}
+|   PUBLIC:_modifier {: RESULT = new Public(_modifier); :}
+|   PRIVATE:_modifier {: RESULT = new Private(_modifier); :}
+|   PROTECTED:_modifier {: RESULT = new Protected(_modifier); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 5.0 Constants and Variable Declarations                                                                         **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+variable_declaration
+::=
+    variable_modifiers_opt:_modifiers
+    type:_type
+    variable_declarators:_variable_declarators
+    {:
+        final List<VariableDeclaration> list = new ArrayList<>();
+        for(final Var variable: _variable_declarators)
+            list.add(new VariableDeclaration(
+                _modifiers, _type, variable.getName(), variable.getInitializationExpression()));
+        RESULT = list;
+    :}
+;
+
+variable_declarators
+::=
+    variable_declarators:_variable_declarators
+    COMMA
+    variable_declarator:_variable_declarator
+    {:
+        _variable_declarators.add(_variable_declarator);
+        RESULT = _variable_declarators;
+    :}
+|   variable_declarator:_variable_declarator
+    {:
+        RESULT = new ArrayList<Var>();
+        RESULT.add(_variable_declarator);
+    :}
+;
+
+variable_declarator
+::=
+    variable_declarator_identifier:_variable_declarator_identifier {: RESULT = new Var(_variable_declarator_identifier, null); :}
+|   variable_declarator_identifier:_variable_declarator_identifier
+    EQ
+    variable_initializer:_variable_initializer
+    {: RESULT = new Var(_variable_declarator_identifier, variable_initializer); :}
+;
+
+variable_declarator_identifier
+::=
+    IDENTIFIER:_identifier {: RESULT = new Name(_identifier); :}
+|   variable_declarator_identifier:_variable_declarator_identifier
+    LBRACK
+    RBRACK
+    {:
+        _variable_declarator_identifier.setDepth(_variable_declarator_identifier.getDepth() + 1);
+        RESULT = _variable_declarator_identifier;
+    :}
+;
+
+variable_initializer
+::=
+    array_initializer:_array_initializer {: RESULT = _array_initializer; :}
+|   expression:_expression {: RESULT = _expression; :}
+;
+
+variable_modifiers_opt
+::=
+    variable_modifiers:_variable_modifiers {: RESULT = _variable_modifiers; :}
+|   {: RESULT = new Modifiers(); :}
+;
+
+variable_modifiers
+::=
+    variable_modifiers:_variable_modifiers
+    variable_modifier:_variable_modifier {: _variable_modifiers.add(_variable_modifier); :}
+|   variable_modifier:_variable_modifier {: RESULT = new Modifiers(_variable_modifier); :}
+;
+
+variable_modifier
+::=
+    CONST:_modifier {: RESULT = new Constant(_modifier); :}
+|   PUBLIC:_modifier {: RESULT = new Public(_modifier); :}
+|   PRIVATE:_modifier {: RESULT = new Private(_modifier); :}
+|   PROTECTED:_modifier {: RESULT = new Protected(_modifier); :}
+|   {: RESULT = null; :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 6.0 Arrays                                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+array_initializer
+::=
+    LBRACE
+    variable_initializers_opt:_variable_initializers
+    RBRACE {: RESULT = new ArrayLiteralExpression(_variable_initializers); :}
+;
+
+variable_initializers_opt
+::=
+    variable_initializers:_variable_initializers {: RESULT = _variable_initializers; :}
+|   {: RESULT = new Sequence<Expression>(); :}
+;
+
+variable_initializers
+::=
+    variable_initializers:variable_initializers
+    COMMA
+    variable_initializer:_variable_initializer {: RESULT = _variable_initializers.append(_variable_initializer); :}
+|   variable_initializer:_variable_initializer {: RESULT = new Sequence<Expression>(_variable_initializer); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.0 Blocks and statements                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+block_opt
+::=
+    block:_block {: RESULT = _block; :}
+|   {: RESULT = new BlockStatement(); :}
+;
+
+block
+::=
+    LBRACE
+    block_statements_opt:_block
+    RBRACE {: RESULT = new BlockStatement(_block); :}
+;
+
+block_statements_opt
+::=
+    block_statements:_block {: RESULT = _block; :}
+|   {: RESULT = new Statements(); :}
+;
+
+block_statements
+::=
+    block_statements:_statements
+    statement:_statement {: RESULT = _statements.appendAllFrom(_statement); :}
+|   statement:_statement {: RESULT = new Statements(_statement); :}
+;
+
+// TODO: we should be able to declare mobile channels and procedures here
+
+statement
+::=
+    statement_without_trailing_substatement:s   {: RESULT = new Statements(s); :}
+|   if_then_statement:s                         {: RESULT = new Statements(s); :}
+|   if_then_else_statement:s                    {: RESULT = new Statements(s); :}
+|   while_statement:s                           {: RESULT = new Statements(s); :}
+|   for_statement:s                             {: RESULT = new Statements(s); :}
+|   switch_statement:s                          {: RESULT = s                                                   ;:}
+|   labeled_statement:s                         {: RESULT = new Statements(s); :}
+;
+
+statement_without_trailing_substatement
+::=
+    block:s                                     {: RESULT = s                                                   ;:}
+|   alt_statement:s                             {: RESULT = s                                                   ;:}
+|   par_block:s                                 {: RESULT = s                                                   ;:}
+|   SEQ block:s                                 {: RESULT = s                                                   ;:}
+|   do_statement:s                              {: RESULT = s                                                   ;:}
+|   barrier_sync_statement:s                    {: RESULT = s                                                   ;:}
+|   break_statement:_break_statement SEMICOLON {: RESULT = _break_statement; :}
+|   claim_statement:_claim_statement SEMICOLON {: RESULT = _claim_statement; :}
+|   continue_statement:_continue_statement SEMICOLON {: RESULT = _continue_statement; :}
+|   return_statement:_return_statement {: RESULT = _return_statement; :}
+|   skip_statement:s SEMICOLON {: RESULT = s; :}
+|   stop_statement:s SEMICOLON {: RESULT = s; :}
+|   suspend_statement:s SEMICOLON {: RESULT = s; :}
+|   timeout_statement:s SEMICOLON {: RESULT = s; :}
+|   statement_expression:_statement_expression SEMICOLON {: RESULT = new ExpressionStatement(_statement_expression); :}
+|   IDENTIFIER:id
+    DOT
+    WRITE
+    LPAREN
+    expression:e
+    RPAREN
+    SEMICOLON                                   {: RESULT = new ChannelWriteStatement(new NameExpression(new Name(id)), e) ;:}
+|   primary_expression:p
+    DOT
+    WRITE
+    LPAREN
+    expression:e
+    RPAREN
+    SEMICOLON                                   {: RESULT = new ChannelWriteStatement(p, e)                     ;:}
+|   variable_declaration:s SEMICOLON            {:
+                                                      final Statements statements = new Statements();
+                                                      for(final VariableDeclaration variableDeclaration: _declarations)
+                                                          statements.append(variableDeclaration);
+                                                      RESULT = statements;
+                                                :}
+| SEMICOLON {: RESULT = s                                                   ;:}
+;
+
+par_block
+::=
+    PAR
+    block:bl                            {: RESULT = new ParBlock(bl, new BarrierSet()); :}
+|   PAR
+    ENROLL
+    barriers:b
+    block:bl                            {: RESULT = new ParBlock(bl, b); :}
+;
+
+barriers
+::=
+    barriers:_barriers
+    COMMA
+    expression:_expression {: RESULT = _barriers.append(_expression); :}
+|   expression:_expression {: RESULT = new BarrierSet(_expression); :}
+;
+
+statement_no_short_if
+::=
+    statement_without_trailing_substatement:s   {: RESULT = s                                               ;:}
+|   if_then_else_statement_no_short_if:s        {: RESULT = s                                               ;:}
+|   while_statement_no_short_if:s               {: RESULT = s                                               ;:}
+|   for_statement_no_short_if:s                 {: RESULT = s                                               ;:}
+|   claim_statement_no_short_if:s               {: RESULT = s                                               ;:}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.1 If statements                                                                                               **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+if_then_statement
+::=
+    IF
+    LPAREN
+    expression:e
+    RPAREN
+    statement:s                                 {: RESULT = new IfStatement(e, s, null)                              ;:}
+;
+
+if_then_else_statement
+::=
+    IF
+    LPAREN
+    expression:e
+    RPAREN
+    statement_no_short_if:s1
+    ELSE
+    statement:s2                                {: RESULT = new IfStatement(e, s1, s2)                         ;:}
+;
+
+if_then_else_statement_no_short_if
+::=
+    IF
+    LPAREN
+    expression:e
+    RPAREN
+    statement_no_short_if:s1
+    ELSE statement_no_short_if:s2               {: RESULT = new IfStatement(e, s1, s2)                        ;:}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.2 While/For/Do statement                                                                                      **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+// WhileStat <: Statement <: AST
+while_statement
+::=
+    WHILE
+    LPAREN
+    expression:e
+    RPAREN
+    statement:s                                 {: RESULT = new WhileStatement(e, s)                                 ;:}
+;
+
+// WhileStat <: Statement <: AST
+while_statement_no_short_if
+::=
+    WHILE
+    LPAREN
+    expression:e
+    RPAREN
+    statement_no_short_if:s                     {: RESULT = new WhileStatement(e, s)                                 ;:}
+;
+
+// ForStat <: Statement <: AST
+for_statement
+::=
+    FOR:t
+    LPAREN
+    for_init_opt:i
+    SEMICOLON
+    expression_opt:e
+    SEMICOLON
+    for_update_opt:u
+    RPAREN
+    statement:s                                 {: RESULT = new ForStatement(t, i, e, u, new Sequence<Expression>(), s, false)   ;:}
+|   PAR
+    FOR:t
+    LPAREN
+    for_init_opt:i
+    SEMICOLON
+    expression_opt:e
+    SEMICOLON
+    for_update_opt:u
+    RPAREN
+    ENROLL
+    LPAREN
+    arguments:b
+    RPAREN
+    statement:s                                 {: RESULT = new ForStatement(t, i, e, u, b, s, true)             ;:}
+|   PAR
+    FOR:t
+    LPAREN
+    for_init_opt:i
+    SEMICOLON
+    expression_opt:e
+    SEMICOLON
+    for_update_opt:u
+    RPAREN
+    statement:s                                 {: RESULT = new ForStatement(t, i, e, u, new Sequence<Expression>(), s, true)    ;:}
+;
+
+for_statement_no_short_if
+::=
+    FOR:t
+    LPAREN
+    for_init_opt:i
+    SEMICOLON
+    expression_opt:e
+    SEMICOLON
+    for_update_opt:u
+    RPAREN
+    statement_no_short_if:s                     {: RESULT = new ForStatement(t, i, e, u, new Sequence<Expression>(), s, false)   ;:}
+|   PAR
+    FOR:t
+    LPAREN
+    for_init_opt:i
+    SEMICOLON
+    expression_opt:e
+    SEMICOLON
+    for_update_opt:u
+    RPAREN
+    ENROLL
+    LPAREN
+    arguments:b
+    RPAREN
+    statement_no_short_if:s                     {: RESULT = new ForStatement(t, i, e, u, b, s, true)             ;:}
+|   PAR
+    FOR:t
+    LPAREN
+    for_init_opt:i
+    SEMICOLON
+    expression_opt:e
+    SEMICOLON
+    for_update_opt:u
+    RPAREN
+    statement_no_short_if:s                     {: RESULT = new ForStatement(t, i, e, u, new Sequence<Expression>(), s, true)    ;:}
+;
+
+for_init_opt
+::=
+    for_init:i                                  {: RESULT = i                                                       ;:}
+|   /* Epsilon */                               {: RESULT = new Sequence<AST>()                                     ;:}
+;
+
+for_init
+::=
+    statement_expressions:e                     {: RESULT = e                                                       ;:}
+|   variable_declaration:e                {: RESULT = e                                                       ;:}
+;
+
+for_update_opt
+::=
+    for_update:u                                {: RESULT = u                                                       ;:}
+|   /* Epsilon */                               {: RESULT = new Sequence<ExpressionStatement>()                     ;:}
+;
+
+for_update
+::=
+    statement_expressions:s                     {: RESULT = s                                                       ;:}
+;
+
+statement_expressions
+::=
+    statement_expression:e                      {: RESULT = new Sequence<ExpressionStatement>(new ExpressionStatement(e))                 ;:}
+|   statement_expressions:lst
+    COMMA
+    statement_expression:e                      {: RESULT = lst.append(new ExpressionStatement(e))                             ;:}
+;
+
+do_statement
+::=
+    DO
+    statement:s
+    WHILE
+    LPAREN
+    expression:e
+    RPAREN
+    SEMICOLON                                   {: RESULT = new DoStatement(s, e)                                    ;:}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.3 Claim Statement                                                                                             **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+claim_statement
+::=
+    CLAIM
+    LPAREN
+    channels:c
+    RPAREN
+    statement:s                                 {: RESULT = new ClaimStatement(c, s)                                ;:}
+;
+
+claim_statement_no_short_if
+::=
+    CLAIM
+    LPAREN
+    channels:c
+    RPAREN
+    statement_no_short_if:s                     {: RESULT = new ClaimStatement(c, s)                                ;:}
+;
+
+channels
+::=
+    channels:lst
+    COMMA
+    channel:e                                   {: RESULT = lst.append(e)                                           ;:}
+|   channel:e                                   {: RESULT = new Sequence<AST>(e)                                    ;:}
+;
+
+channel
+::=
+    IDENTIFIER:id                               {: RESULT = new NameExpression(new Name(id))                        ;:}
+|   channel_type:t
+    IDENTIFIER:id
+    EQ
+    primary_expression_no_creation:e            {: RESULT = new LocalDeclaration(t, new Name(id), e, false) ;:}
+|   channel_end_expression:e                           {: RESULT = e                                                        ;:}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.4 Barrier Synch/Timeout Statement                                                                             **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+barrier_sync_statement
+::=
+    primary_expression:e
+    DOT
+    SYNC
+    LPAREN
+    RPAREN
+    SEMICOLON                                   {: RESULT = new SyncStatement(e)                                    ;:}
+|   IDENTIFIER:id
+    DOT
+    SYNC
+    LPAREN
+    RPAREN
+    SEMICOLON                                   {: RESULT = new SyncStatement(new NameExpression(new Name(id)))           ;:}
+;
+
+timeout_statement
+::=
+    IDENTIFIER:id
+    DOT
+    TIMEOUT
+    LPAREN
+    expression:e
+    RPAREN                                      {: RESULT = new TimeoutStatement(new NameExpression(new Name(id)), e)     ;:}
+|   primary_expression:p
+    DOT
+    TIMEOUT
+    LPAREN
+    expression:e
+    RPAREN                                      {: RESULT = new TimeoutStatement(p, e)                              ;:}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.5 Suspend Statement                                                                                           **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+suspend_statement
+::=
+    SUSPEND:_suspend {: RESULT = new SuspendStatement(_suspend, new Sequence()); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.6 Expression Statement                                                                                        **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+statement_expression
+::=
+    assignment_expression:_assignment_expression{: RESULT = _assignment_expression; :}
+|   pre_increment_expression:_pre_increment_expression {: RESULT = _pre_increment_expression; :}
+|   pre_decrement_expression:_pre_decrement_expression {: RESULT = _pre_decrement_expression; :}
+|   post_increment_expression:_post_increment_expression {: RESULT = _post_increment_expression; :}
+|   post_decrement_expression:_post_decrement_expression {: RESULT = _post_decrement_expression; :}
+|   invocation_expression:_invocation_expression {: RESULT = _invocation_expression; :}
+|   channel_read_expression:_channel_read_expression {: RESULT = _channel_read_expression; :}
+;
+
+labeled_statement
+::=
+    IDENTIFIER:_identifier
+    COLON
+    statement:_statement {: s.setLabel(_identifier.lexeme); RESULT = _statement; :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.7 Break/Continue/Return Statement                                                                             **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+break_statement
+::=
+    BREAK:_break
+    identifier_opt:_identifier {: RESULT = new BreakStatement(_break, _identifier); :}
+;
+
+continue_statement
+::=
+    CONTINUE:_continue
+    identifier_opt:_identifier {: RESULT = new ContinueStatement(_continue, _identifier); :}
+;
+
+identifier_opt
+::=
+    IDENTIFIER:_identifier {: RESULT = new Name(_identifier); :}
+|   {: RESULT = null; :}
+;
+
+return_statement
+::=
+    RETURN:_return
+    expression_opt:_expression {: RESULT = new ReturnStatement(_return, _expression); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.8 Switch Statement                                                                                            **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+switch_statement
+::=
+    SWITCH
+    LPAREN
+    expression:e
+    RPAREN
+    switch_block:b                      {: RESULT = new SwitchStatement(e, b)                                ;:}
+;
+
+switch_block
+::=
+    LBRACE
+    switch_block_statement_groups_opt:s
+    RBRACE                              {: RESULT = s                                                   ;:}
+;
+
+switch_block_statement_groups_opt
+::=
+    switch_block_statement_groups:s     {: RESULT = s                                                   ;:}
+|   /* Epsilon */                       {: RESULT = new Sequence<SwitchGroupStatement>()                ;:}
+;
+
+switch_block_statement_groups
+::=
+    switch_block_statement_group:e      {: RESULT = new Sequence<SwitchGroupStatement>(e)               ;:}
+|   switch_block_statement_groups:lst
+    switch_block_statement_group:e      {: RESULT = lst.append(e)                                       ;:}
+;
+
+switch_block_statement_group
+::=
+    switch_labels:s
+    block_statements:b                  {: RESULT = new SwitchGroupStatement(s, b)                      ;:}
+;
+
+switch_labels
+::=
+    switch_label:e                      {: RESULT = new Sequence<SwitchLabel>(e)                        ;:}
+|   switch_labels:lst
+    switch_label:e                      {: RESULT = lst.append(e)                                       ;:}
+;
+
+switch_label
+::=
+    CASE
+    expression:e
+    COLON                               {: RESULT = new SwitchLabel(e, false /* not default: */)        ;:}
+|   DEFAULT
+    COLON                               {: RESULT = new SwitchLabel(null, true /* default: */)          ;:}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.9 Skip/Stop Statement                                                                                         **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+stop_statement
+::=
+    STOP:_stop {: RESULT = new StopStatement(_stop); :}
+;
+
+skip_statement
+::=
+    SKIP:_skip {: RESULT = new SkipStatement(_skip); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 7.10 Alt Statement                                                                                              **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+// AltStat <: AST
+alt_statement
+::=
+    PRI
+    ALT
+    LBRACE
+    alt_body:b
+    RBRACE                              {: RESULT = new AltStatement(b, true /* PRI ALT */)               ;:}
+|   PRI
+    ALT
+    LPAREN
+    for_init_opt:i
+    SEMICOLON
+    expression_opt:e
+    SEMICOLON
+    for_update_opt:u
+    RPAREN
+    LBRACE
+    alt_body:b
+    RBRACE                              {: RESULT = new AltStatement(i, e, u, b, true /* PRI ALT */)      ;:}
+|   ALT
+    LBRACE
+    alt_body:b
+    RBRACE                              {: RESULT = new AltStatement(b, false /* ALT */)                  ;:}
+|   ALT
+    LPAREN
+    for_init_opt:i
+    SEMICOLON
+    expression_opt:e
+    SEMICOLON
+    for_update_opt:u
+    RPAREN
+    LBRACE
+    alt_body:b
+    RBRACE                              {: RESULT = new AltStatement(i, e, u, b, false /* ALT */)         ;:}
+;
+
+// Sequence[AltCase <: AST] <: AST
+alt_body
+::=
+    alt_body:lst
+    alt_case:e                          {: RESULT = lst.append(e)                                       ;:}
+|   alt_case:e                          {: RESULT = new Sequence<AltCase>(e)                            ;:}
+;
+
+// AltCase <: AST
+alt_case
+::=
+    LPAREN
+    expression:e
+    RPAREN
+    ANDAND
+    guard:g
+    COLON
+    statement:s                         {: RESULT = new AltCase(e, g, s)                                ;:}
+|   guard:g
+    COLON
+    statement:s                         {: RESULT = new AltCase(null, g, s)                             ;:}
+|   alt_statement:as                    {: RESULT = new AltCase(as)                                     ;:}
+;
+
+// Guard (takes in a statement) <: AST
+guard
+::=
+    left_hand_side_expression:l
+    EQ
+    channel_read_expression:e              {: RESULT = new GuardStatement(new ExpressionStatement(new AssignmentExpression(l, e, AssignmentExpression.EQ))) ;:}
+|   SKIP:s                              {: RESULT = new GuardStatement(new SkipStatement(s))                                      ;:}
+|   timeout_statement:s                 {: RESULT = new GuardStatement(s)                                                    ;:}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.0 Expressions                                                                                                 **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+expression_opt
+::=
+    expression:_expression {: RESULT = _expression; :}
+| {: RESULT = null; :}
+;
+
+expression
+::=
+    conditional_expression:_expression {: RESULT = _expression; :}
+|   assignment_expression:_assignment_expression {: RESULT = _assignment_expression; :}
+;
+
+assignment_expression
+::=
+    left_hand_side_expression:_left_hand_side_expression
+    assignment_operator:_operator
+    expression:_expression {: RESULT = new AssignmentExpression(_left_hand_side_expression, _expression, _operator); :}
+;
+
+conditional_expression
+::=
+    conditional_or_expression:_expression {: RESULT = _expression; :}
+|   conditional_or_expression:_expression
+    QUEST
+    expression:_expression1
+    COLON
+    conditional_expression:_expression2 {: RESULT = new TernaryExpression(_expression, _expression1, _expression2); :}
+;
+
+conditional_or_expression
+::=
+    conditional_and_expression:_expression {: RESULT = _expression; :}
+|   conditional_or_expression:_expression1
+    OROR
+    conditional_and_expression:_expression2 {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.OROR); :}
+;
+
+conditional_and_expression
+::=
+    inclusive_or_expression:_expression {: RESULT = _expression; :}
+|   conditional_and_expression:_expression1
+    ANDAND
+    inclusive_or_expression:_expression2 {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.ANDAND); :}
+;
+
+inclusive_or_expression
+::=
+    exclusive_or_expression:_expression  {: RESULT = _expression; :}
+|   inclusive_or_expression:_expression1
+    OR
+    exclusive_or_expression:_expression2 {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.OR); :}
+;
+
+exclusive_or_expression
+::=
+    and_expression:_expression          {: RESULT = _expression; :}
+|   exclusive_or_expression:_expression1
+    XOR
+    and_expression:_expression2         {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.XOR); :}
+;
+
+and_expression
+::=
+    equality_expression:_expression     {: RESULT = _expression; :}
+|   and_expression:_expression1
+    AND
+    equality_expression:_expression2    {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.AND); :}
+;
+
+equality_expression
+::=
+    relational_expression:_expression   {: RESULT = _expression; :}
+|   equality_expression:_expression1
+    EQEQ
+    relational_expression:_expression2  {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.EQEQ); :}
+|   equality_expression:_expression1
+    NOTEQ
+    relational_expression:_expression2  {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.NOTEQ); :}
+;
+
+relational_expression
+::=
+    shift_expression:_expression        {: RESULT = _expression ;:}
+|   relational_expression:_expression1
+    LT
+    shift_expression:_expression2       {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.LT); :}
+|   relational_expression:_expression1
+    GT
+    shift_expression:_expression2       {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.GT); :}
+|   relational_expression:_expression1
+    LTEQ
+    shift_expression:_expression2       {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.LTEQ)             ;:}
+|   relational_expression:_expression1
+    GTEQ
+    shift_expression:_expression2       {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.GTEQ)             ;:}
+|   relational_expression:_expression1
+    IS
+    name:_expression2                   {: RESULT = new BinaryExpression(_expression1, new NameExpression(_expression2), BinaryExpression.INSTANCEOF);:}
+;
+
+shift_expression
+::=
+    additive_expression:_expression  {: RESULT = _expression; :}
+|   shift_expression:_expression1
+    LSHIFT
+    additive_expression:_expression2 {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.LSHIFT); :}
+|   shift_expression:_expression1
+    RSHIFT
+    additive_expression:_expression2 {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.RSHIFT); :}
+|   shift_expression:_expression1
+    RRSHIFT
+    additive_expression:_expression2 {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.RRSHIFT); :}
+;
+
+additive_expression
+::=
+    multiplicative_expression:_expression   {: RESULT = _expression; :}
+|   additive_expression:_expression1
+    PLUS
+    multiplicative_expression:_expression2  {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.PLUS); :}
+|   additive_expression:_expression1
+    MINUS
+    multiplicative_expression:_expression2  {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.MINUS);:}
+;
+
+multiplicative_expression
+::=
+    unary_expression:_expression            {: RESULT = _expression; :}
+|   multiplicative_expression:_expression1
+    MULT
+    unary_expression:_expression2           {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.MULT); :}
+|   multiplicative_expression:_expression1
+    DIV
+    unary_expression:_expression2           {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.DIV); :}
+|   multiplicative_expression:_expression1
+    MOD
+    unary_expression:_expression2           {: RESULT = new BinaryExpression(_expression1, _expression2, BinaryExpression.MOD); :}
+;
+
+unary_expression
+::=
+    PLUS unary_expression:_expression {: RESULT = _expression; :}
+|   MINUS unary_expression:_expression {: RESULT = new UnaryPreExpression(_expression, UnaryPreExpression.MINUS); :}
+|   pre_increment_expression:_expression {: RESULT = _expression; :}
+|   pre_decrement_expression:_expression {: RESULT = _expression; :}
+|   unary_expression_not_plus_minus:_expression {: RESULT = _expression; :}
+;
+
+pre_increment_expression
+::=
+    PLUSPLUS
+    unary_expression:_expression {: RESULT = new UnaryPreExpression(_expression, UnaryPreExpression.PLUSPLUS); :}
+;
+
+pre_decrement_expression
+::=
+    MINUSMINUS
+    unary_expression:_expression {: RESULT = new UnaryPreExpression(_expression, UnaryPreExpression.MINUSMINUS); :}
+;
+
+unary_expression_not_plus_minus
+::=
+    COMP unary_expression:_expression {: RESULT = new UnaryPreExpression(_expression, UnaryPreExpression.COMP); :}
+|   NOT unary_expression:_expression {: RESULT = new UnaryPreExpression(_expression, UnaryPreExpression.NOT); :}
+|   cast_expression:_expression {: RESULT = _expression; :}
+|   postfix_expression:_expression {: RESULT = _expression; :}
+;
+
+// TODO: Maybe change target expression to 'expression'
+cast_expression
+::=
+    LPAREN
+    type_without_dims:_type
+    RPAREN
+    unary_expression_not_plus_minus:_expression {: RESULT = new CastExpression(_type, _expression); :}
+;
+
+postfix_expression
+::=
+    post_increment_expression:_expression {: RESULT = _expression; :}
+|   post_decrement_expression:_expression {: RESULT = _expression; :}
+|   primary_expression:_expression {: RESULT = _expression; :}
+;
+
+post_increment_expression
+::=
+    postfix_expression:_expression
+    PLUSPLUS {: RESULT = new UnaryPostExpression(_expression, UnaryPostExpression.PLUSPLUS); :}
+;
+
+post_decrement_expression
+::=
+    postfix_expression:_expression
+    MINUSMINUS {: RESULT = new UnaryPostExpression(_expression, UnaryPostExpression.MINUSMINUS); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.1 Primary Expressions                                                                                         **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+primary_expression
+::=
+    primary_expression_no_creation:_primary_expression_no_creation {: RESULT = _primary_expression_no_creation; :}
+|   new_array_expression:_new_array_expression {: RESULT = _new_array_expression; :}
+|   new_mobile_expression:_new_mobile_expression {: RESULT = _new_mobile_expression; :}
+|   new_record_expression:_new_record_expression {: RESULT = _new_record_expression; :}
+|   new_protocol_expression:_new_protocol_expression {: RESULT = _new_protocol_expression; :}
+;
+
+primary_expression_no_creation
+::=
+    left_hand_side_expression:_left_hand_side_expression {: RESULT = _left_hand_side_expression; :}
+|   invocation_expression:_invocation_expression {: RESULT = _invocation_expression; :}
+|   channel_end_expression:_channel_end_expression {: RESULT = _channel_end_expression; :}
+|   channel_read_expression:_channel_read_expression {: RESULT = _channel_read_expression; :}
+|   literal:_literal_expression {: RESULT = _literal_expression; :}
+;
+
+left_hand_side_expression
+::=
+    name:_name {: RESULT = new NameExpression(_name); :}
+|   record_access_expression:_record_access_expression {: RESULT = _record_access_expression; :}
+|   array_access_expression:_array_access_expression  {: RESULT = _array_access_expression; :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.2 Array Creation Expression                                                                                   **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+new_array_expression
+::=
+    NEW
+    type_without_dims:_type
+    dim_exprs:_expressions
+    dims_opt:_dims {: RESULT = new NewArrayExpression(_type, _expressions, _dims, null); :}
+|   NEW
+    type_without_dims:_type
+    dim_exprs:_expressions
+    dims_opt:_dims
+    array_initializer:_initializer {: RESULT = new NewArrayExpression(_type, _expressions, _dims, _initializer); :}
+;
+
+dim_exprs
+::=
+    dim_exprs:_dimensions
+    dim_expr:_expression {: RESULT = _dimensions.append(_expression); :}
+|   dim_expr:_expression {: RESULT = new Sequence<Expression>(_expression); :}
+;
+
+dim_expr
+::=
+    LBRACK
+    expression:_expression
+    RBRACK {: RESULT = _expression; :}
+;
+
+dims_opt
+::=
+    dims:_dimensions {: RESULT = _dimensions; :}
+| {: RESULT = new Sequence<AST>(); :}
+;
+
+dims
+::=
+    dims:_dimensions
+    LBRACK
+    RBRACK {: RESULT = _dimensions.append(null); :}
+|   LBRACK
+    RBRACK {: RESULT = new Sequence<AST>(null); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.3 Record Creation Expression                                                                                  **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+new_record_expression
+::=
+    NEW
+    name:_name
+    LBRACE
+    new_record_expression_arguments:_arguments
+    RBRACE {: RESULT = new RecordLiteralExpression(_name, _arguments); :}
+;
+
+new_record_expression_arguments_opt
+::=
+    new_record_expression_arguments:_arguments {: RESULT = _arguments; :}
+| {: RESULT = new Sequence(); :}
+;
+
+new_record_expression_arguments
+::=
+    IDENTIFIER:_identifier
+    EQ
+    expression:_expression
+    {: RESULT = new Sequence(new RecordMemberLiteralExpression(new Name(_identifier), _expression)); :}
+|   new_record_expression_arguments:_arguments
+    COMMA
+    IDENTIFIER:_identifier
+    EQ
+    expression:_expression
+    {: RESULT = _arguments.append(new RecordMemberLiteralExpression(new Name(_identifier), _expression)); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.4 Protocol Creation Expression                                                                                **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+new_protocol_expression
+::=
+    NEW
+    name:_name
+    LBRACE
+    IDENTIFIER:_identifier
+    COLON
+    new_record_expression_arguments_opt:_list
+    RBRACE {: RESULT = new ProtocolLiteralExpression(_name, new Name(_identifier), _list); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.5 Mobile Creation Expression                                                                                  **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+new_mobile_expression
+::=
+    NEW
+    MOBILE
+    LPAREN
+    name:_name
+    RPAREN {: RESULT = new NewMobileExpression(_name); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.6 Channel Expression/Channel Read Expression                                                                  **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+channel_end_expression
+::=
+    primary_expression:_primary_expression
+    DOT
+    READ {: RESULT = new ChannelEndExpression(_primary_expression, ChannelEndExpression.READ); :}
+|   primary_expression:_primary_expression
+    DOT
+    WRITE {: RESULT = new ChannelEndExpression(_primary_expression, ChannelEndExpression.WRITE); :}
+;
+
+channel_read_expression
+::=
+    primary_expression:_primary_expression
+    DOT
+    READ
+    LPAREN
+    block_opt:_block
+    RPAREN {: RESULT = new ChannelReadExpression(_primary_expression, _block); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.7 Structure Access                                                                                            **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+record_access_expression
+::=
+    primary_expression:_primary_expression
+    DOT
+    IDENTIFIER:_identifier {: RESULT = new RecordAccessExpression(_primary_expression, new Name(_identifier)); :}
+;
+
+array_access_expression
+::=
+    IDENTIFIER:_identifier
+    LBRACK
+    expression:_expression
+    RBRACK {: RESULT = new ArrayAccessExpression(new NameExpression(new Name(_identifier)), _expression); :}
+|   primary_expression:_primary_expression
+    LBRACK
+    expression:_expression
+    RBRACK {: RESULT = new ArrayAccessExpression(_primary_expression, _expression); :}
+;
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 8.8 Invocation Expression                                                                                       **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+// TODO: check for fork()
+invocation_expression
+::=
+    primary_expression:_primary_expression
+    LPAREN
+    arguments_opt:_arguments
+    RPAREN {: RESULT = new InvocationExpression(_primary_expression, null, _arguments); :}
+;
+
+arguments_opt
+::=
+    arguments:_arguments {: RESULT = _arguments; :}
+|                        {: RESULT = new Sequence<Expression>(); :}
+;
+
+arguments
+::=
+    arguments:_arguments
+    COMMA
+    expression:_expression {: RESULT = _arguments.append(_expression); :}
+|   expression:_expression {: RESULT = new Sequence<Expression>(_expression); :}
+;
+
+
+/** --------------------------------------------------------------------------------------------------------------- **/
+/** 9.0 Literals                                                                                                    **/
+/** --------------------------------------------------------------------------------------------------------------- **/
+
+literal
+::=
+    INTEGER_LITERAL:l {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.IntKind); :}
+|   LONG_LITERAL:l {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.LongKind); :}
+|   FLOAT_LITERAL:l {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.FloatKind); :}
+|   DOUBLE_LITERAL:l {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.DoubleKind); :}
+|   BOOLEAN_LITERAL:l {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.BooleanKind); :}
+|   STRING_LITERAL:l {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.StringKind); :}
+|   CHARACTER_LITERAL:l {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.CharKind); :}
+|   NULL_LITERAL:l {: RESULT = new PrimitiveLiteralExpression(l, PrimitiveLiteralExpression.NullKind); :}
+;
+
+assignment_operator
+::=
+    EQ        {: RESULT = AssignmentExpression.EQ; :}
+|   MULTEQ    {: RESULT = AssignmentExpression.MULTEQ; :}
+|   DIVEQ     {: RESULT = AssignmentExpression.DIVEQ; :}
+|   MODEQ     {: RESULT = AssignmentExpression.MODEQ; :}
+|   PLUSEQ    {: RESULT = AssignmentExpression.PLUSEQ; :}
+|   MINUSEQ   {: RESULT = AssignmentExpression.MINUSEQ; :}
+|   LSHIFTEQ  {: RESULT = AssignmentExpression.LSHIFTEQ; :}
+|   RSHIFTEQ  {: RESULT = AssignmentExpression.RSHIFTEQ; :}
+|   RRSHIFTEQ {: RESULT = AssignmentExpression.RRSHIFTEQ; :}
+|   ANDEQ     {: RESULT = AssignmentExpression.ANDEQ; c:}
+|   XOREQ     {: RESULT = AssignmentExpression.XOREQ; :}
+|   OREQ      {: RESULT = AssignmentExpression.OREQ; :}
+;

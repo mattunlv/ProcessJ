@@ -1,0 +1,6 @@
+/**
+ * @test Pragma01
+ * @description Simple Package Declaration Test
+ * @author Carlos L. Cuenca
+ **/
+package org.processj.test;

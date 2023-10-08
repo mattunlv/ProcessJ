@@ -27,8 +27,8 @@ public class ArrayLiteralExpression extends LiteralExpression {
 
     }
 
-    public Sequence elements() {
-        return (Sequence<Expression>) children[0];
+    public Sequence<Expression> elements() {
+        return this.expressions;
     }
 
     // TODO

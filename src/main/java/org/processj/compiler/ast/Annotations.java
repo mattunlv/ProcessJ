@@ -19,8 +19,26 @@ public class Annotations extends AST {
         }
     }
 
+    public Annotations(final Annotation annotation) {
+
+        annotations.put(annotation.getName(), annotation.getValue());
+
+    }
+
     public void add(String name, String value) {
         annotations.put(name, value);
+    }
+
+    public AST add(final Annotation annotation) {
+
+
+        return this;
+    }
+
+    public Annotations appendAll(final Annotations annotations) {
+
+        return this;
+
     }
 
     public boolean isDefined(String name) {

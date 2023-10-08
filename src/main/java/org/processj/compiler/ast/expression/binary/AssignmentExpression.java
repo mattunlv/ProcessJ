@@ -25,18 +25,24 @@ public class AssignmentExpression extends Expression {
 
     private int kind;
 
+    private final Expression leftExpression;
+    private final Expression rightExpression;
+
+
     public AssignmentExpression(Expression /* Name, FieldRef or ArrayAccess only */left,
                                 Expression right, int op) {
         super(new AST[] { left, right });
         kind = op;
+        this.leftExpression = left;
+        this.rightExpression = right;
     }
 
     public Expression getLeftExpression() {
-        return (Expression) children[0];
+        return this.leftExpression;
     }
 
     public Expression getRightExpression() {
-        return (Expression) children[1];
+        return this.rightExpression;
     }
 
     public int getOperator() {

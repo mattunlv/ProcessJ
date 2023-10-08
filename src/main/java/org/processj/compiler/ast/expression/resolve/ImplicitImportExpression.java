@@ -8,20 +8,27 @@ import org.processj.compiler.phase.Visitor;
 
 public class ImplicitImportExpression extends Expression {
 
+    private final Name packageName;
+    private final Name fileName;
+    private final Name typeName;
+
     public ImplicitImportExpression(Name packageName, Name fileName, Name typeName) {
         super(new AST[] { packageName, fileName, typeName });
+        this.packageName = packageName;
+        this.fileName = fileName;
+        this.typeName = typeName;
     }
 
     public Name packageName() {
-        return (Name) children[0];
+        return this.packageName;
     }
 
     public Name fileName() {
-        return (Name) children[1];
+        return this.fileName;
     }
 
     public Name typeName() {
-        return (Name) children[2];
+        return this.typeName;
     }
 
     public String toString() {

@@ -7,21 +7,28 @@ import org.processj.compiler.phase.Visitor;
 
 public class TernaryExpression extends Expression {
 
+    private final Expression evalutationExpression;
+    private final Expression thenExpression;
+    private final Expression elseExpression;
+
     public TernaryExpression(Expression expr, Expression trueBranch,
                              Expression falseBranch) {
         super(new AST[] { expr, trueBranch, falseBranch });
+        evalutationExpression = expr;
+        this.thenExpression = trueBranch;
+        this.elseExpression = falseBranch;
     }
 
     public Expression getEvaluationExpression() {
-        return (Expression) children[0];
+        return this.evalutationExpression;
     }
 
     public Expression getThenExpression() {
-        return (Expression) children[1];
+        return this.thenExpression;
     }
 
     public Expression getElseExpression() {
-        return (Expression) children[2];
+        return this.elseExpression;
     }
 
     public boolean isConstant() {

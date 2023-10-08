@@ -1,3 +1,5 @@
+package org.processj.code.test;
+
 import std.*;
 
 public record Car {
@@ -7,5 +9,4 @@ public record Car {
 
 public void main(string[] args) {
     Car car = new Car { model = "Lancer", make = "Mitsubishi" };
-    println("model: " + car.model);
 }

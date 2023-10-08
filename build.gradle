@@ -42,7 +42,7 @@ version '0.1.0'
 /** Dependencies                                                                                                    **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-dependencies { /* Empty */ }
+dependencies {}
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** Source Sets                                                                                                     **/
@@ -63,9 +63,21 @@ sourceSets {
         compileClasspath = files(['lib/asm-all-5.2.jar',
                                   'lib/ST-4.0.7.jar',
                                   'lib/jflex-1.8.2.jar',
-                                  'lib/cup-11b.jar'])
+                                  'lib/cup-11b.jar',
+                                  'lib/antlr4-4.13.0.jar',
+                                  'lib/antlr4-runtime-4.13.0.jar',
+                                  'lib/antlr-runtime-3.5.3.jar',
+                                  'lib/icu4j-72.1.jar',
+                                  'lib/org.abego.treelayout.core-1.0.3.jar',
+                                  'lib/ST4-4.3.4.jar'])
         runtimeClasspath = files(['lib/jflex-1.8.2.jar',
-                                  'lib/cup-11b.jar'])
+                                  'lib/cup-11b.jar',
+                                  'lib/antlr4-4.13.0.jar',
+                                  'lib/antlr4-runtime-4.13.0.jar',
+                                  'lib/antlr-runtime-3.5.3.jar',
+                                  'lib/icu4j-72.1.jar',
+                                  'lib/org.abego.treelayout.core-1.0.3.jar',
+                                  'lib/ST4-4.3.4.jar'])
     }
 
     /// ----------------
@@ -84,7 +96,12 @@ sourceSets {
                                   'lib/ST-4.0.7.jar',
                                   'lib/jflex-1.8.2.jar',
                                   'lib/cup-11b.jar',
-                                  'lib/system-rules-1.19.0.jar',
+                                  'lib/antlr4-4.13.0.jar',
+                                  'lib/antlr4-runtime-4.13.0.jar',
+                                  'lib/antlr-runtime-3.5.3.jar',
+                                  'lib/icu4j-72.1.jar',
+                                  'lib/or.abego.treelayout.core-1.0.3.jar',
+                                  'lib/ST4-4.3.4.jar',
                                   sourceSets.main.java.classesDirectory])
         runtimeClasspath = files([
                 'lib/opentest4j-1.2.0.jar',
@@ -97,6 +114,12 @@ sourceSets {
                 'lib/jflex-1.8.2.jar',
                 'lib/cup-11b.jar',
                 'lib/system-rules-1.19.0.jar',
+                'lib/antlr4-4.13.0.jar',
+                'lib/antlr4-runtime-4.13.0.jar',
+                'lib/antlr-runtime-3.5.3.jar',
+                'lib/icu4j-72.1.jar',
+                'lib/or.abego.treelayout.core-1.0.3.jar',
+                'lib/ST4-4.3.4.jar',
                 sourceSets.main.java.classesDirectory,
                 sourceSets.test.java.classesDirectory])
 
@@ -137,9 +160,25 @@ tasks.register('parser', JavaExec) {
                    '-progress',
                    '-package', 'src/main/java/org/processj/compiler/phase/generated/',
                    '-destdir', 'src/main/java/org/processj/compiler/phase/generated/',
-                   'src/main/resources/cup/ProcessJ.cup']
+                   'src/main/resources/cup/test.cup']
 
     dependsOn('lexer')
+
+}
+
+/**
+ * <p>Generates the ProcessJ parser with the specified .cup file.</p>
+ */
+tasks.register('antlr', JavaExec) {
+
+    // Initialize the classpath, entry point, & arguments
+    classpath   = sourceSets.main.runtimeClasspath
+    mainClass   = 'org.antlr.v4.Tool'
+    args        = ['-package', 'org.processj.compiler.phase.generated',
+                   '-listener',
+                   '-long-messages',
+                   '-visitor',
+                   'src/main/java/org/processj/compiler/phase/generated/ProcessJ.g4']
 
 }
 
@@ -157,7 +196,7 @@ compileJava {
     classpath   = sourceSets.main.compileClasspath
 
     // Specify its' dependencies
-    dependsOn('parser')
+    dependsOn('antlr')
 
 }
 

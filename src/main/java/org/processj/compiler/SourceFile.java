@@ -3,9 +3,7 @@ package org.processj.compiler;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.ast.Compilation;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -24,28 +22,33 @@ public class SourceFile {
     /**
      * <p>The {@link Set} of {@link Phase} class objects the {@link SourceFile} has been processed through.</p>
      * @since 0.1.0
+     * @see Set
      */
-    private final Set<Class<? extends Phase>>   completedPhases     ;
+    private final Set<Class<? extends Phase>> completedPhases;
 
     /**
      * <p>The {@link File} object representing the ProcessJ source file.</p>
      * @since 0.1.0
+     * @see File
      */
-    private final File                          file                ;
+    private final File file;
 
     /**
      * <p>The class object corresponding to the most recent {@link Phase} that operated or validated the
      * {@link SourceFile}.</p>
      * @since 0.1.0
+     * @see Class
+     * @see Phase
      */
-    private Class<? extends Phase>              lastCompletedPhase  ;
+    private Class<? extends Phase> lastCompletedPhase ;
 
     /**
      * <p>Initially the result of the parsing phase. This instance gets transformed as it propagates through
      * the toolchain.</p>
      * @since 0.1.0
+     * @see Compilation
      */
-    private Compilation                         compilation         ;
+    private Compilation compilation ;
 
     /// ------------
     /// Constructors
@@ -62,6 +65,49 @@ public class SourceFile {
         this.file               = new File(inputPath)   ;
         this.compilation        = null                  ;
         this.lastCompletedPhase = null                  ;
+
+    }
+
+    /// ------
+    /// Object
+
+    /**
+     * <p>Returns the {@link SourceFile} contents as a {@link String} value.</p>
+     * @return The {@link SourceFile} contents as a {@link String} value.
+     * @since 0.1.0
+     * @see String
+     */
+    @Override
+    public String toString() {
+
+        // Initialize a handle to the result
+        String result = "";
+
+        // Attempt to
+        try {
+
+            // Initialize the FileReader and StringBuilder
+            final BufferedReader fileReader = new BufferedReader(new FileReader(this.file.getPath()));
+            final StringBuilder stringBuilder = new StringBuilder();
+
+            // Initialize a handle to the line and separator
+            String separator = System.getProperty("line.separator");
+            String line;
+
+            // Append the contents
+            while((line = fileReader.readLine()) != null)
+                stringBuilder.append(line).append(separator);
+
+            // Remove the last separator
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+
+            // Update the result
+            result = stringBuilder.toString();
+
+        } catch(final IOException ioException) { /* Empty */ }
+
+        // Return the result
+        return result;
 
     }
 
@@ -161,9 +207,21 @@ public class SourceFile {
      * @throws IOException if the {@link FileReader} failed to open the file.
      * @since 0.1.0
      */
-    public final FileReader getCorrespondingFileReader() throws IOException {
+    public final FileReader getFileReader() throws IOException {
 
         return new FileReader(this.file.getPath());
+
+    }
+
+    /**
+     * <p>Retrieves {@link java.io.FileInputStream} corresponding with the {@link SourceFile}.</p>
+     * @return {@link java.io.FileInputStream} containing the contents of the {@link SourceFile}.
+     * @throws IOException if the {@link java.io.FileInputStream} failed to open the file.
+     * @since 0.1.0
+     */
+    public final FileInputStream getFileInputStream() throws IOException {
+
+        return new FileInputStream(this.file.getPath());
 
     }
 

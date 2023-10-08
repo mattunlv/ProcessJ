@@ -24,6 +24,24 @@ public class Strings {
 
     }
 
+    /**
+     * <p>Returns the integer value of the number of occurrences of the specified character within the specified
+     * {@link String}.</p>
+     * @param character The character to count
+     * @param string The {@link String} instance to check
+     * @return integer value of the number of occurrences of the specified character.
+     */
+    public static int OccurrencesOf(final char character, final String string) {
+
+        int result = 0;
+
+        for(int index = 0; (string != null) && (index < string.length()); index++)
+            if(string.charAt(index) == character) result++;
+
+        return result;
+
+    }
+
     public static <Type> String ValueOf(final List<Type> list, final String prefix, final String suffix) {
 
         // Return the resultant String

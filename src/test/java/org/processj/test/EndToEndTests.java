@@ -2,8 +2,9 @@ package org.processj.test;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.processj.compiler.phases.phase.Phase;
-import org.processj.compiler.ProcessJc;
+import org.processj.compiler.SourceFile;
+import org.processj.compiler.phase.Phase;
+import org.processj.compiler.Compiler;
 
 import java.net.MalformedURLException;
 
@@ -25,11 +26,11 @@ public class EndToEndTests extends ProcessJTest {
      * <p>Generic end-to-end test procedure. This executes a test that satisfies all Test Oracles defined in the
      * specification.</p>
      * @param testInputFile Instance representing a ProcessJ source file to test against the toolchain.
-     * @see ProcessJc
+     * @see Compiler
      * @see TestInputFile
      * @since 0.1.0
      */
-    private static void UnitTestOf(final TestInputFile testInputFile)  {
+    private static void UnitTestOf(final SourceFile testInputFile)  {
 
         // Update the input & output paths
         TestInputFile.BaseInputPath   = InputDirectory    ;
@@ -38,9 +39,9 @@ public class EndToEndTests extends ProcessJTest {
         try {
 
             // Transpile with ProcessJ
-            ProcessJc.main(new String[]{testInputFile.getAbsoluteInputFilePath()});
+            Compiler.Main(new String[]{testInputFile.getPath()});
 
-        } catch(final Phase.Error | MalformedURLException | ClassNotFoundException error) {
+        } catch(final MalformedURLException | Phase.Error error) {
 
             Assertions.assertTrue(false);
 
@@ -55,7 +56,7 @@ public class EndToEndTests extends ProcessJTest {
      * <p>Generic end-to-end test procedure. This executes a test that satisfies all Test Oracles defined in the
      * specification.</p>
      * @param testInputFile Instance representing a ProcessJ source file to test against the toolchain.
-     * @see ProcessJc
+     * @see Compiler
      * @see TestInputFile
      * @since 0.1.0
      */
@@ -366,7 +367,7 @@ public class EndToEndTests extends ProcessJTest {
     @Test
     public void testCode_empty_endToEnd() {
 
-        UnitTestOf(Empty);
+        UnitTestOf(Case.Empty);
 
     }
 

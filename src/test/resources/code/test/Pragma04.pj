@@ -1,0 +1,41 @@
+/**
+ * @test Pragma04
+ * @description Simple Pragma Test
+ * @author Carlos L. Cuenca
+ **/
+#pragma LIBRARY;
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+#pragma LIBRARY;
+#pragma LANGUAGE "C";
+
+
+

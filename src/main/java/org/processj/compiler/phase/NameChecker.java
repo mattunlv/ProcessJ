@@ -9,7 +9,9 @@ import org.processj.compiler.ast.expression.result.InvocationExpression;
 import org.processj.compiler.ast.expression.resolve.NameExpression;
 import org.processj.compiler.ast.statement.control.BreakStatement;
 import org.processj.compiler.ast.statement.control.ContinueStatement;
-import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
+import org.processj.compiler.ast.statement.declarative.*;
+import org.processj.compiler.ast.type.ProcedureType;
+import org.processj.compiler.ast.type.ProtocolType;
 import org.processj.compiler.ast.type.*;
 
 public class NameChecker extends Phase {
@@ -50,55 +52,55 @@ public class NameChecker extends Phase {
     }
 
     /**
-     * <p>Asserts that the {@link ProcedureTypeDeclaration}'s declared {@link Type}s are bound to the {@link ProcedureTypeDeclaration}.</p>
-     * @param procedureTypeDeclaration The {@link ProcedureTypeDeclaration} to bind.
-     * @throws Phase.Error If the {@link ProcedureTypeDeclaration}'s declared {@link Type}s are not visible in the current scope.
+     * <p>Asserts that the {@link ProcedureType}'s declared {@link Type}s are bound to the {@link ProcedureType}.</p>
+     * @param procedureType The {@link ProcedureType} to bind.
+     * @throws Phase.Error If the {@link ProcedureType}'s declared {@link Type}s are not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final void visitProcedureTypeDeclaration(final ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error {
+    public final void visitProcedureTypeDeclaration(final ProcedureType procedureType) throws Phase.Error {
 
         // Assert the Procedure Type Declaration's Implements & Return Type are resolved
-        NameAssert.Resolved(this, procedureTypeDeclaration);
+        NameAssert.Resolved(this, procedureType);
 
         // Resolve the children; Don't iterate twice
-        procedureTypeDeclaration.getBody().accept(this);
+        procedureType.getBody().accept(this);
 
     }
 
     /**
-     * <p>Asserts that the {@link ProtocolTypeDeclaration}'s declared {@link Type}s are bound to the {@link ProtocolTypeDeclaration}.</p>
+     * <p>Asserts that the {@link ProtocolType}'s declared {@link Type}s are bound to the {@link ProtocolType}.</p>
      *
-     * @param protocolTypeDeclaration The {@link ProtocolTypeDeclaration} to bind.
-     * @throws Phase.Error If the {@link ProtocolTypeDeclaration}'s declared {@link Type}s are not visible in the current scope.
+     * @param protocolType The {@link ProtocolType} to bind.
+     * @throws Phase.Error If the {@link ProtocolType}'s declared {@link Type}s are not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final void visitProtocolTypeDeclaration(final ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error {
+    public final void visitProtocolTypeDeclaration(final ProtocolType protocolType) throws Phase.Error {
 
         // Assert the Protocol Type Declaration's Implements & Return Type are resolved
-        NameAssert.Resolved(this, protocolTypeDeclaration);
+        NameAssert.Resolved(this, protocolType);
 
         // Resolve the children; Don't iterate twice
-        protocolTypeDeclaration.getBody().accept(this);
+        protocolType.getBody().accept(this);
 
     }
 
     /**
-     * <p>Asserts that the {@link RecordTypeDeclaration}'s declared {@link Type}s are bound to the {@link RecordTypeDeclaration}.</p>
+     * <p>Asserts that the {@link RecordType}'s declared {@link Type}s are bound to the {@link RecordType}.</p>
      *
-     * @param recordTypeDeclaration The {@link RecordTypeDeclaration} to bind.
-     * @throws Phase.Error If the {@link RecordTypeDeclaration}'s declared {@link Type}s are not visible in the current scope.
+     * @param recordType The {@link RecordType} to bind.
+     * @throws Phase.Error If the {@link RecordType}'s declared {@link Type}s are not visible in the current scope.
      * @since 0.1.0
      */
     @Override
-    public final void visitRecordTypeDeclaration(final RecordTypeDeclaration recordTypeDeclaration) throws Phase.Error {
+    public final void visitRecordTypeDeclaration(final RecordType recordType) throws Phase.Error {
 
         // Assert the Record Type Declaration's Implements & Return Type are resolved
-        NameAssert.Resolved(this, recordTypeDeclaration);
+        NameAssert.Resolved(this, recordType);
 
         // Resolve the children
-        recordTypeDeclaration.visitChildren(this);
+        recordType.visitChildren(this);
 
     }
 
@@ -135,7 +137,7 @@ public class NameChecker extends Phase {
         NameAssert.Resolved(this, arrayType);
 
         // Resolve the Children
-        arrayType.visitChildren(this);
+        //arrayType.visitChildren(this);
 
     }
 
@@ -173,7 +175,7 @@ public class NameChecker extends Phase {
         NameAssert.Resolved(this, channelEndType);
 
         // Resolve the Children
-        channelEndType.visitChildren(this);
+        //channelEndType.visitChildren(this);
 
     }
 

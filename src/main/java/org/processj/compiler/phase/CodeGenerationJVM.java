@@ -1,13 +1,20 @@
 package org.processj.compiler.phase;
 
+import com.sun.jdi.LongType;
 import org.processj.compiler.ast.expression.binary.AssignmentExpression;
 import org.processj.compiler.ast.expression.literal.PrimitiveLiteralExpression;
 import org.processj.compiler.ast.expression.resolve.NameExpression;
 import org.processj.compiler.ast.expression.result.TernaryExpression;
 import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
 import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
-import org.processj.compiler.ast.type.ParameterDeclaration;
-import org.processj.compiler.ast.type.ProcedureTypeDeclaration;
+import org.processj.compiler.ast.statement.declarative.ParameterDeclaration;
+import org.processj.compiler.ast.type.ProcedureType;
+import org.processj.compiler.ast.type.primitive.BooleanType;
+import org.processj.compiler.ast.type.primitive.numeric.DoubleType;
+import org.processj.compiler.ast.type.primitive.numeric.FloatType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.ByteType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.IntegerType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.ShortType;
 import org.processj.compiler.phase.jvm.ClassFile;
 import org.processj.compiler.phase.jvm.instruction.mnemonic.*;
 
@@ -283,11 +290,11 @@ public class CodeGenerationJVM extends Phase {
      *          a. If the Scheduler was locked, Go to epilogue
      *          b. Otherwise, increment jump index, Go to Epilogue
      * Note: Epilogue is always in the Jump Offsets
-     * @param procedureTypeDeclaration
+     * @param procedureType
      * @return
      */
     @Override
-    public void visitProcedureTypeDeclaration(final ProcedureTypeDeclaration procedureTypeDeclaration) {
+    public void visitProcedureTypeDeclaration(final ProcedureType procedureType) {
 
 
     }
@@ -395,19 +402,19 @@ public class CodeGenerationJVM extends Phase {
         // Initialize a handle to the current Code
         final ClassFile.Code code = this.getCode();
 
-        if(primitiveLiteralExpression.getType().isBooleanType()
-            || primitiveLiteralExpression.getType().isByteType()
-            || primitiveLiteralExpression.getType().isShortType()
-            || primitiveLiteralExpression.getType().isIntegerType())
+        if(primitiveLiteralExpression.getType() instanceof BooleanType
+            || primitiveLiteralExpression.getType() instanceof ByteType
+            || primitiveLiteralExpression.getType() instanceof ShortType
+            || primitiveLiteralExpression.getType() instanceof IntegerType)
             code.addInstruction(new GetConstantInteger((Integer) primitiveLiteralExpression.constantValue()));
 
-        else if(primitiveLiteralExpression.getType().isLongType())
+        else if(primitiveLiteralExpression.getType() instanceof LongType)
             code.addInstruction(new GetConstantLong((Long) primitiveLiteralExpression.constantValue()));
 
-        else if(primitiveLiteralExpression.getType().isFloatType())
+        else if(primitiveLiteralExpression.getType() instanceof FloatType)
             code.addInstruction(new GetConstantFloat((Float) primitiveLiteralExpression.constantValue()));
 
-        else if(primitiveLiteralExpression.getType().isDoubleType())
+        else if(primitiveLiteralExpression.getType() instanceof DoubleType)
             code.addInstruction(new GetConstantDouble((Double) primitiveLiteralExpression.constantValue()));
 
     }

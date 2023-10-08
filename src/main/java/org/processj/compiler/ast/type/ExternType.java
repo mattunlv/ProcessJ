@@ -5,7 +5,7 @@ import org.processj.compiler.ast.Name;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
-public class ExternType extends Type {
+public class ExternType implements Type {
 
     /// --------------
     /// Private Fields
@@ -24,7 +24,6 @@ public class ExternType extends Type {
     /// Constructors
 
     public ExternType(final Name name) {
-        super(new AST[] { name });
         this.name           = (name != null) ? name.toString()          : "";
         this.packageName    = (name != null) ? name.getPackageName()    : "";
     }
@@ -75,8 +74,58 @@ public class ExternType extends Type {
 
     }
 
+    @Override
+    public boolean isTypeEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeEquivalentTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeCeilingOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isSubTypeOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isAssignmentCompatibleTo(Object that) {
+        return false;
+    }
+
     /// ---------------------
     /// org.processj.ast.Type
+
+    @Override
+    public Name getName() {
+        return null;
+    }
 
     /**
      * <p>Returns the internal {@link String} signature representing the {@link ExternType}.</p>
@@ -90,6 +139,21 @@ public class ExternType extends Type {
 
     }
 
+    @Override
+    public Type addDimension() {
+        return null;
+    }
+
+    @Override
+    public Type clearDepth() {
+        return null;
+    }
+
+    @Override
+    public int getDepth() {
+        return 0;
+    }
+
     public final String getPackageName() {
 
         return this.packageName;
@@ -101,7 +165,6 @@ public class ExternType extends Type {
 
     // α = ExternType(n1) and β = ExternType(n2)
     // α =T β ⇔ n1 == n2
-    @Override
     public boolean typeEqual(final Type that) {
 
         return this.equals(that);
@@ -109,7 +172,6 @@ public class ExternType extends Type {
     }
 
     // α ~T β ⇔ α =T β
-    @Override
     public boolean typeEquivalent(final Type that) {
 
         return this.equals(that);
@@ -117,7 +179,6 @@ public class ExternType extends Type {
     }
 
     // α :=T β ⇔ α =T β
-    @Override
     public boolean typeAssignmentCompatible(final Type that) {
 
         return this.equals(that);

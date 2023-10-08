@@ -40,6 +40,7 @@ public class ChannelReadExpression extends Expression implements ExpressionConte
 
         // Close the scope
         visitor.setContext(this.closeContext());
+
     }
 
     /// ----------
@@ -59,7 +60,9 @@ public class ChannelReadExpression extends Expression implements ExpressionConte
     }
 
     public Expression getTargetExpression() {
-        return (Expression) children[0];
+
+        return this.channelExpression;
+
     }
 
     public BlockStatement getExtendedRendezvous() {

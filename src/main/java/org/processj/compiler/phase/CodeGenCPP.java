@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Stack;
 
+import com.sun.jdi.LongType;
 import org.processj.compiler.ast.expression.access.ArrayAccessExpression;
 import org.processj.compiler.ast.expression.access.RecordAccessExpression;
 import org.processj.compiler.ast.expression.binary.AssignmentExpression;
@@ -22,22 +23,26 @@ import org.processj.compiler.ast.expression.yielding.ChannelEndExpression;
 import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
 import org.processj.compiler.ast.expression.result.InvocationExpression;
 import org.processj.compiler.ast.expression.unary.*;
+import org.processj.compiler.ast.modifier.Modifier;
+import org.processj.compiler.ast.packages.Import;
 import org.processj.compiler.ast.statement.*;
 import org.processj.compiler.ast.statement.conditional.*;
 import org.processj.compiler.ast.statement.control.*;
-import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
-import org.processj.compiler.ast.statement.declarative.ProtocolCase;
-import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
-import org.processj.compiler.ast.statement.conditional.SwitchGroupStatement;
-import org.processj.compiler.ast.expression.result.SwitchLabel;
+import org.processj.compiler.ast.statement.declarative.*;
 import org.processj.compiler.ast.statement.conditional.SwitchStatement;
+import org.processj.compiler.ast.type.ProcedureType;
+import org.processj.compiler.ast.type.ProtocolType;
 import org.processj.compiler.ast.statement.yielding.ChannelWriteStatement;
-import org.processj.compiler.ast.statement.yielding.ParBlock;
+import org.processj.compiler.ast.statement.conditional.ParBlock;
 import org.processj.compiler.ast.type.*;
 import org.processj.compiler.ast.*;
-import org.processj.compiler.ast.statement.yielding.AltCase;
-import org.processj.compiler.ast.statement.yielding.AltStatement;
+import org.processj.compiler.ast.statement.conditional.AltStatement;
 import org.processj.compiler.ast.expression.*;
+import org.processj.compiler.ast.type.primitive.*;
+import org.processj.compiler.ast.type.primitive.numeric.DoubleType;
+import org.processj.compiler.ast.type.primitive.numeric.FloatType;
+import org.processj.compiler.ast.type.primitive.numeric.NumericType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.*;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
@@ -228,7 +233,7 @@ public class CodeGenCPP extends Phase {
         // Reference to all remaining types.
         ArrayList<String> body = new ArrayList<String>();
         // Holds all top level types declarations.
-        Sequence<Type> typeDecls = compilation.getTypeDeclarations();
+        //Sequence<Type> typeDecls = compilation.getTypeDeclarations();
         // Package name for this source file.
         String packagename = compilation.getPackageName();
 
@@ -238,22 +243,22 @@ public class CodeGenCPP extends Phase {
 
         }
 
-        for (AST decl : typeDecls) {
-            if (decl instanceof Type) {
+        //for (AST decl : typeDecls) {
+            //if (decl instanceof Type) {
                 // Collect procedures, records, protocols, and external types (if any).
-                String t = ""; //(String) ((Type) decl).visit(this);
+                //String t = ""; //(String) ((Type) decl).visit(this);
 
-                if (t != null)
-                    body.add(t);
-            } else if (decl instanceof ConstantDeclaration) {
+                //if (t != null)
+                    //body.add(t);
+            //} else if (decl instanceof ConstantDeclaration) {
                 // Iterate over remaining declarations, which is anything that
                 // comes after top-level declarations.
-                String cd = ""; //(String) ((ConstantDeclaration) decl).visit(this);
+                //String cd = ""; //(String) ((ConstantDeclaration) decl).visit(this);
 
-                if (cd != null)
-                    body.add(cd);
-            }
-        }
+                //if (cd != null)
+                    //body.add(cd);
+            //}
+        //}
 
         stCompilation.add("pathName", packagename);
         stCompilation.add("fileName", compilation.fileName);
@@ -274,8 +279,8 @@ public class CodeGenCPP extends Phase {
     }
 
     @Override
-    public final void visitProcedureTypeDeclaration(ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "Visiting a ProcTypeDecl (" + procedureTypeDeclaration + ")");
+    public final void visitProcedureTypeDeclaration(ProcedureType procedureType) throws Phase.Error {
+        org.processj.compiler.Compiler.Info(procedureType + "Visiting a ProcTypeDecl (" + procedureType + ")");
 
         // Generated template after evaluating this visitor.
         ST stProcTypeDecl = null;
@@ -286,14 +291,14 @@ public class CodeGenCPP extends Phase {
         if (!switchLabelList.isEmpty())
             switchLabelList = new ArrayList<String>();
         // Name of invoked procedure.
-        currentProcName = paramDeclNames.getOrDefault(procedureTypeDeclaration.toString(), procedureTypeDeclaration.toString());
+        currentProcName = paramDeclNames.getOrDefault(procedureType.toString(), procedureType.toString());
         // Procedures are static classes which belong to the same package. To avoid
         // having classes with the same name, we generate a new name for this procedure.
         String procName = null;
         // For non-invocations, that is, for anything other than a procedure
         // that yields, we need to extends the PJProcess class anonymously.
         if ("Anonymous".equals(currentProcName)) {
-            org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "Creating anonymous process within " + prevProcName);
+            org.processj.compiler.Compiler.Info(procedureType + "Creating anonymous process within " + prevProcName);
             // String thisAnonProcParent = generatedProcNames.get(prevProcName);
             String thisAnonProcParent = !anonProcStack.empty() ? anonProcStack.peek() : generatedProcNames.get(prevProcName);
             String savePrevProcName = prevProcName;
@@ -304,9 +309,9 @@ public class CodeGenCPP extends Phase {
             stProcTypeDecl.add("parent", getParentString());
             insideAnonymousProcess = true;
             // Generate a name
-            procName = CodeGenJava.makeVariableName(currentProcName + Integer.toString(procCount++) + signature(procedureTypeDeclaration), 0, CodeGenJava.Tag.PROCEDURE_NAME);
-            org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "Generated Proc Name " + procName);
-            org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "My previous Proc is " + prevProcName);
+            procName = CodeGenJava.makeVariableName(currentProcName + Integer.toString(procCount++) + signature(procedureType), 0, CodeGenJava.Tag.PROCEDURE_NAME);
+            org.processj.compiler.Compiler.Info(procedureType + "Generated Proc Name " + procName);
+            org.processj.compiler.Compiler.Info(procedureType + "My previous Proc is " + prevProcName);
             anonProcStack.push(procName);
             // Store generated name for labels of a possible ChannelReadExpr
             generatedProcNames.put(currentProcName, procName);
@@ -315,21 +320,21 @@ public class CodeGenCPP extends Phase {
             jumpLabel = 0;
             // Statements that appear in the procedure.
 
-            org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "visiting body of " + procName);
+            org.processj.compiler.Compiler.Info(procedureType + "visiting body of " + procName);
             String thisAnonProcName = procName;
-            org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "saved previous anon proc name " + thisAnonProcParent);
-            org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "saved current anon proc name " + thisAnonProcName);
+            org.processj.compiler.Compiler.Info(procedureType + "saved previous anon proc name " + thisAnonProcParent);
+            org.processj.compiler.Compiler.Info(procedureType + "saved current anon proc name " + thisAnonProcName);
             String[] body = new String[0]; //procedureTypeDeclaration.getBody().visit(this);
 
-            org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "body of " + procName + " visited");
+            org.processj.compiler.Compiler.Info(procedureType + "body of " + procName + " visited");
             prevProcName = savePrevProcName;
 
             stProcTypeDecl.add("parBlock", currentParBlock);
             stProcTypeDecl.add("syncBody", body);
             // Add the barrier this procedure should resign from.
-            if (procedureTypeDeclaration.doesYield() && !barrierList.isEmpty()) {
+            if (procedureType.doesYield() && !barrierList.isEmpty()) {
                 for (int i = 0; i < barrierList.size(); ++i) {
-                    org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "barrier added to anon proc: " + barrierList.get(i));
+                    org.processj.compiler.Compiler.Info(procedureType + "barrier added to anon proc: " + barrierList.get(i));
                 }
                 stProcTypeDecl.add("barrier", barrierList);
             }
@@ -362,13 +367,13 @@ public class CodeGenCPP extends Phase {
             // Restore global variables for a new PJProcess class.
             resetGlobals();
             // Formal parameters that must be passed to the procedure.
-            Sequence<ParameterDeclaration> formals = procedureTypeDeclaration.getParameters();
+            Parameters formals = procedureType.getParameters();
 
             if (formals != null && formals.size() > 0) {
                 // Iterate through and visit every parameter declaration.
                 for (int i = 0; i < formals.size(); ++i) {
-                    org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "visiting parameters");
-                    ParameterDeclaration actualParam = formals.child(i);
+                    org.processj.compiler.Compiler.Info(procedureType + "visiting parameters");
+                    ParameterDeclaration actualParam = formals.getParameterAt(i);
                     // Retrieve the name and type of a parameter in the parameter list.
                     // Note that we ignored the value //ed by this visitor.
                     try {
@@ -389,13 +394,13 @@ public class CodeGenCPP extends Phase {
 
             // The procedure's annotation determines if we have a yielding procedure
             // or a Java method (a non-yielding procedure).
-            boolean doYield = procedureTypeDeclaration.doesYield();
+            boolean doYield = procedureType.doesYield();
             // Set the template to the correct instance value and then initialize
             // its attributes.
             if (doYield) {
                 // This procedure yields! Grab the instance of a yielding procedure
                 // from the string template in order to define a new class.
-                procName = CodeGenJava.makeVariableName(currentProcName + Integer.toString(procCount) + signature(procedureTypeDeclaration), 0, CodeGenJava.Tag.PROCEDURE_NAME);
+                procName = CodeGenJava.makeVariableName(currentProcName + Integer.toString(procCount) + signature(procedureType), 0, CodeGenJava.Tag.PROCEDURE_NAME);
                 generatedProcNames.put(currentProcName, procName);
                 procCount++;
                 org.processj.compiler.Compiler.Info("Stored " + currentProcName + "'s helper name as " + generatedProcNames.get(currentProcName) + ".");
@@ -409,7 +414,7 @@ public class CodeGenCPP extends Phase {
             } else {
                 // Otherwise, grab the instance of a non-yielding procedure instead
                 // to define a new static Java method.
-                procName = CodeGenJava.makeVariableName(currentProcName + Integer.toString(procCount) + signature(procedureTypeDeclaration), 0, CodeGenJava.Tag.METHOD_NAME);
+                procName = CodeGenJava.makeVariableName(currentProcName + Integer.toString(procCount) + signature(procedureType), 0, CodeGenJava.Tag.METHOD_NAME);
                 generatedProcNames.put(currentProcName, procName);
                 procCount++;
                 org.processj.compiler.Compiler.Info("Stored " + currentProcName + "'s helper name as " + generatedProcNames.get(currentProcName) + ".");
@@ -426,9 +431,9 @@ public class CodeGenCPP extends Phase {
             }
             // Create an entry point for the ProcessJ program, which is just
             // a Java main method that is called by the JVM.
-            org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "CHECKING FOR MAIN");
-            if ("main".equals(currentProcName) && procedureTypeDeclaration.getSignature().equals(CodeGenJava.Tag.MAIN_NAME.toString())) {
-                org.processj.compiler.Compiler.Info(procedureTypeDeclaration + "FOUND MAIN");
+            org.processj.compiler.Compiler.Info(procedureType + "CHECKING FOR MAIN");
+            if ("main".equals(currentProcName) && procedureType.getSignature().equals(CodeGenJava.Tag.MAIN_NAME.toString())) {
+                org.processj.compiler.Compiler.Info(procedureType + "FOUND MAIN");
                 // Create an instance of a Java main method template.
                 ST stMain = stGroup.getInstanceOf("Main");
                 stMain.add("class", currentCompilation.fileNoExtension());
@@ -632,7 +637,7 @@ public class CodeGenCPP extends Phase {
         ArrayList<String> incr = new ArrayList<String>();  // Increment part.
 
         String initStr = null;
-        if (!forStatement.isPar()) { // Is it a regular for loop?
+        if (!forStatement.isParallel()) { // Is it a regular for loop?
             if (forStatement.getInitializationStatements() != null) {
                 for (Statement st : forStatement.getInitializationStatements()) {
                     //if (st != null)
@@ -780,7 +785,7 @@ public class CodeGenCPP extends Phase {
         }
 
         // If it needs to be a pointer, make it so
-        if(!(parameterDeclaration.getType() instanceof NamedType && ((NamedType) parameterDeclaration.getType()).getType() instanceof ProtocolTypeDeclaration) && (parameterDeclaration.getType().isBarrierType() || !(parameterDeclaration.getType() instanceof PrimitiveType || (parameterDeclaration.getType() instanceof ArrayType)))) {
+        if(!(parameterDeclaration.getType() instanceof NamedType && ((NamedType) parameterDeclaration.getType()).getType() instanceof ProtocolType) && (parameterDeclaration.getType() instanceof BarrierType || !(parameterDeclaration.getType() instanceof PrimitiveType || (parameterDeclaration.getType() instanceof ArrayType)))) {
             org.processj.compiler.Compiler.Info(parameterDeclaration + "appending a pointer specifier to type of " + name);
             type += "*";
         }
@@ -818,7 +823,7 @@ public class CodeGenCPP extends Phase {
         String newName = CodeGenJava.makeVariableName(name, ++localDecId, CodeGenJava.Tag.LOCAL_NAME);
 
         // If it needs to be a pointer, make it so
-        if(!(localDeclaration.getType() instanceof NamedType && ((NamedType) localDeclaration.getType()).getType() instanceof ProtocolTypeDeclaration) && (localDeclaration.getType().isBarrierType() /*|| ld.type().isTimerType() */|| !(localDeclaration.getType() instanceof PrimitiveType || (localDeclaration.getType() instanceof ArrayType)))) {
+        if(!(localDeclaration.getType() instanceof NamedType && ((NamedType) localDeclaration.getType()).getType() instanceof ProtocolType) && (localDeclaration.getType() instanceof BarrierType /*|| ld.type() instanceof TimerType */|| !(localDeclaration.getType() instanceof PrimitiveType || (localDeclaration.getType() instanceof ArrayType)))) {
             org.processj.compiler.Compiler.Info(localDeclaration + "appending a pointer specifier to type of " + name);
             type += "*";
         }
@@ -826,12 +831,12 @@ public class CodeGenCPP extends Phase {
         localParams.put(newName, type);
         paramDeclNames.put(name, newName);
 
-        if (localDeclaration.getType().isBarrierType()) {
+        if (localDeclaration.getType() instanceof BarrierType) {
             org.processj.compiler.Compiler.Info("SHOULD NOT HAVE PARENT APPENDED");
         }
 
         if (nestedAnonymousProcesses > 0 &&
-            !localDeclaration.getType().isBarrierType()) {
+            !(localDeclaration.getType() instanceof BarrierType)) {
             newName = getParentString() + newName;
         }
 
@@ -840,11 +845,11 @@ public class CodeGenCPP extends Phase {
 
 
         if (/*expr == null && */ /* ld.type().isTimerType() ||*/
-            localDeclaration.getType().isBarrierType() ||
+            localDeclaration.getType() instanceof BarrierType ||
             localDeclaration.getType() instanceof ChannelType ||
-            localDeclaration.getType() instanceof NamedType && ((NamedType) localDeclaration.getType()).getType() instanceof RecordTypeDeclaration ||
+            localDeclaration.getType() instanceof NamedType && ((NamedType) localDeclaration.getType()).getType() instanceof RecordType ||
             (localDeclaration.getType() instanceof ArrayType) ||
-            localDeclaration.getType() instanceof NamedType && ((NamedType) localDeclaration.getType()).getType() instanceof ProtocolTypeDeclaration) {
+            localDeclaration.getType() instanceof NamedType && ((NamedType) localDeclaration.getType()).getType() instanceof ProtocolType) {
         // if(expr != null && !(ld.type() instanceof NamedType && ((NamedType)ld.type()).type().isProtocolType()) && (ld.type().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.type().isPrimitiveType() || ld.type() instanceof ArrayType))) {
             org.processj.compiler.Compiler.Info(localDeclaration + "creating delete statement for " + name);
             String deleteStmt = "";
@@ -882,7 +887,7 @@ public class CodeGenCPP extends Phase {
 
         // Is it a barrier declaration? If so, we must generate code that
         // creates a barrier object
-        if (localDeclaration.getType().isBarrierType() && expr == null) {
+        if (localDeclaration.getType() instanceof BarrierType && expr == null) {
             ST stBarrierDecl = stGroup.getInstanceOf("BarrierDecl");
             val = stBarrierDecl.render();
         }
@@ -899,14 +904,14 @@ public class CodeGenCPP extends Phase {
         // is not initialized
         if (expr == null) {
             org.processj.compiler.Compiler.Info(localDeclaration + "LocalDecl " + name + " is not initialized.");
-            if (!localDeclaration.getType().isBarrierType() && (localDeclaration.getType() instanceof PrimitiveType ||
+            if (!(localDeclaration.getType() instanceof BarrierType) && (localDeclaration.getType() instanceof PrimitiveType ||
                 localDeclaration.getType() instanceof ArrayType ||  // Could be an uninitialized array declaration
                 localDeclaration.getType() instanceof NamedType))   // Could be a record or protocol declaration
                 //// null;                // The 'null' value is used to removed empty
                                             // sequences in the generated code
 
                 // if it's a protocol, it can't have a null initializer
-                if (localDeclaration.getType() instanceof NamedType && ((NamedType) localDeclaration.getType()).getType() instanceof ProtocolTypeDeclaration) {
+                if (localDeclaration.getType() instanceof NamedType && ((NamedType) localDeclaration.getType()).getType() instanceof ProtocolType) {
                     // null;
                 } else {
                     val = "static_cast<" + type + ">(0)";
@@ -958,11 +963,11 @@ public class CodeGenCPP extends Phase {
         Expression expr = ld.getInitializationExpression();
 
         // If it needs to be a pointer, make it so
-        if(!(ld.getType() instanceof NamedType && ((NamedType)ld.getType()).getType() instanceof ProtocolTypeDeclaration) && (ld.getType().isBarrierType() /*|| ld.type().isTimerType() */|| !(ld.getType() instanceof PrimitiveType || ld.getType() instanceof ArrayType))) {
+        if(!(ld.getType() instanceof NamedType && ((NamedType)ld.getType()).getType() instanceof ProtocolType) && (ld.getType() instanceof BarrierType /*|| ld.type().isTimerType() */|| !(ld.getType() instanceof PrimitiveType || ld.getType() instanceof ArrayType))) {
             org.processj.compiler.Compiler.Info(ld + "appending a pointer specifier to type of " + name);
             type += "*";
         }
-        if (expr == null &&/* ld.type().isTimerType() ||*/ ld.getType().isBarrierType()/* || !(ld.type() instanceof PrimitiveType)*/) {
+        if (expr == null &&/* ld.type().isTimerType() ||*/ ld.getType() instanceof BarrierType/* || !(ld.type() instanceof PrimitiveType)*/) {
             org.processj.compiler.Compiler.Info(ld + "creating delete statement for " + name);
             String deleteStmt = "delete " + newName + ";";
             localDeletes.put(name, deleteStmt);
@@ -999,7 +1004,7 @@ public class CodeGenCPP extends Phase {
 
         // Is it a barrier declaration? If so, we must generate code that
         // creates a barrier object.
-        if (ld.getType().isBarrierType() && expr == null) {
+        if (ld.getType() instanceof BarrierType && expr == null) {
             ST stBarrierDecl = stGroup.getInstanceOf("BarrierDecl");
             val = stBarrierDecl.render();
         }
@@ -1028,7 +1033,7 @@ public class CodeGenCPP extends Phase {
 
             localInits.put(name, "static_cast<" + type + ">(0)");
 
-            if (ld.getType().isTimerType()) {
+            if (ld.getType() instanceof TimerType) {
                 org.processj.compiler.Compiler.Info(ld + "Timer needs null initializer (for now)");
                 // TODO: this may have to call some function that gets the
                 // timer's length, or we need to figure out how to redirect
@@ -1038,7 +1043,7 @@ public class CodeGenCPP extends Phase {
                 val = "new ProcessJRuntime::pj_timer(this, 0)";
             }
 
-            if (ld.getType() instanceof PrimitiveType && ((PrimitiveType)ld.getType()).isNumericType()) {
+            if (ld.getType() instanceof PrimitiveType && ld.getType() instanceof NumericType) {
                 val = "static_cast<" + type + ">(0)";
             }
             // if (!ld.type().isChannelType()) {
@@ -1050,12 +1055,12 @@ public class CodeGenCPP extends Phase {
             // }
             // }
         } else {
-            if (ld.getType() instanceof PrimitiveType && ld.getType().isStringType()) {
+            if (ld.getType() instanceof PrimitiveType && ld.getType() instanceof StringType) {
                 localInits.put(name, "\"\"");
                 // TODO: Double check this line
-            } else if (ld.getType() instanceof RecordTypeDeclaration) {
+            } else if (ld.getType() instanceof RecordType) {
                 val = "static_cast<" + type + ">(0)";
-            } else if (ld.getType() instanceof ProtocolTypeDeclaration) {
+            } else if (ld.getType() instanceof ProtocolType) {
                 // TODO: find out how to fix this problem, variants cannot
                 // have null initializers. need to rework this so that we
                 // don't have two inits. ugh.
@@ -1140,7 +1145,7 @@ public class CodeGenCPP extends Phase {
         String type = namedType.toString();
 
         // This is for protocol inheritance.
-        if (namedType.getType() != null && (namedType.getType() instanceof ProtocolTypeDeclaration)) {
+        if (namedType.getType() != null && (namedType.getType() instanceof ProtocolType)) {
             // type = PJProtocolCase.class.getSimpleName();
             type = "ProcessJRuntime::pj_protocol_case*";
         }
@@ -1168,15 +1173,15 @@ public class CodeGenCPP extends Phase {
         // to Java primitive types.
         String typeStr = primitiveType.toString();
 
-        if(primitiveType.isStringType()) {
+        if(primitiveType instanceof StringType) {
             // typeStr = "char*";
             typeStr = "std::string";
-        } else if (primitiveType.isBooleanType()) {
+        } else if (primitiveType instanceof BooleanType) {
             typeStr = "bool";
-        } else if (primitiveType.isTimerType()) {
+        } else if (primitiveType instanceof TimerType) {
             // typeStr = PJTimer.class.getSimpleName();
             typeStr = "ProcessJRuntime::pj_timer*";
-        } else if (primitiveType.isBarrierType()) {
+        } else if (primitiveType instanceof BarrierType) {
             // typeStr = PJBarrier.class.getSimpleName();
             typeStr = "ProcessJRuntime::pj_barrier";
         }
@@ -1225,7 +1230,7 @@ public class CodeGenCPP extends Phase {
         // String type = getCPPChannelType(ct.baseType());
 
         // If it needs to be a pointer, make it so
-        if(!(channelType.getComponentType() instanceof NamedType && ((NamedType) channelType.getComponentType()).getType() instanceof ProtocolTypeDeclaration) && (channelType.getComponentType().isBarrierType() /*|| ct.baseType().isTimerType() */|| !(channelType.getComponentType() instanceof PrimitiveType || (channelType.getComponentType() instanceof ArrayType)))) {
+        if(!(channelType.getComponentType() instanceof NamedType && ((NamedType) channelType.getComponentType()).getType() instanceof ProtocolType) && (channelType.getComponentType() instanceof BarrierType/*|| ct.baseType().isTimerType() */|| !(channelType.getComponentType() instanceof PrimitiveType || (channelType.getComponentType() instanceof ArrayType)))) {
             org.processj.compiler.Compiler.Info(channelType + "appending a pointer specifier to type of " + channelType);
             type += "*";
         }
@@ -1268,7 +1273,7 @@ public class CodeGenCPP extends Phase {
         // STring type = getCPPChannelType(ct.baseType());
 
         // If it needs to be a pointer, make it so
-        if(!(channelEndType.getComponentType() instanceof NamedType && ((NamedType) channelEndType.getComponentType()).getType() instanceof ProtocolTypeDeclaration) && (channelEndType.getComponentType().isBarrierType() /*|| ct.baseType().isTimerType() */|| !(channelEndType.getComponentType() instanceof PrimitiveType || (channelEndType.getComponentType() instanceof ArrayType)))) {
+        if(!(channelEndType.getComponentType() instanceof NamedType && ((NamedType) channelEndType.getComponentType()).getType() instanceof ProtocolType) && (channelEndType.getComponentType() instanceof BarrierType /*|| ct.baseType().isTimerType() */|| !(channelEndType.getComponentType() instanceof PrimitiveType || (channelEndType.getComponentType() instanceof ArrayType)))) {
             org.processj.compiler.Compiler.Info(channelEndType + "appending a pointer specifier to type of " + channelEndType);
             type += "*";
         }
@@ -1304,7 +1309,7 @@ public class CodeGenCPP extends Phase {
             ((CastExpression) channelWriteStatement.getWriteExpression()).getExpression() instanceof NameExpression &&
             ((NameExpression)((CastExpression) channelWriteStatement.getWriteExpression()).getExpression()).myDecl instanceof LocalDeclaration &&
             ((LocalDeclaration)((NameExpression)((CastExpression) channelWriteStatement.getWriteExpression()).getExpression()).myDecl).getType() instanceof NamedType &&
-            ((NamedType)((LocalDeclaration)((NameExpression)((CastExpression) channelWriteStatement.getWriteExpression()).getExpression()).myDecl).getType()).getType() instanceof RecordTypeDeclaration) {
+            ((NamedType)((LocalDeclaration)((NameExpression)((CastExpression) channelWriteStatement.getWriteExpression()).getExpression()).myDecl).getType()).getType() instanceof RecordType) {
             org.processj.compiler.Compiler.Info(channelWriteStatement + "adding null for sent pointer");
             localNulls.add(paramDeclNames.get(((NameExpression)((CastExpression) channelWriteStatement.getWriteExpression()).getExpression()).toString()) + "= nullptr;");
         }
@@ -1498,8 +1503,8 @@ public class CodeGenCPP extends Phase {
     }
 
     @Override
-    public final void visitSwitchLabelExpression(SwitchLabel switchLabel) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(switchLabel + "Visiting a SwitchLabel");
+    public final void visitSwitchLabelExpression(SwitchStatement.Group.Case aCase) throws Phase.Error {
+        org.processj.compiler.Compiler.Info(aCase + "Visiting a SwitchLabel");
 
         // Generated template after evaluating this visitor.
         ST stSwitchLabel = stGroup.getInstanceOf("SwitchLabel");
@@ -1507,15 +1512,15 @@ public class CodeGenCPP extends Phase {
         // This could be a default label, in which case, expr()
         // would be 'null'.
         String label = null;
-        if (!switchLabel.isDefault())
+        if (!aCase.isDefault())
             label = ""; //(String) switchLabel.getExpression().visit(this);
 
         if (isProtocolCase) {
             // Silly way to keep track of a protocol tag, however, this
             // should (in theory) _always_ work.
             // label = "\"" + label + "\"";
-            label = "case " + Integer.toString(protocolCaseNameIndices.get(switchLabel.getExpression().toString()));
-            currentProtocolTag = switchLabel.getExpression().toString();
+            label = "case " + Integer.toString(protocolCaseNameIndices.get(aCase.getExpression().toString()));
+            currentProtocolTag = aCase.getExpression().toString();
             // label;
         }
         stSwitchLabel.add("label", label);
@@ -1524,8 +1529,8 @@ public class CodeGenCPP extends Phase {
     }
 
     @Override
-    public final void visitSwitchGroupStatement(SwitchGroupStatement switchGroupStatement) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(switchGroupStatement + "Visit a SwitchGroup");
+    public final void visitSwitchStatementGroup(SwitchStatement.Group group) throws Phase.Error {
+        org.processj.compiler.Compiler.Info(group + "Visit a SwitchGroup");
 
         // Generated template after evaluating this visitor.
         ST stSwitchGroup = stGroup.getInstanceOf("SwitchGroup");
@@ -1535,7 +1540,7 @@ public class CodeGenCPP extends Phase {
             //labels.add((String) sl.visit(this));
 
         ArrayList<String> stats = new ArrayList<String>();
-        for (Statement st : switchGroupStatement.getStatements()) {
+        for (Statement st : group.getBody()) {
             if (st == null)
                 continue;
             //stats.add((String) st.visit(this));
@@ -1553,7 +1558,7 @@ public class CodeGenCPP extends Phase {
         org.processj.compiler.Compiler.Info(switchStatement + "Visiting a SwitchStat");
 
         // Is this a protocol tag?
-        if (switchStatement.getEvaluationExpression().type instanceof ProtocolTypeDeclaration) {
+        if (switchStatement.getEvaluationExpression().type instanceof ProtocolType) {
             isProtocolCase = true;
             // org.processj.compiler.Compiler.Info(st, "Generating protocol choice for type " + st.expr().type);
             // // generateProtocolChoice(st);
@@ -1592,7 +1597,7 @@ public class CodeGenCPP extends Phase {
         String expr = ""; //(String) castExpression.getExpression().visit(this);
 
         // If it needs to be a pointer, make it so
-        if(!(castExpression.getCastType() instanceof NamedType && ((NamedType) castExpression.getCastType()).getType() instanceof ProtocolTypeDeclaration) && (castExpression.getCastType().isBarrierType() /*|| ce.type().isTimerType() */|| !(castExpression.getCastType() instanceof PrimitiveType || (castExpression.getCastType() instanceof ArrayType)))) {
+        if(!(castExpression.getCastType() instanceof NamedType && ((NamedType) castExpression.getCastType()).getType() instanceof ProtocolType) && (castExpression.getCastType() instanceof BarrierType /*|| ce.type().isTimerType() */|| !(castExpression.getCastType() instanceof PrimitiveType || (castExpression.getCastType() instanceof ArrayType)))) {
             org.processj.compiler.Compiler.Info(castExpression + "appending a pointer specifier to type of " + expr);
             type += "*";
         }
@@ -1638,7 +1643,7 @@ public class CodeGenCPP extends Phase {
         // Generated template after evaluating this invocation.
         ST stInvocation = null;
         // Target procedure.
-        ProcedureTypeDeclaration pd = invocationExpression.targetProc;
+        ProcedureType pd = invocationExpression.targetProc;
         // Name of invoked procedure.
         String pdName = pd.toString();
         String pdGenName = generatedProcNames.get(pdName);
@@ -1686,18 +1691,18 @@ public class CodeGenCPP extends Phase {
         // (and to call the base constructor with the correct arguments)
         // Invocation -> ProcTypeDecl -> Sequence<ParamDecl>
         // in         .  targetProc   .  formalParams()
-        Sequence<ParameterDeclaration> formalParams = invocationExpression.targetProc.getParameters();
+        Parameters formalParams = invocationExpression.targetProc.getParameters();
         String[] typesList = new String[formalParams.size()];
         String[] varsList = new String[formalParams.size()];
         for (int i = 0; i < formalParams.size(); ++i) {
-            org.processj.compiler.Compiler.Info(invocationExpression + "visiting formal parameter " + formalParams.child(i).toString());
-            varsList[i] = formalParams.child(i).toString();
-            Type t = formalParams.child(i).getType();
+            org.processj.compiler.Compiler.Info(invocationExpression + "visiting formal parameter " + formalParams.getParameterAt(i).toString());
+            varsList[i] = formalParams.getParameterAt(i).toString();
+            Type t = formalParams.getParameterAt(i).getType();
 
             typesList[i] = ""; //(String)t.visit(this);
 
-            if(!(t instanceof NamedType && ((NamedType)t).getType() instanceof ProtocolTypeDeclaration) && (t.isBarrierType() || !(t instanceof PrimitiveType || (t instanceof ArrayType)))) {
-                org.processj.compiler.Compiler.Info(pd + "appending a pointer specifier to type of " + formalParams.child(i));
+            if(!(t instanceof NamedType && ((NamedType)t).getType() instanceof ProtocolType) && (t instanceof BarrierType || !(t instanceof PrimitiveType || (t instanceof ArrayType)))) {
+                org.processj.compiler.Compiler.Info(pd + "appending a pointer specifier to type of " + formalParams.getParameterAt(i));
                 typesList[i] += "*";
             }
         }
@@ -1834,13 +1839,13 @@ public class CodeGenCPP extends Phase {
     }
 
     @Override
-    public final void visitProtocolTypeDeclaration(ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(protocolTypeDeclaration + "Visiting a ProtocolTypeDecl (" + protocolTypeDeclaration + ")");
+    public final void visitProtocolTypeDeclaration(ProtocolType protocolType) throws Phase.Error {
+        org.processj.compiler.Compiler.Info(protocolType + "Visiting a ProtocolTypeDecl (" + protocolType + ")");
 
         // Generated template after evaluating this visitor.
         ST stProtocolClass = stGroup.getInstanceOf("ProtocolClass");
 
-        String name = paramDeclNames.getOrDefault(protocolTypeDeclaration.toString(), protocolTypeDeclaration.toString());
+        String name = paramDeclNames.getOrDefault(protocolType.toString(), protocolType.toString());
 
         ArrayList<String> modifiers = new ArrayList<String>();
         ArrayList<String> body = new ArrayList<String>();
@@ -1849,16 +1854,16 @@ public class CodeGenCPP extends Phase {
             //modifiers.add((String) m.visit(this));
 
         // Add extended protocols (if any).
-        if (protocolTypeDeclaration.extend().size() > 0) {
-            for (Name n : protocolTypeDeclaration.extend()) {
-                ProtocolTypeDeclaration ptd = (ProtocolTypeDeclaration) getScope().get(n.getName());
-                for (ProtocolCase pc : ptd.getBody())
-                    protocolTagsSwitchedOn.put(protocolTypeDeclaration + "->" + pc, ptd.toString());
+        if (protocolType.getExtends().size() > 0) {
+            for (Name n : protocolType.getExtends()) {
+                //ProtocolType ptd = (ProtocolType) getScope().get(n.getName());
+                //for (ProtocolType.Case pc : ptd.getBody())
+                    //protocolTagsSwitchedOn.put(protocolType + "->" + pc, ptd.toString());
             }
         }
 
         // The scope in which all members appear in a protocol.
-        if (protocolTypeDeclaration.getBody() != null) {
+        if (protocolType.getBody() != null) {
             //for (ProtocolCase pc : protocolTypeDeclaration.getBody())
                 //body.add((String) pc.visit(this));
 
@@ -1906,8 +1911,8 @@ public class CodeGenCPP extends Phase {
     // }
 
     @Override
-    public final void visitProtocolCase(ProtocolCase protocolCase) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(protocolCase + "Visiting a ProtocolCase (" + protocolCase + ")");
+    public final void visitProtocolCase(ProtocolType.Case aCase) throws Phase.Error {
+        org.processj.compiler.Compiler.Info(aCase + "Visiting a ProtocolCase (" + aCase + ")");
 
         // Generated template after evaluating this visitor.
         ST stProtocolCase = stGroup.getInstanceOf("ProtocolCase");
@@ -1921,12 +1926,12 @@ public class CodeGenCPP extends Phase {
         recordFields.clear();
 
         // The scope in which all members of this tag appeared.
-        for (RecordMemberDeclaration rm : protocolCase.getBody())
-            try {
-                rm.accept(this);
-            } catch (Phase.Error error) {
-                throw new RuntimeException(error);
-            }
+        //for (RecordType.Member rm : aCase.getBody())
+            //try {
+                //rm.accept(this);
+            //} catch (Phase.Error error) {
+                //throw new RuntimeException(error);
+            //}
 
         // The list of fields that should be passed to the constructor
         // of the static class that the record belongs to.
@@ -1958,17 +1963,17 @@ public class CodeGenCPP extends Phase {
         // kind of protocol.
         HashMap<String, String> members = new LinkedHashMap<String, String>();
         // We need the members of the tag currently being used.
-        ProtocolCase target = null;
-        ProtocolTypeDeclaration pt = (ProtocolTypeDeclaration) getScope().get(type);
-        if (pt != null) { // This should never be 'null'.
-            target = pt.getCase(tag);
+        ProtocolType.Case target = null;
+        //ProtocolType pt = (ProtocolType) getScope().get(type);
+        //if (pt != null) { // This should never be 'null'.
+            //target = pt.getCase(tag);
             // Now that we have the target tag, iterate over all of its members.
-            for (RecordMemberDeclaration rm : target.getBody()) {
+            //for (RecordType.Member rm : target.getBody()) {
                 //String name = (String) rm.getName().visit(this);
 
                 //members.put(name, null);
-            }
-        }
+            //}
+        //}
 
         // A visit to a RecordLiteral would // a string, e.g., 'z = 3',
         // where 'z' is the protocol member and '3' is the literal value
@@ -1992,39 +1997,39 @@ public class CodeGenCPP extends Phase {
     }
 
     @Override
-    public final void visitRecordTypeDeclaration(RecordTypeDeclaration recordTypeDeclaration) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(recordTypeDeclaration + "Visiting a RecordTypeDecl (" + recordTypeDeclaration + ")");
+    public final void visitRecordTypeDeclaration(RecordType recordType) throws Phase.Error {
+        org.processj.compiler.Compiler.Info(recordType + "Visiting a RecordTypeDecl (" + recordType + ")");
 
         // Generated template after evaluating this visitor.
         ST stRecordStruct = stGroup.getInstanceOf("RecordStruct");
-        String recName = paramDeclNames.getOrDefault(recordTypeDeclaration.toString(), recordTypeDeclaration.toString());
+        String recName = paramDeclNames.getOrDefault(recordType.toString(), recordType.toString());
         ArrayList<String> modifiers = new ArrayList<String>();
-        for (Modifier m : recordTypeDeclaration.modifiers()) {
+        //for (Modifier m : recordType.getModifiers()) {
             //modifiers.add((String) m.visit(this));
 
-        }
+        //}
 
         // Check for any extended records
-        if (recordTypeDeclaration.getExtends() != null && recordTypeDeclaration.getExtends().size() > 0) {
-            org.processj.compiler.Compiler.Info(recordTypeDeclaration + "extend not empty.");
-            Sequence<Name> extend = recordTypeDeclaration.getExtends();
-            for(int i = 0; i < extend.size(); ++i) {
-                Name n = extend.child(i);
-                org.processj.compiler.Compiler.Info("Found name " + n);
-                stRecordStruct.add("extend", n);
-            }
-        }
+        //if (recordType.getExtends() != null && recordType.getExtends().size() > 0) {
+            //org.processj.compiler.Compiler.Info(recordType + "extend not empty.");
+            //Sequence<Name> extend = recordType.getExtends();
+            //for(int i = 0; i < extend.size(); ++i) {
+                //Name n = extend.child(i);
+                //org.processj.compiler.Compiler.Info("Found name " + n);
+                //stRecordStruct.add("extend", n);
+            //}
+        //}
 
         // Remove fields from record.
         recordFields.clear();
 
         // The scope in which all members appeared in a record.
-        for (RecordMemberDeclaration rm : recordTypeDeclaration.getBody())
-            try {
-                rm.accept(this);
-            } catch (Phase.Error error) {
-                throw new RuntimeException(error);
-            }
+        //for (RecordType.Member rm : recordType.getBody())
+            //try {
+                //rm.accept(this);
+            //} catch (Phase.Error error) {
+                //throw new RuntimeException(error);
+            //}
 
         // The list of fields that should be passed to the constructor
         // of the static class that the record belongs to.
@@ -2047,19 +2052,19 @@ public class CodeGenCPP extends Phase {
     }
 
     @Override
-    public final void visitRecordMemberDeclaration(RecordMemberDeclaration recordMemberDeclaration) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(recordMemberDeclaration + "Visiting a RecordMember (" + recordMemberDeclaration.getType() + " " + recordMemberDeclaration + ")");
+    public final void visitRecordTypeDeclarationMember(RecordType.Member member) throws Phase.Error {
+        org.processj.compiler.Compiler.Info(member + "Visiting a RecordMember (" + member.getType() + " " + member + ")");
 
         // Grab the type and name of a declared variable.
         String name = "";//(String) recordMemberDeclaration.getName().visit(this);
 
         String type = ""; //(String) recordMemberDeclaration.getType().visit(this);
 
-        org.processj.compiler.Compiler.Info(recordMemberDeclaration + "type is " + type);
+        org.processj.compiler.Compiler.Info(member + "type is " + type);
 
         // If it needs to be a pointer, make it so
-        if(!(recordMemberDeclaration.getType() instanceof NamedType && ((NamedType) recordMemberDeclaration.getType()).getType() instanceof ProtocolTypeDeclaration) && (recordMemberDeclaration.getType().isBarrierType() /*|| rm.type().isTimerType() */|| !(recordMemberDeclaration.getType() instanceof PrimitiveType || (recordMemberDeclaration.getType() instanceof ArrayType)))) {
-            org.processj.compiler.Compiler.Info(recordMemberDeclaration + "appending a pointer specifier to type of " + name);
+        if(!(member.getType() instanceof NamedType && ((NamedType) member.getType()).getType() instanceof ProtocolType) && (member.getType() instanceof BarrierType /*|| rm.type().isTimerType() */|| !(member.getType() instanceof PrimitiveType || (member.getType() instanceof ArrayType)))) {
+            org.processj.compiler.Compiler.Info(member + "appending a pointer specifier to type of " + name);
             type += "*";
         }
 
@@ -2083,15 +2088,15 @@ public class CodeGenCPP extends Phase {
         // are passed to the constructor of the class associated with
         // this record.
         HashMap<String, String> members = new LinkedHashMap<String, String>();
-        RecordTypeDeclaration rt = (RecordTypeDeclaration) getScope().get(type);
+        //RecordType rt = (RecordType) getScope().get(type);
 
-        if (rt != null) { // This should never be 'null'.
-            for (RecordMemberDeclaration rm : rt.getBody()) {
-                String name = rm.toString();
-                org.processj.compiler.Compiler.Info(recordLiteralExpression + "> got RecordMember " + name);
-                members.put(name, null);
-            }
-        }
+        //if (rt != null) { // This should never be 'null'.
+            //for (RecordType.Member rm : rt.getBody()) {
+                //String name = rm.toString();
+                //org.processj.compiler.Compiler.Info(recordLiteralExpression + "> got RecordMember " + name);
+                //members.put(name, null);
+           //}
+        //}
 
         // A visit to a RecordMemberLiteral would // a string, e.g., 'z = 3',
         // where 'z' is the record member and '3' is the literal value used to
@@ -2122,7 +2127,7 @@ public class CodeGenCPP extends Phase {
         // Generated template after evaluating this visitor.
         ST stRecordAccess = stGroup.getInstanceOf("RecordAccess");
 
-        if (recordAccessExpression.getTarget().getType() instanceof RecordTypeDeclaration) {
+        if (recordAccessExpression.getTarget().getType() instanceof RecordType) {
             String name = ""; //(String) recordAccessExpression.getTarget().visit(this);
 
             String field = recordAccessExpression.field().toString();
@@ -2130,9 +2135,9 @@ public class CodeGenCPP extends Phase {
             stRecordAccess.add("name", name);
             stRecordAccess.add("member", field);
             stRecordAccess.add("op", "->");
-        } else if (recordAccessExpression.getTarget().type instanceof ProtocolTypeDeclaration) {
+        } else if (recordAccessExpression.getTarget().type instanceof ProtocolType) {
             stRecordAccess = stGroup.getInstanceOf("ProtocolAccess");
-            ProtocolTypeDeclaration pt = (ProtocolTypeDeclaration) recordAccessExpression.getTarget().type;
+            ProtocolType pt = (ProtocolType) recordAccessExpression.getTarget().type;
             String protocName = paramDeclNames.getOrDefault(pt.toString(), pt.toString());
             String name = ""; //(String) recordAccessExpression.getTarget().visit(this);
 
@@ -2157,7 +2162,7 @@ public class CodeGenCPP extends Phase {
             else if (recordAccessExpression.isStringLength) // '...'.length for number of characters in a string.
                 stRecordAccess.add("member", "length()");
 
-            if (recordAccessExpression.getTarget().type.isStringType()) {
+            if (recordAccessExpression.getTarget().getType() instanceof StringType) {
                 stRecordAccess.add("op", ".");
                 org.processj.compiler.Compiler.Info(recordAccessExpression + "adding dot operator");
             } else {
@@ -2173,7 +2178,7 @@ public class CodeGenCPP extends Phase {
 
     @Override
     public final void visitParBlockStatement(ParBlock parBlock) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(parBlock + "Visiting a ParBlock with " + parBlock.getBody().getStatements().size() + " statements.");
+        org.processj.compiler.Compiler.Info(parBlock + "Visiting a ParBlock with " + parBlock.getBody().size() + " statements.");
 
         // Report a warning message for having an empty par-block?
         // TODO: should this be done in 'org.processj.reachability'?
@@ -2196,7 +2201,7 @@ public class CodeGenCPP extends Phase {
         // Since this is a new par-block, we need to create a variable inside
         // the process in which this par-block was declared.
         stParBlock.add("name", currentParBlock);
-        stParBlock.add("count", parBlock.getBody().getStatements().size());
+        stParBlock.add("count", parBlock.getBody().size());
         stParBlock.add("process", "this");
         stParBlock.add("procName", generatedProcNames.get(currentProcName));
 
@@ -2217,7 +2222,7 @@ public class CodeGenCPP extends Phase {
         switchLabelList.add(renderSwitchLabel(jumpLabel));
         // Add the barrier this par block enrolls in.
         final Sequence<Expression> barriersSequence = new Sequence<>();
-        parBlock.getBarrierSet().forEach(barriersSequence::append);
+        //parBlock.getBarrierSet().forEach(barriersSequence::append);
 
         Sequence<Expression> barriers = barriersSequence;
         if (barriers.size() > 0) {
@@ -2232,8 +2237,8 @@ public class CodeGenCPP extends Phase {
         }
 
         // Visit the sequence of statements in the par-block.
-        Sequence<Statement> statements = (Sequence<Statement>) parBlock.getBody().getStatements();
-        if (statements.size() > 0) {
+        Statements statements = parBlock.getBody();
+        if (!statements.isEmpty()) {
             // if statement is not a ParBlock, then we don't care about it
             // Rendered value of each statement.
             ArrayList<String> stmts = new ArrayList<String>();
@@ -2274,15 +2279,15 @@ public class CodeGenCPP extends Phase {
             stParBlock.add("body", stmts);
         }
         // Add the barrier to the par-block.
-        if (!barrierList.isEmpty() && parBlock.getBarrierSet().size() > 0) {
+        if (!barrierList.isEmpty() && !parBlock.getBarrierSet().isEmpty()) {
             HashMap<String, Integer> parBarriers = new HashMap();
-            for (Expression e : parBlock.getBarrierSet()) {
-                String name = ""; //(String) e.visit(this);
+            //for (Expression e : parBlock.getBarrierSet()) {
+                //String name = ""; //(String) e.visit(this);
 
-                parBarriers.put(name, parBlock.getEnrolls().get(e.toString()));
-            }
-            stParBlock.add("barrier", parBarriers.keySet());
-            stParBlock.add("enrollees", parBarriers.values());
+                //parBarriers.put(name, parBlock.getBarrierSet().get(e.toString()));
+            //}
+            //stParBlock.add("barrier", parBarriers.keySet());
+            //stParBlock.add("enrollees", parBarriers.values());
         }
 
         // Restore the par-block.
@@ -2370,19 +2375,24 @@ public class CodeGenCPP extends Phase {
     }
 
     @Override
-    public final void visitAltCase(AltCase altCase) throws Phase.Error {
-        org.processj.compiler.Compiler.Info(altCase + "Visiting an AltCase");
+    public final void visitAltStatementCase(AltStatement.Case aCase) throws Phase.Error {
+        org.processj.compiler.Compiler.Info(aCase + "Visiting an AltCase");
 
         // Generated template after evaluating this visitor.
         ST stAltCase = stGroup.getInstanceOf("AltCase");
-        Statement stat = altCase.getGuard().getStatement();
+        Statement stat = aCase.getGuardStatement().getStatement();
         String guard = null;
         String[] stats = new String[0]; //altCase.getBody().visit(this);
 
         if (stat instanceof ExpressionStatement)
             guard = ""; //(String) stat.visit(this);
 
-        stAltCase.add("number", altCase.getCaseNumber());
+        final int caseNumber = aCase.getCaseNumber();
+
+        if(caseNumber == -1)
+            org.processj.compiler.utilities.Error.error("AltCase Error: The caseNumber for this AltCase was never set!");
+
+        stAltCase.add("number", aCase.getCaseNumber());
         stAltCase.add("guardExpr", guard);
         stAltCase.add("stats", stats);
 
@@ -2433,100 +2443,100 @@ public class CodeGenCPP extends Phase {
         ST stBooleanGuards = stGroup.getInstanceOf("BooleanGuards");
         ST stObjectGuards = stGroup.getInstanceOf("ObjectGuards");
 
-        Sequence<AltCase> cases = altStatement.getBody();
+        Statements cases = altStatement.getBody();
         ArrayList<String> blocals = new ArrayList<String>();
         ArrayList<String> bguards = new ArrayList<String>();
         ArrayList<String> guards = new ArrayList<String>();
         ArrayList<String> altCases = new ArrayList<String>();
 
         // Set boolean guards.
-        for (int i = 0; i < cases.size(); ++i) {
-            AltCase ac = cases.child(i);
-            if (ac.getPreconditionExpression() == null)
-                bguards.add(String.valueOf(true));
-            else {
+        //for (int i = 0; i < cases.size(); ++i) {
+            //AltStatement.Case ac = cases.child(i);
+            //if (ac.getPreconditionExpression() == null)
+                //bguards.add(String.valueOf(true));
+            //else {
                 //if (ac.getPreconditionExpression() instanceof LiteralExpression)
                     //bguards.add((String) ac.getPreconditionExpression().visit(this));
 
                 //else { // This is an expression.
-                    Name n = new Name("btemp");
-                    LocalDeclaration ld = new LocalDeclaration(
-                            new PrimitiveType(PrimitiveType.BooleanKind),
-                            n, ac.getPreconditionExpression(),
-                            false);
+                    //Name n = new Name("btemp");
+                    //LocalDeclaration ld = new LocalDeclaration(
+                            //new BooleanType(),
+                            //n, ac.getPreconditionExpression(),
+                            //false);
 
                     //blocals.add((String) ld.visit(this));
 
                     //bguards.add((String) n.visit(this));
 
                 //}
-            }
-        }
+            //}
+        //}
 
         stBooleanGuards.add("constants", bguards);
         stBooleanGuards.add("locals", blocals);
 
         // Set case number for all AltCases.
-        for (int i = 0; i < cases.size(); ++i)
-            cases.child(i).setCaseNumber(i);
+        //for (int i = 0; i < cases.size(); ++i)
+            //cases.child(i).setCaseNumber(i);
         // Visit all guards.
-        for (int i = 0; i < cases.size(); ++i) {
-            AltCase ac = cases.child(i);
-            Statement stat = ac.getGuard().getStatement();
+        //for (int i = 0; i < cases.size(); ++i) {
+            //AltStatement.Case ac = cases.child(i);
+            //Statement stat = ac.getGuardStatement().getStatement();
             // Channel read expression?
-            if (stat instanceof ExpressionStatement) {
-                Expression e = ((ExpressionStatement) stat).getExpression();
-                ChannelReadExpression cr = null;
-                if (e instanceof AssignmentExpression)
-                    cr = (ChannelReadExpression) ((AssignmentExpression) e).getRightExpression();
+            //if (stat instanceof ExpressionStatement) {
+                //Expression e = ((ExpressionStatement) stat).getExpression();
+                //ChannelReadExpression cr = null;
+                //if (e instanceof AssignmentExpression)
+                    //cr = (ChannelReadExpression) ((AssignmentExpression) e).getRightExpression();
                 //guards.add((String) cr.getChannelExpression().visit(this));
 
-            } else if (stat instanceof SkipStatement) {
+            //} else if (stat instanceof SkipStatement) {
                 // guards.add(PJAlt.class.getSimpleName() + ".SKIP");
-                guards.add("ProcessJRuntime::Alternation::SKIP");
-            } else if (stat instanceof TimeoutStatement) {
-                TimeoutStatement ts = (TimeoutStatement)stat;
-                ST stTimeout = stGroup.getInstanceOf("TimeoutStatCase");
+                //guards.add("ProcessJRuntime::Alternation::SKIP");
+            //} else if (stat instanceof TimeoutStatement) {
+                //TimeoutStatement ts = (TimeoutStatement)stat;
+                //ST stTimeout = stGroup.getInstanceOf("TimeoutStatCase");
                 //stTimeout.add("name", ts.getTimerExpression().visit(this));
                 //stTimeout.add("delay", ts.getDelayExpression().visit(this));
 
                 // add to timer locals of alt
-                stAltStat.add("timerLocals", stTimeout.render());
+                //stAltStat.add("timerLocals", stTimeout.render());
                 // add the timer to the guards
                 //guards.add((String)ts.getTimerExpression().visit(this));
 
-            }
+            //}
 
             //altCases.add((String) ac.visit(this));
 
-        }
+        //}
 
-        stObjectGuards.add("guards", guards);
+        //stObjectGuards.add("guards", guards);
 
         // <--
         // This is needed because of the 'StackMapTable' for the generated Java bytecode.
-        Name n = new Name("index");
-        try {
-            new LocalDeclaration(
-                    new PrimitiveType(PrimitiveType.IntKind),
-                    n, null,
-                    false /* not constant */).accept(this);
-        } catch (Phase.Error error) {
-            throw new RuntimeException(error);
-        }
+        //Name n = new Name("index");
+        //try {
+            //new LocalDeclaration(
+                    //new IntegralType(),
+                    ///n, null,
+                    //false /* not constant */).accept(this);
+        //} catch (Phase.Error error) {
+            //throw new RuntimeException(error);
+        //}
 
         // Create a tag for this local alt declaration.
-        String newName = CodeGenJava.makeVariableName("alt", ++localDecId, CodeGenJava.Tag.LOCAL_NAME);
-        localParams.put(newName, "ProcessJRuntime::Alternation*");
+        //String newName = CodeGenJava.makeVariableName("alt", ++localDecId, CodeGenJava.Tag.LOCAL_NAME);
+        //localParams.put(newName, "ProcessJRuntime::Alternation*");
         // localInits.put(newName, "new ProcessJRuntime::Alternation(" + cases.size() + ", this)");
         // localDeletes.put(newName, "delete " + newName + ";");
-        paramDeclNames.put(newName, newName);
+        //paramDeclNames.put(newName, newName);
         // -->
 
-        stAltStat.add("alt", newName);
-        stAltStat.add("count", cases.size());
-        stAltStat.add("initBooleanGuards", stBooleanGuards.render());
-        stAltStat.add("initGuards", stObjectGuards.render());
+        //stAltStat.add("alt", newName);
+        //stAltStat.add("count", cases.size());
+        //stAltStat.add("initBooleanGuards", stBooleanGuards.render());
+        //stAltStat.add("initGuards", stObjectGuards.render());
         // stAltStat.add("bguards", "booleanGuards");
         // stAltStat.add("guards", "objectGuards");
         // need to reroute these to be declared/initialized before the switch-case
@@ -2538,18 +2548,18 @@ public class CodeGenCPP extends Phase {
         // localInits.put("alt_ready", "false");
         // localParams.put("selected", "int");
         // localInits.put("selected", "-1");
-        stAltStat.add("procName", generatedProcNames.get(currentProcName));
-        stAltStat.add("jump", ++jumpLabel);
-        stAltStat.add("cases", altCases);
+        //stAltStat.add("procName", generatedProcNames.get(currentProcName));
+        //stAltStat.add("jump", ++jumpLabel);
+        //stAltStat.add("cases", altCases);
         //stAltStat.add("index", n.visit(this));
 
 
         // localParams.put(newName, "ProcessJRuntime::Alternation");
 
         // Add the jump label to the switch list.
-        switchLabelList.add(renderSwitchLabel(jumpLabel));
+        //switchLabelList.add(renderSwitchLabel(jumpLabel));
 
-        needsAltLocals = true;
+        //needsAltLocals = true;
 
         // stAltStat.render();
     }
@@ -2637,7 +2647,7 @@ public class CodeGenCPP extends Phase {
      *          An 'anonymous' procedure.
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private ProcedureTypeDeclaration createAnonymousProcTypeDecl(Statement st) {
+    private ProcedureType createAnonymousProcTypeDecl(Statement st) {
          //return new ProcedureTypeDeclaration(
                 //new Modifiers(),               // Modifiers.
                 //null,                         // Return type.
@@ -2713,7 +2723,7 @@ public class CodeGenCPP extends Phase {
         String chanEndName = ""; //(String) chanExpr.visit(this);
 
         // Is it a timer read expression?
-        if (chanExpr.type instanceof PrimitiveType && chanExpr.type.isTimerType()) {
+        if (chanExpr.type instanceof PrimitiveType && chanExpr.getType() instanceof TimerType) {
             org.processj.compiler.Compiler.Info(cr + "THIS IS A TIMER READ INSTEAD");
             ST stTimerRedExpr = stGroup.getInstanceOf("TimerRedExpr");
 
@@ -2767,7 +2777,7 @@ public class CodeGenCPP extends Phase {
      * Returns a string representing the signature of the wrapper
      * class or Java method that encapsulates a PJProcess.
      */
-    private String signature(ProcedureTypeDeclaration pd) {
+    private String signature(ProcedureType pd) {
         String s = "";
         for (ParameterDeclaration param : pd.getParameters()) {
             s = s + "$" + param.getType().getSignature();
@@ -2775,10 +2785,10 @@ public class CodeGenCPP extends Phase {
             if (param.getType() instanceof ArrayType)
                 s = s.replace("[", "ar").replace(DELIMITER, "");
             // <Rn; 'n' is the name.
-            else if (param.getType() instanceof RecordTypeDeclaration)
+            else if (param.getType() instanceof RecordType)
                 s = s.replace("<", "rc").replace(DELIMITER, "");
             // <Pn; 'n' is the name.
-            else if (param.getType() instanceof ProtocolTypeDeclaration)
+            else if (param.getType() instanceof ProtocolType)
                 s = s.replace("<", "pt").replace(DELIMITER, "");
             // {t;
             else if (param.getType() instanceof ChannelType)
@@ -2831,21 +2841,21 @@ public class CodeGenCPP extends Phase {
         assert type != null;
         String typeName = "";
 
-        if (type.isIntegerType())
+        if (type instanceof IntegerType)
             typeName = "int32_t";
-        else if (type.isByteType())
+        else if (type instanceof ByteType)
             typeName = "int8_t";
-        else if (type.isLongType())
+        else if (type instanceof LongType)
             typeName = "int64_t";
-        else if (type.isDoubleType())
+        else if (type instanceof DoubleType)
             typeName = "double";
-        else if (type.isFloatType())
+        else if (type instanceof FloatType)
             typeName = "float";
-        else if (type.isBooleanType())
+        else if (type instanceof BooleanType)
             typeName = "bool";
-        else if (type.isCharType())
+        else if (type instanceof CharType)
             typeName = "char";
-        else if (type.isShortType())
+        else if (type instanceof ShortType)
             typeName = "int16_t";
 
         // typeName;

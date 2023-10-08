@@ -19,13 +19,16 @@ public class UnaryPreExpression extends Expression {
 
     private int kind;
 
+    private final Expression expression;
+
     public UnaryPreExpression(Expression expr, int op) {
         super(new AST[] { expr });
         kind = op;
+        this.expression = expr;
     }
 
     public Expression getExpression() {
-        return (Expression) children[0];
+        return this.expression;
     }
 
     public int getOperator() {

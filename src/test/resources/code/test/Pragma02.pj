@@ -1,0 +1,6 @@
+/**
+ * @test Pragma02
+ * @description Simple Pragma Test
+ * @author Carlos L. Cuenca
+ **/
+#pragma LANGUAGE "C";

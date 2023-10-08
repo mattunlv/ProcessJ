@@ -1,0 +1,55 @@
+
+Info() ::= <<
+<! ----- This template is NEVER rendered ---- !>
+This file contains all required templates for generating error messages,
+during compilation or runtime, when processing a ProcessJ source file.
+>>
+
+//========================================================================================
+// 1.) reason: A detail message (where reason is the cause of the exception).
+// 2.) stack: A list of method calls from the point were an exception was thrown.
+StackInfo(reason, stack) ::= <<
+<reason><if(stack)>: <stack; separator="\n"><endif>
+>>
+
+//========================================================================================
+// 1.) filename: The name of a ProcessJ file.
+// 2.) lineNumber: The line number in the ProcessJ file.
+File(fileName, lineNumber) ::= "<if(fileName)>[+] <fileName><AddNumber(lineNumber)><endif>"
+AddNumber(lineNumber) ::= "<if(lineNumber)>:<lineNumber><endif>"
+
+//========================================================================================
+// 1.) tag: The level of severity of the error message.
+// 2.) number: The type of error produced by the ProcessJ compiler.
+Tag(tag, number) ::= <<
+<tag>[<if(number)><number><else>001<endif>]: 
+>>
+
+//========================================================================================
+// 1.) tag: The level of severity of the message (contains error code).
+// 2.) message: The reason for the error.
+// 3.) location: The source of the error message.
+// 4.) info: The message generated at compile time or runtime.
+// 5.) stack: A list of method calls (starting) from the point were an exception was thrown.
+Message(tag, message, location, info, stack) ::= <<
+<tag><message>
+<location>
+<info>
+<stack>
+>>
+
+//========================================================================================
+// 1.) token: The reason for the error.
+// 2.) info: The location of the error.
+// 3.) link: An URL to the error message.
+InfoMessage(token, info, link) ::= <<
+<if(token)> ### <token>
+ <info><endif>
+>>
+
+//========================================================================================
+// 1.) messages: The arguments that are the reason for the error.
+Report(messages) ::= <<
+Error message:
+<messages:{m | <m>}; separator="\n">
+>>

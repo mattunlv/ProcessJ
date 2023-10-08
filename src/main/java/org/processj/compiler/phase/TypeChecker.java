@@ -1,10 +1,7 @@
 
 package org.processj.compiler.phase;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import org.processj.compiler.ast.*;
 import org.processj.compiler.ast.expression.access.ArrayAccessExpression;
@@ -20,23 +17,18 @@ import org.processj.compiler.ast.expression.result.*;
 import org.processj.compiler.ast.expression.unary.*;
 import org.processj.compiler.ast.expression.yielding.ChannelEndExpression;
 import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
-import org.processj.compiler.ast.statement.yielding.AltCase;
-import org.processj.compiler.ast.statement.yielding.GuardStatement;
+import org.processj.compiler.ast.statement.conditional.*;
 import org.processj.compiler.ast.expression.*;
 import org.processj.compiler.ast.statement.*;
-import org.processj.compiler.ast.statement.conditional.DoStatement;
-import org.processj.compiler.ast.statement.conditional.ForStatement;
-import org.processj.compiler.ast.statement.conditional.IfStatement;
-import org.processj.compiler.ast.statement.conditional.WhileStatement;
 import org.processj.compiler.ast.statement.control.*;
-import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
-import org.processj.compiler.ast.statement.declarative.ProtocolCase;
-import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
-import org.processj.compiler.ast.statement.conditional.SwitchGroupStatement;
-import org.processj.compiler.ast.expression.result.SwitchLabel;
-import org.processj.compiler.ast.statement.conditional.SwitchStatement;
+import org.processj.compiler.ast.statement.declarative.*;
+import org.processj.compiler.ast.type.ProcedureType;
+import org.processj.compiler.ast.type.ProtocolType;
 import org.processj.compiler.ast.statement.yielding.ChannelWriteStatement;
 import org.processj.compiler.ast.type.*;
+import org.processj.compiler.ast.type.primitive.*;
+import org.processj.compiler.ast.type.primitive.numeric.NumericType;
+import org.processj.compiler.ast.type.primitive.numeric.integral.*;
 import org.processj.compiler.utilities.PJBugManager;
 import org.processj.compiler.utilities.PJMessage;
 import org.processj.compiler.utilities.VisitorMessageNumber;
@@ -52,7 +44,7 @@ import org.processj.compiler.utilities.VisitorMessageNumber;
 public class TypeChecker extends Phase {
 
     // Contains the protocol name and the corresponding tags currently switched on.
-    Hashtable<String, ProtocolCase> protocolTagsSwitchedOn = new Hashtable<String, ProtocolCase>();
+    Hashtable<String, ProtocolType.Case> protocolTagsSwitchedOn = new Hashtable<String, ProtocolType.Case>();
 
     // Set of nested protocols in nested switch statements
     HashSet<String> protocolsSwitchedOn = new HashSet<>();
@@ -82,7 +74,7 @@ public class TypeChecker extends Phase {
         final Type declaredType = constantDeclaration.getType();
 
         // Assert the Type is not a Procedure Type
-        if(declaredType instanceof ProcedureTypeDeclaration)
+        if(declaredType instanceof ProcedureType)
             throw new ConstantDeclaredAsProcedureException(this, constantDeclaration).commit();
 
         // If we have something to check
@@ -95,7 +87,7 @@ public class TypeChecker extends Phase {
             final Type initializedType = constantDeclaration.getInitializationExpression().getType();
 
             // Assert the right hand side Type & left hand side Type are assignment compatible
-            if(!declaredType.typeAssignmentCompatible(initializedType))
+            if(!declaredType.isAssignmentCompatibleTo(initializedType))
                 throw new DeclaredTypeNotAssignmentCompatibleException(this, initializedType, declaredType).commit();
 
         }
@@ -105,37 +97,37 @@ public class TypeChecker extends Phase {
     }
 
     @Override
-    public final void visitProcedureTypeDeclaration(final ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error {
+    public final void visitProcedureTypeDeclaration(final ProcedureType procedureType) throws Phase.Error {
 
-        org.processj.compiler.Compiler.Info(procedureTypeDeclaration + ": Visiting a Procedure Type Declaration '"
-                + procedureTypeDeclaration + "'.");
+        org.processj.compiler.Compiler.Info(procedureType + ": Visiting a Procedure Type Declaration '"
+                + procedureType + "'.");
 
         // ReturnType should already be bound
         // ParamDeclarations should already be bound
         // Implements list should already be bound
 
         // TODO: Maybe check implements list?
-        procedureTypeDeclaration.getBody().accept(this);
+        procedureType.getBody().accept(this);
 
 
 
     }
 
     @Override
-    public final void visitProtocolTypeDeclaration(final ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error {
+    public final void visitProtocolTypeDeclaration(final ProtocolType protocolType) throws Phase.Error {
 
         // TODO: Maybe check extend Types?
-        protocolTypeDeclaration.getBody().accept(this);
+        protocolType.getBody().accept(this);
 
 
 
     }
 
     @Override
-    public final void visitRecordTypeDeclaration(final RecordTypeDeclaration recordTypeDeclaration) throws Phase.Error {
+    public final void visitRecordTypeDeclaration(final RecordType recordType) throws Phase.Error {
 
         // TODO: Maybe check extends Types?
-        recordTypeDeclaration.getBody().accept(this);
+        recordType.getBody().accept(this);
 
 
 
@@ -166,7 +158,7 @@ public class TypeChecker extends Phase {
             final Type declaredType     = localDeclaration.getType();
             final Type initializedType  = localDeclaration.getInitializationExpression().getType();
 
-            if(!declaredType.typeAssignmentCompatible(initializedType))
+            if(!declaredType.isAssignmentCompatibleTo(initializedType))
                 throw new DeclaredTypeNotAssignmentCompatibleException(this, initializedType, declaredType).commit();
 
         }
@@ -176,47 +168,47 @@ public class TypeChecker extends Phase {
     }
 
     /**
-     * <p>Verifies that the {@link AltCase}'s precondition resolves to a boolean {@link Type}, if the
-     * {@link GuardStatement} is an input {@link GuardStatement} that it resolves correctly
+     * <p>Verifies that the {@link AltStatement.Case}'s precondition resolves to a boolean {@link Type}, if the
+     * {@link AltStatement.Case.Guard} is an input {@link AltStatement.Case.Guard} that it resolves correctly
      * for both sides of the {@link AssignmentExpression} {@link Expression} or if it's a {@link TimeoutStatement} that the timer
      * {@link Expression} is a Timer type and the delay {@link Expression} resolves to an integral {@link Type};
      * lastly it recurs down on the contained {@link Statement}.</p>
      *
-     * @param altCase The {@link AltCase} to check.
-     * @see AltCase
-     * @see GuardStatement
+     * @param aCase The {@link AltStatement.Case} to check.
+     * @see AltStatement.Case
+     * @see AltStatement.Case.Guard
      * @see Expression
      * @see Type
      * @since 0.1.0
      */
     @Override
-    public final void visitAltCase(final AltCase altCase) throws Phase.Error {
+    public final void visitAltStatementCase(final AltStatement.Case aCase) throws Phase.Error {
 
         // Alt Case -> Syntax: (Expr) && Guard : Statement => Boolean?(T(expr))
         // Three possibilities for this: Assignment, TimeoutStatement, & Skip Statement
         // Expr must be Boolean and Guard and Statement must be visited
 
         // If the AltCase defines a Boolean Precondition
-        if(altCase.definesPrecondition()) {
+        if(aCase.definesPrecondition()) {
 
             // Retrieve a handle to the Precondition
-            final Expression precondition = altCase.getPreconditionExpression();
+            final Expression precondition = aCase.getPreconditionExpression();
 
             // Resolve the precondition
             precondition.accept(this);
 
             // If the precondition's Type is not Boolean
-            if(!(precondition.getType()).isBooleanType())
-                throw new AltCasePreconditionNotBoundToBooleanType(this, altCase);
+            if(!(precondition.getType() instanceof BooleanType))
+                throw new AltCasePreconditionNotBoundToBooleanType(this, aCase);
 
         }
 
         // It's possible we may have a null guard;
         // TODO: Verify no null guards reach this point
-        if(altCase.definesGuard()) altCase.getGuard().accept(this);
+        if(aCase.definesGuard()) aCase.getGuardStatement().accept(this);
 
         // Lastly, recur on the Statement
-        altCase.getBody().accept(this);
+        aCase.accept(this);
 
 
 
@@ -261,7 +253,7 @@ public class TypeChecker extends Phase {
         final Type type = doStatement.getEvaluationExpression().getType();
 
         // Assert the evaluation Expression is bound to a boolean Type
-        if(!type.isBooleanType())
+        if(!(type instanceof BooleanType))
             throw new ControlEvaluationExpressionNonBooleanTypeException(this, type);
 
         // Recur on the body
@@ -283,14 +275,14 @@ public class TypeChecker extends Phase {
         final Type type = ifStatement.getEvaluationExpression().getType();
 
         // Assert that it's a boolean Type
-        if(!ifStatement.getEvaluationExpression().getType().isBooleanType())
+        if(!(ifStatement.getEvaluationExpression().getType() instanceof BooleanType))
             throw new ControlEvaluationExpressionNonBooleanTypeException(this, type).commit();
 
         // Resolve the then block
-        ifStatement.getThenBody().accept(this);
+        //ifStatement.getThenBody().accept(this);
 
         // Resolve the else block
-        ifStatement.getElseBody().accept(this);
+        ifStatement.getElseStatement().accept(this);
 
 
 
@@ -306,7 +298,7 @@ public class TypeChecker extends Phase {
         final Type type = whileStatement.getEvaluationExpression().getType();
 
         // Assert the evaluation Expression is bound to a boolean Type
-        if(!type.isBooleanType())
+        if(!(type instanceof BooleanType))
             throw new ControlEvaluationExpressionNonBooleanTypeException(this, type).commit();
 
         // Recur on the body
@@ -320,23 +312,23 @@ public class TypeChecker extends Phase {
         org.processj.compiler.Compiler.Info(forStatement + ": Visiting a for statement");
 
         // A non-par for loop cannot enroll on anything.
-        if(forStatement.getBarrierExpressions().size() > 0 || forStatement.isPar())
+        if(!forStatement.getBarrierSet().isEmpty() || forStatement.isParallel())
             throw new ProcessEnrolledOnBarriersException(this, forStatement).commit();
 
         // Check that all the barrier expressions are of barrier type.
-        for(final Expression barrierExpression: forStatement.getBarrierExpressions()) {
+        //for(final Expression barrierExpression: forStatement.getBarrierSet()) {
 
             // Resolve the Barrier Expression
-            barrierExpression.accept(this);
+            //barrierExpression.accept(this);
 
             // Retrieve the Type
-            final Type type = barrierExpression.getType();
+            //final Type type = barrierExpression.getType();
 
             // Assert it's a barrier Type
-            if(!barrierExpression.getType().isBarrierType())
-                throw new ExpectedBarrierTypeException(this, type).commit();
+            //if(!(barrierExpression.getType() instanceof BarrierType))
+                //throw new ExpectedBarrierTypeException(this, type).commit();
 
-        }
+        //}
 
         // Resolve the initialization Expression, if any.
         if(forStatement.definesInitializationStatements())
@@ -354,7 +346,7 @@ public class TypeChecker extends Phase {
             final Type type = forStatement.getEvaluationExpression().getType();
 
             // Assert the Expression is bound to a boolean Type
-            if(!type.isBooleanType())
+            if(!(type instanceof BooleanType))
                 throw new ControlEvaluationExpressionNonBooleanTypeException(this, type).commit();
 
         }
@@ -375,18 +367,18 @@ public class TypeChecker extends Phase {
         final Context context = this.getContext();
 
         // Assert the Context is a Procedure Type
-        if(!(context instanceof ProcedureTypeDeclaration))
+        if(!(context instanceof ProcedureType))
             throw new InvalidReturnStatementContextException(this, context).commit();
 
         // Otherwise, initialize a handle to its return Type
-        final Type returnType = ((ProcedureTypeDeclaration) context).getReturnType();
+        final Type returnType = ((ProcedureType) context).getReturnType();
 
         // Assert that the return Type is void and the return statement doesn't define an Expression
-        if(returnType.isVoidType() && (returnStatement.getExpression() != null))
+        if(returnType instanceof VoidType && (returnStatement.getExpression() != null))
             throw new VoidProcedureReturnTypeException(this, context);
 
         // Assert that the return Type is not void and the return statement does define an Expression
-        if(!returnType.isVoidType() && returnStatement.getExpression() == null)
+        if(!(returnType instanceof VoidType) && returnStatement.getExpression() == null)
             throw new ProcedureReturnsVoidException(this, returnType).commit();
 
         // Resolve the Return Type's Expression
@@ -396,7 +388,7 @@ public class TypeChecker extends Phase {
         final Type type = returnStatement.getExpression().getType();
 
         // Assert the Return Type is assignment Compatible with the Return Statement's
-        if(!returnType.typeAssignmentCompatible(type))
+        if(!returnType.isAssignmentCompatibleTo(type))
             throw new IncompatibleReturnTypeException(this, returnType, type).commit();
 
 
@@ -410,10 +402,10 @@ public class TypeChecker extends Phase {
         this.getContext().forEachContextUntil(context -> {
 
             // Initialize the result
-            final boolean inSwitchGroup = (context instanceof SwitchGroupStatement);
+            final boolean inSwitchGroup = (context instanceof SwitchStatement.Group);
 
             // Mark the Switch group
-            if(inSwitchGroup) ((SwitchGroupStatement) context).setContainsBreakStatement(true);
+            //if(inSwitchGroup) ((SwitchStatement.Group) context).setContainsBreakStatement(true);
 
             // Return the result
             return inSwitchGroup;
@@ -425,15 +417,15 @@ public class TypeChecker extends Phase {
     }
 
     @Override
-    public final void visitSwitchGroupStatement(final SwitchGroupStatement switchGroup) throws Phase.Error {
+    public final void visitSwitchStatementGroup(final SwitchStatement.Group switchGroup) throws Phase.Error {
 
         org.processj.compiler.Compiler.Info(switchGroup + ": Visiting SwitchGroup (" + switchGroup + ").");
 
         // Resolve the labels first to mark ourselves
-        switchGroup.getLabels().accept(this);
+        switchGroup.getCases().accept(this);
 
         // Now the statements
-        switchGroup.getStatements().accept(this);
+        switchGroup.getBody().accept(this);
 
         // Initialize a handle to the Context
         final Context context = this.getContext();
@@ -446,13 +438,13 @@ public class TypeChecker extends Phase {
         final Type type = ((SwitchStatement) context).getEvaluationExpression().getType();
 
         // If the evaluation Expression's Type is a Protocol Type so we can remove ourselves
-        if(type instanceof ProtocolTypeDeclaration) {
+        if(type instanceof ProtocolType) {
 
             // Initialize a handle to the evaluation Expression's name
             final String name = ((SwitchStatement) context).getEvaluationExpression().toString();
 
             // Assert the SwitchGroup doesn't contain more than one label
-            if(switchGroup.getLabels().size() > 1)
+            if(switchGroup.getCases().size() > 1)
                 PJBugManager.INSTANCE.reportMessage(
                         new PJMessage.Builder()
                                 .addAST(switchGroup)
@@ -461,16 +453,16 @@ public class TypeChecker extends Phase {
                                 .build());
 
             // Assert the SwitchGroup contains a break statement
-            // TODO: Assert this with a nested forEachContext within visitBreakSTat
-            else if(!switchGroup.containsBreakStatement())
-                PJBugManager.INSTANCE.reportMessage(
-                        new PJMessage.Builder()
-                                .addAST(switchGroup)
-                                .addError(VisitorMessageNumber.REWRITE_1005)
-                                .addArguments(name)
-                                .build());
+            // TODO: Assert this with a nested Context within visitBreakSTat
+            //else if(!switchGroup.containsBreakStatement())
+            //    PJBugManager.INSTANCE.reportMessage(
+            //            new PJMessage.Builder()
+            //                    .addAST(switchGroup)
+            //                    .addError(VisitorMessageNumber.REWRITE_1005)
+            //                    .addArguments(name)
+            //                    .build());
 
-            this.protocolTagsSwitchedOn.remove(((ProtocolTypeDeclaration) type).toString());
+            this.protocolTagsSwitchedOn.remove(((ProtocolType) type).toString());
 
         }
 
@@ -479,18 +471,18 @@ public class TypeChecker extends Phase {
     }
 
     /**
-     * <p>Asserts that the {@link SwitchLabel} {@link org.processj.compiler.ast.expression.Expression}'s {@link Type}
-     * is declared constant or is a {@link ProcedureTypeDeclaration}'s tag.</p>
+     * <p>Asserts that the {@link SwitchStatement.Group.Case} {@link org.processj.compiler.ast.expression.Expression}'s {@link Type}
+     * is declared constant or is a {@link ProcedureType}'s tag.</p>
      *
-     * @param switchLabel The {@link SwitchLabel} to assert.
-     * @throws Phase.Error If the {@link SwitchLabel}'s is not constant or a {@link ProcedureTypeDeclaration}'s tag.
+     * @param aCase The {@link SwitchStatement.Group.Case} to assert.
+     * @throws Phase.Error If the {@link SwitchStatement.Group.Case}'s is not constant or a {@link ProcedureType}'s tag.
      * @since 0.1.0
      */
     @Override
-    public final void visitSwitchLabelExpression(final SwitchLabel switchLabel) throws Phase.Error {
+    public final void visitSwitchLabelExpression(final SwitchStatement.Group.Case aCase) throws Phase.Error {
 
         // TODO: We migrated NameChecker Error 421 here, but we're already checking for that in SwitchStat
-        org.processj.compiler.Compiler.Info(switchLabel + ": Visiting SwitchLabel (" + switchLabel.getExpression() + ").");
+        org.processj.compiler.Compiler.Info(aCase + ": Visiting SwitchLabel (" + aCase.getExpression() + ").");
 
         // Initialize a handle to the Context
         final Context context = this.getContext();
@@ -500,51 +492,51 @@ public class TypeChecker extends Phase {
             throw new InvalidSwitchLabelContextException(this, context);
 
         // We only check on non-default labels
-        if(!switchLabel.isDefault()) {
+        if(!aCase.isDefault()) {
 
             // Initialize a handle to the Evaluation Expression & its Type
             final Expression evaluationExpression   = ((SwitchStatement) context).getEvaluationExpression();
             final Type       type                   = evaluationExpression.getType();
 
             // If the Evaluation Expression is bound to an integral or String Type
-            if(type.isIntegralType() || type.isStringType()) {
+            if(type instanceof IntegralType || type instanceof StringType) {
 
                 // Resolve the Switch Label's Expression
-                switchLabel.getExpression().accept(this);
+                aCase.getExpression().accept(this);
 
                 // Initialize a handle to the Type
-                final Type switchLabelType = switchLabel.getExpression().getType();
+                final Type switchLabelType = aCase.getExpression().getType();
 
                 // Assert the constant Expression's Type is assignable to the Evaluation Expression's Type
-                if(!(type.typeAssignmentCompatible(switchLabelType)))
+                if(!(type.isAssignmentCompatibleTo(switchLabelType)))
                     throw new InvalidSwitchLabelExpressionTypeException(
                             this, evaluationExpression, switchLabelType, type).commit();
 
             // Otherwise, the Evaluation Expression should be a Protocol Type
-            } else if(switchLabel.getExpression() instanceof NameExpression) {
+            } else if(aCase.getExpression() instanceof NameExpression) {
 
                 // Initialize a handle to the Tag
                 // TODO: We should probably use properly qualified names here - what if there are two different protocols named the same ?
-                final String            tag                     = switchLabel.getExpression().toString();
-                final ProtocolTypeDeclaration protocolTypeDeclaration = (ProtocolTypeDeclaration) type;
-                final ProtocolCase      protocolCase            = protocolTypeDeclaration.getCase(tag);
+                final String            tag                     = aCase.getExpression().toString();
+                final ProtocolType protocolType = (ProtocolType) type;
+                final ProtocolType.Case protocolCase            = protocolType.getCase(tag);
 
                 // Assert a valid Protocol Case
                 if(protocolCase == null)
-                    throw new UndefinedTagException(this, tag, protocolTypeDeclaration).commit();
+                    throw new UndefinedTagException(this, tag, protocolType).commit();
 
                 // Aggregate to the switched protocol tags
-                this.protocolTagsSwitchedOn.put(protocolTypeDeclaration.toString(), protocolCase);
+                this.protocolTagsSwitchedOn.put(protocolType.toString(), protocolCase);
 
             // TODO: This is most likely dead code since Protocol Types for evaluation Expressions are checked above.
             // TODO: Test for this to make sure we don't or do arrive here
             } else throw
-                    new SwitchLabelExpressionNotProtocolTagException(this, switchLabel.getExpression()).commit();
+                    new SwitchLabelExpressionNotProtocolTagException(this, aCase.getExpression()).commit();
 
         }
 
         // Assert the SwitchLabel Expression is constant or a Protocol Tag
-        TypeAssert.SwitchLabelConstantOrProtocolType(this, switchLabel);
+        TypeAssert.SwitchLabelConstantOrProtocolType(this, aCase);
 
 
 
@@ -561,16 +553,16 @@ public class TypeChecker extends Phase {
 
         // Assert the evaluation Expression's bound Type is an integral, string, or Protocol Type (Switch on Tag)
         // TODO: This checks for Error 421
-        if(!(type instanceof ProtocolTypeDeclaration || type.isIntegralType() || type.isStringType()))
+        if(!(type instanceof ProtocolType || type instanceof IntegralType || type instanceof StringType))
             throw new InvalidSwitchStatementExpressionTypeException(this, type).commit();
 
         // Protocol Type; Check for illegally nested Switch Statements
         // TODO: Should we do this in with SymbolMap.Context instead?
-        if(type instanceof ProtocolTypeDeclaration) {
+        if(type instanceof ProtocolType) {
 
             // Assert we haven't already switched on the current Protocol
             if(this.protocolsSwitchedOn.contains(type.toString()))
-                throw new IllegalNestedSwitchInProtocolException(this, (ProtocolTypeDeclaration) type).commit();
+                throw new IllegalNestedSwitchInProtocolException(this, (ProtocolType) type).commit();
 
             // Aggregate the Protocol Name
             this.protocolsSwitchedOn.add(type.toString());
@@ -596,10 +588,10 @@ public class TypeChecker extends Phase {
         final Context context = this.getContext();
 
         // Assert the Context is a Procedure
-        if(!(context instanceof ProcedureTypeDeclaration))
+        if(!(context instanceof ProcedureType))
             throw new InvalidSuspendStatementContextException(this, context).commit();
 
-        if(!((ProcedureTypeDeclaration) context).isMobile())
+        if(!((ProcedureType) context).isMobile())
             throw new SuspendInNonMobileProcedureException(this, context).commit();
 
 
@@ -616,7 +608,7 @@ public class TypeChecker extends Phase {
         final Type type = syncStatement.getBarrierExpression().getType();
 
         // Assert the Expression is bound to a Barrier Type
-        if(!type.isBarrierType())
+        if(!(type instanceof BarrierType))
             throw new InvalidSynchronizationExpressionTypeException(this, type).commit();
 
     }
@@ -645,14 +637,14 @@ public class TypeChecker extends Phase {
         final Type delayType = timerExpression.getType();
 
         // Assert that the timer Expression is a Timer Type
-        if(!timerType.isTimerType())
+        if(!(timerType instanceof TimerType))
             throw new InvalidTimeoutTargetTypeException(this, timerType).commit();
 
         // Resolve the delay Expression
         delayExpression.accept(this);
 
         // Assert that the delay Expression is an integral type
-        if(!delayType.isIntegralType())
+        if(!(delayType instanceof IntegralType))
             throw new InvalidTimeoutDelayTypeException(this, delayType).commit();
 
     }
@@ -664,7 +656,7 @@ public class TypeChecker extends Phase {
 
         // Invocation Parameter Types should be bound already, attempt to retrieve the aggregated results
         final List<Object>          candidates = this.getScope().get(invocationExpression.getProcedureName());
-        final List<ProcedureTypeDeclaration>    compatible = new ArrayList<>();
+        final List<ProcedureType>    compatible = new ArrayList<>();
 
         // Aggregate all valid results
         candidates.forEach(result -> { if(result instanceof Context.SymbolMap)
@@ -677,7 +669,7 @@ public class TypeChecker extends Phase {
             throw new NoCandidateForInvocationFoundException(this, invocationExpression).commit();
 
         // Attempt to resolve a Candidate
-        final ProcedureTypeDeclaration candidate = Candidate(compatible);
+        final ProcedureType candidate = Candidate(compatible);
 
         // Assert the candidate was resolved
         if(candidate == null)
@@ -704,7 +696,7 @@ public class TypeChecker extends Phase {
         newArrayExpression.forEachBracketExpression(expression -> {
 
             // Assert the Expression is bound to an integral Type
-            if(!expression.getType().isIntegralType())
+            if(!(expression.getType() instanceof IntegralType))
                 throw new InvalidArrayDimensionTypeException(this, expression);
 
         });
@@ -734,7 +726,7 @@ public class TypeChecker extends Phase {
                     throw new TypeNotAssignmentCompatibleException(this, expression, arrayType);
 
                 // Assert assignment compatibility
-                if(!arrayType.typeAssignmentCompatible(type))
+                if(!arrayType.isAssignmentCompatibleTo(type))
                     throw new TypeNotAssignmentCompatibleException(this, expression, arrayType);
 
             }
@@ -769,7 +761,7 @@ public class TypeChecker extends Phase {
 
         // Assert that the Expression is bound to a boolean Type
         // Error 3070
-        if(!expressionType.isBooleanType())
+        if(!(expressionType instanceof BooleanType))
             throw new ControlEvaluationExpressionNonBooleanTypeException(this, expressionType).commit();
 
         // Resolve the then & else branches
@@ -783,10 +775,10 @@ public class TypeChecker extends Phase {
         // TODO: Watch out for ArrayType, ProtocolType, & RecordTypes
         // TODO: Error 3071 & 3072
         // Assert the then part is assignment compatible with the else part
-        if(!thenType.typeAssignmentCompatible(elseType)) {
+        if(!thenType.isAssignmentCompatibleTo(elseType)) {
 
             // Assert the else part is assignment compatible with the then part
-            if(!elseType.typeAssignmentCompatible(thenType))
+            if(!elseType.isAssignmentCompatibleTo(thenType))
                 throw new TypeNotAssignmentCompatibleException(this, ternaryExpression.getThenExpression(), elseType).commit();
 
             // Bind the Type
@@ -796,7 +788,7 @@ public class TypeChecker extends Phase {
         } else {
 
             // Assert the then part is assignment compatible with the else part
-            if(!thenType.typeAssignmentCompatible(elseType))
+            if(!thenType.isAssignmentCompatibleTo(elseType))
                 throw new TypeNotAssignmentCompatibleException(this, ternaryExpression.getElseExpression(), thenType).commit();
 
             // Bind the Type
@@ -844,7 +836,7 @@ public class TypeChecker extends Phase {
 
         // Assert the left hand side is assignable
         // TODO: Error 630
-        if(!leftType.assignable())
+        if(leftType.toString().equals("null") || leftType.toString().equals("void"))
             throw new TypeNotAssignmentCompatibleException(this, assignmentExpression.getLeftExpression(), rightType).commit();
 
         // Resolve the Operators
@@ -852,18 +844,18 @@ public class TypeChecker extends Phase {
 
             case AssignmentExpression.EQ: {
 
-                if(!leftType.typeAssignmentCompatible(rightType))
+                if(!leftType.isAssignmentCompatibleTo(rightType))
                     throw new TypeNotAssignmentCompatibleException(this, assignmentExpression.getLeftExpression(), rightType);
 
             } break;
 
             case AssignmentExpression.PLUSEQ: {
 
-                if(leftType.isStringType()
-                        && !rightType.isNumericType()
-                        && !rightType.isBooleanType()
-                        && !rightType.isCharType()
-                        && !rightType.isStringType())
+                if(leftType instanceof StringType
+                        && !(rightType instanceof NumericType)
+                        && !(rightType instanceof BooleanType)
+                        && !(rightType instanceof CharType)
+                        && !(rightType instanceof StringType))
                     throw new TypeNotAssignmentCompatibleException(this, assignmentExpression.getLeftExpression(), rightType).commit();
 
                 break;
@@ -874,7 +866,7 @@ public class TypeChecker extends Phase {
             case AssignmentExpression.MODEQ:
             case AssignmentExpression.MINUSEQ: {
 
-                if(!leftType.typeAssignmentCompatible(rightType))
+                if(!leftType.isAssignmentCompatibleTo(rightType))
                     throw new TypeNotAssignmentCompatibleException(this, assignmentExpression.getLeftExpression(), rightType).commit();
 
             } break;
@@ -883,10 +875,10 @@ public class TypeChecker extends Phase {
             case AssignmentExpression.RSHIFTEQ:
             case AssignmentExpression.RRSHIFTEQ: {
 
-                if(!leftType.isIntegralType())
+                if(!(leftType instanceof IntegralType))
                     throw new LeftSideOfShiftNotIntegralOrBoolean(this, leftType);
 
-                if(!rightType.isIntegralType())
+                if(!(rightType instanceof IntegralType))
                     throw new RightSideOfShiftNotIntegralOrBoolean(this, rightType);
 
             } break;
@@ -896,8 +888,8 @@ public class TypeChecker extends Phase {
             case AssignmentExpression.XOREQ: {
 
                 // TODO: Error 3009
-                if(!(leftType.isIntegralType() && rightType.isIntegralType())
-                        || (leftType.isBooleanType() && rightType.isBooleanType()))
+                if(!(leftType instanceof IntegralType && rightType instanceof IntegralType)
+                        || (leftType instanceof BooleanType && rightType instanceof BooleanType))
                     throw new CompoundBitwiseTypesNotIntegralOrBoolean(this, leftType, rightType).commit();
 
             } break;
@@ -933,11 +925,11 @@ public class TypeChecker extends Phase {
             case BinaryExpression.LTEQ:
             case BinaryExpression.GTEQ: {
 
-                if(!leftType.isNumericType() && !rightType.isNumericType())
+                if(!(leftType instanceof NumericType) && !(rightType instanceof NumericType))
                     throw new RelationalOperatorRequiresNumericTypeException(this, leftType, rightType).commit();
 
                 // Update the result type
-                resultType = new PrimitiveType(PrimitiveType.BooleanKind);
+                resultType = new BooleanType();
 
             } break;
 
@@ -946,24 +938,24 @@ public class TypeChecker extends Phase {
 
                 // TODO: barriers, timers, procs, records and protocols
                 // Assert the Types are equal or any combination of numeric Types
-                if(!((leftType.typeEqual(rightType)) || (leftType.isNumericType() && rightType.isNumericType())))
-                    throw (leftType.isVoidType() || rightType.isVoidType())
+                if(!((leftType.isTypeEqualTo(rightType)) || (leftType instanceof NumericType && rightType instanceof NumericType)))
+                    throw (leftType instanceof VoidType || rightType instanceof VoidType)
                             ? new VoidTypeUsedInLogicalComparisonException(this, leftType, rightType).commit()
                             : new LogicalComparisonTypeMismatchException(this, leftType, rightType).commit();
 
                 // Update the result Type
-                resultType = new PrimitiveType(PrimitiveType.BooleanKind);
+                resultType = new BooleanType();
 
             } break;
 
             case BinaryExpression.ANDAND:
             case BinaryExpression.OROR: {
 
-                if(!leftType.isBooleanType() || rightType.isBooleanType())
+                if(!(leftType instanceof BooleanType) || rightType instanceof BooleanType)
                     throw new LogicalComparisonNotBooleanTypeException(this, leftType, rightType).commit();
 
                 // Update the result Type
-                resultType = new PrimitiveType(PrimitiveType.BooleanKind);
+                resultType = new BooleanType();
 
             } break;
 
@@ -971,10 +963,10 @@ public class TypeChecker extends Phase {
             case BinaryExpression.OR:
             case BinaryExpression.XOR: {
 
-                if(leftType.isBooleanType() && rightType.isBooleanType())
-                    resultType = new PrimitiveType(PrimitiveType.BooleanKind);
+                if(leftType instanceof BooleanType && rightType instanceof BooleanType)
+                    resultType = new BooleanType();
 
-                else if(leftType.isIntegralType() && rightType.isIntegralType())
+                else if(leftType instanceof IntegralType && rightType instanceof IntegralType)
                     resultType = leftType;
 
                 else
@@ -985,18 +977,17 @@ public class TypeChecker extends Phase {
             // + - * / % : Type must be numeric
             case BinaryExpression.PLUS: {
 
-                if(leftType.isStringType()
-                    && !rightType.isNumericType()
-                    && !rightType.isBooleanType()
-                    && !rightType.isStringType()
-                    && !rightType.isCharType())
+                if(leftType instanceof StringType
+                    && !(rightType instanceof NumericType)
+                    && !(rightType instanceof BooleanType)
+                    && !(rightType instanceof StringType)
+                    && !(rightType instanceof CharType))
                     throw new TypeNotAssignableException(this, binaryExpression.getLeftExpression(), rightType).commit();
 
-                else if(rightType.isStringType()
-                    && !leftType.isNumericType()
-                    && !leftType.isBooleanType()
-                    && !leftType.isStringType()
-                    && !leftType.isCharType())
+                else if(rightType instanceof NumericType
+                    && !(leftType instanceof BooleanType)
+                    && !(leftType instanceof StringType)
+                    && !(leftType instanceof CharType))
                     throw new TypeNotAssignableException(this, binaryExpression.getRightExpression(), leftType).commit();
 
             }
@@ -1005,7 +996,7 @@ public class TypeChecker extends Phase {
             case BinaryExpression.DIV:
             case BinaryExpression.MOD: {
 
-                if(!leftType.isNumericType() || !rightType.isNumericType())
+                if(!(leftType instanceof NumericType) || !(rightType instanceof NumericType))
                     throw new ArithmeticOperatorRequiresNumericTypeException(this, leftType, rightType).commit();
 
                 // Update the result Type
@@ -1017,10 +1008,10 @@ public class TypeChecker extends Phase {
             case BinaryExpression.RSHIFT:
             case BinaryExpression.RRSHIFT: {
 
-                if(!leftType.isIntegralType())
+                if(!(leftType instanceof IntegralType))
                     throw new LeftSideOfShiftNotIntegralOrBoolean(this, leftType);
 
-                if(!rightType.isIntegralType())
+                if(!(rightType instanceof IntegralType))
                     throw new RightSideOfShiftNotIntegralOrBoolean(this, rightType);
 
                 // Update the result type
@@ -1032,14 +1023,14 @@ public class TypeChecker extends Phase {
 
         }
 
-        if(!resultType.isBooleanType()) {
+        if(!(resultType instanceof BooleanType)) {
 
             // Retrieve the Type ceiling
-            Type ceiling = ((PrimitiveType) leftType).typeCeiling((PrimitiveType) rightType);
+            Type ceiling = rightType;
 
             // Promote if necessary
-            if (ceiling.isByteType() || ceiling.isShortType() || ceiling.isCharType())
-                ceiling = new PrimitiveType(PrimitiveType.IntKind);
+            if(((PrimitiveType) leftType).isTypeCeilingOf(rightType))
+                ceiling = (leftType instanceof LongType) ? new LongType() : new IntegerType();
 
             // Bind the Type
             binaryExpression.setType(ceiling);
@@ -1064,7 +1055,7 @@ public class TypeChecker extends Phase {
         final Type expressionType = unaryPostExpression.getExpression().getType();
 
         // Assert the expression is bound to a numeric Type
-        if(!expressionType.isNumericType())
+        if(!(expressionType instanceof NumericType))
             throw new InvalidUnaryOperandException(this, unaryPostExpression, unaryPostExpression.opString()).commit();
 
         // TODO: what about protocol ?? Must be inside the appropriate case.protocol access
@@ -1099,7 +1090,7 @@ public class TypeChecker extends Phase {
             case UnaryPreExpression.MINUS:
 
                 // TODO: Error 3052
-                if(!expressionType.isNumericType())
+                if(!(expressionType instanceof NumericType))
                     throw new InvalidUnaryOperandException(
                             this, unaryPreExpression, unaryPreExpression.opString()).commit();
 
@@ -1108,7 +1099,7 @@ public class TypeChecker extends Phase {
             case UnaryPreExpression.NOT:
 
                 // TODO: Error 3053
-                if(!expressionType.isBooleanType())
+                if(!(expressionType instanceof BooleanType))
                     throw new InvalidUnaryOperandException(
                             this, unaryPreExpression, unaryPreExpression.opString()).commit();
 
@@ -1117,7 +1108,7 @@ public class TypeChecker extends Phase {
             case UnaryPreExpression.COMP:
 
                 // TODO: Error 3054
-                if(!expressionType.isIntegralType())
+                if(!(expressionType instanceof IntegralType))
                     throw new InvalidUnaryOperandException(
                             this, unaryPreExpression, unaryPreExpression.opString()).commit();
 
@@ -1133,7 +1124,7 @@ public class TypeChecker extends Phase {
                     throw new InvalidLiteralUnaryOperandException(this, unaryPreExpression).commit();
 
                 // TODO: Error 3057
-                if (!expressionType.isNumericType())
+                if (!(expressionType instanceof NumericType))
                     throw new InvalidUnaryOperandException(this, unaryPreExpression, unaryPreExpression.opString()).commit();
 
                 break;
@@ -1153,7 +1144,7 @@ public class TypeChecker extends Phase {
     public final void visitChannelEndExpression(final ChannelEndExpression channelEndExpression) throws Phase.Error {
 
         // Resolve the Channel Type
-        channelEndExpression.getChannelType().accept(this);
+        channelEndExpression.getChannelExpression().accept(this);
 
         // Initialize a handle to the Channel Type
         final Type type = channelEndExpression.getType();
@@ -1172,11 +1163,11 @@ public class TypeChecker extends Phase {
         // TODO: Redo; make it a little more accessible
         // Channel has no shared ends.
         if(channelType.isShared() == ChannelType.NOT_SHARED)
-            synthesized = new ChannelEndType(ChannelEndType.NOT_SHARED, channelType.getComponentType(), end);
+            synthesized = new ChannelEndType(ChannelEndType.NOT_SHARED, channelType.getComponentType(), end, false, false, false);
 
         // Channel has both ends shared, create a shared ChannelEndType.
         else if (channelType.isShared() == ChannelType.SHARED_READ_WRITE)
-            synthesized = new ChannelEndType(ChannelEndType.SHARED, channelType.getComponentType(), end);
+            synthesized = new ChannelEndType(ChannelEndType.SHARED, channelType.getComponentType(), end, false, false, false);
 
         // Channel has read end shared; if .read then create a shared channel end, otherwise create a non-shared one.
         else if (channelType.isShared() == ChannelType.SHARED_READ) {
@@ -1185,7 +1176,7 @@ public class TypeChecker extends Phase {
                     ? ChannelEndType.SHARED : ChannelType.NOT_SHARED;
 
             // Set the Synthesized Type
-            synthesized = new ChannelEndType(share, channelType.getComponentType(), end);
+            synthesized = new ChannelEndType(share, channelType.getComponentType(), end, false, false, false);
 
         } else if(channelType.isShared() == ChannelType.SHARED_WRITE) {
 
@@ -1193,7 +1184,7 @@ public class TypeChecker extends Phase {
                     ? ChannelEndType.SHARED : ChannelType.NOT_SHARED;
 
             // Set the Synthesized Type
-            synthesized = new ChannelEndType(share, channelType.getComponentType(), end);
+            synthesized = new ChannelEndType(share, channelType.getComponentType(), end, false, false, false);
 
         }
 
@@ -1218,22 +1209,22 @@ public class TypeChecker extends Phase {
         final Type type = channelReadExpression.getType();
 
         // Assert the ChannelReadExpression is bound to the appropriate Type
-        if(!(type.isTimerType() || type instanceof ChannelEndType || type instanceof ChannelType))
+        if(!(type instanceof TimerType || type instanceof ChannelEndType || type instanceof ChannelType))
             throw new InvalidChannelReadExpressionTypeException(this, channelReadExpression).commit();
 
-        if(type instanceof ChannelEndType)
-            channelReadExpression.setType(type.getComponentType());
+        //if(type instanceof ChannelEndType)
+        //    channelReadExpression.setType(type.getComponentType());
 
         else if(type instanceof ChannelType)
             channelReadExpression.setType(((ChannelType) type).getComponentType());
 
-        else channelReadExpression.setType(new PrimitiveType(PrimitiveType.LongKind));
+        else channelReadExpression.setType(new LongType());
 
         // Assert the ChannelReadExpression defines an extended rendezvous
         if(channelReadExpression.definesExtendedRendezvous()) {
 
             // Assert that timer reads do not have an extended rendezvous.
-            if(type.isTimerType())
+            if(type instanceof TimerType)
                 throw new TimerReadWithExtendedRendezvous(this, channelReadExpression).commit();
 
             // Otherwise, resolve the extended rendezvous
@@ -1289,7 +1280,7 @@ public class TypeChecker extends Phase {
 
         // This error does not create an error type cause the baseType() is still the array expression's type.
         // TODO: Error 655
-        if(!indexType.isIntegerType())
+        if(!(indexType instanceof IntegerType))
             throw new InvalidArrayDimensionTypeException(this, arrayAccessExpression).commit();
 
         org.processj.compiler.Compiler.Info(arrayAccessExpression + ": Array Expression has type: " + arrayAccessExpression.type);
@@ -1313,52 +1304,52 @@ public class TypeChecker extends Phase {
 
         if((type instanceof ArrayType) && recordAccessExpression.field().toString().equals("size")) {
 
-            recordAccessExpression.setType(new PrimitiveType(PrimitiveType.IntKind));
+            recordAccessExpression.setType(new IntegerType());
             recordAccessExpression.isArraySize = true;
 
-        } else if(type.isStringType() && recordAccessExpression.field().toString().equals("length")) {
+        } else if(type instanceof StringType && recordAccessExpression.field().toString().equals("length")) {
 
-            recordAccessExpression.setType(new PrimitiveType(PrimitiveType.LongKind));
+            recordAccessExpression.setType(new LongType());
             recordAccessExpression.isStringLength = true;
 
         } else {
 
             // Assert the Type is a Record Type Declaration
-            if(type instanceof RecordTypeDeclaration) {
+            if(type instanceof RecordType) {
 
                 // Find the field and make the type of the record access equal to the field. TODO: test inheritence here
-                final RecordMemberDeclaration recordMemberDeclaration =
-                        ((RecordTypeDeclaration) type).getMember(recordAccessExpression.field().toString());
+                final RecordType.Member member =
+                        ((RecordType) type).getMember(recordAccessExpression.field().toString());
 
                 // TODO: Error 3062
-                if(recordMemberDeclaration == null)
+                if(member == null)
                     throw new UndefinedSymbolException(this, recordAccessExpression).commit();
 
                 // Bind the Type
-                recordAccessExpression.setType(recordMemberDeclaration.getType());
+                recordAccessExpression.setType(member.getType());
 
             // Otherwise, it's Protocol Type
             } else {
 
-                final ProtocolTypeDeclaration protocolTypeDeclaration = (ProtocolTypeDeclaration) type;
+                final ProtocolType protocolType = (ProtocolType) type;
 
                 // TODO: Error Format: "Illegal access to non-switched protocol type '" + protocolTypeDeclaration + "'."
-                if(!protocolsSwitchedOn.contains(protocolTypeDeclaration.toString()))
-                    throw new IllegalNestedSwitchInProtocolException(this, protocolTypeDeclaration).commit();
+                if(!protocolsSwitchedOn.contains(protocolType.toString()))
+                    throw new IllegalNestedSwitchInProtocolException(this, protocolType).commit();
 
-                final ProtocolCase protocolCase = protocolTagsSwitchedOn.get(protocolTypeDeclaration.toString());
+                final ProtocolType.Case aCase = protocolTagsSwitchedOn.get(protocolType.toString());
                 final String fieldName = recordAccessExpression.field().toString();
 
                 boolean found = false;
 
-                if(protocolCase != null)
-                    for(RecordMemberDeclaration recordMemberDeclaration : protocolCase.getBody())
-                        if(recordMemberDeclaration.getName().toString().equals(fieldName)) {
+                //if(aCase != null)
+                    //for(RecordType.Member member : aCase.getBody())
+                        //if(member.getName().toString().equals(fieldName)) {
 
-                            recordAccessExpression.setType(recordMemberDeclaration.getType());
-                            found = true;
+                            //recordAccessExpression.setType(member.getType());
+                            //found = true;
 
-                        }
+                        //}
 
                 // TODO: Error 3073
                 // TODO: Format: "Unknown field reference '" + fieldName + "' in protocol tag '"
@@ -1388,15 +1379,15 @@ public class TypeChecker extends Phase {
         final Type expressionType   = castExpression.getExpression().getType();
         final Type castType         = castExpression.getCastType();
 
-        if(expressionType.isNumericType() && castType.isNumericType()) {
+        if(expressionType instanceof NumericType && castType instanceof NumericType) {
 
             castExpression.type = castType;
 
-        } else if (expressionType instanceof ProtocolTypeDeclaration && castType instanceof ProtocolTypeDeclaration) {
+        } else if (expressionType instanceof ProtocolType && castType instanceof ProtocolType) {
 
             // TODO: finish this
 
-        } else if (expressionType instanceof RecordTypeDeclaration && castType instanceof RecordTypeDeclaration) {
+        } else if (expressionType instanceof RecordType && castType instanceof RecordType) {
 
             // TODO: finish this
 
@@ -1424,7 +1415,7 @@ public class TypeChecker extends Phase {
         org.processj.compiler.Compiler.Info(nameExpression + ": Visiting a Name Expression (" + nameExpression + ").");
 
         // One of the few terminal points, attempt to retrieve the type from our current scope
-        final Object resolved = this.getScope().get(nameExpression.getName().getName(), nameExpression.getPackageName());
+        final Object resolved = this.getScope().get(nameExpression.getName().toString(), nameExpression.getPackageName());
 
         // Assert that our result is a Type
         if(!(resolved instanceof Type))
@@ -1650,7 +1641,7 @@ public class TypeChecker extends Phase {
     }
 
     /**
-     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link AltCase}'s precondition
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link AltStatement.Case}'s precondition
      * not bound to boolean {@link Type}.
      * // TODO: Error 660
      * @see Phase
@@ -1672,9 +1663,9 @@ public class TypeChecker extends Phase {
         /// Private Fields
 
         /**
-         * <p>The {@link AltCase} with a non-boolean {@link Type} precondition.</p>
+         * <p>The {@link AltStatement.Case} with a non-boolean {@link Type} precondition.</p>
          */
-        private final AltCase altCase;
+        private final AltStatement.Case aCase;
 
         /// ------------
         /// Constructors
@@ -1687,9 +1678,9 @@ public class TypeChecker extends Phase {
          * @since 0.1.0
          */
         protected AltCasePreconditionNotBoundToBooleanType(final TypeChecker culpritInstance,
-                                                           final AltCase altCase) {
+                                                           final AltStatement.Case aCase) {
             super(culpritInstance);
-            this.altCase = altCase;
+            this.aCase = aCase;
         }
 
         /// -------------------
@@ -2037,7 +2028,7 @@ public class TypeChecker extends Phase {
         /// Private Fields
 
         /**
-         * <p>The {@link Context} the {@link SwitchLabel} appeared in.</p>
+         * <p>The {@link Context} the {@link SwitchStatement.Group.Case} appeared in.</p>
          */
         private final Context switchLabelContext;
 
@@ -2390,7 +2381,7 @@ public class TypeChecker extends Phase {
     }
 
     /**
-     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link SwitchLabel}'s
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link SwitchStatement.Group.Case}'s
      * {@link Expression}'s {@link Type} not assignable to the {@link SwitchStatement}'s Evaluation {@link Expression}'s
      * {@link Type}.</p>
      * // TODO: Error 0000
@@ -2414,12 +2405,12 @@ public class TypeChecker extends Phase {
         /// Private Fields
 
         /**
-         * <p>The {@link SwitchLabel}'s {@link Expression}.</p>
+         * <p>The {@link SwitchStatement.Group.Case}'s {@link Expression}.</p>
          */
         private final Expression switchLabelExpression;
 
         /**
-         * <p>The {@link SwitchLabel}'s {@link Type}.</p>
+         * <p>The {@link SwitchStatement.Group.Case}'s {@link Type}.</p>
          */
         private final Type labelType;
 
@@ -2467,7 +2458,7 @@ public class TypeChecker extends Phase {
     }
 
     /**
-     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link SwitchLabel}'s
+     * <p>{@link Phase.Error} class that encapsulates the pertinent information of a {@link SwitchStatement.Group.Case}'s
      * {@link Expression}'s {@link Type} not a Protocol Tag.</p>
      * // TODO: Error 0000
      * @see Phase
@@ -2489,7 +2480,7 @@ public class TypeChecker extends Phase {
         /// Private Fields
 
         /**
-         * <p>The {@link SwitchLabel}'s {@link Expression}.</p>
+         * <p>The {@link SwitchStatement.Group.Case}'s {@link Expression}.</p>
          */
         private final Expression labelExpression;
 
@@ -2531,7 +2522,7 @@ public class TypeChecker extends Phase {
 
     /**
      * <p>{@link Phase.Error} class that encapsulates the pertinent information of an attempt to access an undefined
-     * {@link ProtocolTypeDeclaration}'s Tag.</p>
+     * {@link ProtocolType}'s Tag.</p>
      * // TODO: Error 0000
      * @see Phase
      * @see Phase.Error
@@ -2552,14 +2543,14 @@ public class TypeChecker extends Phase {
         /// Private Fields
 
         /**
-         * <p>The {@link String} value of the undefined {@link ProtocolTypeDeclaration}'s Tag.</p>
+         * <p>The {@link String} value of the undefined {@link ProtocolType}'s Tag.</p>
          */
         private final String tag;
 
         /**
-         * <p>The {@link ProtocolTypeDeclaration} searched.</p>
+         * <p>The {@link ProtocolType} searched.</p>
          */
-        private final ProtocolTypeDeclaration protocolTypeDeclaration;
+        private final ProtocolType protocolType;
 
         /// ------------
         /// Constructors
@@ -2573,11 +2564,11 @@ public class TypeChecker extends Phase {
          */
         protected UndefinedTagException(final TypeChecker culpritInstance,
                                         final String tag,
-                                        final ProtocolTypeDeclaration protocolTypeDeclaration) {
+                                        final ProtocolType protocolType) {
             super(culpritInstance);
 
             this.tag                        = tag                       ;
-            this.protocolTypeDeclaration    = protocolTypeDeclaration   ;
+            this.protocolType = protocolType;
 
         }
 
@@ -2593,7 +2584,7 @@ public class TypeChecker extends Phase {
         public String getMessage() {
 
             // Return the resultant error message
-            return String.format(Message, this.tag, this.protocolTypeDeclaration);
+            return String.format(Message, this.tag, this.protocolType);
 
         }
 
@@ -2601,7 +2592,7 @@ public class TypeChecker extends Phase {
 
     /**
      * <p>{@link Phase.Error} class that encapsulates the pertinent information of an illegally nested
-     * {@link SwitchStatement} within a {@link ProtocolTypeDeclaration}.</p>
+     * {@link SwitchStatement} within a {@link ProtocolType}.</p>
      * @see Phase
      * @see Phase.Error
      * @version 1.0.0
@@ -2621,9 +2612,9 @@ public class TypeChecker extends Phase {
         /// Private Fields
 
         /**
-         * <p>The {@link ProtocolTypeDeclaration} with an illegally nested {@link SwitchStatement}.</p>
+         * <p>The {@link ProtocolType} with an illegally nested {@link SwitchStatement}.</p>
          */
-        private final ProtocolTypeDeclaration protocolTypeDeclaration;
+        private final ProtocolType protocolType;
 
         /// ------------
         /// Constructors
@@ -2636,10 +2627,10 @@ public class TypeChecker extends Phase {
          * @since 0.1.0
          */
         protected IllegalNestedSwitchInProtocolException(final TypeChecker culpritInstance,
-                                                         final ProtocolTypeDeclaration protocolTypeDeclaration) {
+                                                         final ProtocolType protocolType) {
             super(culpritInstance);
 
-            this.protocolTypeDeclaration = protocolTypeDeclaration   ;
+            this.protocolType = protocolType;
 
         }
 
@@ -2655,7 +2646,7 @@ public class TypeChecker extends Phase {
         public String getMessage() {
 
             // Return the resultant error message
-            return String.format(Message, this.protocolTypeDeclaration);
+            return String.format(Message, this.protocolType);
 
         }
 
@@ -3038,7 +3029,7 @@ public class TypeChecker extends Phase {
 
     /**
      * <p>{@link Phase.Error} class that encapsulates the pertinent information of an invocation that
-     * couldn't resolve to a {@link ProcedureTypeDeclaration}.</p>
+     * couldn't resolve to a {@link ProcedureType}.</p>
      * // TODO: Error 3038
      * @see Phase
      * @see Phase.Error
@@ -4271,23 +4262,23 @@ public class TypeChecker extends Phase {
 
     // TODO: Remove These
 
-    private static boolean assertAssignmentCompatible(final ProcedureTypeDeclaration procedureTypeDeclaration,
+    private static boolean assertAssignmentCompatible(final ProcedureType procedureType,
                                                       final InvocationExpression invocationExpression) {
 
         // Assert they each have the same amount of parameters
         boolean areAssignmentCompatible =
-                invocationExpression.getParameterCount() == procedureTypeDeclaration.getParameterCount();
+                invocationExpression.getParameterCount() == procedureType.getParameterCount();
 
         // Iterate while the invariant is true
         for(int index = 0; areAssignmentCompatible && (index < invocationExpression.getParameterCount()); index++) {
 
             // Initialize a handle to the Procedure Type's Parameter Type
-            final Type parameterType    = procedureTypeDeclaration.getTypeForParameter(index);
+            final Type parameterType    = procedureType.getTypeForParameterAt(index);
             final Type invocationType   = invocationExpression.getTypeForParameter(index);
 
             // Update the invariant
             areAssignmentCompatible = ((parameterType != null) && (invocationType != null))
-                    && parameterType.typeAssignmentCompatible(invocationType);
+                    && parameterType.isAssignmentCompatibleTo(invocationType);
 
         }
 
@@ -4296,8 +4287,8 @@ public class TypeChecker extends Phase {
 
     }
 
-    private static boolean assertTypeAssignmentCompatible(final ProcedureTypeDeclaration leftProcedure,
-                                                          final ProcedureTypeDeclaration rightProcedure) {
+    private static boolean assertTypeAssignmentCompatible(final ProcedureType leftProcedure,
+                                                          final ProcedureType rightProcedure) {
 
         // Assert they each have the same amount of parameters
         boolean areAssignmentCompatible =
@@ -4307,12 +4298,12 @@ public class TypeChecker extends Phase {
         for(int index = 0; areAssignmentCompatible && (index < rightProcedure.getParameterCount()); index++) {
 
             // Initialize a handle to the Procedure Type's Parameter Type
-            final Type leftType    = leftProcedure.getTypeForParameter(index);
-            final Type rightType   = rightProcedure.getTypeForParameter(index);
+            final Type leftType    = leftProcedure.getTypeForParameterAt(index);
+            final Type rightType   = rightProcedure.getTypeForParameterAt(index);
 
             // Update the invariant
             areAssignmentCompatible = ((leftType != null) && (rightType != null))
-                    && leftType.typeAssignmentCompatible(rightType);
+                    && leftType.isAssignmentCompatibleTo(rightType);
 
         }
 
@@ -4321,18 +4312,18 @@ public class TypeChecker extends Phase {
 
     }
 
-    private static List<ProcedureTypeDeclaration> aggregateAssignmentCompatible(final Context.SymbolMap symbolMap,
-                                                                                final InvocationExpression invocationExpression,
-                                                                                final List<ProcedureTypeDeclaration> result) {
+    private static List<ProcedureType> aggregateAssignmentCompatible(final Context.SymbolMap symbolMap,
+                                                                     final InvocationExpression invocationExpression,
+                                                                     final List<ProcedureType> result) {
 
         // Iterate through the SymbolMap
         symbolMap.forEachSymbol(symbol -> {
 
             // Assert the Symbol is a Procedure Type Declaration & its assignment compatible
             // with the specified Invocation
-            if((symbol instanceof ProcedureTypeDeclaration)
-                    && assertAssignmentCompatible((ProcedureTypeDeclaration) symbol, invocationExpression))
-                result.add((ProcedureTypeDeclaration) symbol);
+            if((symbol instanceof ProcedureType)
+                    && assertAssignmentCompatible((ProcedureType) symbol, invocationExpression))
+                result.add((ProcedureType) symbol);
 
         });
 
@@ -4340,13 +4331,13 @@ public class TypeChecker extends Phase {
         return result;
 
     }
-    private static ProcedureTypeDeclaration Candidate(final List<ProcedureTypeDeclaration> candidates) {
+    private static ProcedureType Candidate(final List<ProcedureType> candidates) {
 
         int remaining = candidates.size();
 
         for(int leftIndex = 0; leftIndex < candidates.size(); leftIndex++) {
 
-            ProcedureTypeDeclaration leftProcedure = candidates.get(leftIndex);
+            ProcedureType leftProcedure = candidates.get(leftIndex);
 
             // If we should continue
             if(leftProcedure != null) {
@@ -4358,7 +4349,7 @@ public class TypeChecker extends Phase {
                 for(int rightIndex = 0; rightIndex < candidates.size(); rightIndex++) {
 
                     // Retrieve the right hand side
-                    ProcedureTypeDeclaration rightProcedure = candidates.get(rightIndex);
+                    ProcedureType rightProcedure = candidates.get(rightIndex);
 
                     // Assert if for all k, right[k] :> left[k]; Remove the right hand side
                     if((rightProcedure != null) && (assertTypeAssignmentCompatible(leftProcedure, rightProcedure))) {
@@ -4378,9 +4369,9 @@ public class TypeChecker extends Phase {
 
         }
 
-        ProcedureTypeDeclaration result = null;
+        ProcedureType result = null;
 
-        if(remaining == 1) for(final ProcedureTypeDeclaration procedure: candidates)
+        if(remaining == 1) for(final ProcedureType procedure: candidates)
             if(procedure != null) {
 
                 result = procedure;
@@ -4422,7 +4413,7 @@ public class TypeChecker extends Phase {
 
     }
 
-    private static List<String> Signatures(final List<ProcedureTypeDeclaration> candidates) {
+    private static List<String> Signatures(final List<ProcedureType> candidates) {
 
         // Initialize the result
         final List<String> signatures = new ArrayList<>();
@@ -4447,7 +4438,7 @@ public class TypeChecker extends Phase {
 
     }
 
-    private static void FancyPrint(final InvocationExpression invocationExpression, final List<ProcedureTypeDeclaration> candidates,
+    private static void FancyPrint(final InvocationExpression invocationExpression, final List<ProcedureType> candidates,
                                    final int leftPadding, final int rightPadding) {
 
         final String title = "Candidates for '" + invocationExpression.getProcedureName() + "': ";

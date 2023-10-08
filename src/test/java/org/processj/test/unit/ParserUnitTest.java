@@ -1,78 +1,678 @@
 package org.processj.test.unit;
 
+import org.processj.compiler.ast.packages.Pragmas;
+import org.processj.compiler.ast.packages.Pragma;
+import org.processj.compiler.ast.Name;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Compilation;
-import org.processj.compiler.ast.Sequence;
 import org.processj.test.ProcessJTest;
 
 public class ParserUnitTest extends ProcessJTest {
 
-    private static void AssertEmpty(final Sequence<? extends AST> sequence) {
+    private static void AssertNonNullPragmas(final Compilation compilation) {
 
-        Assertions.assertNotNull(sequence);
-        Assertions.assertEquals(0, sequence.size());
+        Assertions.assertNotNull(compilation.getPragmas());
+
+    }
+
+    private static void AssertNonNullPackageName(final Compilation compilation) {
+
+        Assertions.assertNotNull(compilation.getPackageName());
+
+    }
+
+    private static void AssertExpectedPackageName(final Compilation compilation, final String expectedPackageName) {
+
+        Assertions.assertEquals(expectedPackageName, compilation.getPackageName());
+
+    }
+
+    private static void AssertContainsEmptyPragmas(final Compilation compilation) {
+
+        Assertions.assertTrue(compilation.getPragmas().isEmpty());
+
+    }
+
+    private static void AssertContainsNonEmptyPragmas(final Compilation compilation) {
+
+        Assertions.assertFalse(compilation.getPragmas().isEmpty());
+
+    }
+
+    private static void AssertContainsPragmas(final Compilation compilation, final int expectedPragmas) {
+
+        Assertions.assertEquals(expectedPragmas, compilation.getPragmas().size());
+
+    }
+
+    /// ----------------------------------------------------------------------------------------------------------- ///
+    /// Package Declaration Sanity Tests                                                                            ///
+    /// ----------------------------------------------------------------------------------------------------------- ///
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the Empty test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_empty_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.Empty);
+
+        AssertNonNullPackageName(compilation);
 
     }
 
     /**
-     * Notes:
-     * - A non-existent package declaration will result in a null value compared to non-existent pragmas, imports,
-     *   & type decls resulting in an empty sequence
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
      */
     @Test
-    public void testCode_empty_emptyPragmaSequence_parserUnitTest() {
+    public void CompilationFor_packageDeclaration01_containsNonNullPackageName() {
 
-        // Retrieve the compilation
-        final Compilation compilation = CompilationFor(Empty);
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
 
-        // Assert an empty imports sequence
-        AssertEmpty(compilation.getPragmas());
+        AssertNonNullPackageName(compilation);
 
     }
 
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
     @Test
-    public void testCode_empty_emptyImportsSequence_parserUnitTest() {
+    public void CompilationFor_packageDeclaration02_containsNonNullPackageName() {
 
-        // Retrieve the compilation
-        final Compilation compilation = CompilationFor(Empty);
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
 
-        // Assert an empty imports sequence
-        AssertEmpty(compilation.getImports());
+        AssertNonNullPackageName(compilation);
 
     }
 
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
     @Test
-    public void testCode_empty_emptyTypeDeclarationsSequence_parserUnitTest() {
+    public void CompilationFor_packageDeclaration03_containsNonNullPackageName() {
 
-        // Retrieve the compilation
-        final Compilation compilation = CompilationFor(Empty);
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
 
-        // Assert an empty imports sequence
-        AssertEmpty(compilation.getTypeDeclarations());
+        AssertNonNullPackageName(compilation);
 
     }
 
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#Pragma01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
     @Test
-    public void testCode_empty_nullPackageName_parserUnitTest() {
+    public void CompilationFor_pragma01_containsNonNullPackageName() {
 
-        // Retrieve the compilation
-        final Compilation compilation = CompilationFor(Empty);
+        final Compilation compilation = CompilationFor(Case.Pragma01);
 
-        // Check empty package declaration
-        Assertions.assertEquals("", compilation.getPackageName());
+        AssertNonNullPackageName(compilation);
 
     }
 
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#Pragma02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
     @Test
-    public void testCode_pragma01_nullPackageName_parserUnitTest() {
+    public void CompilationFor_pragma02_containsNonNullPackageName() {
 
-        // Retrieve the compilation
-        final Compilation compilation = CompilationFor(Pragma01);
+        final Compilation compilation = CompilationFor(Case.Pragma02);
 
-        // Check empty package declaration
-        Assertions.assertEquals("", compilation.getPackageName());
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#Pragma03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma03_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma03);
+
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is non-null for the
+     * {@link ProcessJTest.Case#Pragma04} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma04_containsNonNullPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma04);
+
+        AssertNonNullPackageName(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#Empty}.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_empty_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.Empty);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.Empty);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#PackageDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration01_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.PackageDeclaration01);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#PackageDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration02_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.PackageDeclaration02);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#PackageDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration03_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.PackageDeclaration03);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#Pragma01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma01_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma01);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.Pragma01);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#Pragma02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma02_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma02);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.Pragma02);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#Pragma03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma03_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma03);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.Pragma03);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s package {@link Name} instance is the expected value for the
+     * {@link ProcessJTest.Case#Pragma04} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma04_containsExpectedPackageName() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma04);
+
+        AssertExpectedPackageName(compilation, Case.Check.PackageName.Pragma04);
+
+    }
+
+    /// ----------------------------------------------------------------------------------------------------------- ///
+    /// Pragma Sanity Tests                                                                                         ///
+    /// ----------------------------------------------------------------------------------------------------------- ///
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Empty test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_empty_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Empty);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma01 test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma01_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma01);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma02 test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma02_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma02);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma03 test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma03_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma03);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma04 test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma04_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma04);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration01_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration02_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the
+     * {@link ProcessJTest.Case#PackageDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration03_containsNonNullPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
+
+        AssertNonNullPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Empty test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_empty_containsNonEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Empty);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#PackageDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration01_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#PackageDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration02_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is empty for the
+     * {@link ProcessJTest.Case#PackageDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_packageDeclaration03_containsEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma01 test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma01_containsNonEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma01);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsNonEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma02 test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma02_containsNonEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma02);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsNonEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma03 test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma03_containsNonEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma03);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsNonEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance is non-null for the Pragma04 test.
+     * @see Compilation
+     * @see Pragmas
+     */
+    @Test
+    public void CompilationFor_pragma04_containsNonEmptyPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma04);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsNonEmptyPragmas(compilation);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * Empty test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_empty_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Empty);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#PackageDeclaration01} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_packageDeclaration01_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration01);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#PackageDeclaration02} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_packageDeclaration02_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration02);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains no {@link Pragma} instances for the
+     * {@link ProcessJTest.Case#PackageDeclaration03} test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_packageDeclaration03_containsNoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.PackageDeclaration03);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 0);
+
+    }
+    
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains 1 {@link Pragma} instance for the
+     * Pragma01 test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_pragma01_containsOnePragma() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma01);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsNonEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 1);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains 1 {@link Pragma} instance for the
+     * Pragma02 test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_pragma02_containsOnePragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma02);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsNonEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 1);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains 2 {@link Pragma} instances for the
+     * Pragma03 test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_pragma03_containsTwoPragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma03);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsNonEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 2);
+
+    }
+
+    /**
+     * Assert that the {@link Compilation}'s {@link Pragmas} instance contains 33 {@link Pragma} instances for the
+     * Pragma04 test.
+     * @see Compilation
+     * @see Pragmas
+     * @see Pragma
+     */
+    @Test
+    public void CompilationFor_pragma04_contains33Pragmas() {
+
+        final Compilation compilation = CompilationFor(Case.Pragma04);
+
+        AssertNonNullPragmas(compilation);
+        AssertContainsNonEmptyPragmas(compilation);
+        AssertContainsPragmas(compilation, 33);
 
     }
 

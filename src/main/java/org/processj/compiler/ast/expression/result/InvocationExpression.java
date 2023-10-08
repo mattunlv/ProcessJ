@@ -2,7 +2,7 @@ package org.processj.compiler.ast.expression.result;
 
 import org.processj.compiler.ast.*;
 import org.processj.compiler.ast.expression.Expression;
-import org.processj.compiler.ast.type.ProcedureTypeDeclaration;
+import org.processj.compiler.ast.type.ProcedureType;
 import org.processj.compiler.ast.type.Type;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class InvocationExpression extends Expression {
 
-    public ProcedureTypeDeclaration targetProc = null;
+    public ProcedureType targetProc = null;
     private final Name name            ;
     private final Expression            target          ;
     private final Sequence<Expression> parameters      ;
@@ -80,7 +80,7 @@ public class InvocationExpression extends Expression {
 
     public final String getProcedureName() {
 
-        return this.name.getName();
+        return this.name.toString();
 
     }
 
@@ -121,7 +121,7 @@ public class InvocationExpression extends Expression {
     }
 
     public Sequence<Expression> getParameterExpressions() {
-        return (Sequence<Expression>) children[2];
+        return parameters;
     }
 
     public final Map<String, Type> getParameterTypes() {

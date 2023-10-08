@@ -18,18 +18,20 @@ import org.processj.compiler.ast.expression.unary.UnaryPostExpression;
 import org.processj.compiler.ast.expression.unary.UnaryPreExpression;
 import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
 import org.processj.compiler.ast.expression.result.InvocationExpression;
+import org.processj.compiler.ast.modifier.Modifiers;
+import org.processj.compiler.ast.packages.Pragma;
+import org.processj.compiler.ast.packages.Pragmas;
+import org.processj.compiler.ast.statement.declarative.*;
+import org.processj.compiler.ast.type.ProcedureType;
+import org.processj.compiler.ast.type.ProtocolType;
 import org.processj.compiler.ast.statement.yielding.*;
 import org.processj.compiler.ast.expression.*;
 import org.processj.compiler.ast.statement.*;
 import org.processj.compiler.ast.statement.conditional.*;
 import org.processj.compiler.ast.statement.control.*;
-import org.processj.compiler.ast.statement.declarative.LocalDeclaration;
-import org.processj.compiler.ast.statement.declarative.ProtocolCase;
-import org.processj.compiler.ast.expression.result.SwitchLabel;
-import org.processj.compiler.ast.statement.declarative.RecordMemberDeclaration;
-import org.processj.compiler.ast.statement.conditional.SwitchGroupStatement;
 import org.processj.compiler.ast.statement.conditional.SwitchStatement;
 import org.processj.compiler.ast.type.*;
+import org.processj.compiler.ast.type.primitive.*;
 import org.processj.compiler.utilities.*;
 import org.processj.compiler.ast.Context;
 
@@ -40,8 +42,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.processj.compiler.utilities.Files.RetrieveMatchingFilesListFrom;
-import static org.processj.compiler.utilities.Files.RetrieveMatchingFilesListWithName;
 import static org.processj.compiler.utilities.Reflection.NewInstanceOf;
 
 /**
@@ -862,7 +862,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link SourceFile}'s {@link ProcessJParser} encountered an
+         * <p>{@link Phase.Error} to be emitted if a {@link SourceFile}'s {@link Parser} encountered an
          * unexpected end-of-file.</p>
          * @see Phase
          * @see Phase.Error
@@ -1089,7 +1089,7 @@ public abstract class Phase implements Visitor {
          * @since 0.1.0
          */
         protected static Map<String, String> DecodedPragmas(final Phase phase,
-                                                            final Sequence<Pragma> pragmas) throws Error {
+                                                            final Pragmas pragmas) throws Error {
 
             // TODO: check values against pragmaArgValues[][];
             // Retrieve the compilation & a Pragma Map
@@ -1205,10 +1205,10 @@ public abstract class Phase implements Visitor {
 
             if(scope.isNativeLibrary() || scope.isNative()) {
 
-                if(!scope.isNative() && !constantDeclaration.isDeclaredNative())
+                if(!scope.isNative() && !(constantDeclaration.isNative()))
                     ConstantDeclarationNonNative.Assert(phase, constantDeclaration);
 
-                else if(scope.isNative() && constantDeclaration.isDeclaredNative())
+                else if(scope.isNative() && constantDeclaration.isNative())
                     IllegalConstantDeclarationNative.Assert(phase, constantDeclaration);
 
                 else if(constantDeclaration.isInitialized())
@@ -1229,7 +1229,7 @@ public abstract class Phase implements Visitor {
                                                                    final ConstantDeclaration constantDeclaration)
                 throws Error {
 
-            if(constantDeclaration.isDeclaredNative())
+            if(constantDeclaration.isNative())
                 ConstantDeclarationNative.Assert(validatePragmas, constantDeclaration);
 
             else if(!constantDeclaration.isInitialized())
@@ -1238,37 +1238,37 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>Validates the {@link ProcedureTypeDeclaration}'s non-native procedure declaration.</p>
+         * <p>Validates the {@link ProcedureType}'s non-native procedure declaration.</p>
          * @param validatePragmas The invoking {@link Phase}
-         * @param procedureTypeDeclaration The {@link ProcedureTypeDeclaration} to validate
-         * @throws Error If the {@link ProcedureTypeDeclaration} is invalid.
+         * @param procedureType The {@link ProcedureType} to validate
+         * @throws Error If the {@link ProcedureType} is invalid.
          * @since 0.1.0
          */
         protected static void ValidateNonNativeProcedureDeclaration(final Phase validatePragmas,
-                                                                    final ProcedureTypeDeclaration procedureTypeDeclaration)
+                                                                    final ProcedureType procedureType)
                 throws Error {
 
             // Procedures must contain bodies
-            if(!procedureTypeDeclaration.definesBody())
+            if(!procedureType.isEmpty())
                 ProcedureDeclarationDoesNotDefineBody
-                        .Assert(validatePragmas, procedureTypeDeclaration);
+                        .Assert(validatePragmas, procedureType);
 
                 // Procedures must not be declared native
-            else if(procedureTypeDeclaration.isNative())
+            else if(procedureType.isNative())
                 ProcedureDeclarationNative
-                        .Assert(validatePragmas, procedureTypeDeclaration);
+                        .Assert(validatePragmas, procedureType);
 
         }
 
         /**
-         * <p>Validates the {@link ProcedureTypeDeclaration}'s native procedure declaration.</p>
+         * <p>Validates the {@link ProcedureType}'s native procedure declaration.</p>
          * @param phase The invoking {@link Phase}
-         * @param procedureTypeDeclaration The {@link ProcedureTypeDeclaration} to validate
-         * @throws Error If the {@link ProcedureTypeDeclaration} is invalid.
+         * @param procedureType The {@link ProcedureType} to validate
+         * @throws Error If the {@link ProcedureType} is invalid.
          * @since 0.1.0
          */
         protected static void ValidateNativeProcedureDeclaration(final Phase phase,
-                                                                 final ProcedureTypeDeclaration procedureTypeDeclaration)
+                                                                 final ProcedureType procedureType)
                 throws Error {
 
             // Initialize a handle to the Scope
@@ -1277,128 +1277,128 @@ public abstract class Phase implements Visitor {
             if(scope.isNativeLibrary() || scope.isNative()) {
 
                 // NATIVELIB and NATIVE library files cannot contain procedures with ProcessJ bodies.
-                if(procedureTypeDeclaration.definesBody())
-                    ProcedureDeclarationDefinesBody.Assert(phase, procedureTypeDeclaration);
+                if(procedureType.isEmpty())
+                    ProcedureDeclarationDefinesBody.Assert(phase, procedureType);
 
                     // If the Procedure is not declared native
-                else if(!procedureTypeDeclaration.isNative())
-                    ProcedureDeclarationNonNative.Assert(phase, procedureTypeDeclaration);
+                else if(!procedureType.isNative())
+                    ProcedureDeclarationNonNative.Assert(phase, procedureType);
 
                 // Validate the return type
-                PragmaAssert.ValidateNativeProcedureReturnType(phase, procedureTypeDeclaration);
+                PragmaAssert.ValidateNativeProcedureReturnType(phase, procedureType);
 
                 // Validate the parameter types
-                PragmaAssert.ValidateNativeProcedureParameterTypes(phase, procedureTypeDeclaration);
+                PragmaAssert.ValidateNativeProcedureParameterTypes(phase, procedureType);
 
                 // Finally, aggregate the Procedure's native signature
                 if(scope.isNative()) {
 
-                    scope.aggregateNativeSignature(PragmaAssert.NativeTypeStringFor(procedureTypeDeclaration.getReturnType())
-                            + " " + procedureTypeDeclaration.getName().getPackageName() + "_" + procedureTypeDeclaration
-                            + "_" + PragmaAssert.NativeTypeListStringFor(procedureTypeDeclaration));
+                    scope.aggregateNativeSignature(PragmaAssert.NativeTypeStringFor(procedureType.getReturnType())
+                            + " " + procedureType.getName().getPackageName() + "_" + procedureType
+                            + "_" + PragmaAssert.NativeTypeListStringFor(procedureType));
 
                     // TODO: Should this cover NATIVELIB?
-                    procedureTypeDeclaration.setNative();
+                    procedureType.setNative();
 
                 }
 
             } else {
 
-                PragmaAssert.ValidateNonNativeProcedureDeclaration(phase, procedureTypeDeclaration);
+                PragmaAssert.ValidateNonNativeProcedureDeclaration(phase, procedureType);
 
             }
 
         }
 
         /**
-         * <p>Validates the {@link ProcedureTypeDeclaration}'s native procedure return type.</p>
+         * <p>Validates the {@link ProcedureType}'s native procedure return type.</p>
          * @param validatePragmas The invoking {@link Phase}
-         * @param procedureTypeDeclaration The {@link ProcedureTypeDeclaration} to validate
-         * @throws Error If the {@link ProcedureTypeDeclaration} is invalid.
+         * @param procedureType The {@link ProcedureType} to validate
+         * @throws Error If the {@link ProcedureType} is invalid.
          * @since 0.1.0
          */
         protected static void ValidateNativeProcedureReturnType(final Phase validatePragmas,
-                                                                final ProcedureTypeDeclaration procedureTypeDeclaration)
+                                                                final ProcedureType procedureType)
                 throws Error {
 
             // Retrieve the Procedure's return type
-            final Type returnType = procedureTypeDeclaration.getReturnType();
+            final Type returnType = procedureType.getReturnType();
 
             // Moved From GenerateNativeCode Visitor
             // If the Procedure does not specify a primitive return type
             if(!(returnType instanceof PrimitiveType))
-                IllegalProcedureReturnType.Assert(validatePragmas, procedureTypeDeclaration);
+                IllegalProcedureReturnType.Assert(validatePragmas, procedureType);
 
                 // If the Procedure specifies a barrier or timer return type
-            else if(returnType.isBarrierType() || returnType.isTimerType())
-                IllegalProcedureBarrierOrTimerReturnType.Assert(validatePragmas, procedureTypeDeclaration);
+            else if(returnType instanceof BarrierType || returnType instanceof TimerType)
+                IllegalProcedureBarrierOrTimerReturnType.Assert(validatePragmas, procedureType);
 
         }
 
         /**
-         * <p>Validates the {@link ProcedureTypeDeclaration}'s native procedure parameter types.</p>
+         * <p>Validates the {@link ProcedureType}'s native procedure parameter types.</p>
          * @param validatePragmas The invoking {@link Phase}
-         * @param procedureTypeDeclaration The {@link ProcedureTypeDeclaration} to validate
-         * @throws Error If the {@link ProcedureTypeDeclaration}'s parameter types are invalid.
+         * @param procedureType The {@link ProcedureType} to validate
+         * @throws Error If the {@link ProcedureType}'s parameter types are invalid.
          * @since 0.1.0
          */
         protected static void ValidateNativeProcedureParameterTypes(final Phase validatePragmas,
-                                                                    final ProcedureTypeDeclaration procedureTypeDeclaration)
+                                                                    final ProcedureType procedureType)
                 throws Error {
 
-            for(final ParameterDeclaration parameterDeclaration: procedureTypeDeclaration.getParameters()) {
+            for(final ParameterDeclaration parameterDeclaration: procedureType.getParameters()) {
 
                 // Initialize a handle to the parameter type
                 final Type parameterType = parameterDeclaration.getType();
 
                 // If the ProcTypeDecl specified a non-primitive type
                 if(!(parameterType instanceof PrimitiveType))
-                    IllegalProcedureParameterType.Assert(validatePragmas, procedureTypeDeclaration, parameterType);
+                    IllegalProcedureParameterType.Assert(validatePragmas, procedureType, parameterType);
 
                     // Otherwise, If the procedure specifies a barrier or timer parameter
-                else if(parameterType.isBarrierType() || parameterType.isTimerType())
+                else if(parameterType instanceof BarrierType || parameterType instanceof TimerType)
                     IllegalProcedureBarrierOrTimerParameterType.Assert(validatePragmas,
-                            procedureTypeDeclaration, parameterType);
+                            procedureType, parameterType);
 
             }
 
         }
 
         /**
-         * <p>Validates a {@link ProtocolTypeDeclaration}'s is not defined in a native library.</p>
+         * <p>Validates a {@link ProtocolType}'s is not defined in a native library.</p>
          * @param phase The invoking {@link Phase}
-         * @param protocolTypeDeclaration The {@link ProtocolTypeDeclaration} that was declared in native library.
-         * @throws Error If the native library contained a {@link ProtocolTypeDeclaration} is invalid.
+         * @param protocolType The {@link ProtocolType} that was declared in native library.
+         * @throws Error If the native library contained a {@link ProtocolType} is invalid.
          * @since 0.1.0
          */
         protected static void ValidateNativeLibraryDoesNotContainProtocolDeclaration(final Phase phase,
-                                                                                     final ProtocolTypeDeclaration protocolTypeDeclaration)
+                                                                                     final ProtocolType protocolType)
                 throws Error {
 
             // Initialize a handle to the Scope
             final Context.SymbolMap scope = phase.getScope();
 
             if(scope.isNativeLibrary() || scope.isNative())
-                LibraryContainsProtocolDeclaration.Assert(phase, protocolTypeDeclaration);
+                LibraryContainsProtocolDeclaration.Assert(phase, protocolType);
 
         }
 
         /**
-         * <p>Validates a {@link RecordTypeDeclaration}'s is not defined in a native library.</p>
+         * <p>Validates a {@link RecordType}'s is not defined in a native library.</p>
          * @param phase The invoking {@link Phase}
-         * @param recordTypeDeclaration The {@link RecordTypeDeclaration} that was declared in native library.
-         * @throws Error If the native library contained a {@link RecordTypeDeclaration} is invalid.
+         * @param recordType The {@link RecordType} that was declared in native library.
+         * @throws Error If the native library contained a {@link RecordType} is invalid.
          * @since 0.1.0
          */
         protected static void ValidateNativeLibraryDoesNotContainRecordDeclaration(final Phase phase,
-                                                                                   final RecordTypeDeclaration recordTypeDeclaration)
+                                                                                   final RecordType recordType)
                 throws Error {
 
             // Initialize a handle to the Scope
             final Context.SymbolMap scope = phase.getScope();
 
             if(scope.isNativeLibrary() || scope.isNative())
-                LibraryContainsRecordDeclaration.Assert(phase, recordTypeDeclaration);
+                LibraryContainsRecordDeclaration.Assert(phase, recordType);
 
         }
 
@@ -1448,8 +1448,8 @@ public abstract class Phase implements Visitor {
             final PrimitiveType primitiveType = (PrimitiveType) type;
 
             // Return the result
-            return (primitiveType.isStringType() ? "char*"
-                    : (primitiveType.isBooleanType() ? "int" : primitiveType.toString()));
+            return (primitiveType instanceof StringType ? "char*"
+                    : (primitiveType instanceof BooleanType ? "int" : primitiveType.toString()));
 
         }
 
@@ -1467,21 +1467,21 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>Returns the native parameter type list for the specified {@link ProcedureTypeDeclaration}.</p>
-         * @param procedureTypeDeclaration The {@link ProcedureTypeDeclaration} to retrieve the corresponding native parameter type
+         * <p>Returns the native parameter type list for the specified {@link ProcedureType}.</p>
+         * @param procedureType The {@link ProcedureType} to retrieve the corresponding native parameter type
          *                                 list.
          * @return {@link String} value of the corresponding native parameter type list.
          * @since 0.1.0
          */
-        protected static String NativeTypeListStringFor(final ProcedureTypeDeclaration procedureTypeDeclaration) {
+        protected static String NativeTypeListStringFor(final ProcedureType procedureType) {
 
             // Initialize the StringBuilder & parameters
-            final StringBuilder         stringBuilder   = new StringBuilder("(");
-            final Sequence<ParameterDeclaration>   parameters      = procedureTypeDeclaration.getParameters();
+            final StringBuilder stringBuilder   = new StringBuilder("(");
+            final Parameters    parameters      = procedureType.getParameters();
 
             // Iterate through the list of Parameter Declarations
             for(int index = 0; index < parameters.size(); index++)
-                stringBuilder.append(NativeTypeStringFor(parameters.child(index)))
+                stringBuilder.append(NativeTypeStringFor(parameters.getParameterAt(index)))
                         .append(index == (parameters.size() - 1) ? "" : ", ");
 
             // Return the result
@@ -2173,7 +2173,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureTypeDeclaration} that did not define a body.</p>
+         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureType} that did not define a body.</p>
          * @see Phase
          * @see Phase.Error
          * @version 1.0.0
@@ -2188,7 +2188,7 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link ProcedureDeclarationDoesNotDefineBody}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProcedureTypeDeclaration constantDeclaration) {
+            protected static void Assert(final Phase phase, final ProcedureType constantDeclaration) {
 
                 Error.Assert(FatalAssert.NullListener.class, phase, constantDeclaration);
 
@@ -2198,9 +2198,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProcedureTypeDeclaration} that was not initialized.</p>
+             * <p>The {@link ProcedureType} that was not initialized.</p>
              */
-            private final ProcedureTypeDeclaration constantDeclaration;
+            private final ProcedureType constantDeclaration;
 
             /// ------------
             /// Constructors
@@ -2213,7 +2213,7 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected ProcedureDeclarationDoesNotDefineBody(final Phase culprit,
-                                                            final ProcedureTypeDeclaration constantDeclaration) {
+                                                            final ProcedureType constantDeclaration) {
                 super(culprit);
 
                 this.constantDeclaration = constantDeclaration;
@@ -2223,7 +2223,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureTypeDeclaration} was declared native.</p>
+         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureType} was declared native.</p>
          * @see Phase
          * @see Phase.Error
          * @version 1.0.0
@@ -2238,7 +2238,7 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link ProcedureDeclarationNative}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProcedureTypeDeclaration constantDeclaration) {
+            protected static void Assert(final Phase phase, final ProcedureType constantDeclaration) {
 
                 Error.Assert(FatalAssert.NullListener.class, phase, constantDeclaration);
 
@@ -2248,9 +2248,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProcedureTypeDeclaration} that was declared native.</p>
+             * <p>The {@link ProcedureType} that was declared native.</p>
              */
-            private final ProcedureTypeDeclaration constantDeclaration;
+            private final ProcedureType constantDeclaration;
 
             /// ------------
             /// Constructors
@@ -2263,7 +2263,7 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected ProcedureDeclarationNative(final Phase culprit,
-                                                 final ProcedureTypeDeclaration constantDeclaration) {
+                                                 final ProcedureType constantDeclaration) {
                 super(culprit);
 
                 this.constantDeclaration = constantDeclaration;
@@ -2273,7 +2273,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureTypeDeclaration} was declared with a body.</p>
+         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureType} was declared with a body.</p>
          * @see Phase
          * @see Phase.Error
          * @version 1.0.0
@@ -2288,7 +2288,7 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link ProcedureDeclarationDefinesBody}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProcedureTypeDeclaration constantDeclaration) {
+            protected static void Assert(final Phase phase, final ProcedureType constantDeclaration) {
 
                 Error.Assert(FatalAssert.NullListener.class, phase, constantDeclaration);
 
@@ -2298,9 +2298,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProcedureTypeDeclaration} that was declared native.</p>
+             * <p>The {@link ProcedureType} that was declared native.</p>
              */
-            private final ProcedureTypeDeclaration constantDeclaration;
+            private final ProcedureType constantDeclaration;
 
             /// ------------
             /// Constructors
@@ -2313,7 +2313,7 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected ProcedureDeclarationDefinesBody(final Phase culprit,
-                                                      final ProcedureTypeDeclaration constantDeclaration) {
+                                                      final ProcedureType constantDeclaration) {
                 super(culprit);
 
                 this.constantDeclaration = constantDeclaration;
@@ -2323,7 +2323,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureTypeDeclaration} was not declared native.</p>
+         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureType} was not declared native.</p>
          * @see Phase
          * @see Phase.Error
          * @version 1.0.0
@@ -2338,7 +2338,7 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link ProcedureDeclarationNonNative}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProcedureTypeDeclaration constantDeclaration) {
+            protected static void Assert(final Phase phase, final ProcedureType constantDeclaration) {
 
                 Error.Assert(FatalAssert.NullListener.class, phase, constantDeclaration);
 
@@ -2348,9 +2348,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProcedureTypeDeclaration} that was declared native.</p>
+             * <p>The {@link ProcedureType} that was declared native.</p>
              */
-            private final ProcedureTypeDeclaration constantDeclaration;
+            private final ProcedureType constantDeclaration;
 
             /// ------------
             /// Constructors
@@ -2363,7 +2363,7 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected ProcedureDeclarationNonNative(final Phase culprit,
-                                                    final ProcedureTypeDeclaration constantDeclaration) {
+                                                    final ProcedureType constantDeclaration) {
                 super(culprit);
 
                 this.constantDeclaration = constantDeclaration;
@@ -2373,7 +2373,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureTypeDeclaration} that does not specify a
+         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureType} that does not specify a
          * primitive return type.</p>
          * @see Phase
          * @see Phase.Error
@@ -2389,7 +2389,7 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link IllegalProcedureReturnType}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProcedureTypeDeclaration constantDeclaration) {
+            protected static void Assert(final Phase phase, final ProcedureType constantDeclaration) {
 
                 Error.Assert(FatalAssert.NullListener.class, phase, constantDeclaration);
 
@@ -2399,9 +2399,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProcedureTypeDeclaration} that was declared native.</p>
+             * <p>The {@link ProcedureType} that was declared native.</p>
              */
-            private final ProcedureTypeDeclaration constantDeclaration;
+            private final ProcedureType constantDeclaration;
 
             /// ------------
             /// Constructors
@@ -2414,7 +2414,7 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected IllegalProcedureReturnType(final Phase culprit,
-                                                 final ProcedureTypeDeclaration constantDeclaration) {
+                                                 final ProcedureType constantDeclaration) {
                 super(culprit);
 
                 this.constantDeclaration = constantDeclaration;
@@ -2424,7 +2424,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureTypeDeclaration} that specifies a barrier or timer
+         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureType} that specifies a barrier or timer
          * primitive return type.</p>
          * @see Phase
          * @see Phase.Error
@@ -2440,7 +2440,7 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link IllegalProcedureBarrierOrTimerReturnType}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProcedureTypeDeclaration constantDeclaration) {
+            protected static void Assert(final Phase phase, final ProcedureType constantDeclaration) {
 
                 Error.Assert(FatalAssert.NullListener.class, phase, constantDeclaration);
 
@@ -2450,9 +2450,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProcedureTypeDeclaration} that was declared native.</p>
+             * <p>The {@link ProcedureType} that was declared native.</p>
              */
-            private final ProcedureTypeDeclaration constantDeclaration;
+            private final ProcedureType constantDeclaration;
 
             /// ------------
             /// Constructors
@@ -2465,7 +2465,7 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected IllegalProcedureBarrierOrTimerReturnType(final Phase culprit,
-                                                               final ProcedureTypeDeclaration constantDeclaration) {
+                                                               final ProcedureType constantDeclaration) {
                 super(culprit);
 
                 this.constantDeclaration = constantDeclaration;
@@ -2475,7 +2475,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureTypeDeclaration} that specifies at least one non
+         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureType} that specifies at least one non
          * primitive parameter type.</p>
          * @see Phase
          * @see Phase.Error
@@ -2491,7 +2491,7 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link IllegalProcedureParameterType}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProcedureTypeDeclaration constantDeclaration, final Type type) {
+            protected static void Assert(final Phase phase, final ProcedureType constantDeclaration, final Type type) {
 
                 Error.Assert(FatalAssert.NullListener.class, phase, constantDeclaration, type);
 
@@ -2501,9 +2501,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProcedureTypeDeclaration} that was declared native.</p>
+             * <p>The {@link ProcedureType} that was declared native.</p>
              */
-            private final ProcedureTypeDeclaration constantDeclaration;
+            private final ProcedureType constantDeclaration;
 
             /**
              * <p>The specified {@link Type}.</p>
@@ -2521,7 +2521,7 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected IllegalProcedureParameterType(final Phase culprit,
-                                                    final ProcedureTypeDeclaration constantDeclaration,
+                                                    final ProcedureType constantDeclaration,
                                                     final Type type) {
                 super(culprit);
 
@@ -2533,7 +2533,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureTypeDeclaration} that specifies at least one
+         * <p>{@link Phase.Error} to be emitted if a {@link ProcedureType} that specifies at least one
          * barrier or timer primitive parameter type.</p>
          * @see Phase
          * @see Phase.Error
@@ -2549,7 +2549,7 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link IllegalProcedureBarrierOrTimerParameterType}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProcedureTypeDeclaration constantDeclaration,
+            protected static void Assert(final Phase phase, final ProcedureType constantDeclaration,
                                          final Type type) {
 
                 Error.Assert(FatalAssert.NullListener.class, phase, constantDeclaration, type);
@@ -2560,9 +2560,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProcedureTypeDeclaration} that was declared native.</p>
+             * <p>The {@link ProcedureType} that was declared native.</p>
              */
-            private final ProcedureTypeDeclaration constantDeclaration;
+            private final ProcedureType constantDeclaration;
 
             /**
              * <p>The specified {@link Type}.</p>
@@ -2580,7 +2580,7 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected IllegalProcedureBarrierOrTimerParameterType(final Phase culprit,
-                                                                  final ProcedureTypeDeclaration constantDeclaration,
+                                                                  final ProcedureType constantDeclaration,
                                                                   final Type type) {
                 super(culprit);
 
@@ -2592,7 +2592,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a native library contains a {@link ProtocolTypeDeclaration}.</p>
+         * <p>{@link Phase.Error} to be emitted if a native library contains a {@link ProtocolType}.</p>
          * @see Phase
          * @see Phase.Error
          * @version 1.0.0
@@ -2607,9 +2607,9 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link LibraryContainsProtocolDeclaration}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final ProtocolTypeDeclaration protocolTypeDeclaration) {
+            protected static void Assert(final Phase phase, final ProtocolType protocolType) {
 
-                Error.Assert(FatalAssert.NullListener.class, phase, protocolTypeDeclaration);
+                Error.Assert(FatalAssert.NullListener.class, phase, protocolType);
 
             }
 
@@ -2617,9 +2617,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link ProtocolTypeDeclaration} that was declared.</p>
+             * <p>The {@link ProtocolType} that was declared.</p>
              */
-            private final ProtocolTypeDeclaration protocolTypeDeclaration;
+            private final ProtocolType protocolType;
 
             /// ------------
             /// Constructors
@@ -2632,17 +2632,17 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected LibraryContainsProtocolDeclaration(final Phase culprit,
-                                                         final ProtocolTypeDeclaration protocolTypeDeclaration) {
+                                                         final ProtocolType protocolType) {
                 super(culprit);
 
-                this.protocolTypeDeclaration = protocolTypeDeclaration;
+                this.protocolType = protocolType;
 
             }
 
         }
 
         /**
-         * <p>{@link Phase.Error} to be emitted if a native library contains a {@link RecordTypeDeclaration}.</p>
+         * <p>{@link Phase.Error} to be emitted if a native library contains a {@link RecordType}.</p>
          * @see Phase
          * @see Phase.Error
          * @version 1.0.0
@@ -2657,9 +2657,9 @@ public abstract class Phase implements Visitor {
              * <p>Emits the {@link LibraryContainsRecordDeclaration}.</p>
              * @param phase The invoking {@link Phase}.
              */
-            protected static void Assert(final Phase phase, final RecordTypeDeclaration recordTypeDeclaration) {
+            protected static void Assert(final Phase phase, final RecordType recordType) {
 
-                Error.Assert(FatalAssert.NullListener.class, phase, recordTypeDeclaration);
+                Error.Assert(FatalAssert.NullListener.class, phase, recordType);
 
             }
 
@@ -2667,9 +2667,9 @@ public abstract class Phase implements Visitor {
             /// Private Fields
 
             /**
-             * <p>The {@link RecordTypeDeclaration} that was declared.</p>
+             * <p>The {@link RecordType} that was declared.</p>
              */
-            private final RecordTypeDeclaration recordTypeDeclaration;
+            private final RecordType recordType;
 
             /// ------------
             /// Constructors
@@ -2682,10 +2682,10 @@ public abstract class Phase implements Visitor {
              * @since 0.1.0
              */
             protected LibraryContainsRecordDeclaration(final Phase culprit,
-                                                       final RecordTypeDeclaration recordTypeDeclaration) {
+                                                       final RecordType recordType) {
                 super(culprit);
 
-                this.recordTypeDeclaration = recordTypeDeclaration;
+                this.recordType = recordType;
 
             }
 
@@ -3495,16 +3495,16 @@ public abstract class Phase implements Visitor {
 
         protected static boolean MobileProcedureNotOverloaded(final Phase phase,
                                                               final Type type,
-                                                              final ProcedureTypeDeclaration procedureTypeDeclaration)
+                                                              final ProcedureType procedureType)
                 throws Phase.Error {
 
             // Initialize the result
-            final boolean found = (type instanceof ProcedureTypeDeclaration);
+            final boolean found = (type instanceof ProcedureType);
 
             // Assert for all entries, if a Procedure Type was found, the existing Procedure Type is not
             // declared 'mobile'.
-            if(found && ((ProcedureTypeDeclaration) type).isMobile())
-                MobileProcedureOverloaded.Assert(phase, procedureTypeDeclaration);
+            if(found && ((ProcedureType) type).isMobile())
+                MobileProcedureOverloaded.Assert(phase, procedureType);
 
             // Return the result
             return found;
@@ -3513,16 +3513,16 @@ public abstract class Phase implements Visitor {
 
         protected static boolean NotOverloadingNonMobileProcedure(final Phase phase,
                                                                   final Type type,
-                                                                  final ProcedureTypeDeclaration procedureTypeDeclaration)
+                                                                  final ProcedureType procedureType)
                 throws Phase.Error {
 
             // Initialize the result
-            final boolean found = (type instanceof ProcedureTypeDeclaration);
+            final boolean found = (type instanceof ProcedureType);
 
             // Assert for all entries, if a Procedure Type was found, the specified Procedure Type
             // is not declared 'mobile'.
-            if(found && procedureTypeDeclaration.isMobile())
-                NonMobileProcedureTypeDefined.Assert(phase, type);
+            if(found && procedureType.isMobile())
+                NonMobileProcedureTypeDefined.Assert(phase, type, procedureType);
 
             // Return the result
             return found;
@@ -3530,11 +3530,11 @@ public abstract class Phase implements Visitor {
         }
 
         protected static void MobileProcedureSpecifiesNonVoidReturnType(final Phase phase,
-                                                                        final ProcedureTypeDeclaration procedureTypeDeclaration)
+                                                                        final ProcedureType procedureType)
                 throws Phase.Error {
 
-            if(procedureTypeDeclaration.isMobile() && !procedureTypeDeclaration.getReturnType().isVoidType())
-                MobileProcedureSpecifiesNonVoidReturnType.Assert(phase, procedureTypeDeclaration);
+            if(procedureType.isMobile() && !(procedureType.getReturnType() instanceof VoidType))
+                MobileProcedureSpecifiesNonVoidReturnType.Assert(phase, procedureType);
 
         }
 
@@ -3548,16 +3548,16 @@ public abstract class Phase implements Visitor {
         }
 
         protected static void Declares(final Phase phase,
-                                       final ProcedureTypeDeclaration procedureTypeDeclaration)
+                                       final ProcedureType procedureType)
                 throws Phase.Error {
 
             // Assert that if the Procedure is specified as 'mobile', it also specifies a void
             // return Type
-            MobileProcedureSpecifiesNonVoidReturnType(phase, procedureTypeDeclaration);
+            MobileProcedureSpecifiesNonVoidReturnType(phase, procedureType);
 
             // Initialize a handle to the current scope & retrieve the result
             final Context.SymbolMap     scope   = phase.getScope();
-            final List<Object>  result  = scope.get(procedureTypeDeclaration.toString());
+            final List<Object>  result  = scope.get(procedureType.toString());
 
             // If the procedure has not been defined
             if(!result.isEmpty()) {
@@ -3567,19 +3567,19 @@ public abstract class Phase implements Visitor {
 
                 // Assert for all overloads, the Procedure Type or the existing Type are not declared 'mobile'
                 if(!(preliminary instanceof Context.SymbolMap))
-                    NonProcedureTypeDefined.Assert(phase, procedureTypeDeclaration);
+                    NonProcedureTypeDefined.Assert(phase, procedureType);
 
                 // Assert for all existing Procedure Types, the Procedure Type of the existing Type are not declared
                 // 'mobile'
-                scope.forEachEntryUntil(type -> MobileProcedureNotOverloaded(phase, (Type) type, procedureTypeDeclaration)
-                        || NotOverloadingNonMobileProcedure(phase, (Type) type, procedureTypeDeclaration));
+                scope.forEachEntryUntil(type -> MobileProcedureNotOverloaded(phase, (Type) type, procedureType)
+                        || NotOverloadingNonMobileProcedure(phase, (Type) type, procedureType));
 
                 // Cast the result
                 final Context.SymbolMap procedures = (Context.SymbolMap) result;
 
                 // Assert the procedure definition is unique
-                if(!procedures.put(procedureTypeDeclaration.getSignature(), procedureTypeDeclaration))
-                    TypeDefined.Assert(phase, procedureTypeDeclaration);
+                if(!procedures.put(procedureType.getSignature(), procedureType))
+                    TypeDefined.Assert(phase, procedureType);
 
                 // Otherwise
             } else {
@@ -3588,10 +3588,10 @@ public abstract class Phase implements Visitor {
                 final Context.SymbolMap symbolMap = new Context.SymbolMap();
 
                 // Insert the Procedure
-                symbolMap.put(procedureTypeDeclaration.getSignature(), procedureTypeDeclaration);
+                symbolMap.put(procedureType.getSignature(), procedureType);
 
                 // Emplace the entry
-                scope.put(procedureTypeDeclaration.toString(), procedureTypeDeclaration);
+                scope.put(procedureType.toString(), procedureType);
 
             }
 
@@ -3632,11 +3632,11 @@ public abstract class Phase implements Visitor {
             /**
              * <p>Emits the {@link TypeDefined} to the specified {@link Phase}'s {@link Listener}.</p>
              * @param phase The invoking {@link Phase}.
-             * @param instance The problem {@link AST} instance.
+             * @param type The problem {@link Type} instance.
              */
-            protected static void Assert(final Phase phase, final AST instance) {
+            protected static void Assert(final Phase phase, final Type type) {
 
-                Error.Assert(TypeDefined.class, phase, instance);
+                Error.Assert(TypeDefined.class, phase, type);
 
             }
 
@@ -3752,9 +3752,9 @@ public abstract class Phase implements Visitor {
              * @param phase The invoking {@link Phase}.
              * @param instance The problem {@link AST} instance.
              */
-            protected static void Assert(final Phase phase, final AST instance) {
+            protected static void Assert(final Phase phase, final Type instance, final ProcedureType procedureType) {
 
-                Error.Assert(NonMobileProcedureTypeDefined.class, phase, instance);
+                Error.Assert(NonMobileProcedureTypeDefined.class, phase, instance, procedureType);
 
             }
 
@@ -3851,7 +3851,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Error} to be emitted if the {@link ProcedureTypeDeclaration} is mobile procedure with a specified
+         * <p>{@link Error} to be emitted if the {@link ProcedureType} is mobile procedure with a specified
          * non-void return {@link Type}.</p>
          * @see Phase
          * @see Error
@@ -3980,21 +3980,18 @@ public abstract class Phase implements Visitor {
                                                                  final BlockStatement blockStatement)
                 throws Phase.Error {
 
-            // Initialize a handle to the Statements
-            final Sequence<? extends Statement> statements = blockStatement.getStatements();
-
             // Initialize the preliminary result
             boolean haltsBeforeCompletion = false;
 
             // Iterate
 
-            int index = 0; for(;!haltsBeforeCompletion && (index < statements.size()); index++)
-                haltsBeforeCompletion = (statements.child(index) instanceof StopStatement)
-                        && ((index < statements.size() - 1));
+            int index = 0; for(;!haltsBeforeCompletion && (index < blockStatement.size()); index++)
+                haltsBeforeCompletion = (blockStatement.statementAt(index) instanceof StopStatement)
+                        && ((index < blockStatement.size() - 1));
 
             // Assert that if the Context contains a Stop Statement, it's the last one
             if(!haltsBeforeCompletion)
-                ContextDoesNotTerminate.Assert(phase, statements.child(index), blockStatement);
+                ContextDoesNotTerminate.Assert(phase, blockStatement.statementAt(index), blockStatement);
 
             return haltsBeforeCompletion;
 
@@ -4672,7 +4669,7 @@ public abstract class Phase implements Visitor {
 
                 // Assert that if the Context is an Alt Statement and the specified Alt Statement
                 // is pri, that the Context is not a non-pri Alt Statement
-                if(found && (!((AltStatement) context).isPri() && altStatement.isPri()))
+                if(found && (!((AltStatement) context).isPrioritizedChoice() && altStatement.isPrioritizedChoice()))
                     PJBugManager.INSTANCE.reportMessage(
                             new PJMessage.Builder()
                                     .addAST(altStatement)
@@ -4704,25 +4701,33 @@ public abstract class Phase implements Visitor {
 
             phase.getContext().forEachContextUntil(context -> {
 
-                final boolean found = context instanceof AltCase;
+                final boolean found = context instanceof AltStatement.Case;
 
                 // Assert the Context is not an Alt Case & does not define an Input Guard
-                if(found && ((AltCase) context).definesInputGuardExpression()) {
+                if(found && ((AltStatement.Case) context).getGuardStatement().getExpression() instanceof AssignmentExpression) {
 
-                    // Initialize a handle to the input guard Expression's Channel Read Expression
-                    final AssignmentExpression inputGuardExpression = ((AltCase) context).getInputGuardExpression();
+                    // Initialize a handle to the AltStatement's GuardStatement
+                    final AltStatement.Case.Guard guard = ((AltStatement.Case) context).getGuardStatement();
 
-                    // Assert the Channel Read's Expression is not the specified Expression
-                    if((inputGuardExpression != null) && inputGuardExpression.getRightExpression() == expression) {
+                    // Assert the Guard Statement is an input guard statement
+                    if(guard.getExpression() instanceof AssignmentExpression) {
 
-                        // Assert any enclosing alt statements are not replicated alts
-                        context.forEachEnclosingContext(outerContext -> {
-                            if((outerContext instanceof AltStatement) && ((AltStatement) outerContext).isReplicated())
-                                PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
-                                        .addAST(expression)
-                                        .addError(VisitorMessageNumber.SEMATIC_CHECKS_902)
-                                        .build());
-                        });
+                        // Initialize a handle to the input guard Expression's Channel Read Expression
+                        final AssignmentExpression inputGuardExpression = (AssignmentExpression) guard.getExpression();
+
+                        // Assert the Channel Read's Expression is not the specified Expression
+                        if((inputGuardExpression != null) && inputGuardExpression.getRightExpression() == expression) {
+
+                            // Assert any enclosing alt statements are not replicated alts
+                            context.forEachEnclosingContext(outerContext -> {
+                                if((outerContext instanceof AltStatement) && ((AltStatement) outerContext).isReplicated())
+                                    PJBugManager.INSTANCE.reportMessage(new PJMessage.Builder()
+                                            .addAST(expression)
+                                            .addError(VisitorMessageNumber.SEMATIC_CHECKS_902)
+                                            .build());
+                            });
+
+                        }
 
                     }
 
@@ -4840,17 +4845,17 @@ public abstract class Phase implements Visitor {
 
             phase.getContext().getScope().forEachEntryUntil(context -> {
 
-                final boolean found = context instanceof AltCase;
+                final boolean found = context instanceof AltStatement.Case;
 
                 // If the Context is an AltCase
                 if(found) {
 
                     // Initialize a handle to the AltCase
-                    final AltCase altCase = (AltCase) context;
+                    final AltStatement.Case aCase = (AltStatement.Case) context;
 
                     // Assert the Alt Case does not define a yielding precondition
-                    if(altCase.definesPrecondition()
-                            && altCase.getPreconditionExpression().doesYield())
+                    if(aCase.definesPrecondition()
+                            && aCase.getPreconditionExpression().doesYield())
                         PJBugManager.INSTANCE.reportMessage(
                                 new PJMessage.Builder()
                                         .addAST(channelReadExpression)
@@ -4871,17 +4876,17 @@ public abstract class Phase implements Visitor {
 
             phase.getContext().forEachContextUntil(context -> {
 
-                final boolean found = context instanceof AltCase;
+                final boolean found = context instanceof AltStatement.Case;
 
                 // If the Context is an AltCase
                 if(found) {
 
                     // Initialize a handle to the AltCase
-                    final AltCase altCase = (AltCase) context;
+                    final AltStatement.Case aCase = (AltStatement.Case) context;
 
                     // Assert we're not the AltCase's precondition
-                    if (altCase.definesPrecondition()
-                            && altCase.getPreconditionExpression() == expression)
+                    if (aCase.definesPrecondition()
+                            && aCase.getPreconditionExpression() == expression)
                         PJBugManager.INSTANCE.reportMessage(
                                 new PJMessage.Builder()
                                         .addAST(expression)
@@ -4918,21 +4923,14 @@ public abstract class Phase implements Visitor {
 
         }
 
-        protected static boolean NotEmptyParallelContext(final Phase phase) throws Phase.Error {
+        protected static void NotEmptyParallelContext(final Phase phase) throws Phase.Error {
 
             // Initialize a handle to the Context
             final Context context = phase.getContext();
 
-            // Initialize the result
-            final boolean isParallelContextEmpty = (context instanceof ParBlock)
-                    && ((ParBlock) context).getBody().getStatements().isEmpty();
-
             // Assert the parallel Context is not empty
-            if(isParallelContextEmpty)
+            if((context instanceof ParBlock) && ((ParBlock) context).isEmpty())
                 ParallelContextEmpty.Assert(phase, context);
-
-            // Return the result
-            return isParallelContextEmpty;
 
         }
 
@@ -4941,9 +4939,9 @@ public abstract class Phase implements Visitor {
 
             phase.getContext().forEachContextUntil(context -> {
 
-                final boolean found = (context instanceof ForStatement) && ((ForStatement) context).isPar();
+                final boolean found = (context instanceof ForStatement) && ((ForStatement) context).isParallel();
 
-                if(found) ((ForStatement) context).vars.add(expression);
+                if(found) ((ForStatement) context).mutatedExpressions.add(expression);
 
                 return found;
 
@@ -5519,7 +5517,7 @@ public abstract class Phase implements Visitor {
         private static Object Resolved(final Phase phase, final Name symbol) throws Phase.Error {
 
             // Initialize a handle to the name & package name
-            final String name           = symbol.getName()          ;
+            final String name           = symbol.toString()         ;
             final String packageName    = symbol.getPackageName()   ;
 
             // Attempt to retrieve a result
@@ -5584,23 +5582,23 @@ public abstract class Phase implements Visitor {
 
         }
 
-        protected static void Resolved(final Phase phase, final ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error {
+        protected static void Resolved(final Phase phase, final ProcedureType procedureType) throws Phase.Error {
 
             // Initialize a handle to the scope & return Type
-            final Type returnType = procedureTypeDeclaration.getReturnType()  ;
+            final Type returnType = procedureType.getReturnType()  ;
 
             // Assert the return Type is bound
-            procedureTypeDeclaration.setReturnType((Type) NameAssert.Resolved(phase, returnType.getName()));
+            procedureType.setReturnType((Type) NameAssert.Resolved(phase, returnType.getName()));
 
             // Assert the Implements Type list is bound
-            procedureTypeDeclaration.setCandidateForEachImplement(implement -> {
+            procedureType.setCandidateForEachImplement(implement -> {
 
                 // Assert the Name is visible
                 final Object result = Resolved(phase, implement);
 
                 // Assert the result is a Context.SymbolMap
                 if(!(result instanceof Context.SymbolMap))
-                    NonProcedureImplements.Assert(phase, procedureTypeDeclaration);
+                    NonProcedureImplements.Assert(phase, procedureType);
 
                 // Return the result
                 return (Context.SymbolMap) result;
@@ -5608,7 +5606,7 @@ public abstract class Phase implements Visitor {
             });
 
             // Assert each parameter type is bound
-            procedureTypeDeclaration.setTypeForEachParameter(parameterDeclaration -> {
+            procedureType.setTypeForEachParameter(parameterDeclaration -> {
 
                 // Assert the Name is visible
                 final Object result = Resolved(phase, parameterDeclaration.getType().getName());
@@ -5620,46 +5618,46 @@ public abstract class Phase implements Visitor {
 
         }
 
-        protected static void Resolved(final Phase phase, final ProtocolTypeDeclaration protocolTypeDeclaration) throws Phase.Error {
+        protected static void Resolved(final Phase phase, final ProtocolType protocolType) throws Phase.Error {
 
             // Assert the Implements Type list is bound
-            protocolTypeDeclaration.setTypeForEachExtend(implement -> {
+            protocolType.setCandidateForEachExtend(implement -> {
 
                 // Assert the Name is visible
                 final Object result = Resolved(phase, implement);
 
                 // Assert the result is a Context.SymbolMap
-                if(!(result instanceof ProtocolTypeDeclaration))
-                    NonProtocolName.Assert(phase, protocolTypeDeclaration);
+                if(!(result instanceof ProtocolType))
+                    NonProtocolName.Assert(phase, protocolType);
 
                 // Return the result
-                return (ProtocolTypeDeclaration) result;
+                return (ProtocolType) result;
 
             });
 
         }
 
-        protected static void Resolved(final Phase phase, final RecordTypeDeclaration recordTypeDeclaration) throws Phase.Error {
+        protected static void Resolved(final Phase phase, final RecordType recordType) throws Phase.Error {
 
             // Initialize a handle to the encountered extends
             final Set<String> seen = new HashSet<>();
 
             // Assert the Implements Type list is bound
-            recordTypeDeclaration.setTypeForEachExtend(implement -> {
+            recordType.setCandidateForEachExtend(extend -> {
 
                 // Assert the Name is visible
-                final Object result = Resolved(phase, implement);
+                final Object result = Resolved(phase, extend);
 
                 // Assert the result is a Context.SymbolMap
-                if(!(result instanceof ProtocolTypeDeclaration))
-                    NonProtocolName.Assert(phase, recordTypeDeclaration);
+                if(!(result instanceof RecordType))
+                    NonProtocolName.Assert(phase, recordType);
 
                 // Initialize a handle to the RecordType Declaration
-                final RecordTypeDeclaration recordExtend = (RecordTypeDeclaration) result;
+                final RecordType recordExtend = (RecordType) result;
 
                 // Assert the Name is specified once
-                if(!seen.add(recordExtend.getName().toString()))
-                    ExtendDefined.Assert(phase, recordTypeDeclaration);
+                if(!seen.add(recordExtend.toString()))
+                    ExtendDefined.Assert(phase, recordType);
 
                 // Return the result
                 return recordExtend;
@@ -5674,15 +5672,15 @@ public abstract class Phase implements Visitor {
             final Object result = Resolved(phase, protocolLiteral.getName());
 
             // Assert the Expression is an ProtocolTypeDecl
-            if(result instanceof ProtocolTypeDeclaration)
-                protocolLiteral.setType((ProtocolTypeDeclaration) result);
+            if(result instanceof ProtocolType)
+                protocolLiteral.setType((ProtocolType) result);
 
                 // Otherwise
             else NonProtocolName.Assert(phase, protocolLiteral);
 
             // Initialize a handle to the ProtocolLiteral's Type & Protocol Case
-            final ProtocolTypeDeclaration type     = (ProtocolTypeDeclaration) protocolLiteral.getType();
-            final ProtocolCase tagCase  = type.getCaseFrom(protocolLiteral.getTagLiteral());
+            final ProtocolType type     = (ProtocolType) protocolLiteral.getType();
+            final ProtocolType.Case tagCase  = type.getCase(protocolLiteral.getTagLiteral());
 
             // Assert the case was found
             if(tagCase == null)
@@ -5699,8 +5697,8 @@ public abstract class Phase implements Visitor {
             final Object result = Resolved(phase, recordLiteralExpression.getName());
 
             // Assert the Expression is an ProtocolTypeDecl
-            if(result instanceof RecordTypeDeclaration)
-                recordLiteralExpression.setType((RecordTypeDeclaration) result);
+            if(result instanceof RecordType)
+                recordLiteralExpression.setType((RecordType) result);
 
                 // Otherwise
             else NonRecordName.Assert(phase, recordLiteralExpression);
@@ -6049,7 +6047,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Error} to be emitted if the {@link Name}'s {@link Type} is not a {@link ProcedureTypeDeclaration}.</p>
+         * <p>{@link Error} to be emitted if the {@link Name}'s {@link Type} is not a {@link ProcedureType}.</p>
          * @see Phase
          * @see Error
          * @version 1.0.0
@@ -6106,7 +6104,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Error} to be emitted if the {@link Name}'s {@link Type} is not a {@link ProcedureTypeDeclaration}.</p>
+         * <p>{@link Error} to be emitted if the {@link Name}'s {@link Type} is not a {@link ProcedureType}.</p>
          * @see Phase
          * @see Error
          * @version 1.0.0
@@ -6163,7 +6161,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Error} to be emitted if the {@link Name}'s {@link Type} is not a {@link ProtocolTypeDeclaration}.</p>
+         * <p>{@link Error} to be emitted if the {@link Name}'s {@link Type} is not a {@link ProtocolType}.</p>
          * @see Phase
          * @see Error
          * @version 1.0.0
@@ -6220,7 +6218,7 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>{@link Error} to be emitted if the {@link Name}'s {@link Type} is not a {@link RecordTypeDeclaration}.</p>
+         * <p>{@link Error} to be emitted if the {@link Name}'s {@link Type} is not a {@link RecordType}.</p>
          * @see Phase
          * @see Error
          * @version 1.0.0
@@ -6364,22 +6362,22 @@ public abstract class Phase implements Visitor {
                 throws Phase.Error {
 
             // Initialize a handle to the Channel Write Statement's Component Type & the Write Expression's Type
-            final Type componentType        = channelWriteStatement.getTargetExpression().getType().getComponentType();
+            final Type componentType        = channelWriteStatement.getTargetExpression().getType();
             final Type writeExpressionType  = channelWriteStatement.getWriteExpression().getType();
 
             // Assert the Channel Write Statement Expression's Type is defined & is not Type Equal to
             // the component type
-            if(writeExpressionType != null && !writeExpressionType.typeEqual(componentType))
+            if(writeExpressionType != null && !writeExpressionType.isTypeEqualTo(componentType))
                 // Wrap the Channel Write Expression in a Cast Expression
                 channelWriteStatement.setWriteExpression(
                         new CastExpression(componentType, channelWriteStatement.getWriteExpression()));
 
         }
 
-        protected static void SwitchLabelConstantOrProtocolType(final Phase phase, final SwitchLabel switchLabel) {
+        protected static void SwitchLabelConstantOrProtocolType(final Phase phase, final SwitchStatement.Group.Case aCase) {
 
             // Initialize a handle to the Switch Label's Expression
-            final Expression switchLabelExpression = switchLabel.getExpression();
+            final Expression switchLabelExpression = aCase.getExpression();
 
             // Assert the Switch Label Expression is constant or is a Protocol Tag
             if(!switchLabelExpression.isConstant())
@@ -6391,7 +6389,7 @@ public abstract class Phase implements Visitor {
         /// Phase.Error
 
         /**
-         * <p>{@link Error} to be emitted if the {@link SwitchLabel} is not constant or a protocol tag.</p>
+         * <p>{@link Error} to be emitted if the {@link SwitchStatement.Group.Case} is not constant or a protocol tag.</p>
          * @see Phase
          * @see Error
          * @version 1.0.0
@@ -6461,13 +6459,7 @@ public abstract class Phase implements Visitor {
 
         public static LocalDeclaration LocalDeclarationFrom(final Type type, final String name) {
 
-            return LocalDeclarationFrom(type, name, false);
-
-        }
-
-        public static LocalDeclaration LocalDeclarationFrom(final Type type, final String name, final boolean isConstant) {
-
-            return new LocalDeclaration(type, new Name(name), null, isConstant);
+            return new LocalDeclaration(new Modifiers(), type, new Name(name), null);
 
         }
 
@@ -6529,7 +6521,7 @@ public abstract class Phase implements Visitor {
 
         public static Statement LabelledIgnoreInvocationStatementFrom(final String label, final Name name, final Expression... expressions) {
 
-            return new ExpressionStatement(label, IgnoreInvocationFrom(name, expressions));
+            return new ExpressionStatement(IgnoreInvocationFrom(name, expressions));
 
         }
 
@@ -6551,15 +6543,15 @@ public abstract class Phase implements Visitor {
 
         }
 
-        public static Statement BreakConditionStatementFrom(final String startLabel, final String endLabel, final Expression evaluationExpression) {
+        public static Statement BreakConditionStatementFrom(final String endLabel, final Expression evaluationExpression) {
 
-            return new IfStatement(startLabel, evaluationExpression, GotoStatementFor(endLabel));
+            return new IfStatement(evaluationExpression, GotoStatementFor(endLabel));
 
         }
 
-        public static Statement InvertedBreakConditionStatementFrom(final String startLabel, final String endLabel, final Expression expression) {
+        public static Statement InvertedBreakConditionStatementFrom(final String endLabel, final Expression expression) {
 
-            return new IfStatement(startLabel, InvertedExpressionFrom(expression), GotoStatementFor(endLabel));
+            return new IfStatement(InvertedExpressionFrom(expression), GotoStatementFor(endLabel));
 
         }
 
@@ -6568,72 +6560,72 @@ public abstract class Phase implements Visitor {
         }
 
         /**
-         * <p>Recursively aggregates all of the {@link Name}s in the {@link ProtocolTypeDeclaration}'s inheritance
-         * hierarchy using the {@link Context.SymbolMap} to resolve the ancestor {@link ProtocolTypeDeclaration} names.</p>
+         * <p>Recursively aggregates all of the {@link Name}s in the {@link ProtocolType}'s inheritance
+         * hierarchy using the {@link Context.SymbolMap} to resolve the ancestor {@link ProtocolType} names.</p>
          * @param members The {@link Set} where all the {@link Name}s are aggregated.
-         * @param symbolMap The {@link Context.SymbolMap} that is used to resolve all ancestor {@link ProtocolTypeDeclaration} names.
-         * @param protocolTypeDeclaration The {@link ProtocolTypeDeclaration} to recur from.
+         * @param symbolMap The {@link Context.SymbolMap} that is used to resolve all ancestor {@link ProtocolType} names.
+         * @param protocolType The {@link ProtocolType} to recur from.
          * @since 0.1.0
          */
         private static void EmplaceAncestorNames(final Set<Name> members, final Context.SymbolMap symbolMap,
-                                                 final ProtocolTypeDeclaration protocolTypeDeclaration) {
+                                                 final ProtocolType protocolType) {
 
             // Iterate through any parent names
-            for(final Name parent: protocolTypeDeclaration.extend()) {
+            for(final Name parent: protocolType.getExtends()) {
 
                 // Initialize the preliminary result
                 final Object result = symbolMap.get(parent.toString());
 
                 // Check for a ProtocolTypeDecl (This probably shouldn't be necessary) & recur
-                if(result instanceof ProtocolTypeDeclaration)
-                    EmplaceAncestorNames(members, symbolMap, (ProtocolTypeDeclaration) result);
+                if(result instanceof ProtocolType)
+                    EmplaceAncestorNames(members, symbolMap, (ProtocolType) result);
 
             }
 
             // Iterate through the local RecordMembers
-            for(final Name ancestorName: protocolTypeDeclaration.extend()) {
+            for(final Name ancestorName: protocolType.getExtends()) {
 
-                org.processj.compiler.Compiler.Info(protocolTypeDeclaration + "adding member " + ancestorName);
+                org.processj.compiler.Compiler.Info(protocolType + "adding member " + ancestorName);
 
                 if(!members.add(ancestorName))
-                    org.processj.compiler.Compiler.Info(protocolTypeDeclaration + String.format("Name '%s' already in (%s)",
-                            ancestorName, protocolTypeDeclaration));
+                    org.processj.compiler.Compiler.Info(protocolType + String.format("Name '%s' already in (%s)",
+                            ancestorName, protocolType));
 
             }
 
         }
 
         /**
-         * <p>Recursively aggregates all of the {@link RecordMemberDeclaration}s in the {@link RecordTypeDeclaration}'s inheritance
-         * hierarchy using the {@link Context.SymbolMap} to resolve the ancestor {@link RecordTypeDeclaration} names.</p>
-         * @param members The {@link Set} where all the {@link RecordMemberDeclaration}s are aggregated.
-         * @param symbolMap The {@link Context.SymbolMap} that is used to resolve all ancestor {@link RecordTypeDeclaration} names.
-         * @param recordTypeDeclaration The {@link RecordTypeDeclaration} to recur from.
+         * <p>Recursively aggregates all of the {@link RecordType.Member}s in the {@link RecordType}'s inheritance
+         * hierarchy using the {@link Context.SymbolMap} to resolve the ancestor {@link RecordType} names.</p>
+         * @param members The {@link Set} where all the {@link RecordType.Member}s are aggregated.
+         * @param symbolMap The {@link Context.SymbolMap} that is used to resolve all ancestor {@link RecordType} names.
+         * @param recordType The {@link RecordType} to recur from.
          * @since 0.1.0
          */
-        private static void EmplaceRecordMembers(final Set<RecordMemberDeclaration> members, final Context.SymbolMap symbolMap,
-                                                 final RecordTypeDeclaration recordTypeDeclaration) {
+        private static void EmplaceRecordMembers(final Set<RecordType.Member> members, final Context.SymbolMap symbolMap,
+                                                 final RecordType recordType) {
 
             // Iterate through any parent names
-            for(final Name parent: recordTypeDeclaration.getExtends()) {
+            for(final Name parent: recordType.getRecordExtends()) {
 
                 // Initialize the preliminary result
                 final Object result = symbolMap.get(parent.toString());
 
                 // Check for a RecordTypeDecl (This probably shouldn't be necessary) & recur
-                if(result instanceof RecordTypeDeclaration)
-                    EmplaceRecordMembers(members, symbolMap, (RecordTypeDeclaration) result);
+                if(result instanceof RecordType)
+                    EmplaceRecordMembers(members, symbolMap, (RecordType) result);
 
             }
 
             // Iterate through the local RecordMembers
-            for(final RecordMemberDeclaration recordMemberDeclaration : recordTypeDeclaration.getBody()) {
+            for(final Statement member : recordType.getBody()) {
 
-                org.processj.compiler.Compiler.Info(recordTypeDeclaration + "adding member " + recordMemberDeclaration.getType() + " " + recordMemberDeclaration);
+                org.processj.compiler.Compiler.Info(recordType + "adding member " + ((RecordType.Member) member).getType() + " " + member);
 
-                if(!members.add(recordMemberDeclaration))
-                    org.processj.compiler.Compiler.Info(recordTypeDeclaration + String.format("Name '%s' already in (%s)",
-                            recordMemberDeclaration, recordTypeDeclaration));
+                if(!members.add((RecordType.Member) member))
+                    org.processj.compiler.Compiler.Info(recordType + String.format("Name '%s' already in (%s)",
+                            member, recordType));
 
             }
 
@@ -6714,26 +6706,26 @@ public abstract class Phase implements Visitor {
         protected static void Rewritten(final Phase phase, final AltStatement altStatement) throws Phase.Error {
 
             // Initialize a handle to the AltCases and new Sequence
-            final Sequence<AltCase> cases     = altStatement.getBody();
-            final Sequence<AltCase> flattened = new Sequence<>();
+            final Statements cases     = altStatement.getBody();
+            final Statements flattened = new Statements();
 
             // Iterate through the current children
-            for(final AltCase altCase: cases) {
+            for(final Statement aCase : cases) {
 
                 // If the Alt Case is not nested, simply append it to the body
-                if(!altCase.isNestedAltStatement()) flattened.append(altCase);
+                if(!((AltStatement.Case) aCase).isNestedAltStatement()) flattened.append(aCase);
 
                     // Otherwise
                 else {
 
                     // Retrieve a handle to the Alt Statement
-                    final AltStatement nested = (AltStatement) altCase.getBody();
+                    final AltStatement nested = (AltStatement) aCase;
 
                     // TODO: for now replicated alts just left.
-                    if(nested.isReplicated()) flattened.append(altCase);
+                    if(nested.isReplicated()) flattened.append(aCase);
 
-                        // Otherwise, merge
-                    else flattened.merge(altStatement.getBody());
+                    // Otherwise, merge
+                    else flattened.appendAllFrom(altStatement.getBody());
 
                 }
 
@@ -6741,7 +6733,7 @@ public abstract class Phase implements Visitor {
 
             // Clear the cases
             cases.clear();
-            cases.merge(flattened);
+            cases.appendAllFrom(flattened);
 
             // TODO: handle Replicated Alts & synthesize labels like the other unrolled contexts
             // Aggregate the children to the enclosing context
@@ -6751,13 +6743,13 @@ public abstract class Phase implements Visitor {
 
                 if(context instanceof BreakableContext) {
 
-                    ((BreakableContext) context).getMergeBody().aggregate(altStatement.getMergeBody());
+                    //((BreakableContext) context).appendToMergeBody(altStatement.getMergeBody());
 
                     hasBody = true;
 
                 } else if(context instanceof YieldingContext) {
 
-                    ((YieldingContext) context).getMergeBody().aggregate(altStatement.getMergeBody());
+                    //((YieldingContext) context).getMergeBody().append(altStatement.getMergeBody());
 
                     hasBody = true;
 
@@ -6771,28 +6763,22 @@ public abstract class Phase implements Visitor {
 
         protected static void Rewritten(final Phase phase, final BlockStatement body) throws Error {
 
-            // Initialize a handle to the Merge Body
-            // TODO: Change this to the parent's body
-            final BlockStatement mergeBody = body.getMergeBody();
 
-            // Initialize a handle to the Statements
-            final Sequence<Statement> statements = (Sequence<Statement>) body.getStatements();
 
             // Resolve the children
-            for(int index = 0; index < statements.size(); index++) {
+            for(int index = 0; index < body.size(); index++) {
 
                 // Initialize a handle to the Statement
-                final Statement statement     = statements.child(index);
-                final Statement nextStatement = (index < (statements.size() - 1)) ? statements.child(index + 1) : null;
+                final Statement statement     = body.statementAt(index);
+                final Statement nextStatement = (index < (body.size() - 1)) ? body.statementAt(index + 1) : null;
 
                 // Initialize a handle to the starting & ending label
                 final String label      = (statement.definesLabel()) ? statement.getLabel() : "START_" + labelNo;
                 final String endLabel   = (nextStatement != null) && nextStatement.definesLabel()
                         ? nextStatement.getLabel() : "END_" + labelNo++;
 
-                // Update the Statement's Labels
+                // Update the Statement's Label
                 statement.setLabel(label);
-                statement.setEndLabel(endLabel);
 
                 // Resolve the Statement
                 statement.accept(phase);
@@ -6804,8 +6790,10 @@ public abstract class Phase implements Visitor {
             // Clear the current body
             body.clear();
 
+            // Initialize a handle to the Merge Body
+            // TODO: Change this to the parent's body
             // Aggregate the children to the enclosing context
-            mergeBody.aggregate(body.getMergeBody());
+            body.appendAllFrom(body);
 
         }
 
@@ -6829,55 +6817,55 @@ public abstract class Phase implements Visitor {
 
         }
 
-        protected static void Rewritten(final Phase phase, final ProtocolTypeDeclaration protocolTypeDeclaration) {
+        protected static void Rewritten(final Phase phase, final ProtocolType protocolType) {
 
-            org.processj.compiler.Compiler.Info(protocolTypeDeclaration + "Visiting a RecordTypeDecl (" + protocolTypeDeclaration + ")");
+            org.processj.compiler.Compiler.Info(protocolType + "Visiting a RecordTypeDecl (" + protocolType + ")");
 
             // Initialize the Set of Names
             final Set<Name> ancestors = new LinkedHashSet<>();
 
             // Recursively aggregate the Name
-            EmplaceAncestorNames(ancestors, phase.getScope(), protocolTypeDeclaration);
+            EmplaceAncestorNames(ancestors, phase.getScope(), protocolType);
 
             // Clear the existing Names
-            protocolTypeDeclaration.extend().clear();
+            protocolType.getExtends().clear();
 
             // Emplace all the RecordMembers
-            ancestors.forEach(name -> protocolTypeDeclaration.extend().append(name));
+            ancestors.forEach(name -> protocolType.getExtends().append(name, null));
 
             // Log
-            org.processj.compiler.Compiler.Info(protocolTypeDeclaration + String.format("record %s with %s member(s)",
-                    protocolTypeDeclaration, protocolTypeDeclaration.extend().size()));
+            org.processj.compiler.Compiler.Info(protocolType + String.format("record %s with %s member(s)",
+                    protocolType, protocolType.getExtends().size()));
 
             // Print
-            protocolTypeDeclaration.extend().forEach(name ->
-                    org.processj.compiler.Compiler.Info(protocolTypeDeclaration + "> Ancestor: " + name));
+            protocolType.getExtends().forEach(name ->
+                    org.processj.compiler.Compiler.Info(protocolType + "> Ancestor: " + name));
 
         }
 
-        protected static void Rewritten(final Phase phase, final RecordTypeDeclaration recordTypeDeclaration) {
+        protected static void Rewritten(final Phase phase, final RecordType recordType) {
 
-            org.processj.compiler.Compiler.Info(recordTypeDeclaration + "Visiting a RecordTypeDecl (" + recordTypeDeclaration + ")");
+            org.processj.compiler.Compiler.Info(recordType + "Visiting a RecordTypeDecl (" + recordType + ")");
 
             // Initialize the Set of RecordMembers
-            final Set<RecordMemberDeclaration> members = new LinkedHashSet<>();
+            final Set<RecordType.Member> members = new LinkedHashSet<>();
 
             // Recursively aggregate the RecordMembers
-            EmplaceRecordMembers(members, phase.getScope(), recordTypeDeclaration);
+            EmplaceRecordMembers(members, phase.getScope(), recordType);
 
             // Clear the existing RecordMembers
-            recordTypeDeclaration.getBody().clear();
+            recordType.getBody().clear();
 
             // Emplace all the RecordMembers
-            members.forEach(recordMember -> recordTypeDeclaration.getBody().append(recordMember));
+            members.forEach(recordMember -> recordType.getBody().append(recordMember));
 
             // Log
-            org.processj.compiler.Compiler.Info(recordTypeDeclaration + String.format("record %s with %s member(s)",
-                    recordTypeDeclaration, recordTypeDeclaration.getBody().size()));
+            org.processj.compiler.Compiler.Info(recordType + String.format("record %s with %s member(s)",
+                    recordType, recordType.getBody().size()));
 
             // Print
-            recordTypeDeclaration.getBody().forEach(recordMember ->
-                    org.processj.compiler.Compiler.Info(recordTypeDeclaration + "> member " + recordMember.getType() + " " + recordMember.getName()));
+            recordType.getBody().forEach(recordMember ->
+                    org.processj.compiler.Compiler.Info(recordType + "> member " + ((RecordType.Member) recordMember).getType() + " " + ((RecordType.Member) recordMember).getName()));
 
 
         }
@@ -6947,15 +6935,15 @@ public abstract class Phase implements Visitor {
 
                     // Assert unrolled
                     // TODO: Check if extended Rendezvous needs to be unrolled
-                    RewriteAssert.YieldedUnrolledInto(phase.getContext().getScope(),
-                            ((BreakableContext) context).getMergeBody(), channelReadExpression)  ;
+                    //RewriteAssert.YieldedUnrolledInto(phase.getContext().getScope(),
+                            //((BreakableContext) context).getMergeBody(), channelReadExpression)  ;
 
                     hasBody = true;
 
                 } else if(context instanceof YieldingContext) {
 
-                    RewriteAssert.YieldedUnrolledInto(phase.getContext().getScope(),
-                            ((YieldingContext) context).getMergeBody(), channelReadExpression)  ;
+                    //RewriteAssert.YieldedUnrolledInto(phase.getContext().getScope(),
+                            //((YieldingContext) context).getMergeBody(), channelReadExpression)  ;
 
                     hasBody = true;
 
@@ -7062,7 +7050,7 @@ public abstract class Phase implements Visitor {
 
         }
 
-        protected static void Rewritten(final Phase phase, final AltCase altCase) throws Phase.Error {
+        protected static void Rewritten(final Phase phase, final AltStatement.Case aCase) throws Phase.Error {
 
             // TODO: Synthesize Labels like the other unrolled Contexts
             // Aggregate the children to the enclosing context
@@ -7072,13 +7060,13 @@ public abstract class Phase implements Visitor {
 
                 if(context instanceof BreakableContext) {
 
-                    ((BreakableContext) context).getMergeBody().aggregate((BlockStatement) altCase.getBody());
+                    //((BreakableContext) context).getMergeBody().append(aCase.getBody());
 
                     hasBody = true;
 
                 } else if(context instanceof YieldingContext) {
 
-                    ((YieldingContext) context).getMergeBody().aggregate((BlockStatement) altCase.getBody());
+                    //((YieldingContext) context).getMergeBody().append(aCase.getBody());
 
                     hasBody = true;
 
@@ -7099,15 +7087,15 @@ public abstract class Phase implements Visitor {
 
                 if(context instanceof BreakableContext) {
 
-                    ((BreakableContext) context).getMergeBody().append(
-                            RewriteAssert.GotoStatementFor(breakStatement.getTarget().toString()));
+                    //((BreakableContext) context).getMergeBody().append(
+                    //        RewriteAssert.GotoStatementFor(breakStatement.getTarget().toString()));
 
                     hasBody = true;
 
                 } else if(context instanceof YieldingContext) {
 
-                    ((YieldingContext) context).getMergeBody().append(
-                            RewriteAssert.GotoStatementFor(breakStatement.getTarget().toString()));
+                    //((YieldingContext) context).getMergeBody().append(
+                    //        RewriteAssert.GotoStatementFor(breakStatement.getTarget().toString()));
 
                     hasBody = true;
 
@@ -7163,13 +7151,13 @@ public abstract class Phase implements Visitor {
 
                 if(context instanceof BreakableContext) {
 
-                    ((BreakableContext) context).getMergeBody().append(claimStatement);
+                    //((BreakableContext) context).getMergeBody().append(claimStatement);
 
                     hasBody = true;
 
                 } else if(context instanceof YieldingContext) {
 
-                    ((YieldingContext) context).getMergeBody().append(claimStatement);
+                    //((YieldingContext) context).getMergeBody().append(claimStatement);
 
                     hasBody = true;
 
@@ -7191,15 +7179,15 @@ public abstract class Phase implements Visitor {
 
                 if(context instanceof BreakableContext) {
 
-                    ((BreakableContext) context).getMergeBody().append(
-                            RewriteAssert.GotoStatementFor(continueStatement.getTarget().toString()));
+                    //((BreakableContext) context).getMergeBody().append(
+                    //        RewriteAssert.GotoStatementFor(continueStatement.getTarget().toString()));
 
                     hasBody = true;
 
                 } else if(context instanceof YieldingContext) {
 
-                    ((YieldingContext) context).getMergeBody().append(
-                            RewriteAssert.GotoStatementFor(continueStatement.getTarget().toString()));
+                    //((YieldingContext) context).getMergeBody().append(
+                    //        RewriteAssert.GotoStatementFor(continueStatement.getTarget().toString()));
 
                     hasBody = true;
 
@@ -7222,14 +7210,14 @@ public abstract class Phase implements Visitor {
             //final BlockStatement enclosingMergeBody = phase.getEnclosingContext().getMergeBody();
 
             // Assert the WhileStatement's Merge Body is cleared
-            doStatement.clearMergeBody();
+            //doStatement.clearMergeBody();
 
             // Assert the Do Statement defines a body
-            if(doStatement.definesBody())
-                doStatement.getBody().getStatements().child(0).setLabel(doStatement.getLabel());
+            //if(doStatement.definesBody())
+            //    doStatement.getBody().getFirst().setLabel(doStatement.getLabel());
 
             // Assert Flattened Statements
-            RewriteAssert.Rewritten(phase, doStatement.getBody());
+            //RewriteAssert.Rewritten(phase, doStatement.getBody());
 
             // Merge the children
             //enclosingMergeBody.aggregate(doStatement.getMergeBody());
@@ -7272,7 +7260,7 @@ public abstract class Phase implements Visitor {
             String startLabel = forStatement.getLabel();
 
             // Clear the For Statement's Merge Body
-            forStatement.getBody().clearMergeBody();
+            //forStatement.getBody().clearMergeBody();
 
             // Assert the For Statement defines initialization Statements
             if(forStatement.definesInitializationStatements()) {
@@ -7300,7 +7288,7 @@ public abstract class Phase implements Visitor {
                     //forStatement.getEvaluationExpression()));
 
             // Assert the statements have been flattened
-            RewriteAssert.Rewritten(phase, forStatement.getBody());
+            //RewriteAssert.Rewritten(phase, forStatement.getBody());
 
             // Assert the For Statement defines increment statements
             // TODO: Check for yielding Expressions
@@ -7318,10 +7306,10 @@ public abstract class Phase implements Visitor {
 
         }
 
-        protected static void Rewritten(final Phase phase, final GuardStatement guardStatement) throws Phase.Error {
+        protected static void Rewritten(final Phase phase, final AltStatement.Case.Guard guard) throws Phase.Error {
 
             // Initialize a handle to the GuardStatement's Expression
-            Expression expression = guardStatement.getExpression();
+            Expression expression = guard.getExpression();
 
             // Resolve the Expression
             expression.accept(phase);
@@ -7335,7 +7323,7 @@ public abstract class Phase implements Visitor {
             }
 
             // Resolve the Statement, if any
-            guardStatement.getStatement().accept(phase);
+            guard.getStatement().accept(phase);
 
 
         }
@@ -7349,24 +7337,21 @@ public abstract class Phase implements Visitor {
             //final BlockStatement enclosingMergeBody = phase.getEnclosingContext().getMergeBody();
 
             String label     = ifStatement.getLabel();
-            String elseLabel = ifStatement.getEndLabel();
+            String elseLabel = ifStatement.getElseStatement().getLabel();
 
             // Assert the If Statement defines an else statement
-            if(ifStatement.definesElseStatement()) {
+            //if(ifStatement.isElseBodyEmpty()) {
 
                 // Initialize a handle to the Else Statement
-                final BlockStatement elseBody = ifStatement.getElseBody();
-
-                // Initialize the Else Statement's end label
-                elseBody.setEndLabel(elseLabel);
+                //final BlockStatement elseBody = ifStatement.getElseStatement();
 
                 // Initialize a handle to the Else Statement's Label
-                elseLabel = (elseBody.definesLabel()) ? elseBody.getLabel() : label + "_ELSE";
+                //elseLabel = (elseBody.definesLabel()) ? elseBody.getLabel() : label + "_ELSE";
 
                 // Update the Else Statement's Label
-                elseBody.setLabel(elseLabel);
+                //elseBody.setLabel(elseLabel);
 
-            }
+            //}
 
             // Resolve the Evaluation Expression
             // TODO: Visit Evaluation Expression, check for yielding Expressions, & Merge
@@ -7377,27 +7362,27 @@ public abstract class Phase implements Visitor {
                     //ifStatement.getLabel(), elseLabel, evaluationExpression));
 
             // Assert the If Statement's Then Merge Body is cleared
-            ifStatement.getThenBody().clearMergeBody();
+            //ifStatement.getThenBody().clearMergeBody();
 
             // Assert Flattened Statements
-            RewriteAssert.Rewritten(phase, ifStatement.getThenBody());
+            //RewriteAssert.Rewritten(phase, ifStatement.getThenBody());
 
             // Merge the children
             //enclosingMergeBody.aggregate(ifStatement.getThenBody().getMergeBody());
 
             // Assert the IfStatement defines an Else Statement
-            if(ifStatement.definesElseStatement()) {
+            //if(ifStatement.isElseBodyEmpty()) {
 
                 // Aggregate the End Goto
                 //enclosingMergeBody.append(RewriteAssert.LabelledGotoStatementFrom("", ifStatement.getEndLabel()));
 
                 // Resolve the Else Statement
-                ifStatement.getElseBody().accept(phase);
+                //ifStatement.getElseStatement().accept(phase);
 
                 // Merge the Children
                 //enclosingMergeBody.aggregate(ifStatement.getElseBody().getMergeBody());
 
-            }
+            //}
 
         }
 
@@ -7435,27 +7420,26 @@ public abstract class Phase implements Visitor {
         protected static void Rewritten(final Phase phase, final ParBlock parBlock) throws Phase.Error {
 
             // Initialize a new Sequence
-            final Sequence<Statement> result        = new Sequence<>();
-            final Sequence<Statement> statements    = (Sequence<Statement>) parBlock.getBody().getStatements();
+            final Statements result        = new Statements();
 
             // Iterate through each Statement
-            for(final Statement statement: statements) {
+            for(final Statement statement: parBlock.getBody()) {
 
                 // Aggregate enrolls TODO: Originally, aggregateEnrollsOf was invoked only on statements that were not of Type ParBlock
-                parBlock.aggregateEnrollsOf(statement);
+                //parBlock.aggregateEnrollsOf(statement);
 
                 // Merge Par Block statements
-                if(statement instanceof ParBlock)
-                    result.merge(((ParBlock) statement).getBody());
+                //if(statement instanceof ParBlock)
+                //    result.append(((ParBlock) statement).getBody());
 
                     // Otherwise
-                else result.append(statement);
+                //else result.append(statement);
 
             }
 
             // Set the Block
-            statements.clear();
-            statements.merge(result);
+            parBlock.getBody().clear();
+            //parBlock.getBody().append(result);
 
             // Initialize a handle to the synthetic labels
             // TODO: When synthesizing labels, make sure they do not clash with another name
@@ -7466,10 +7450,10 @@ public abstract class Phase implements Visitor {
             //final BlockStatement enclosingMergeBody = phase.getEnclosingContext().getMergeBody();
 
             // Assert the WhileStatement's Merge Body is cleared
-            parBlock.clearMergeBody();
+            //parBlock.clearMergeBody();
 
             // Assert Flattened Statements
-            RewriteAssert.Rewritten(phase, parBlock.getBody());
+            //RewriteAssert.Rewritten(phase, parBlock.getBody());
 
             // TODO: Aggregate statement enrolls to ParBlock for each visit
 
@@ -7555,11 +7539,9 @@ public abstract class Phase implements Visitor {
 
             }
 
-            // Initialize a handle to the Switch Groups
-            final Sequence<SwitchGroupStatement> switchGroups =
-                    (Sequence<SwitchGroupStatement>) switchStatement.getBody().getStatements();
+            for(final Statement switchGroup: switchStatement.getBody()) {
 
-            for(final SwitchGroupStatement switchGroup: switchGroups) {
+                final SwitchStatement.Group group = ((SwitchStatement.Group) switchGroup);
 
                 // TODO: Create if statements for each label
 
@@ -7591,10 +7573,10 @@ public abstract class Phase implements Visitor {
                     //whileStatement.getLabel(), whileStatement.getEndLabel(), whileStatement.getEvaluationExpression()));
 
             // Assert the WhileStatement's Merge Body is cleared
-            whileStatement.getMergeBody().clear();
+            //whileStatement.getMergeBody().clear();
 
             // Assert Flattened Statements
-            Rewritten(phase, whileStatement.getBody());
+            //Rewritten(phase, whileStatement.getBody());
 
             // Merge the children
             //enclosingMergeBody.aggregate(whileStatement.getMergeBody());
@@ -7644,7 +7626,7 @@ public abstract class Phase implements Visitor {
 
         }
 
-        protected static void Rewritten(final Phase phase, final ProcedureTypeDeclaration procedureTypeDeclaration) throws Phase.Error {
+        protected static void Rewritten(final Phase phase, final ProcedureType procedureType) throws Phase.Error {
 
             // Update the Body with the flattened statements
             //procedureTypeDeclaration.getBody().aggregate(procedureTypeDeclaration.getMergeBody());

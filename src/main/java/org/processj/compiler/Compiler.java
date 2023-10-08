@@ -8,7 +8,7 @@ import java.util.*;
 
 import org.processj.compiler.phase.NameChecker;
 import org.processj.compiler.phase.Phase;
-import org.processj.compiler.phase.ProcessJParser;
+import org.processj.compiler.phase.Parser;
 import org.processj.compiler.phase.TypeChecker;
 
 import static org.processj.compiler.utilities.Files.RetrieveMatchingFilesListFrom;
@@ -32,7 +32,7 @@ public class Compiler extends Phase.Listener {
     /**
      * <p>Maintains the set of {@link SourceFile}s that have been opened.</p>
      */
-    private final static Map<String, SourceFile>                                Opened          = new HashMap<>()   ;
+    private final static Map<String, SourceFile> Opened = new HashMap<>();
 
     /**
      * <p>Contains a mapping of the {@link Phase}s executed by the compiler to the corresponding {@link Phase.Listener}
@@ -44,7 +44,7 @@ public class Compiler extends Phase.Listener {
      * @see Map
      * @see Compiler
      */
-    private final static Map<Class<? extends Phase>, Phase>                     ActivePhases    = new HashMap<>()   ;
+    private final static Map<Class<? extends Phase>, Phase> ActivePhases = new HashMap<>();
 
     /**
      * <p>Contains a mapping of the next {@link Phase} executed by the {@link Compiler} from the corresponding previous
@@ -54,79 +54,82 @@ public class Compiler extends Phase.Listener {
      * @see Phase.Listener
      * @see Map
      */
-    private final static Map<Class<? extends Phase>, Class<? extends Phase>>    NextPhaseOf     = Map.of(
-            ProcessJParser.class,   NameChecker.class,
-            NameChecker.class,      TypeChecker.class
+    private final static Map<Class<? extends Phase>, Class<? extends Phase>> NextPhaseOf = Map.of(
+            Parser.class, NameChecker.class,
+            NameChecker.class, TypeChecker.class
     );
 
     /**
      * <p>The current ProcessJ version.</p>
      * @since 1.0.0
      */
-    private final static String         Version                 = "2.1.1"                           ;
+    private final static String Version = "2.1.1";
 
     /**
      * <p>{@link String} value of the basic {@link Compiler} usage.</p>
      * @since 1.0.0
      */
-    private final static String         Usage                   = "Usage: 'pjc [<option>] <files>"  ;
+    private final static String Usage = "Usage: 'pjc [<option>] <files>";
 
     /**
      * <p>The current ProcessJ version.</p>
      * @since 1.0.0
      */
-    private final static String         UserHome                = System.getProperty("user.home")   ;
+    private final static String UserHome = System.getProperty("user.home");
 
     /**
      * <p>Regex pattern that corresponds to a ProcessJ source file.</p>
      * @since 1.0.0
      */
-    private final static String         ProcessJSourceFileRegex = ".*\\.([pP][jJ])"                 ;
+    private final static String ProcessJSourceFileRegex = ".*\\.([pP][jJ])";
 
     /**
      * <p>The standard library relative include directory.</p>
      * @since 1.0.0
      */
-    private final static String         IncludeDirectory        = "include"                         ;
+    private final static String IncludeDirectory = "include";
 
     /**
      * <p>{@link Set} containing the {@link String} paths the {@link Compiler} will look in for source files.</p>
      * @since 1.0.0
+     * @see Set
      */
-    private final static Set<String>    IncludePaths            = new LinkedHashSet<>()             ;
+    private final static Set<String> IncludePaths = new LinkedHashSet<>();
 
     /**
      * <p>{@link Set} containing the {@link String} paths the {@link Compiler} will look in for library source files.</p>
      * @since 1.0.0
+     * @see Set
      */
-    private final static Set<String>    LibraryIncludePaths     = new LinkedHashSet<>()             ;
+    private final static Set<String> LibraryIncludePaths = new LinkedHashSet<>();
 
     /**
      * <p>The set of files specified in the command line to be compiled.</p>
      * @since 1.0.0
+     * @see Set
      */
-    private final static Set<String>    FileSet                 = new LinkedHashSet<>()             ;
+    private final static Set<String> FileSet = new LinkedHashSet<>();
 
     /**
      * <p>The standard {@link PrintStream} that handles reporting informative messages.</p>
      * @since 1.0.0
      * @see PrintStream
      */
-    private final static PrintStream    InfoStream              = System.out                        ;
+    private final static PrintStream InfoStream = System.out;
 
     /**
      * <p>The standard {@link PrintStream} that handles reporting warning messages.</p>
      * @since 1.0.0
      * @see PrintStream
      */
-    private final static PrintStream    WarningStream           = System.out                        ;
+    private final static PrintStream WarningStream = System.out;
 
     /**
      * <p>The standard {@link PrintStream} that handles reporting error messages.</p>
      * @since 1.0.0
      * @see PrintStream
      */
-    private final static PrintStream    ErrorStream             = System.err                        ;
+    private final static PrintStream ErrorStream = System.err;
 
     /// ---------------------
     /// Private Static Fields
@@ -134,38 +137,40 @@ public class Compiler extends Phase.Listener {
     /**
      * <p>The compilation output target. One of: JVM or CPP</p>
      * @since 1.0.0
+     * @see String
      */
-    private static String       Target                          = "JVM"                             ;
+    private static String Target  = "JVM";
 
     /**
      * <p>The {@link Compiler}'s working directory.</p>
      * @since 1.0.0
+     * @see String
      */
-    private static String       WorkingDirectory                = ".processj"                       ;
+    private static String WorkingDirectory = ".processj";
 
     /**
      * <p>Flag that indicates if the {@link Compiler} should output colored messages.</p>
      * @since 1.0.0
      */
-    private static boolean      ShowingColor                    = false                             ;
+    private static boolean ShowingColor = false;
 
     /**
      * <p>Flag that indicates if the {@link Compiler} should emit informative, warning, and error messages.</p>
      * @since 1.0.0
      */
-    private static boolean      ShowMessage                     = false                             ; // TODO: Log.startLogging
+    private static boolean ShowMessage = false ; // TODO: Log.startLogging
 
     /**
      * <p>Flag that indicates if a library file should be installed.</p>
      * @since 1.0.0
      */
-    private static boolean      Install                         = false                             ;
+    private static boolean Install = false ;
 
     /**
      * <p>Flag that indicates if the {@link Compiler} should output the parse tree.</p>
      * @since 1.0.0
      */
-    private static boolean      ShowTree                        = false                             ; // TODO: Uses Parse Tree Printer after Parsing
+    private static boolean ShowTree = false ; // TODO: Uses Parse Tree Printer after Parsing
 
     /// ------------------
     /// Static Initializer
@@ -381,7 +386,7 @@ public class Compiler extends Phase.Listener {
      * @see SourceFile
      * @since 0.1.0
      */
-    private static Phase NextPhaseFor(final SourceFile sourceFile, final Phase.Listener phaseListener) {
+    public static Phase NextPhaseFor(final SourceFile sourceFile, final Phase.Listener phaseListener) {
 
         // Initialize a handle to the Source File's next Phase & the result
         final Class<? extends Phase> nextPhase = NextPhaseOf.get(sourceFile.getLastCompletedPhase());
@@ -741,7 +746,7 @@ public class Compiler extends Phase.Listener {
      * @param arguments The {@link String} array containing the command-line arguments specified by the user.
      * @since 1.0.0
      */
-    public static void main(final String[] arguments) throws Phase.Error, MalformedURLException {
+    public static void Main(final String[] arguments) throws Phase.Error, MalformedURLException {
 
         // Assert the arguments are valid
         if(!SetEnvironment(arguments)) {

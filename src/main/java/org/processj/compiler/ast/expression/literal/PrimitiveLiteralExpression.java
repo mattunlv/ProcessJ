@@ -2,7 +2,7 @@ package org.processj.compiler.ast.expression.literal;
 
 import java.math.BigDecimal;
 
-import org.processj.compiler.ast.type.PrimitiveType;
+import org.processj.compiler.ast.type.primitive.PrimitiveType;
 import org.processj.compiler.ast.Token;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.utilities.Error;
@@ -39,7 +39,7 @@ public class PrimitiveLiteralExpression extends LiteralExpression {
         this.kind = kind;
         this.text = p_t.lexeme;
         this.rawtext = p_t.lexeme;
-        this.type = new PrimitiveType(kind);
+        this.type = null;//new PrimitiveType(kind);
 
         if (kind == CharKind)
             text = Integer.valueOf(text).toString(); // TODO: Redundant conversion to verify range?

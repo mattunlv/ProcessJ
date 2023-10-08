@@ -20,19 +20,14 @@ public class Name extends AST {
     /// Private Fields
 
     /**
-     * <p>{@link String} value of the fully-qualified package name.</p>
-     */
-    private final String    packageName ;
-
-    /**
      * <p>{@link String} value of the {@link Name}.</p>
      */
-    private String          name        ;
+    private final String name;
 
     /**
      * <p>Integer value of the amount of brackets appended to the right of the {@link Name}.</p>
      */
-    private int             arrayDepth  ;
+    private int arrayDepth  ;
 
     // TODO: Remove me
     public AST myDecl;
@@ -40,39 +35,22 @@ public class Name extends AST {
     /// ------------
     /// Constructors
 
-    public Name(final String name) {
+    public Name(final String name, final Name sibling) {
         super(new Token(name));
 
-        this.name           = (name != null) ? name : ""    ;
-        this.packageName    = ""                            ;
-        this.arrayDepth     = 0                             ;
+        this.name = ((name != null) ? name : "") + ((sibling != null) ? "." + sibling : "");
 
+    }
+
+    public Name(final String name) {
+        this(name, null);
     }
 
     public Name(final Name name, final int arrayDepth) {
         super(name);
 
-        this.name           = name.getName()        ;
-        this.packageName    = name.getPackageName() ;
-        this.arrayDepth     = arrayDepth            ;
-
-    }
-
-    public Name(final Token token, final Sequence<Name> packageName) {
-        super(token);
-
-        this.name           = token.lexeme                          ;
-        this.packageName    = packageName.synthesizeStringWith(".") ;
-        this.arrayDepth     = 0                                     ;
-
-    }
-
-    public Name(final Token token) {
-        super(token);
-
-        this.name           = token.lexeme  ;
-        this.packageName    = ""            ;
-        this.arrayDepth     = 0             ;
+        this.name = name.toString();
+        this.arrayDepth = arrayDepth;
 
     }
 
@@ -88,12 +66,12 @@ public class Name extends AST {
     @Override
     public final String toString() {
 
-        return ((this.specifiesPackage()) ? this.packageName + "::" : "") + this.name;
+        return this.name;
 
     }
     
-    /// --------------------
-    /// org.processj.ast.AST
+    /// ---
+    /// AST
 
     /**
      * <p>Invoked when the specified {@link Visitor} intends to visit the {@link Name}.
@@ -102,7 +80,7 @@ public class Name extends AST {
      * @param visitor The {@link Visitor} to dispatch.
      */
     @Override
-    public final void accept(Visitor visitor) throws Phase.Error {
+    public final void accept(final Visitor visitor) throws Phase.Error {
 
         visitor.visitName(this);
 
@@ -110,17 +88,6 @@ public class Name extends AST {
 
     /// --------------
     /// Public Methods
-
-    /**
-     * <p>Returns a flag indicating if the {@link Name} is prefixed with a fully-qualified package name.</p>
-     * @return Flag indicating if the {@link Name} is prefixed with a fully-qualified package name.
-     * @since 0.1.0
-     */
-    public final boolean specifiesPackage() {
-
-        return !this.packageName.isEmpty() && !this.packageName.isBlank();
-
-    }
 
     /**
      * <p>Returns the integer value of the amount of square brackets appended to the right of the {@link Name}.</p>
@@ -140,31 +107,7 @@ public class Name extends AST {
      */
     public final String getPackageName() {
 
-        return this.packageName;
-
-    }
-
-    /**
-     * <p>Returns the {@link String} value of the name; the {@link String} value is equal to {@link Name#toString()}
-     * if a fully-qualified package name is not specified.</p>
-     * @return {@link String} value of the {@link Name}.
-     * @since 0.1.0
-     */
-    public final String getName() {
-
-        return this.name;
-
-    }
-
-    public final void setDepth(final int depth) {
-
-        this.arrayDepth = depth;
-
-    }
-
-    public final void setName(final String name) {
-
-        this.name = (name != null) ? name : "";
+        return "";
 
     }
 

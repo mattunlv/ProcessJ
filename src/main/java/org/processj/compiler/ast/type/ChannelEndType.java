@@ -1,10 +1,12 @@
 package org.processj.compiler.ast.type;
 
+import org.processj.compiler.ast.AST;
 import org.processj.compiler.ast.Context;
+import org.processj.compiler.ast.Name;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
-public class ChannelEndType extends Type {
+public class ChannelEndType extends AST implements Type {
 
     /// -----------------------
     /// Public Static Constants
@@ -18,17 +20,34 @@ public class ChannelEndType extends Type {
     /// Private Fields
 
     private Type  componentType       ;
+    private final boolean isShared;
+    private final boolean isRead;
+    private final boolean hasReadEnd;
     private final int shared    ;
     private final int end       ;
 
     /// ------------
     /// Constructors
 
-    public ChannelEndType(final int shared, final Type componentType, final int end) {
-        super(componentType);
+    public ChannelEndType(final int shared, final Type componentType, final int end, final boolean isShared, final boolean isRead, final boolean hasReadEnd) {
+
         this.componentType  = componentType ;
         this.shared         = shared        ;
         this.end            = end           ;
+        this.isShared = isShared;
+        this.isRead = isRead;
+        this.hasReadEnd = hasReadEnd;
+    }
+
+    public ChannelEndType(final Type componentType,  final boolean isShared, final boolean isRead, final boolean hasReadEnd) {
+
+        this.componentType = componentType;
+        this.shared = 0;
+        this.end = 0;
+        this.isShared = isShared;
+        this.isRead = isRead;
+        this.hasReadEnd = hasReadEnd;
+
     }
 
     /// ------
@@ -88,8 +107,58 @@ public class ChannelEndType extends Type {
 
     }
 
+    @Override
+    public boolean isTypeEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeEquivalentTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThan(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeLessThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeGreaterThanOrEqualTo(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isTypeCeilingOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isSubTypeOf(Object that) {
+        return false;
+    }
+
+    @Override
+    public boolean isAssignmentCompatibleTo(Object that) {
+        return false;
+    }
+
     /// ---------------------
     /// org.processj.ast.Type
+
+    @Override
+    public Name getName() {
+        return null;
+    }
 
     /**
      * <p>Returns the internal {@link String} signature representing the {@link ChannelEndType}.</p>
@@ -102,6 +171,21 @@ public class ChannelEndType extends Type {
         // TODO: perhaps the base type of a channel end type ought to be a channel ;->
         return "{" + getComponentType().getSignature() + ";" + (isReadEnd() ? "?" : "!");
 
+    }
+
+    @Override
+    public Type addDimension() {
+        return null;
+    }
+
+    @Override
+    public Type clearDepth() {
+        return null;
+    }
+
+    @Override
+    public int getDepth() {
+        return 0;
     }
 
     /// --------------
@@ -132,7 +216,6 @@ public class ChannelEndType extends Type {
     }
 
     // α =T β ⇔ Channel?(α) ∧ Channel?(β) ∧ α = β ∧ (m1 = m2)
-    @Override
     public final boolean typeEqual(final Type that) {
 
         System.out.println("Checking Type: " + this + " of class " + this.getClass());
@@ -144,14 +227,12 @@ public class ChannelEndType extends Type {
     }
 
     // α =T β ⇔ Channel?(α) ∧ Channel?(β) ∧ α = β ∧ (m1 = m2)
-    @Override
     public final boolean typeEquivalent(final Type that) {
 
         return this.equals(that);
 
     }
 
-    @Override
     public final boolean typeAssignmentCompatible(final Type that) {
 
         return this.equals(that);
@@ -161,7 +242,6 @@ public class ChannelEndType extends Type {
     public final void setComponentType(final Type componentType) {
 
         this.componentType = componentType;
-        this.children[0] = componentType;
 
     }
 

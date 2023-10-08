@@ -1,123 +1,156 @@
 package org.processj.compiler.ast.statement;
 
 import org.processj.compiler.ast.AST;
-import org.processj.compiler.ast.Sequence;
 import org.processj.compiler.ast.Token;
-import org.processj.compiler.ast.expression.Expression;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
+/**
+ * <p>Class that encapsulates a statement.</p>
+ * @author Jan B. Pedersen
+ * @author Cabel Shrestha
+ * @author Benjamin Cisneros
+ * @author Carlos L. Cuenca
+ * @version 1.0.0
+ * @since 1.0.0
+ * @see AST
+ */
 public abstract class Statement extends AST {
 
-    // This sequence is used in the rewriting phase.                                                                                                                                                               
-    // It holds Declarations and Assignments of the form:                                                                                                                                                          
-    //                                                                                                                                                                                                             
-    // T temp_1;                                                                                                                                                                                                   
-    // temp_1 = c.read();
+    /**
+     * <p>The set of barriers from which a process should resign.</p>
+     * @since 1.0.0
+     */
+    // TODO: Move this strictly to only ForStatement & Par Block
+    private final BarrierSet barrierSet;
 
-    // Barriers from which a process should resign
-    private final Set<Expression> barrierSet;
-    private final Sequence<Expression> barriers;
+    /**
+     * <p>The {@link String} value of the label preceding the {@link Statement}.</p>
+     * @since 1.0.0
+     * @see String
+     */
     private String label;
-    private String endLabel;
 
-    public Statement(Token t) {
-        super(t);
-        this.barrierSet = new LinkedHashSet<>();
-        this.barriers   = new Sequence<>();
-        this.label = "";
-        this.endLabel = "";
+    /// ------------
+    /// Constructors
+
+    /**
+     * <p>Initializes the {@link Statement} to its' default state with the specified {@link BarrierSet}.</p>
+     * @param barrierSet The set of barriers from which a process should resign.
+     * @param tokens Variadic list of {@link Token}s the parser specifies pertinent to the {@link Statement}.
+     * @since 1.0.0
+     * @see BarrierSet
+     * @see Token
+     */
+    public Statement(final BarrierSet barrierSet, final Token... tokens) {
+        super(tokens);
+
+        this.barrierSet = (barrierSet != null) ? barrierSet : new BarrierSet()     ;
+        this.label      = ""                                                       ;
+
     }
 
-    public Statement(final AST a) {
-        super(new AST[] { a, new Sequence<Expression>() });
-        this.barrierSet = new LinkedHashSet<>();
-        this.barriers   = (Sequence<Expression>) this.children[1];
-        this.label = "";
-        this.endLabel = "";
+    /**
+     * <p>Initializes the {@link Statement} to its' default state with the specified {@link BarrierSet}.</p>
+     * @param barrierSet The set of barriers from which a process should resign.
+     * @param children Variadic list of {@link AST} nodes the parser specifies pertinent to the {@link Statement}.
+     * @since 1.0.0
+     * @see BarrierSet
+     * @see AST
+     */
+    public Statement(final BarrierSet barrierSet, final AST... children) {
+        super(children);
+
+        this.barrierSet = (barrierSet != null)  ? barrierSet : new BarrierSet()     ;
+        this.label      = ""                                                        ;
+
     }
 
+    /**
+     * <p>Initializes the {@link Statement} to its' default state.</p>
+     * @param tokens Variadic list of {@link Token}s the parser specifies pertinent to the {@link Statement}.
+     * @since 1.0.0
+     * @see Token
+     */
+    public Statement(final Token... tokens) {
+        super(tokens);
+
+        this.barrierSet = new BarrierSet()  ;
+        this.label      = ""                ;
+
+    }
+
+    /**
+     * <p>Initializes the {@link Statement} to its' default state.</p>
+     * @param children Variadic list of {@link AST}s the parser specifies pertinent to the {@link Statement}.
+     * @since 1.0.0
+     * @see Token
+     */
     public Statement(final AST... children) {
         super(children);
-        this.barrierSet = new LinkedHashSet<>();
-        this.barriers   = new Sequence<>();
-        this.label = "";
-        this.endLabel = "";
+
+        this.barrierSet = new BarrierSet();
+        this.label      = "";
+
     }
 
-    public Statement(final String label, final Expression expression) {
-        super(new AST[] { expression });
-        this.label      = label;
-        this.barrierSet = new LinkedHashSet<>();
-        this.barriers   = new Sequence<>();
-        this.label = "";
-        this.endLabel = "";
+    /// --------------
+    /// Public Methods
+
+    /**
+     * <p>Returns a flag indicating if the {@link Statement} was specified with label.</p>
+     * @return A flag indicating if the {@link Statement} was specified with label.
+     * @since 1.0.0
+     */
+    public final boolean definesLabel() {
+
+        return !(this.label.isBlank() || this.label.isEmpty());
+
     }
 
-    public final Set<Expression> getBarrierSet() {
+    /**
+     * <p>Returns the {@link BarrierSet} from which a process should resign on.</p>
+     * @return the {@link BarrierSet} from which a process should resign on.
+     * @since 1.0.0
+     * @see BarrierSet
+     */
+    public final BarrierSet getBarrierSet() {
 
         return this.barrierSet;
 
     }
 
-    public final Sequence<Expression> getBarriers() {
+    /**
+     * <p>Returns the {@link String} value of the label preceding the {@link Statement}.</p>
+     * @return The {@link String} value of the label preceding the {@link Statement}.
+     * @since 1.0.0
+     * @see String
+     */
+    public final String getLabel() {
 
-        return this.barriers;
-
-    }
-
-    public final void addBarrier(final Expression expression) {
-
-        this.barrierSet.add(expression);
-
-    }
-
-    public final void addBarriers(final Set<Expression> barriers) {
-
-        this.barrierSet.addAll(barriers);
+        return this.label;
 
     }
 
+    /**
+     * <p>Mutates the {@link Statement}'s {@link String} value corresponding to its' preceding label.</p>
+     * @param label The desired {@link String} value to bind to the {@link Statement}'s label.
+     * @since 1.0.0
+     * @see String
+     */
     public void setLabel(final String label) {
 
         this.label = label;
 
     }
 
-    public void setEndLabel(final String endLabel) {
-
-        this.endLabel = endLabel;
-
-    }
-
-    public String getLabel() {
-
-        return label;
-
-    }
-
-    public String getEndLabel() {
-
-        return this.endLabel;
-
-    }
-
-    public boolean definesLabel() {
-
-        return !this.label.isBlank();
-
-    }
-
-    public boolean definesEndLabel() {
-
-        return !this.endLabel.isBlank();
-
-    }
-
+    /**
+     * <p>Clears the {@link Statement}'s {@link BarrierSet} & label {@link String} value.</p>
+     * @since 1.0.0
+     * @see BarrierSet
+     */
     public void clear() {
 
-        // Clear here
+        this.barrierSet.clear();
+        this.label = "";
 
     }
 

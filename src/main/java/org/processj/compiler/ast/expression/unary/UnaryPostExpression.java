@@ -13,8 +13,11 @@ public class UnaryPostExpression extends Expression {
 
     private int kind;
 
+    private final Expression expression;
+
     public UnaryPostExpression(Expression expr, int op) {
         super(new AST[] { expr });
+        this.expression = expr;
         kind = op;
     }
 
@@ -23,7 +26,7 @@ public class UnaryPostExpression extends Expression {
     }
 
     public Expression getExpression() {
-        return (Expression) children[0];
+        return this.expression;
     }
 
     public int getOperator() {
