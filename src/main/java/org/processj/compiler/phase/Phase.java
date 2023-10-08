@@ -228,7 +228,7 @@ public abstract class Phase implements Visitor {
             FatalAssert.NullProcessJSourceFile.Assert(this);
 
         // If the file has not been completed by this
-        if(!sourceFile.hasBeenCompletedBy(this)) {
+        else if(!sourceFile.hasBeenCompletedBy(this)) {
 
             // Otherwise, update the ProcessJSourceFile
             this.sourceFile = sourceFile;

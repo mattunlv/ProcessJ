@@ -1295,8 +1295,8 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     public final AST visitPragma(final PragmaContext pragmaContext) {
 
         // Return the pragma
-        return new Pragma(new Name(pragmaContext.Identifier().getSymbol().getText()), pragmaContext.StringLiteral() != null
-                ? pragmaContext.StringLiteral().getSymbol().toString()
+        return new Pragma((Name) pragmaContext.name().accept(this), pragmaContext.StringLiteral() != null
+                ? pragmaContext.StringLiteral().getText()
                 : "");
 
     }
