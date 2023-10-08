@@ -35,6 +35,12 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitName(ProcessJParser.NameContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#modifiers}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitModifiers(ProcessJParser.ModifiersContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#pragma}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

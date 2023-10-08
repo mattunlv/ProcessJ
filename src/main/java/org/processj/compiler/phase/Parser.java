@@ -7,6 +7,7 @@ import org.processj.compiler.phase.generated.ProcessJParser.ImportDeclarationCon
 import org.processj.compiler.phase.generated.ProcessJParser.QualifiedNameContext;
 import org.processj.compiler.phase.generated.ProcessJParser.NamesContext;
 import org.processj.compiler.phase.generated.ProcessJParser.NameContext;
+import org.processj.compiler.phase.generated.ProcessJParser.ModifiersContext;
 import org.processj.compiler.phase.generated.ProcessJParser.AnnotationsContext;
 import org.processj.compiler.phase.generated.ProcessJParser.AnnotationContext;
 import org.processj.compiler.phase.generated.ProcessJParser.Annotation_valueContext;
@@ -1384,6 +1385,28 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     /**
+     * <p>Constructs a {@link Modifiers} instance by extracting the data contained in the specified in the
+     * {@link ModifiersContext}.</p>
+     * @param modifiersContext The {@link ModifiersContext} used to construct the {@link Modifiers} instance with.
+     * @return A Newly-constructed {@link Modifiers} instance.
+     * @see Modifiers
+     * @see ModifiersContext
+     */
+    @Override
+    public final AST visitModifiers(final ProcessJParser.ModifiersContext modifiersContext) {
+
+        // Initialize the Modifiers
+        final Modifiers modifiers = new Modifiers();
+
+        // Aggregate the Modifiers
+        modifiersContext.modifier().forEach(modifierContext -> modifiers.add((Modifier) modifierContext.accept(this)));
+
+        // Return the result
+        return modifiers;
+
+    }
+
+    /**
      * <p>Constructs an {@link Annotations} instance by extracting the data contained in the specified in the
      * {@link AnnotationsContext}.</p>
      * @param annotationsContext The {@link AnnotationsContext} used to construct the {@link Annotations} instance with.
@@ -1505,12 +1528,10 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     public final AST visitProtocolTypeDeclaration(final ProtocolTypeDeclarationContext protocolTypeDeclarationContext) {
 
         // Initialize the Modifiers & Protocol Name
-        final Modifiers modifiers = new Modifiers();
         final Name protocolName = new Name(protocolTypeDeclarationContext.Identifier().getText());
-
-        // Aggregate any Modifiers
-        if(protocolTypeDeclarationContext.modifier() != null) protocolTypeDeclarationContext.modifier()
-                .forEach(modifierContext -> modifiers.add((Modifier) modifierContext.accept(this)));
+        final Modifiers modifiers = (protocolTypeDeclarationContext.modifiers() != null)
+                ? (Modifiers) protocolTypeDeclarationContext.modifiers().accept(this)
+                : new Modifiers();
 
         // Initialize the extends Names
         final Names names = (protocolTypeDeclarationContext.extends_() != null)
@@ -1592,17 +1613,22 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     @Override
     public final AST visitRecordTypeDeclaration(final RecordTypeDeclarationContext recordTypeDeclarationContext) {
 
-        final Modifiers modifiers = new Modifiers();
-
-        recordTypeDeclarationContext.modifier().forEach(modifierContext -> modifiers.add((Modifier) modifierContext.accept(this)));
-
         final Name name = new Name(recordTypeDeclarationContext.Identifier().getText());
 
-        final Names extends_ = (recordTypeDeclarationContext.extends_() != null) ? (Names) recordTypeDeclarationContext.extends_().accept(this) : new Names();
+        final Modifiers modifiers = (recordTypeDeclarationContext.modifiers() != null)
+                ? (Modifiers) recordTypeDeclarationContext.modifiers().accept(this)
+                : new Modifiers();
 
-        final Annotations annotations = (recordTypeDeclarationContext.annotations() != null) ? (Annotations) recordTypeDeclarationContext.annotations().accept(this) : new Annotations();
+        final Names extends_ = (recordTypeDeclarationContext.extends_() != null)
+                ? (Names) recordTypeDeclarationContext.extends_().accept(this)
+                : new Names();
 
-        final BlockStatement blockStatement = (BlockStatement) recordTypeDeclarationContext.recordBody().accept(this);
+        final Annotations annotations = (recordTypeDeclarationContext.annotations() != null)
+                ? (Annotations) recordTypeDeclarationContext.annotations().accept(this)
+                : new Annotations();
+
+        final BlockStatement blockStatement =
+                (BlockStatement) recordTypeDeclarationContext.recordBody().accept(this);
 
         return new RecordType(modifiers, name, extends_, annotations, blockStatement);
 
@@ -1663,17 +1689,16 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
 
-
     @Override
     public AST visitProcedureTypeDeclaration(ProcessJParser.ProcedureTypeDeclarationContext context) {
 
-        final Modifiers modifiers = new Modifiers();
-
-        context.modifier().forEach(modifierContext -> modifiers.add((Modifier) modifierContext.accept(this)));
+        final Modifiers modifiers = (context.modifiers() != null)
+                ? (Modifiers) context.modifiers().accept(this)
+                : new Modifiers();
 
         final Type returnType = (Type) context.type().accept(this);
 
-        final Name name = new Name(context.Identifier().getText());
+        final Name name = (Name) context.name().accept(this);
 
         final Parameters parameters = (context.formalParameters() != null)
                 ? (Parameters) context.formalParameters().accept(this)
@@ -1704,15 +1729,14 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
         while(formalParametersContext != null) {
 
-            final Modifiers modifiers = new Modifiers();
-
-            if(formalParametersContext.modifier() != null) formalParametersContext.modifier()
-                    .forEach(modifierContext -> modifiers.add((Modifier) modifierContext.accept(this)));
+            final Modifiers modifiers = (formalParametersContext.modifiers() != null)
+                ? (Modifiers) formalParametersContext.modifiers().accept(this)
+                : new Modifiers();
 
             final ProcessJParser.VariableDeclaratorContext variableDeclaratorContext
                     = formalParametersContext.variableDeclarator();
 
-            Type type = (Type) formalParametersContext.type().accept(this);
+            final Type type = (Type) formalParametersContext.type().accept(this);
 
             final Name name = new Name(variableDeclaratorContext.Identifier().getText());
 

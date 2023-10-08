@@ -48,6 +48,16 @@ public interface ProcessJListener extends ParseTreeListener {
 	 */
 	void exitName(ProcessJParser.NameContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#modifiers}.
+	 * @param ctx the parse tree
+	 */
+	void enterModifiers(ProcessJParser.ModifiersContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#modifiers}.
+	 * @param ctx the parse tree
+	 */
+	void exitModifiers(ProcessJParser.ModifiersContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#pragma}.
 	 * @param ctx the parse tree
 	 */

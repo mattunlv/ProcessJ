@@ -31,6 +31,10 @@ name
     : Identifier
     ;
 
+modifiers
+    : modifier+
+    ;
+
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 1.1 Pragma                                                                                                      **/
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -70,11 +74,11 @@ typeDeclaration
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 procedureTypeDeclaration
-    : modifier* type Identifier '(' formalParameters? ')' annotations? ('implements' names)? (block | ';')
+    : modifiers? type name '(' formalParameters? ')' annotations? ('implements' names)? (block | ';')
     ;
 
 formalParameters
-    : modifier* type variableDeclarator (',' formalParameters)?
+    : modifiers? type variableDeclarator (',' formalParameters)?
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -82,7 +86,7 @@ formalParameters
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 protocolTypeDeclaration
-    : modifier* 'protocol' Identifier extends? annotations? (protocolBody | ';')
+    : modifiers? 'protocol' Identifier extends? annotations? (protocolBody | ';')
     ;
 
 protocolBody
@@ -98,7 +102,7 @@ protocolCase
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 recordTypeDeclaration
-    : modifier* 'record' Identifier extends? annotations? recordBody
+    : modifiers? 'record' Identifier extends? annotations? recordBody
     ;
 
 extends
