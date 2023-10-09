@@ -159,16 +159,6 @@ public class ParsedRecordUnitTest extends ProcessJTest {
     }
 
     @Test
-    public void CompilationFor_record01_containsCarRecord() {
-
-        final Compilation compilation = CompilationFor(ProcessJTest.Case.Record01);
-
-        AssertContainsTypeName(compilation, Case.Check.RecordType.Record01);
-        AssertContainsRecordType(compilation, ProcessJTest.Case.Check.RecordType.Record01);
-
-    }
-
-    @Test
     public void CompilationFor_record01_containsNonNullAnnotations() {
 
         final Compilation compilation = CompilationFor(Case.Record01);
@@ -205,6 +195,15 @@ public class ParsedRecordUnitTest extends ProcessJTest {
     }
 
     @Test
+    public void CompilationFor_record01_containsNonNullBody() {
+
+        final Compilation compilation = CompilationFor(Case.Record01);
+
+        AssertRecordTypeContainsNonNullBody(compilation, Case.Check.RecordType.Record01);
+
+    }
+
+    @Test
     public void CompilationFor_record01_containsBodyWithRecordMembersOnly() {
 
         final Compilation compilation = CompilationFor(Case.Record01);
@@ -215,20 +214,21 @@ public class ParsedRecordUnitTest extends ProcessJTest {
     }
 
     @Test
-    public void CompilationFor_record01_containsNonNullBody() {
-
-        final Compilation compilation = CompilationFor(Case.Record01);
-
-        AssertRecordTypeContainsNonNullBody(compilation, Case.Check.RecordType.Record01);
-
-    }
-
-    @Test
     public void CompilationFor_record01_containsNonEmptyBody() {
 
         final Compilation compilation = CompilationFor(Case.Record01);
 
         AssertRecordTypeContainsNonEmptyBody(compilation, Case.Check.RecordType.Record01);
+
+    }
+
+    @Test
+    public void CompilationFor_record01_containsExpectedRecord() {
+
+        final Compilation compilation = CompilationFor(ProcessJTest.Case.Record01);
+
+        AssertContainsTypeName(compilation, Case.Check.RecordType.Record01);
+        AssertContainsRecordType(compilation, ProcessJTest.Case.Check.RecordType.Record01);
 
     }
 

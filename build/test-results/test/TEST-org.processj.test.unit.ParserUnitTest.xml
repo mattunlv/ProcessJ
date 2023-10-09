@@ -1,114 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.unit.ParserUnitTest" tests="109" skipped="0" failures="0" errors="0" timestamp="2023-10-09T00:51:27" hostname="Carloss-MBP" time="0.051">
+<testsuite name="org.processj.test.unit.ParserUnitTest" tests="109" skipped="0" failures="0" errors="0" timestamp="2023-10-09T00:58:54" hostname="Carloss-MBP" time="0.049">
   <properties/>
   <testcase name="CompilationFor_packageDeclaration02_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_importDeclaration06_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_importDeclaration04_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration04_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_importDeclaration05_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_empty_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_pragma01_containsOnePragma()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_empty_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_pragma01_containsOnePragma()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma01_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma03_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_importDeclaration01_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_importDeclaration04_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_importDeclaration06_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma03_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_empty_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_packageDeclaration03_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_packageDeclaration01_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_importDeclaration02_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_importDeclaration02_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration03_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration04_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration04_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration06_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_pragma03_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_empty_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_packageDeclaration03_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_packageDeclaration01_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration02_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration02_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration03_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration04_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration02_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration05_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration05_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration03_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma04_contains33Pragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_importDeclaration04_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_pragma04_contains33Pragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.002"/>
+  <testcase name="CompilationFor_importDeclaration04_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration06_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration02_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma04_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration06_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_packageDeclaration03_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_packageDeclaration03_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration01_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_packageDeclaration02_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_packageDeclaration02_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_pragma04_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration05_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_packageDeclaration01_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_packageDeclaration01_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma03_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration03_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma02_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma01_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_pragma01_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_importDeclaration06_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration07_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_importDeclaration06_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration06_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_pragma02_containsNonEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration05_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration04_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma04_containsNonEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration03_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration02_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration02_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration01_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration04_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration07_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration02_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration01_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration01_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_empty_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma02_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_empty_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_empty_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration06_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma03_containsTwoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_importDeclaration01_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration01_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma04_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_pragma04_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_empty_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_empty_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration01_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration02_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration03_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration03_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma02_containsOnePragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration03_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration05_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration05_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_packageDeclaration03_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma04_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration05_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration05_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_importDeclaration03_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration02_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_packageDeclaration03_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration02_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_packageDeclaration03_containsEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_packageDeclaration01_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration07_containsNonEmptyImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration05_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration04_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration05_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration04_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration02_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma03_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma01_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_pragma03_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_pragma01_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration07_containsEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_packageDeclaration03_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration03_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_packageDeclaration03_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration03_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration01_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_packageDeclaration01_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_packageDeclaration01_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_pragma02_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_packageDeclaration02_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma04_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_pragma04_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_packageDeclaration01_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma03_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_empty_containsNonEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_empty_containsNonEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_pragma02_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration03_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration02_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration02_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_pragma01_containsNonNullImports()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma01_containsNonNullPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration06_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_importDeclaration06_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration02_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration05_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma01_containsNonEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_pragma01_containsNonEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration07_containsNoPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration04_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_pragma02_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_pragma02_containsExpectedPackageName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration01_containsExpectedImportName()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_importDeclaration03_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <testcase name="CompilationFor_pragma03_containsNonEmptyPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
-  <testcase name="CompilationFor_importDeclaration02_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_importDeclaration02_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.001"/>
   <testcase name="CompilationFor_importDeclaration01_containsNonNullPragmas()" classname="org.processj.test.unit.ParserUnitTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
