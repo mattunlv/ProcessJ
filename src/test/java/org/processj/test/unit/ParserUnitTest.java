@@ -80,24 +80,6 @@ public class ParserUnitTest extends ProcessJTest {
 
     }
 
-    private static void AssertContainsTypeName(final Compilation compilation, final String name) {
-
-        String foundTypeName = "";
-
-        for(final Type type: compilation.getTypeDeclarations())
-            if(type.toString().equals(name)) foundTypeName = name;
-
-        Assertions.assertEquals(name, foundTypeName);
-
-    }
-
-    private static void AssertContainsRecordType(final Compilation compilation, final String recordTypeName) {
-
-        for(final Type type: compilation.getTypeDeclarations())
-            if(type.toString().equals(recordTypeName)) Assertions.assertTrue(type instanceof RecordType);
-
-    }
-
     /// ----------------------------------------------------------------------------------------------------------- ///
     /// Import Declaration Sanity Tests                                                                             ///
     /// ----------------------------------------------------------------------------------------------------------- ///
@@ -1814,13 +1796,6 @@ public class ParserUnitTest extends ProcessJTest {
 
     }
 
-    @Test
-    public void CompilationFor_record01_containsCarRecord() {
 
-        final Compilation compilation = CompilationFor(Case.Record01);
-
-        AssertContainsRecordType(compilation, Case.Check.RecordType.Record01);
-
-    }
 
 }

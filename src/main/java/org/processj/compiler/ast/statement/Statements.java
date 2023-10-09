@@ -242,8 +242,7 @@ public class Statements extends AST implements Iterable<Statement> {
      */
     public final Statements appendAllFrom(final Statements statements) {
 
-        for(final Statement statement: statements)
-            this.statements.add(statement);
+        this.statements.addAll(statements.statements);
 
         return this;
 

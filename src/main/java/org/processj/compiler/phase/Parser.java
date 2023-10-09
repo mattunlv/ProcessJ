@@ -1643,7 +1643,7 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
         // Initialize the BlockStatement
         final BlockStatement recordBody = new BlockStatement();
 
-        // Aggregate the members
+        // Aggregate & Consolidate the members
         recordBodyContext.recordMember()
                 .forEach(memberDeclarationContext ->
                         recordBody.appendAllFrom((BlockStatement) memberDeclarationContext.accept(this)));
