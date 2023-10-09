@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.unit.ParsedRecordUnitTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2023-10-09T00:12:24" hostname="Carloss-MBP" time="0.062">
+<testsuite name="org.processj.test.unit.ParsedRecordUnitTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2023-10-09T00:15:52" hostname="Carloss-MBP" time="0.063">
   <properties/>
-  <testcase name="CompilationFor_record01_containsTwoMembers()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.058"/>
-  <testcase name="CompilationFor_record01_bodyNonEmpty()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.001"/>
-  <testcase name="CompilationFor_record01_bodyOnlyRecordMembers()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_record01_containsNonNullBody()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.058"/>
+  <testcase name="CompilationFor_record01_containsBodyWithRecordMembersOnly()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.002"/>
+  <testcase name="CompilationFor_record01_containsNonEmptyBody()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_record01_containsBodyWithTwoMembers()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.001"/>
   <testcase name="CompilationFor_record01_containsCarRecord()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>

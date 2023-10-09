@@ -28,6 +28,19 @@ public class ParsedRecordUnitTest extends ProcessJTest {
 
     }
 
+    private static void AssertRecordTypeContainsNonNullBody(final Compilation compilation, final String recordTypeName) {
+
+        for(final Type type: compilation.getTypeDeclarations())
+            if(type.toString().equals(recordTypeName)) {
+
+                Assertions.assertTrue(type instanceof RecordType);
+
+                Assertions.assertNotNull(((RecordType) type).getBody());
+
+            }
+
+    }
+
     private static void AssertRecordTypeContainsNonEmptyBody(final Compilation compilation, final String recordTypeName) {
 
         for(final Type type: compilation.getTypeDeclarations())
@@ -104,7 +117,7 @@ public class ParsedRecordUnitTest extends ProcessJTest {
     }
 
     @Test
-    public void CompilationFor_record01_bodyOnlyRecordMembers() {
+    public void CompilationFor_record01_containsBodyWithRecordMembersOnly() {
 
         final Compilation compilation = CompilationFor(Case.Record01);
 
@@ -114,7 +127,16 @@ public class ParsedRecordUnitTest extends ProcessJTest {
     }
 
     @Test
-    public void CompilationFor_record01_bodyNonEmpty() {
+    public void CompilationFor_record01_containsNonNullBody() {
+
+        final Compilation compilation = CompilationFor(Case.Record01);
+
+        AssertRecordTypeContainsNonNullBody(compilation, Case.Check.RecordType.Record01);
+
+    }
+
+    @Test
+    public void CompilationFor_record01_containsNonEmptyBody() {
 
         final Compilation compilation = CompilationFor(Case.Record01);
 
@@ -123,7 +145,7 @@ public class ParsedRecordUnitTest extends ProcessJTest {
     }
 
     @Test
-    public void CompilationFor_record01_containsTwoMembers() {
+    public void CompilationFor_record01_containsBodyWithTwoMembers() {
 
         final Compilation compilation = CompilationFor(Case.Record01);
 
