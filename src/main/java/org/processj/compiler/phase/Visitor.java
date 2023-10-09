@@ -16,7 +16,6 @@ import org.processj.compiler.ast.expression.yielding.ChannelEndExpression;
 import org.processj.compiler.ast.expression.yielding.ChannelReadExpression;
 import org.processj.compiler.ast.modifier.Modifier;
 import org.processj.compiler.ast.packages.Import;
-import org.processj.compiler.ast.packages.Pragma;
 import org.processj.compiler.ast.statement.conditional.AltStatement;
 import org.processj.compiler.ast.statement.declarative.*;
 import org.processj.compiler.ast.statement.*;

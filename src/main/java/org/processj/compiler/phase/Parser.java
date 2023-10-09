@@ -13,7 +13,6 @@ import org.processj.compiler.phase.generated.ProcessJParser.AnnotationContext;
 import org.processj.compiler.phase.generated.ProcessJParser.Annotation_valueContext;
 import org.processj.compiler.phase.generated.ProcessJParser.ExtendsContext;
 import org.processj.compiler.phase.generated.ProcessJParser.TypeDeclarationContext;
-import org.processj.compiler.phase.generated.ProcessJParser.ProcedureTypeDeclarationContext;
 import org.processj.compiler.phase.generated.ProcessJParser.ProtocolTypeDeclarationContext;
 import org.processj.compiler.phase.generated.ProcessJParser.RecordTypeDeclarationContext;
 import org.processj.compiler.phase.generated.ProcessJParser.RecordBodyContext;
@@ -27,8 +26,8 @@ import org.processj.compiler.ast.packages.Pragma;
 import org.processj.compiler.ast.packages.Import;
 import org.processj.compiler.ast.packages.Imports;
 import org.processj.compiler.ast.Name;
-import org.processj.compiler.ast.Annotations;
-import org.processj.compiler.ast.Annotation;
+import org.processj.compiler.ast.type.Annotations;
+import org.processj.compiler.ast.type.Annotation;
 import org.processj.compiler.ast.type.Type;
 import org.processj.compiler.ast.type.ProcedureType;
 import org.processj.compiler.ast.type.ProtocolType;
@@ -68,9 +67,6 @@ import org.processj.compiler.phase.generated.ProcessJLexer;
 import org.processj.compiler.phase.generated.ProcessJParser;
 import org.processj.compiler.phase.generated.ProcessJVisitor;
 import org.processj.compiler.utilities.Strings;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 

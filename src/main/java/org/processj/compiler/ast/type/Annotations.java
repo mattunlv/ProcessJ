@@ -1,5 +1,7 @@
-package org.processj.compiler.ast;
+package org.processj.compiler.ast.type;
 
+import org.processj.compiler.ast.AST;
+import org.processj.compiler.ast.Sequence;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 

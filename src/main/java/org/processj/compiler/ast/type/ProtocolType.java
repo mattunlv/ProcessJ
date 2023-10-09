@@ -11,11 +11,6 @@ import org.processj.compiler.ast.statement.declarative.ProtocolExtends;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 /**
  * <p>Class that encapsulates a declaration of a {@link Context}'s protocol.</p>
  * @author Jan B. Pedersen
