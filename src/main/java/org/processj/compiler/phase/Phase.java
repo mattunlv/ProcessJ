@@ -5648,7 +5648,7 @@ public abstract class Phase implements Visitor {
 
                 // Assert the result is a Context.SymbolMap
                 if(!(result instanceof RecordType))
-                    NonProtocolName.Assert(phase, recordType);
+                    NonRecordName.Assert(phase, recordType);
 
                 // Initialize a handle to the RecordType Declaration
                 final RecordType recordExtend = (RecordType) result;
@@ -6603,7 +6603,7 @@ public abstract class Phase implements Visitor {
          */
         private static void EmplaceRecordMembers(final Set<RecordType.Member> members, final Context.SymbolMap symbolMap,
                                                  final RecordType recordType) {
-
+            // TODO: Might not need this method after new namechecker
             // Iterate through any parent names
             for(final Name parent: recordType.getRecordExtends()) {
 

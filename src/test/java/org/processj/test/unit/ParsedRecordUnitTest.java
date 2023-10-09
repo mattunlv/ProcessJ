@@ -28,6 +28,58 @@ public class ParsedRecordUnitTest extends ProcessJTest {
 
     }
 
+    private static void AssertRecordTypeContainsNonNullAnnotations(final Compilation compilation, final String recordTypeName) {
+
+        for(final Type type: compilation.getTypeDeclarations())
+            if(type.toString().equals(recordTypeName)) {
+
+                Assertions.assertTrue(type instanceof RecordType);
+
+                Assertions.assertNotNull(((RecordType) type).getAnnotations());
+
+            }
+
+    }
+
+    private static void AssertRecordTypeContainsNonNullModifiers(final Compilation compilation, final String recordTypeName) {
+
+        for(final Type type: compilation.getTypeDeclarations())
+            if(type.toString().equals(recordTypeName)) {
+
+                Assertions.assertTrue(type instanceof RecordType);
+
+                Assertions.assertNotNull(((RecordType) type).getModifiers());
+
+            }
+
+    }
+
+    private static void AssertRecordTypeContainsNonNullName(final Compilation compilation, final String recordTypeName) {
+
+        for(final Type type: compilation.getTypeDeclarations())
+            if(type.toString().equals(recordTypeName)) {
+
+                Assertions.assertTrue(type instanceof RecordType);
+
+                Assertions.assertNotNull(type.getName());
+
+            }
+
+    }
+
+    private static void AssertRecordTypeContainsNonNullExtends(final Compilation compilation, final String recordTypeName) {
+
+        for(final Type type: compilation.getTypeDeclarations())
+            if(type.toString().equals(recordTypeName)) {
+
+                Assertions.assertTrue(type instanceof RecordType);
+
+                Assertions.assertNotNull(((RecordType) type).getRecordExtends());
+
+            }
+
+    }
+
     private static void AssertRecordTypeContainsNonNullBody(final Compilation compilation, final String recordTypeName) {
 
         for(final Type type: compilation.getTypeDeclarations())
@@ -113,6 +165,42 @@ public class ParsedRecordUnitTest extends ProcessJTest {
 
         AssertContainsTypeName(compilation, Case.Check.RecordType.Record01);
         AssertContainsRecordType(compilation, ProcessJTest.Case.Check.RecordType.Record01);
+
+    }
+
+    @Test
+    public void CompilationFor_record01_containsNonNullAnnotations() {
+
+        final Compilation compilation = CompilationFor(Case.Record01);
+
+        AssertRecordTypeContainsNonNullAnnotations(compilation, Case.Check.RecordType.Record01);
+
+    }
+
+    @Test
+    public void CompilationFor_record01_containsNonNullModifiers() {
+
+        final Compilation compilation = CompilationFor(Case.Record01);
+
+        AssertRecordTypeContainsNonNullModifiers(compilation, Case.Check.RecordType.Record01);
+
+    }
+
+    @Test
+    public void CompilationFor_record01_containsNonNullName() {
+
+        final Compilation compilation = CompilationFor(Case.Record01);
+
+        AssertRecordTypeContainsNonNullName(compilation, Case.Check.RecordType.Record01);
+
+    }
+
+    @Test
+    public void CompilationFor_record01_containsNonNullExtends() {
+
+        final Compilation compilation = CompilationFor(Case.Record01);
+
+        AssertRecordTypeContainsNonNullExtends(compilation, Case.Check.RecordType.Record01);
 
     }
 

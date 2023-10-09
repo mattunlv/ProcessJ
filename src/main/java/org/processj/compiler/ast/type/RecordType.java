@@ -53,7 +53,7 @@ public class RecordType extends BlockStatement implements Type, DeclarativeConte
      * @since 1.0.0
      * @see RecordExtends
      */
-    private final RecordExtends extend              ;
+    private final Names extend;
 
     /// ------------
     /// Constructors
@@ -80,10 +80,10 @@ public class RecordType extends BlockStatement implements Type, DeclarativeConte
                       final Statement body) {
         super(body);
 
-        this.annotations    = annotations   ;
-        this.modifiers      = modifiers     ;
-        this.name           = name          ;
-        this.extend         = null        ;
+        this.annotations = annotations;
+        this.modifiers = modifiers;
+        this.name = name;
+        this.extend = extend;
 
     }
 
@@ -298,13 +298,13 @@ public class RecordType extends BlockStatement implements Type, DeclarativeConte
     }
 
     /**
-     * <p>Returns the {@link RecordType}'s specified set of {@link RecordExtends}.</p>
-     * @return The {@link RecordType}'s specified set of {@link RecordExtends}.
+     * <p>Returns the {@link RecordType}'s specified set of extends {@link Names}.</p>
+     * @return The {@link RecordType}'s specified set of extends {@link Names}.
      * @since 1.0.0
      * @see String
-     * @see RecordExtends
+     * @see Names
      */
-    public final RecordExtends getRecordExtends() {
+    public final Names getRecordExtends() {
 
         return this.extend;
 
@@ -337,7 +337,7 @@ public class RecordType extends BlockStatement implements Type, DeclarativeConte
                 final RecordType candidate = candidatesReturnCallback.Invoke(name);
 
                 // Place the mapping
-                this.extend.insert(index, name, candidate);
+                //this.extend.insert(index, name, candidate);
 
             }
 
@@ -389,14 +389,14 @@ public class RecordType extends BlockStatement implements Type, DeclarativeConte
          * @since 1.0.0
          * @see Name
          */
-        private final Name  name   ;
+        private final Name name;
 
         /**
          * <p>The {@link Type} bound to the {@link Member}.</p>
          * @since 1.0.0
          * @see Type
          */
-        private Type        type   ;
+        private Type type;
 
         /// -----------
         /// Constructor

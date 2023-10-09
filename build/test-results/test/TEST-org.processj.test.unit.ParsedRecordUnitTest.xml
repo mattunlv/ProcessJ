@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.processj.test.unit.ParsedRecordUnitTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2023-10-09T00:18:20" hostname="Carloss-MBP" time="0.053">
+<testsuite name="org.processj.test.unit.ParsedRecordUnitTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2023-10-09T00:51:26" hostname="Carloss-MBP" time="0.063">
   <properties/>
-  <testcase name="CompilationFor_record01_containsNonNullBody()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.048"/>
-  <testcase name="CompilationFor_record01_containsBodyWithRecordMembersOnly()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.001"/>
+  <testcase name="CompilationFor_record01_containsNonNullExtends()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.056"/>
+  <testcase name="CompilationFor_record01_containsNonNullBody()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_record01_containsNonNullName()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_record01_containsBodyWithRecordMembersOnly()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.002"/>
   <testcase name="CompilationFor_record01_containsNonEmptyBody()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_record01_containsNonNullAnnotations()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.0"/>
+  <testcase name="CompilationFor_record01_containsNonNullModifiers()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.001"/>
   <testcase name="CompilationFor_record01_containsBodyWithTwoMembers()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.0"/>
   <testcase name="CompilationFor_record01_containsCarRecord()" classname="org.processj.test.unit.ParsedRecordUnitTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
