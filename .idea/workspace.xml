@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="01060c5d-6313-40bd-90bd-66af77383b59" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation>
+            <after_sync>
+              <task name="setupDependencies" />
+            </after_sync>
+          </activation>
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand />
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2PQwLMkJDQAtzz5A1riXSmILsqV" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Downloaded.Files.Path.Enabled": "true",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "gradle",
+    "jdk.selected.JAVA_MODULE": "corretto-18",
+    "last_opened_file_path": "/Users/cuenca/Programming/ProcessJ/src/test/resources/code/test/unit/parser",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.53103447",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "stardust.markdown.MarkdownSplitEditorSuppressor:keyList": [
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/test/resources/code/test/unit/parser" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/src/main/resources/flex" />
+      <recent name="$PROJECT_DIR$/src/main/resources/cup" />
+      <recent name="$PROJECT_DIR$/lib" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated" />
+      <recent name="$PROJECT_DIR$/src/test/resources/code/test" />
+      <recent name="$PROJECT_DIR$/src/test/resources/code" />
+      <recent name="$PROJECT_DIR$/src/test/resources" />
+      <recent name="$PROJECT_DIR$/src/main/resources/scripts" />
+    </key>
+    <key name="MoveMembersDialog.RECENTS_KEY">
+      <recent name="org.processj.compiler.Compiler" />
+      <recent name="org.processj.compiler.phases.phase.jvm.ClassFile" />
+      <recent name="org.processj.compiler.phases.phase.Phase.RewriteAssert" />
+      <recent name="org.processj.compiler.phases.phase.Phase.PragmaAssert" />
+      <recent name="org.processj.compiler.phases.phase.Phase.ParserAssert" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="org.processj.compiler.ast.statement.declarative" />
+      <recent name="org.processj.compiler.ast.modifier" />
+      <recent name="org.processj.compiler.ast.statement.conditional" />
+      <recent name="org.processj.runtime" />
+      <recent name="org.processj.compiler.ast.statement" />
+    </key>
+    <key name="MoveInnerDialog.RECENTS_KEY">
+      <recent name="org.processj.compiler.ast" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Gradle.ParsedRecordUnitTest">
+    <configuration name="ParsedRecordUnitTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;org.processj.test.unit.ParsedRecordUnitTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ParserUnitTest.CompilationFor_record01_containsCarRecord" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;org.processj.test.unit.ParserUnitTest.CompilationFor_record01_containsCarRecord&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ParserUnitTest_Record" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;org.processj.test.unit.ParserUnitTest_Record&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ParserUnitTest_Record.CompilationFor_record01_bodyOnlyRecordMembers" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;org.processj.test.unit.ParserUnitTest_Record.CompilationFor_record01_bodyOnlyRecordMembers&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ParserUnitTest_Record.CompilationFor_record01_containsCarRecord" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;org.processj.test.unit.ParserUnitTest_Record.CompilationFor_record01_containsCarRecord&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.ParsedRecordUnitTest" />
+        <item itemvalue="Gradle.ParserUnitTest_Record" />
+        <item itemvalue="Gradle.ParserUnitTest_Record.CompilationFor_record01_bodyOnlyRecordMembers" />
+        <item itemvalue="Gradle.ParserUnitTest_Record.CompilationFor_record01_containsCarRecord" />
+        <item itemvalue="Gradle.ParserUnitTest.CompilationFor_record01_containsCarRecord" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="01060c5d-6313-40bd-90bd-66af77383b59" name="Changes" comment="" />
+      <created>1683402556209</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1683402556209</updated>
+      <workItem from="1683402557414" duration="2261000" />
+      <workItem from="1684270942525" duration="1040000" />
+      <workItem from="1684274392198" duration="1131000" />
+      <workItem from="1684278834038" duration="598000" />
+      <workItem from="1684280619159" duration="2161000" />
+      <workItem from="1684789104847" duration="77028000" />
+      <workItem from="1684960300857" duration="70442000" />
+      <workItem from="1685080488880" duration="4317000" />
+      <workItem from="1685086263784" duration="9347000" />
+      <workItem from="1685207865745" duration="382694000" />
+      <workItem from="1686121797112" duration="148072000" />
+      <workItem from="1686617156872" duration="269430000" />
+      <workItem from="1687734721989" duration="598000" />
+      <workItem from="1687905192202" duration="4274000" />
+      <workItem from="1687977476012" duration="788000" />
+      <workItem from="1688845623577" duration="1340000" />
+      <workItem from="1688852020687" duration="602000" />
+      <workItem from="1688876164359" duration="625000" />
+      <workItem from="1688877417670" duration="175000" />
+      <workItem from="1689002304539" duration="2438000" />
+      <workItem from="1689435042718" duration="1197000" />
+      <workItem from="1690417832397" duration="34000" />
+      <workItem from="1694651805688" duration="1094000" />
+      <workItem from="1694654311230" duration="28560000" />
+      <workItem from="1695076893063" duration="12903000" />
+      <workItem from="1695482854139" duration="597000" />
+      <workItem from="1695485690507" duration="600000" />
+      <workItem from="1695487246396" duration="33823000" />
+      <workItem from="1695595312982" duration="1364000" />
+      <workItem from="1695597222725" duration="49197000" />
+      <workItem from="1696076355708" duration="15499000" />
+      <workItem from="1696721908732" duration="460000" />
+      <workItem from="1696778754029" duration="31732000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.cup" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.StackOverflowError" package="java.lang" />
+          <option name="timeStamp" value="85" />
+        </breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/CodeGenJava.java</url>
+          <line>1426</line>
+          <option name="timeStamp" value="89" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/SourceFile.java</url>
+          <line>164</line>
+          <option name="timeStamp" value="95" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/Compiler.java</url>
+          <line>391</line>
+          <option name="timeStamp" value="111" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/Compiler.java</url>
+          <line>392</line>
+          <option name="timeStamp" value="112" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/Compiler.java</url>
+          <line>395</line>
+          <option name="timeStamp" value="113" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/Compiler.java</url>
+          <line>398</line>
+          <option name="timeStamp" value="114" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/Compiler.java</url>
+          <line>401</line>
+          <option name="timeStamp" value="115" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/Compiler.java</url>
+          <line>404</line>
+          <option name="timeStamp" value="116" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/Compiler.java</url>
+          <line>407</line>
+          <option name="timeStamp" value="117" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
+          <line>143</line>
+          <option name="timeStamp" value="134" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
+          <line>1502</line>
+          <option name="timeStamp" value="172" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
+          <line>1747</line>
+          <option name="timeStamp" value="254" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
+          <line>1709</line>
+          <option name="timeStamp" value="258" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
+          <line>1540</line>
+          <option name="timeStamp" value="262" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
+          <line>1798</line>
+          <option name="timeStamp" value="283" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="org.processj.compiler.phase.generated.ProcessJParser$CompilationUnitContext" memberName="children" />
+        <PinnedItemInfo parentTag="org.antlr.v4.runtime.tree.TerminalNodeImpl" memberName="symbol" />
+        <PinnedItemInfo parentTag="org.processj.compiler.ast.statement.declarative.Names" memberName="names" />
+      </pinned-members>
+    </pin-to-top-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/ProcessJ$ResolveImportsUnitTest_testCode_batch1_hasImportSequence_resolveImportsUnitTest.ic" NAME="ResolveImportsUnitTest.testCode_batch1_hasImportSequence_resolveImportsUnitTest Coverage Results" MODIFIED="1685942690072" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
+</project>
