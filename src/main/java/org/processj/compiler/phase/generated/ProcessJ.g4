@@ -321,7 +321,7 @@ forInit
     ;
 
 forUpdate
-    : statementExpression
+    : statementExpression (',' forUpdate)?
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -361,7 +361,7 @@ stopStatement
     ;
 
 suspendStatement
-    : 'suspend' ';'
+    : 'suspend' formalParameters? ';'
     ;
 
 channels_
