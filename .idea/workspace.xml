@@ -9,13 +9,8 @@
       <change beforePath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJ.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJ.g4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJ.interp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJ.interp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJ.tokens" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJ.tokens" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJLexer.interp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJLexer.interp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJLexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJLexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJLexer.tokens" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJLexer.tokens" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/generated/ProcessJParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/processj/test/ProcessJTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/processj/test/ProcessJTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/processj/test/unit/ParsedAltTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/processj/test/unit/ParsedAltTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/resources/code/test/Alt10.pj" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/resources/code/test/Alt10.pj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,7 +130,7 @@
       <recent name="org.processj.compiler.ast" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.ParsedAltTest.CompilationFor_alt01_containsNonNullAlt">
+  <component name="RunManager" selected="Gradle.ParsedAltTest">
     <configuration name="ParsedAltTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -258,8 +253,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.ParsedAltTest.CompilationFor_alt01_containsNonNullAlt" />
         <item itemvalue="Gradle.ParsedAltTest" />
+        <item itemvalue="Gradle.ParsedAltTest.CompilationFor_alt01_containsNonNullAlt" />
         <item itemvalue="Gradle.ParsedAltTest.CompilationFor_alt09_containsNonNullAlt" />
         <item itemvalue="Gradle.ParsedAltTest.CompilationFor_alt03_containsNonNullAlt" />
         <item itemvalue="Gradle.ParsedAltTest.CompilationFor_alt02_containsNonNullAlt" />
@@ -306,7 +301,7 @@
       <workItem from="1695597222725" duration="49197000" />
       <workItem from="1696076355708" duration="15499000" />
       <workItem from="1696721908732" duration="460000" />
-      <workItem from="1696778754029" duration="74939000" />
+      <workItem from="1696778754029" duration="75907000" />
     </task>
     <servers />
   </component>
@@ -389,42 +384,42 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
-          <line>2681</line>
+          <line>2680</line>
           <option name="timeStamp" value="359" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
-          <line>1532</line>
+          <line>1529</line>
           <option name="timeStamp" value="381" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
-          <line>1871</line>
+          <line>1868</line>
           <option name="timeStamp" value="382" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
-          <line>1872</line>
+          <line>1869</line>
           <option name="timeStamp" value="383" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
-          <line>1873</line>
+          <line>1870</line>
           <option name="timeStamp" value="384" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
-          <line>1874</line>
+          <line>1871</line>
           <option name="timeStamp" value="385" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
-          <line>1877</line>
+          <line>1874</line>
           <option name="timeStamp" value="386" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/processj/compiler/phase/Parser.java</url>
-          <line>1869</line>
+          <line>1866</line>
           <option name="timeStamp" value="387" />
         </line-breakpoint>
       </breakpoints>

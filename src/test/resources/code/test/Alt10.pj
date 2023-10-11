@@ -8,5 +8,6 @@ void main(string[] args) {
         (x == 10) && foo(25): stop;
 
     }
+    int[] a[] = new int[][]{ {1, 2}, {3, 5} };
 
 }

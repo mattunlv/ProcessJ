@@ -461,8 +461,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
         // Resolve the Right Expression
         binaryExpression.getRightExpression().accept(this);
 
-
-
     }
 
     @Override
@@ -507,8 +505,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
         // Assert the ChannelReadExpression defines an Extended Rendezvous & resolve it
         if(channelReadExpression.definesExtendedRendezvous())
             channelReadExpression.getExtendedRendezvous().accept(this);
-
-
 
     }
 
@@ -1413,7 +1409,8 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
         final Modifiers modifiers = new Modifiers();
 
         // Aggregate the Modifiers
-        modifiersContext.modifier().forEach(modifierContext -> modifiers.add((Modifier) modifierContext.accept(this)));
+        modifiersContext.modifier().forEach(modifierContext ->
+                modifiers.add((Modifier) modifierContext.accept(this)));
 
         // Return the result
         return modifiers;
@@ -1928,7 +1925,10 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
         while(variableInitializersContext != null) {
 
-            expressions.append((Expression) variableInitializersContext.expression().accept(this));
+            if(variableInitializersContext.expression() != null)
+                expressions.append((Expression) variableInitializersContext.expression().accept(this));
+            else if(variableInitializersContext.arrayInitializer() != null)
+                expressions.append((Expression) variableInitializersContext.arrayInitializer().accept(this));
 
             variableInitializersContext = variableInitializersContext.variableInitializers();
 
@@ -2254,7 +2254,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
                         : new Name(""));
 
     }
-
 
     @Override
     public AST visitContinueStatement(ProcessJParser.ContinueStatementContext ctx) {
@@ -2814,7 +2813,8 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
         final Sequence<Expression> expressions = new Sequence<>();
 
-        context.dimExpression().forEach(dimExpressionContext ->
+        if(context.dimExpression() != null)
+            context.dimExpression().forEach(dimExpressionContext ->
                 expressions.append((Expression) dimExpressionContext.expression().accept(this)));
 
         final int depth = expressions.size() +

@@ -569,7 +569,7 @@ arguments
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 newArrayExpression
-    : 'new' typeWithoutDims dimExpression+ dims? arrayInitializer?
+    : 'new' typeWithoutDims dimExpression* dims? arrayInitializer?
     ;
 
 dimExpression
