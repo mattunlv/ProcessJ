@@ -134,7 +134,7 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
             // Otherwise
         } catch(final Exception exception) {
-
+            System.out.println(exception.getMessage());
             // Assert the Parser is valid
             ParserAssert.FileOpenFailure.Assert(this, sourceFile);
 
@@ -1271,8 +1271,27 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
                 imports.append((Import) importDeclarationContext.accept(this)));
 
         // Append the Types
-        compilationUnitContext.typeDeclaration().forEach(typeDeclarationContext ->
-                types.append((Type) typeDeclarationContext.accept(this)));
+        compilationUnitContext.typeDeclaration().forEach(typeDeclarationContext -> {
+
+                final AST ast = typeDeclarationContext.accept(this);
+
+                // Variable Declaration(s) case
+                if(ast instanceof Statements)
+                    for(final Statement statement: ((Statements) ast)) {
+
+                        final VariableDeclaration variableDeclaration = (VariableDeclaration) statement;
+
+                        types.append(new ConstantDeclaration(
+                                variableDeclaration.getModifiers(),
+                                variableDeclaration.getType(),
+                                variableDeclaration.getName(),
+                                variableDeclaration.getInitializationExpression()));
+
+                    }
+
+                else types.append((Type) ast);
+
+                });
 
         // Return the result
         return new Compilation(pragmas, packageName, imports, types);
@@ -1504,6 +1523,11 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
             type = typeDeclarationContext.procedureTypeDeclaration().accept(this);
         else if(typeDeclarationContext.protocolTypeDeclaration() != null)
             type = typeDeclarationContext.protocolTypeDeclaration().accept(this);
+        else if(typeDeclarationContext.variableDeclaration() != null) {
+
+            type = typeDeclarationContext.variableDeclaration().accept(this);
+
+        }
 
         // Return the result
         return type;

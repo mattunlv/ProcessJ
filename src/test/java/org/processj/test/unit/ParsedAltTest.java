@@ -177,7 +177,14 @@ public class ParsedAltTest extends ProcessJTest {
     @Test
     public void CompilationFor_alt01_containsNonNullAlt() {
 
-        //final Compilation compilation = CompilationFor(Case.Alt01);
+        final Compilation compilation = CompilationFor(Case.Alt01);
+
+        AssertContainsAltStatement(compilation, "reader");
+        AssertAltContainsNullInitializationStatements(compilation, "reader");
+        AssertAltContainsNonNullIncrementStatements(compilation, "reader");
+        AssertAltContainsNullEvaluationExpression(compilation, "reader");
+        AssertAltContainsNonNullCases(compilation, "reader");
+        AssertAltContainsOnlyCases(compilation, "reader");
 
     }
 

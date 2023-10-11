@@ -316,7 +316,7 @@ public class ProcessJTest extends Phase.Listener {
         }
 
     }
-    
+
     /// ----------------------
     /// Private Static Methods
 

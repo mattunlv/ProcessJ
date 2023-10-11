@@ -80,6 +80,7 @@ typeDeclaration
     : procedureTypeDeclaration
     | protocolTypeDeclaration
     | recordTypeDeclaration
+    | variableDeclaration
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -369,8 +370,8 @@ channels_
     ;
 
 channel_
-    : primaryExpressionNoCreation ('.read')?
-    | primaryExpressionNoCreation ('.write')?
+    : primaryExpressionNoCreation ('.' 'read')?
+    | primaryExpressionNoCreation ('.' 'write')?
     | channelType name '=' primaryExpressionNoCreation
     ;
 
