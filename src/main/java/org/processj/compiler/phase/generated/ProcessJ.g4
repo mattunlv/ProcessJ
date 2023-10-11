@@ -369,8 +369,8 @@ channels_
     ;
 
 channel_
-    : primaryExpressionNoCreation ('.' 'read')?
-    | primaryExpressionNoCreation ('.' 'write')?
+    : primaryExpressionNoCreation ('.read')?
+    | primaryExpressionNoCreation ('.write')?
     | channelType name '=' primaryExpressionNoCreation
     ;
 
@@ -588,7 +588,7 @@ newRecordExpression
     ;
 
 newRecordExpressionArguments
-    : Identifier '=' expression (',' newRecordExpressionArguments)?
+    : name '=' expression (',' newRecordExpressionArguments)?
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -596,7 +596,7 @@ newRecordExpressionArguments
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 newProtocolExpression
-    : 'new' name '{' Identifier ':' newRecordExpressionArguments? '}'
+    : 'new' name '{' (name ':' newRecordExpressionArguments)? '}'
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/

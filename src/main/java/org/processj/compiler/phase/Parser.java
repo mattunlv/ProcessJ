@@ -1,5 +1,7 @@
 package org.processj.compiler.phase;
 
+import org.processj.compiler.ast.expression.constructing.NewMobileExpression;
+import org.processj.compiler.ast.expression.yielding.ChannelEndExpression;
 import org.processj.compiler.phase.generated.ProcessJParser.CompilationUnitContext;
 import org.processj.compiler.phase.generated.ProcessJParser.PragmaContext;
 import org.processj.compiler.phase.generated.ProcessJParser.PackageDeclarationContext;
@@ -1895,18 +1897,31 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     @Override
-    public AST visitDimension(ProcessJParser.DimensionContext dimensionContext) {
-        return null;
-    }
-
-    @Override
+    @SuppressWarnings("unchecked")
     public AST visitArrayInitializer(ProcessJParser.ArrayInitializerContext context) {
-        return null;
+
+        return new ArrayLiteralExpression((Sequence<Expression>)
+                context.variableInitializers().accept(this));
+
     }
 
     @Override
     public AST visitVariableInitializers(ProcessJParser.VariableInitializersContext context) {
-        return null;
+
+        final Sequence<Expression> expressions = new Sequence<>();
+
+        ProcessJParser.VariableInitializersContext variableInitializersContext = context;
+
+        while(variableInitializersContext != null) {
+
+            expressions.append((Expression) variableInitializersContext.expression().accept(this));
+
+            variableInitializersContext = variableInitializersContext.variableInitializers();
+
+        }
+
+        return expressions;
+
     }
 
     @Override
@@ -1973,6 +1988,139 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
         else statement = null;
 
         return statement;
+    }
+
+    @Override
+    public AST visitStatementNoShortIf(ProcessJParser.StatementNoShortIfContext context) {
+
+        final Statement statementResult;
+
+        if(context.statementWithoutTrailingSubstatement() != null)
+            statementResult = (Statement) context.statementWithoutTrailingSubstatement().accept(this);
+        else if(context.ifThenElseStatementNoShortIf() != null)
+            statementResult = (Statement) context.ifThenElseStatementNoShortIf().accept(this);
+        else if(context.whileStatementNoShortIf() != null)
+            statementResult = (Statement) context.whileStatementNoShortIf().accept(this);
+        else if(context.forStatementNoShortIf() != null)
+            statementResult = (Statement) context.forStatementNoShortIf().accept(this);
+        else if(context.claimStatementNoShortIf() != null)
+            statementResult = (Statement) context.claimStatementNoShortIf().accept(this);
+        else statementResult = null;
+
+        return statementResult;
+    }
+
+    @Override
+    public AST visitDoStatement(ProcessJParser.DoStatementContext context) {
+
+        return new DoStatement(
+                (Statement) context.statement().accept(this),
+                (Expression) context.expression().accept(this)
+        );
+
+    }
+
+    @Override
+    public AST visitIfThenStatement(ProcessJParser.IfThenStatementContext context) {
+        return new IfStatement(
+                (Expression) context.expression().accept(this),
+                (Statement) context.statement().accept(this)
+        );
+    }
+
+    @Override
+    public AST visitIfThenElseStatement(ProcessJParser.IfThenElseStatementContext context) {
+        return new IfStatement(
+                (Expression) context.expression().accept(this),
+                (Statement) context.statementNoShortIf().accept(this),
+                (Statement) context.statement().accept(this));
+    }
+
+    @Override
+    public AST visitIfThenElseStatementNoShortIf(ProcessJParser.IfThenElseStatementNoShortIfContext context) {
+        return new IfStatement(
+                (Expression) context.expression().accept(this),
+                (Statement) context.statementNoShortIf(0).accept(this),
+                (Statement) context.statementNoShortIf(1).accept(this));
+    }
+
+    @Override
+    public AST visitWhileStatement(ProcessJParser.WhileStatementContext context) {
+        return new WhileStatement(
+                (Expression) context.expression().accept(this),
+                (Statement) context.statement().accept(this));
+    }
+
+    @Override
+    public AST visitWhileStatementNoShortIf(ProcessJParser.WhileStatementNoShortIfContext context) {
+        return new WhileStatement(
+                (Expression) context.expression().accept(this),
+                (Statement) context.statementNoShortIf().accept(this));
+    }
+
+    @Override
+    public AST visitForStatement(ProcessJParser.ForStatementContext context) {
+        return new ForStatement(
+                (context.forInit() != null)
+                ? (Statements) context.forInit().accept(this)
+                : new Statements(),
+                (context.expression() != null)
+                ? (Expression) context.expression().accept(this)
+                        : null,
+                (context.forUpdate() != null)
+                ? (Statements) context.forUpdate().accept(this)
+                        : new Statements(),
+                new BarrierSet(),
+                (context.statement() != null)
+                ? (Statement) context.statement().accept(this)
+                        : null,
+                false);
+    }
+
+    @Override
+    public AST visitForStatementNoShortIf(ProcessJParser.ForStatementNoShortIfContext context) {
+        return new ForStatement(
+                (context.forInit() != null)
+                        ? (Statements) context.forInit().accept(this)
+                        : new Statements(),
+                (context.expression() != null)
+                        ? (Expression) context.expression().accept(this)
+                        : null,
+                (context.forUpdate() != null)
+                        ? (Statements) context.forUpdate().accept(this)
+                        : new Statements(),
+                new BarrierSet(),
+                (context.statementNoShortIf() != null)
+                        ? (Statement) context.statementNoShortIf().accept(this)
+                        : null,
+                false);
+    }
+
+    @Override
+    public AST visitForInit(ProcessJParser.ForInitContext forInitContext) {
+
+        return forInitContext.variableDeclaration().accept(this);
+
+    }
+
+    @Override
+    public AST visitForUpdate(ProcessJParser.ForUpdateContext context) {
+
+        final Statements statements = new Statements();
+
+        ProcessJParser.ForUpdateContext forUpdateContext = context;
+
+        while(forUpdateContext != null) {
+
+            statements.append(
+                    new ExpressionStatement((Expression) forUpdateContext.statementExpression().accept(this)));
+
+            forUpdateContext = forUpdateContext.forUpdate();
+
+        }
+
+        return statements;
+
     }
 
     @Override
@@ -2056,84 +2204,32 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     @Override
     public AST visitParBlockStatement(ProcessJParser.ParBlockStatementContext ctx) {
-        return null;
-    }
-
-    @Override
-    public AST visitSequentialBlock(ProcessJParser.SequentialBlockContext ctx) {
-        return null;
+        return new ParBlock(
+                (Statement) ctx.block().accept(this),
+                (BarrierSet) ctx.barriers().accept(this));
     }
 
     @Override
     public AST visitBarriers(ProcessJParser.BarriersContext context) {
-        return null;
-    }
 
-    @Override
-    public AST visitStatementNoShortIf(ProcessJParser.StatementNoShortIfContext context) {
-        return null;
-    }
+        final BarrierSet barrierSet = new BarrierSet();
 
-    @Override
-    public AST visitIfThenStatement(ProcessJParser.IfThenStatementContext context) {
-        return null;
-    }
+        ProcessJParser.BarriersContext barriersContext = context;
 
-    @Override
-    public AST visitIfThenElseStatement(ProcessJParser.IfThenElseStatementContext context) {
-        return null;
-    }
+        while(barriersContext != null) {
 
-    @Override
-    public AST visitIfThenElseStatementNoShortIf(ProcessJParser.IfThenElseStatementNoShortIfContext context) {
-        return null;
-    }
+            barrierSet.append((Expression) barriersContext.expression().accept(this));
 
-    @Override
-    public AST visitWhileStatement(ProcessJParser.WhileStatementContext context) {
-        return null;
-    }
-
-    @Override
-    public AST visitWhileStatementNoShortIf(ProcessJParser.WhileStatementNoShortIfContext context) {
-        return null;
-    }
-
-    @Override
-    public AST visitForStatement(ProcessJParser.ForStatementContext context) {
-        return null;
-    }
-
-    @Override
-    public AST visitForStatementNoShortIf(ProcessJParser.ForStatementNoShortIfContext context) {
-        return null;
-    }
-
-    @Override
-    public AST visitForInit(ProcessJParser.ForInitContext forInitContext) {
-
-        return forInitContext.variableDeclaration().accept(this);
-
-    }
-
-    @Override
-    public AST visitForUpdate(ProcessJParser.ForUpdateContext context) {
-
-        final Statements statements = new Statements();
-
-        ProcessJParser.ForUpdateContext forUpdateContext = context;
-
-        while(forUpdateContext != null) {
-
-            statements.append(
-                    new ExpressionStatement((Expression) forUpdateContext.statementExpression().accept(this)));
-
-            forUpdateContext = forUpdateContext.forUpdate();
+            barriersContext = barriersContext.barriers();
 
         }
 
-        return statements;
+        return barrierSet;
+    }
 
+    @Override
+    public AST visitSequentialBlock(ProcessJParser.SequentialBlockContext ctx) {
+        return ctx.block().accept(this);
     }
 
     @Override
@@ -2182,29 +2278,68 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     @Override
-    public AST visitDoStatement(ProcessJParser.DoStatementContext context) {
-        return null;
-    }
-
-    @Override
+    @SuppressWarnings("unchecked")
     public AST visitClaimStatement(ProcessJParser.ClaimStatementContext context) {
-        return null;
+        return new ClaimStatement(
+                (Sequence<AST>) context.channels_().accept(this),
+                (Statement) context.statement().accept(this));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public AST visitClaimStatementNoShortIf(ProcessJParser.ClaimStatementNoShortIfContext context) {
-        return null;
+        return new ClaimStatement(
+                (Sequence<AST>) context.channels_().accept(this),
+                (Statement) context.statementNoShortIf().accept(this));
     }
 
 
     @Override
     public AST visitChannels_(ProcessJParser.Channels_Context context) {
-        return null;
+
+        final Sequence<AST> sequence = new Sequence<>();
+        ProcessJParser.Channels_Context channelsContext = context;
+
+        while(channelsContext != null) {
+
+            sequence.append(channelsContext.channel_().accept(this));
+
+            channelsContext = channelsContext.channels_();
+
+        }
+
+        return sequence;
     }
 
     @Override
     public AST visitChannel_(ProcessJParser.Channel_Context context) {
-        return null;
+
+        final AST astResult;
+
+        if((context.primaryExpressionNoCreation() != null)
+                && context.channelType() == null) {
+
+            if(context.getText().contains(".read"))
+                astResult = new ChannelEndExpression(
+                        (Expression) context.primaryExpressionNoCreation().accept(this),
+                        ChannelEndExpression.READ);
+            else if(context.getText().contains(".write"))
+                astResult = new ChannelEndExpression(
+                        (Expression) context.primaryExpressionNoCreation().accept(this),
+                        ChannelEndExpression.WRITE);
+            else astResult = (Expression) context.primaryExpressionNoCreation().accept(this);
+
+        } else {
+
+            astResult = new VariableDeclaration(new Modifiers(),
+                    (Type) context.channelType().accept(this),
+                    (Name) context.name().accept(this),
+                    (Expression) context.primaryExpressionNoCreation().accept(this));
+
+        }
+
+        return astResult;
+
     }
 
     @Override
@@ -2229,7 +2364,14 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     @Override
     public AST visitLabelledStatement(ProcessJParser.LabelledStatementContext context) {
-        return null;
+
+        final Name label = (Name) context.name().accept(this);
+        final Statement statement = (Statement) context.statement().accept(this);
+
+        statement.setLabel(label.toString());
+
+        return statement;
+
     }
 
     @Override
@@ -2654,27 +2796,73 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     @Override
     public AST visitNewArrayExpression(ProcessJParser.NewArrayExpressionContext context) {
-        return null;
+
+        final Type type = (Type) context.typeWithoutDims().accept(this);
+
+        final Sequence<Expression> expressions = new Sequence<>();
+
+        context.dimExpression().forEach(dimExpressionContext ->
+                expressions.append((Expression) dimExpressionContext.expression().accept(this)));
+
+        final int depth = expressions.size() +
+                ((context.dims() != null) ? Strings.OccurrencesOf('[', context.dims().getText()) : 0);
+
+        final ArrayLiteralExpression arrayLiteralExpression = (context.arrayInitializer() != null)
+                ? (ArrayLiteralExpression) context.arrayInitializer().accept(this)
+                : null;
+
+        return new NewArrayExpression(type, expressions, depth, arrayLiteralExpression);
+
     }
 
     @Override
+    public AST visitDimExpression(ProcessJParser.DimExpressionContext context) {
+
+        return context.expression().accept(this);
+
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public AST visitNewRecordExpression(ProcessJParser.NewRecordExpressionContext context) {
-        return null;
+        return new RecordLiteralExpression(
+                (Name) context.name().accept(this),
+                (Sequence<RecordMemberLiteralExpression>) context.newRecordExpressionArguments().accept(this));
     }
 
     @Override
     public AST visitNewRecordExpressionArguments(ProcessJParser.NewRecordExpressionArgumentsContext context) {
-        return null;
+
+        final Sequence<RecordMemberLiteralExpression> recordMemberLiteralExpressions = new Sequence<>();
+
+        ProcessJParser.NewRecordExpressionArgumentsContext newRecordExpressionArgumentsContext = context;
+
+        while(newRecordExpressionArgumentsContext != null) {
+
+            recordMemberLiteralExpressions.append(new RecordMemberLiteralExpression(
+                    (Name) newRecordExpressionArgumentsContext.name().accept(this),
+                    (Expression) newRecordExpressionArgumentsContext.expression().accept(this)));
+
+            newRecordExpressionArgumentsContext = newRecordExpressionArgumentsContext.newRecordExpressionArguments();
+
+        }
+
+        return recordMemberLiteralExpressions;
+
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public AST visitNewProtocolExpression(ProcessJParser.NewProtocolExpressionContext context) {
-        return null;
+        return new ProtocolLiteralExpression(
+                (Name) context.name(0).accept(this),
+                (Name) context.name(1).accept(this),
+                (Sequence<RecordMemberLiteralExpression>) context.newRecordExpressionArguments().accept(this));
     }
 
     @Override
     public AST visitNewMobileExpression(ProcessJParser.NewMobileExpressionContext context) {
-        return null;
+        return new NewMobileExpression((Name) context.name().accept(this));
     }
 
     @Override
@@ -2700,6 +2888,17 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     }
 
+
+
+
+
+
+
+    @Override
+    public AST visitDimension(ProcessJParser.DimensionContext dimensionContext) {
+        return null; // TODO: Don't need
+    }
+
     @Override
     public AST visitSuffix(ProcessJParser.SuffixContext context) {
         return null; // TODO: Don't need
@@ -2721,38 +2920,33 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     @Override
-    public AST visitDimExpression(ProcessJParser.DimExpressionContext context) {
-        return null;
-    }
-
-    @Override
     public AST visitDims(ProcessJParser.DimsContext context) {
-        return null;
+        return null; // TODO: Don't need
     }
 
     @Override
     public AST visitAssignmentOperator(ProcessJParser.AssignmentOperatorContext context) {
-        return null;
+        return null; // TODO: Don't need
     }
 
     @Override
     public AST visit(ParseTree parseTree) {
-        return null;
+        return null; // TODO: Don't need
     }
 
     @Override
     public AST visitChildren(RuleNode ruleNode) {
-        return null;
+        return null; // TODO: Don't need
     }
 
     @Override
     public AST visitTerminal(TerminalNode terminalNode) {
-        return null;
+        return null; // TODO: Don't need
     }
 
     @Override
     public AST visitErrorNode(ErrorNode errorNode) {
-        return null;
+        return null; // TODO: Don't need
     }
 
 }

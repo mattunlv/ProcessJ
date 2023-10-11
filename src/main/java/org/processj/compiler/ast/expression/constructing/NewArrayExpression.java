@@ -27,6 +27,17 @@ public class NewArrayExpression extends Expression {
 
     }
 
+    public NewArrayExpression(final Type type, final Sequence<Expression> bracketExpressions,
+                              final int depth, final ArrayLiteralExpression arrayLiteralExpression) {
+        super(new AST[] { bracketExpressions, arrayLiteralExpression });
+
+        this.componentType          = type               ;
+        this.bracketExpressions     = bracketExpressions                    ;
+        this.arrayLiteralExpression = arrayLiteralExpression                ;
+        this.depth                  = depth    ;
+
+    }
+
     public NewArrayExpression(final Type type, final ArrayLiteralExpression arrayLiteralExpression) {
         super(new AST[] { new Sequence<>(), arrayLiteralExpression });
 

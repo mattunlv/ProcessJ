@@ -1508,7 +1508,7 @@ channel
     IDENTIFIER:id
     EQ
     primary_expression_no_creation:e            {: RESULT = new LocalDeclaration(t, new Name(id), e, false) ;:}
-|   channel_end_expression:e                           {: RESULT = e                                                        ;:}
+|   channel_end_expression:e                    {: RESULT = e                                                        ;:}
 ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
