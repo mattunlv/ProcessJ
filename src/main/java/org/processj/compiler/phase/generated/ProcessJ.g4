@@ -193,7 +193,7 @@ channelEndType
 /** --------------------------------------------------------------------------------------------------------------- **/
 
 variableDeclaration
-    : modifier* type variableDeclarators
+    : modifiers? type variableDeclarators
     ;
 
 variableDeclarators
@@ -201,7 +201,7 @@ variableDeclarators
     ;
 
 variableDeclarator
-    : Identifier (dimension)* ('=' (arrayInitializer | expression))?
+    : name (dimension)* ('=' (arrayInitializer | expression))?
     ;
 
 dimension
@@ -228,37 +228,43 @@ block
     : '{' statement* '}'
     ;
 
-// TO'do': we should be able to declare mobile channels and procedures here
+// todo: we should be able to declare mobile channels and procedures here
 statement
-    : statementWithoutTrailingSubstatement
+    : forStatement
     | ifThenStatement
     | ifThenElseStatement
-    | whileStatement
-    | forStatement
-    | switchStatement
     | labelledStatement
+    | statementWithoutTrailingSubstatement
+    | switchStatement
+    | whileStatement
     ;
 
 statementWithoutTrailingSubstatement
     : block
-    | altBlock
-    | 'par' ('enroll' barriers)? block
-    | 'seq' block
+    | altBlockStatement
+    | parBlockStatement
+    | sequentialBlock
+    | breakStatement
+    | claimStatement
+    | continueStatement
     | doStatement
-    | barrierSyncStatement
-    | timeoutStatement ';'
-    | 'break' Identifier? ';'
-    | claimStatement ';'
-    | 'continue' Identifier? ';'
-    | 'return' expression ';'
-    | 'skip' ';'
-    | 'stop' ';'
-    | 'suspend' ';'
+    | returnStatement
+    | skipStatement
+    | stopStatement
+    | suspendStatement
     | statementExpression ';'
-    | Identifier '.' 'write' '(' expression ')' ';'
-    | primaryExpression '.' 'write' '(' expression ')' ';'
     | variableDeclaration ';'
+    | name '.' 'write' '(' expression ')' ';'
+    | primaryExpression '.' 'write' '(' expression ')' ';'
     | ';'
+    ;
+
+parBlockStatement
+    : 'par' ('enroll' barriers)? block
+    ;
+
+sequentialBlock
+    : 'seq' block
     ;
 
 barriers
@@ -302,15 +308,11 @@ whileStatementNoShortIf
     ;
 
 forStatement
-    : 'for' '(' forInit? ';' expression? ';' forUpdate? ')' statement
-    | 'par' 'for' '(' forInit? ';' expression? ';' forUpdate? ')' 'enroll' '(' arguments ')' statement
-    | 'par' 'for' '(' forInit? ';' expression? ';' forUpdate? ')' statement
+    : 'par'? 'for' '(' forInit? ';' expression? ';' forUpdate? ')' ('enroll' '(' arguments ')')? statement
     ;
 
 forStatementNoShortIf
-    : 'for' '(' forInit? ';' expression? ';' forUpdate? ')' statementNoShortIf
-    | 'par' 'for' '(' forInit? ';' expression? ';' forUpdate? ')' 'enroll' '(' arguments ')' statementNoShortIf
-    | 'par' 'for' '(' forInit? ';' expression? ';' forUpdate? ')' statementNoShortIf
+    : 'par'? 'for' '(' forInit? ';' expression? ';' forUpdate? ')' ('enroll' '(' arguments ')')? statementNoShortIf
     ;
 
 forInit
@@ -322,20 +324,44 @@ forUpdate
     : statementExpression
     ;
 
-doStatement
-    : 'do' statement 'while' '(' expression ')' ';'
-    ;
-
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 7.3 Claim Statement                                                                                             **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
+breakStatement
+    : 'break' name? ';'
+    ;
+
 claimStatement
-    : 'claim' '(' channels_ ')' statement
+    : 'claim' '(' channels_ ')' statement ';'
     ;
 
 claimStatementNoShortIf
     : 'claim' '(' channels_ ')' statementNoShortIf
+    ;
+
+continueStatement
+    : 'continue' name? ';'
+    ;
+
+doStatement
+    : 'do' statement 'while' '(' expression ')' ';'
+    ;
+
+returnStatement
+    : 'return' expression ';'
+    ;
+
+skipStatement
+    : 'skip' ';'
+    ;
+
+stopStatement
+    : 'stop' ';'
+    ;
+
+suspendStatement
+    : 'suspend' ';'
     ;
 
 channels_
@@ -343,24 +369,14 @@ channels_
     ;
 
 channel_
-    : leftHandSideExpression ('.' 'read')?
-    | leftHandSideExpression ('.' 'write')?
-    | channelType Identifier '=' primaryExpressionNoCreation
+    : primaryExpressionNoCreation ('.' 'read')?
+    | primaryExpressionNoCreation ('.' 'write')?
+    | channelType name '=' primaryExpressionNoCreation
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 7.4 Barrier Sync/Timeout Statement                                                                              **/
 /** --------------------------------------------------------------------------------------------------------------- **/
-
-barrierSyncStatement
-    : primaryExpression '.' 'sync' '(' ')'
-    | Identifier '.' 'sync' '(' ')'
-    ;
-
-timeoutStatement
-    : Identifier '.' 'timeout' '(' expression ')'
-    | primaryExpression '.' 'timeout' '(' expression ')'
-    ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
 /** 7.6 Expression Statement                                                                                        **/
@@ -370,12 +386,13 @@ statementExpression
     : assignmentExpression
     | preIncrementExpression
     | preDecrementExpression
-    | postfixExpression
-    | leftHandSideExpression // TO'do': Error on some of these options
+    | postIncrementExpression
+    | postDecrementExpression
+    | primaryExpressionNoCreation
     ;
 
 labelledStatement
-    : Identifier ':' statement
+    : name ':' statement
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -398,18 +415,22 @@ switchBlockStatementGroup
 /** 7.9 Alt Statement                                                                                               **/
 /** --------------------------------------------------------------------------------------------------------------- **/
 
-altBlock
-    : 'pri'? 'alt' ('(' forInit? ';' expression? ';' forUpdate? ')')? '{' altCase* '}'
+altBlockStatement
+    : 'pri'? 'alt' ('(' forInit? ';' expression? ';' forUpdate? ')')? '{' altCases '}'
+    ;
+
+altCases
+    : altCase*
     ;
 
 altCase
     : ('(' expression ')' '&&')? guard ':' statement
     ;
 
+// TODO: This might be flawed
 guard
-    : leftHandSideExpression '=' name channelReadSuffix
+    : (primaryExpressionNoCreation '=')? name '(' (arguments | block)? ')'
     | 'skip'
-    | timeoutStatement
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -422,7 +443,7 @@ expression
     ;
 
 assignmentExpression
-    : leftHandSideExpression assignmentOperator expression
+    : primaryExpressionNoCreation assignmentOperator expression
     ;
 
 conditionalExpression
@@ -463,19 +484,25 @@ shiftExpression
     ;
 
 additiveExpression
-    : multiplicativeExpression (('plus'|'minus') additiveExpression)?
+    : multiplicativeExpression (('+'|'-') additiveExpression)?
     ;
 
 multiplicativeExpression
-    : unaryExpression (('*'|'div'|'%') multiplicativeExpression)?
+    : unaryExpression (('*'|'/'|'%') multiplicativeExpression)?
     ;
 
 unaryExpression
     : 'plus' unaryExpression
     | 'minus' unaryExpression
+    | '~' unaryExpression
+    | '!' unaryExpression
     | preIncrementExpression
     | preDecrementExpression
-    | unaryExpressionNotPlusMinus
+    | castExpression
+    | postIncrementExpression
+    | postDecrementExpression
+    | primaryExpression
+    | literal
     ;
 
 preIncrementExpression
@@ -486,19 +513,16 @@ preDecrementExpression
     : '--' unaryExpression
     ;
 
-unaryExpressionNotPlusMinus
-    : '~' unaryExpression
-    | '!' unaryExpression
-    | castExpression
-    | postfixExpression
-    ;
-
 castExpression
-    : '(' typeWithoutDims ')' unaryExpressionNotPlusMinus
+    : '(' typeWithoutDims ')' unaryExpression
     ;
 
-postfixExpression
-    : primaryExpression ('++'|'--')*
+postIncrementExpression
+    : primaryExpression '++'
+    ;
+
+postDecrementExpression
+    : primaryExpression '--'
     ;
 
 /** --------------------------------------------------------------------------------------------------------------- **/
@@ -514,21 +538,13 @@ primaryExpression
     ;
 
 primaryExpressionNoCreation
-    : leftHandSideExpression
-    | literal
-    ;
-
-// TO'do': check for fork(), timeout(), sync(), channel.read(), channel.write()
-leftHandSideExpression
     : name suffix?
     ;
 
 suffix
     : arrayAccessSuffix suffix?
-    | invocationSuffix suffix?
     | recordAccessSuffix suffix?
-    | channelReadSuffix suffix?
-    | channelWriteSuffix suffix?
+    | invocationSuffix suffix?
     ;
 
 arrayAccessSuffix
@@ -536,19 +552,11 @@ arrayAccessSuffix
     ;
 
 recordAccessSuffix
-    : '.' Identifier
-    ;
-
-channelReadSuffix
-    : '.' 'read' '(' block? ')'
-    ;
-
-channelWriteSuffix
-    : '.' 'write' '(' expression ')'
+    : '.' name
     ;
 
 invocationSuffix
-    : '(' arguments? ')'
+    : '(' (arguments | block)? ')'
     ;
 
 arguments

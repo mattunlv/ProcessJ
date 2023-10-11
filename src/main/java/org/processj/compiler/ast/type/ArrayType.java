@@ -51,9 +51,8 @@ public class ArrayType extends AST implements Type {
      */
     public ArrayType(final Type componentType, final int depth) {
 
-        this.componentType = componentType;
-        this.depth         = ((componentType instanceof ArrayType)
-                ? ((ArrayType) componentType).getDepth() : 0) + depth  ;
+        this.componentType = (componentType instanceof ArrayType) ? ((ArrayType) componentType).getComponentType() : componentType;
+        this.depth = ((componentType instanceof ArrayType) ? (componentType).getDepth() : 0) + depth  ;
 
     }
 

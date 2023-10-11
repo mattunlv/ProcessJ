@@ -233,6 +233,18 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStatementWithoutTrailingSubstatement(ProcessJParser.StatementWithoutTrailingSubstatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#parBlockStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParBlockStatement(ProcessJParser.ParBlockStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#sequentialBlock}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSequentialBlock(ProcessJParser.SequentialBlockContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#barriers}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -299,11 +311,11 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitForUpdate(ProcessJParser.ForUpdateContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#doStatement}.
+	 * Visit a parse tree produced by {@link ProcessJParser#breakStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDoStatement(ProcessJParser.DoStatementContext ctx);
+	T visitBreakStatement(ProcessJParser.BreakStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#claimStatement}.
 	 * @param ctx the parse tree
@@ -317,6 +329,42 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitClaimStatementNoShortIf(ProcessJParser.ClaimStatementNoShortIfContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#continueStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitContinueStatement(ProcessJParser.ContinueStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#doStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDoStatement(ProcessJParser.DoStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#returnStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReturnStatement(ProcessJParser.ReturnStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#skipStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSkipStatement(ProcessJParser.SkipStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#stopStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStopStatement(ProcessJParser.StopStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#suspendStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSuspendStatement(ProcessJParser.SuspendStatementContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#channels_}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -328,18 +376,6 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitChannel_(ProcessJParser.Channel_Context ctx);
-	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#barrierSyncStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBarrierSyncStatement(ProcessJParser.BarrierSyncStatementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#timeoutStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTimeoutStatement(ProcessJParser.TimeoutStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#statementExpression}.
 	 * @param ctx the parse tree
@@ -371,11 +407,17 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSwitchBlockStatementGroup(ProcessJParser.SwitchBlockStatementGroupContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#altBlock}.
+	 * Visit a parse tree produced by {@link ProcessJParser#altBlockStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAltBlock(ProcessJParser.AltBlockContext ctx);
+	T visitAltBlockStatement(ProcessJParser.AltBlockStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#altCases}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAltCases(ProcessJParser.AltCasesContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#altCase}.
 	 * @param ctx the parse tree
@@ -485,23 +527,23 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPreDecrementExpression(ProcessJParser.PreDecrementExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#unaryExpressionNotPlusMinus}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUnaryExpressionNotPlusMinus(ProcessJParser.UnaryExpressionNotPlusMinusContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#castExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitCastExpression(ProcessJParser.CastExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#postfixExpression}.
+	 * Visit a parse tree produced by {@link ProcessJParser#postIncrementExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitPostfixExpression(ProcessJParser.PostfixExpressionContext ctx);
+	T visitPostIncrementExpression(ProcessJParser.PostIncrementExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProcessJParser#postDecrementExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPostDecrementExpression(ProcessJParser.PostDecrementExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#primaryExpression}.
 	 * @param ctx the parse tree
@@ -514,12 +556,6 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPrimaryExpressionNoCreation(ProcessJParser.PrimaryExpressionNoCreationContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#leftHandSideExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitLeftHandSideExpression(ProcessJParser.LeftHandSideExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#suffix}.
 	 * @param ctx the parse tree
@@ -538,18 +574,6 @@ public interface ProcessJVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitRecordAccessSuffix(ProcessJParser.RecordAccessSuffixContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#channelReadSuffix}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitChannelReadSuffix(ProcessJParser.ChannelReadSuffixContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ProcessJParser#channelWriteSuffix}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitChannelWriteSuffix(ProcessJParser.ChannelWriteSuffixContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProcessJParser#invocationSuffix}.
 	 * @param ctx the parse tree

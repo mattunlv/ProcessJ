@@ -30,6 +30,26 @@ public class InvocationExpression extends Expression {
         this.returnType     = null              ;
         this.candidates     = null              ;
     }
+
+    public InvocationExpression(final Expression target, final AST parameters) {
+        super(new AST[] { target, new Name(""), parameters });
+        this.name           = (Name) this.getChildAt(1);
+        this.target         = target            ;
+        this.parameters     = null; //parameters        ;
+        this.parameterTypes = new HashMap<>()   ;
+        this.returnType     = null              ;
+        this.candidates     = null              ;
+    }
+
+    public InvocationExpression(final Expression target, final Sequence<Expression> parameters) {
+        super(new AST[] { target, new Name(""), parameters });
+        this.name           = (Name) this.getChildAt(1);
+        this.target         = target            ;
+        this.parameters     = parameters        ;
+        this.parameterTypes = new HashMap<>()   ;
+        this.returnType     = null              ;
+        this.candidates     = null              ;
+    }
     
     public InvocationExpression(final Expression target, final Name name,
                                 final Sequence<Expression> parameters, final boolean ignore) {

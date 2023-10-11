@@ -378,6 +378,26 @@ public interface ProcessJListener extends ParseTreeListener {
 	 */
 	void exitStatementWithoutTrailingSubstatement(ProcessJParser.StatementWithoutTrailingSubstatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#parBlockStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterParBlockStatement(ProcessJParser.ParBlockStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#parBlockStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitParBlockStatement(ProcessJParser.ParBlockStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#sequentialBlock}.
+	 * @param ctx the parse tree
+	 */
+	void enterSequentialBlock(ProcessJParser.SequentialBlockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#sequentialBlock}.
+	 * @param ctx the parse tree
+	 */
+	void exitSequentialBlock(ProcessJParser.SequentialBlockContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#barriers}.
 	 * @param ctx the parse tree
 	 */
@@ -488,15 +508,15 @@ public interface ProcessJListener extends ParseTreeListener {
 	 */
 	void exitForUpdate(ProcessJParser.ForUpdateContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#doStatement}.
+	 * Enter a parse tree produced by {@link ProcessJParser#breakStatement}.
 	 * @param ctx the parse tree
 	 */
-	void enterDoStatement(ProcessJParser.DoStatementContext ctx);
+	void enterBreakStatement(ProcessJParser.BreakStatementContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#doStatement}.
+	 * Exit a parse tree produced by {@link ProcessJParser#breakStatement}.
 	 * @param ctx the parse tree
 	 */
-	void exitDoStatement(ProcessJParser.DoStatementContext ctx);
+	void exitBreakStatement(ProcessJParser.BreakStatementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#claimStatement}.
 	 * @param ctx the parse tree
@@ -518,6 +538,66 @@ public interface ProcessJListener extends ParseTreeListener {
 	 */
 	void exitClaimStatementNoShortIf(ProcessJParser.ClaimStatementNoShortIfContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#continueStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterContinueStatement(ProcessJParser.ContinueStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#continueStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitContinueStatement(ProcessJParser.ContinueStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#doStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterDoStatement(ProcessJParser.DoStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#doStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitDoStatement(ProcessJParser.DoStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#returnStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterReturnStatement(ProcessJParser.ReturnStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#returnStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitReturnStatement(ProcessJParser.ReturnStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#skipStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterSkipStatement(ProcessJParser.SkipStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#skipStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitSkipStatement(ProcessJParser.SkipStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#stopStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterStopStatement(ProcessJParser.StopStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#stopStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitStopStatement(ProcessJParser.StopStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#suspendStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterSuspendStatement(ProcessJParser.SuspendStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#suspendStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitSuspendStatement(ProcessJParser.SuspendStatementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#channels_}.
 	 * @param ctx the parse tree
 	 */
@@ -537,26 +617,6 @@ public interface ProcessJListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitChannel_(ProcessJParser.Channel_Context ctx);
-	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#barrierSyncStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterBarrierSyncStatement(ProcessJParser.BarrierSyncStatementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#barrierSyncStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitBarrierSyncStatement(ProcessJParser.BarrierSyncStatementContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#timeoutStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterTimeoutStatement(ProcessJParser.TimeoutStatementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#timeoutStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitTimeoutStatement(ProcessJParser.TimeoutStatementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#statementExpression}.
 	 * @param ctx the parse tree
@@ -608,15 +668,25 @@ public interface ProcessJListener extends ParseTreeListener {
 	 */
 	void exitSwitchBlockStatementGroup(ProcessJParser.SwitchBlockStatementGroupContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#altBlock}.
+	 * Enter a parse tree produced by {@link ProcessJParser#altBlockStatement}.
 	 * @param ctx the parse tree
 	 */
-	void enterAltBlock(ProcessJParser.AltBlockContext ctx);
+	void enterAltBlockStatement(ProcessJParser.AltBlockStatementContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#altBlock}.
+	 * Exit a parse tree produced by {@link ProcessJParser#altBlockStatement}.
 	 * @param ctx the parse tree
 	 */
-	void exitAltBlock(ProcessJParser.AltBlockContext ctx);
+	void exitAltBlockStatement(ProcessJParser.AltBlockStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#altCases}.
+	 * @param ctx the parse tree
+	 */
+	void enterAltCases(ProcessJParser.AltCasesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#altCases}.
+	 * @param ctx the parse tree
+	 */
+	void exitAltCases(ProcessJParser.AltCasesContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#altCase}.
 	 * @param ctx the parse tree
@@ -798,16 +868,6 @@ public interface ProcessJListener extends ParseTreeListener {
 	 */
 	void exitPreDecrementExpression(ProcessJParser.PreDecrementExpressionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#unaryExpressionNotPlusMinus}.
-	 * @param ctx the parse tree
-	 */
-	void enterUnaryExpressionNotPlusMinus(ProcessJParser.UnaryExpressionNotPlusMinusContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#unaryExpressionNotPlusMinus}.
-	 * @param ctx the parse tree
-	 */
-	void exitUnaryExpressionNotPlusMinus(ProcessJParser.UnaryExpressionNotPlusMinusContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#castExpression}.
 	 * @param ctx the parse tree
 	 */
@@ -818,15 +878,25 @@ public interface ProcessJListener extends ParseTreeListener {
 	 */
 	void exitCastExpression(ProcessJParser.CastExpressionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#postfixExpression}.
+	 * Enter a parse tree produced by {@link ProcessJParser#postIncrementExpression}.
 	 * @param ctx the parse tree
 	 */
-	void enterPostfixExpression(ProcessJParser.PostfixExpressionContext ctx);
+	void enterPostIncrementExpression(ProcessJParser.PostIncrementExpressionContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#postfixExpression}.
+	 * Exit a parse tree produced by {@link ProcessJParser#postIncrementExpression}.
 	 * @param ctx the parse tree
 	 */
-	void exitPostfixExpression(ProcessJParser.PostfixExpressionContext ctx);
+	void exitPostIncrementExpression(ProcessJParser.PostIncrementExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProcessJParser#postDecrementExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterPostDecrementExpression(ProcessJParser.PostDecrementExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProcessJParser#postDecrementExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitPostDecrementExpression(ProcessJParser.PostDecrementExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#primaryExpression}.
 	 * @param ctx the parse tree
@@ -847,16 +917,6 @@ public interface ProcessJListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitPrimaryExpressionNoCreation(ProcessJParser.PrimaryExpressionNoCreationContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#leftHandSideExpression}.
-	 * @param ctx the parse tree
-	 */
-	void enterLeftHandSideExpression(ProcessJParser.LeftHandSideExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#leftHandSideExpression}.
-	 * @param ctx the parse tree
-	 */
-	void exitLeftHandSideExpression(ProcessJParser.LeftHandSideExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#suffix}.
 	 * @param ctx the parse tree
@@ -887,26 +947,6 @@ public interface ProcessJListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitRecordAccessSuffix(ProcessJParser.RecordAccessSuffixContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#channelReadSuffix}.
-	 * @param ctx the parse tree
-	 */
-	void enterChannelReadSuffix(ProcessJParser.ChannelReadSuffixContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#channelReadSuffix}.
-	 * @param ctx the parse tree
-	 */
-	void exitChannelReadSuffix(ProcessJParser.ChannelReadSuffixContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ProcessJParser#channelWriteSuffix}.
-	 * @param ctx the parse tree
-	 */
-	void enterChannelWriteSuffix(ProcessJParser.ChannelWriteSuffixContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ProcessJParser#channelWriteSuffix}.
-	 * @param ctx the parse tree
-	 */
-	void exitChannelWriteSuffix(ProcessJParser.ChannelWriteSuffixContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProcessJParser#invocationSuffix}.
 	 * @param ctx the parse tree

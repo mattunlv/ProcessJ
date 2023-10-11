@@ -68,6 +68,9 @@ import org.processj.compiler.phase.generated.ProcessJParser;
 import org.processj.compiler.phase.generated.ProcessJVisitor;
 import org.processj.compiler.utilities.Strings;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
 /**
@@ -1728,8 +1731,7 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
                     = formalParametersContext.variableDeclarator();
 
             final Type type = (Type) formalParametersContext.type().accept(this);
-
-            final Name name = new Name(variableDeclaratorContext.Identifier().getText());
+            final Name name = (Name) variableDeclaratorContext.name().accept(this);
 
             Expression initializationExpression = null;
 
@@ -1764,6 +1766,7 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
         if(context.primitiveType() != null) result = context.primitiveType().accept(this);
         else if(context.channelType() != null) result = context.channelType().accept(this);
         else if(context.channelEndType() != null) result = context.channelEndType().accept(this);
+        else if(context.name() != null) result = new NamedType((Name) context.name().accept(this));
 
         return result;
 
@@ -1837,26 +1840,56 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public AST visitVariableDeclaration(ProcessJParser.VariableDeclarationContext context) {
-        return null;
+
+        final Modifiers modifiers = (context.modifiers() != null)
+                ? (Modifiers) context.modifiers().accept(this)
+                : new Modifiers();
+        final Type type = (Type) context.type().accept(this);
+        final Sequence<Var> variables = (Sequence<Var>) context.variableDeclarators().accept(this);
+        final Statements statements = new Statements();
+
+        for(final Var variable: variables)
+            statements.append(new VariableDeclaration(
+                    modifiers,
+                    type,
+                    variable.getName(),
+                    variable.getInitializationExpression()));
+
+        return statements;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public AST visitVariableDeclarators(ProcessJParser.VariableDeclaratorsContext context) {
-        return null;
+
+        final Sequence<Var> vars = new Sequence<>();
+
+        vars.append((Var) context.variableDeclarator().accept(this));
+
+        if(context.variableDeclarators() != null)
+            vars.merge((Sequence<Var>) context.variableDeclarators().accept(this));
+
+        return vars;
+
     }
 
     @Override
     public AST visitVariableDeclarator(ProcessJParser.VariableDeclaratorContext context) {
 
-        final Name name = new Name(context.Identifier().getText());
+        final Name name = new Name((Name) context.name().accept(this),
+                context.dimension() != null
+                        ? Strings.OccurrencesOf('[', context.dimension().toString()) : 0);
+        final Expression expression;
 
-        int depth = 0;
+        if(context.arrayInitializer() != null)
+            expression = (Expression) context.arrayInitializer().accept(this);
+        else if(context.expression() != null)
+            expression = (Expression) context.expression().accept(this);
+        else expression = null;
 
-        for(final ProcessJParser.DimensionContext dimensionContext : context.dimension())
-            depth++;
-
-        return null;
+        return new Var(name, expression);
 
     }
 
@@ -1877,7 +1910,43 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     @Override
     public AST visitBlock(ProcessJParser.BlockContext context) {
-        return null;
+
+        // Initialize the BlockStatement
+        final BlockStatement blockStatement = new BlockStatement();
+
+        // For each statement
+        context.statement().forEach(statementContext -> {
+
+            final AST statement;
+
+            // Append the correct statement
+            if(statementContext.forStatement() != null)
+                statement = statementContext.forStatement().accept(this);
+            else if(statementContext.ifThenStatement() != null)
+                statement = statementContext.ifThenStatement().accept(this);
+            else if(statementContext.ifThenElseStatement() != null)
+                statement = statementContext.ifThenElseStatement().accept(this);
+            else if(statementContext.labelledStatement() != null)
+                statement = statementContext.labelledStatement().accept(this);
+            else if(statementContext.statementWithoutTrailingSubstatement() != null)
+                statement = statementContext.statementWithoutTrailingSubstatement().accept(this);
+            else if(statementContext.switchStatement() != null)
+                statement = statementContext.statementWithoutTrailingSubstatement().accept(this);
+            else if(statementContext.whileStatement() != null)
+                statement = statementContext.whileStatement().accept(this);
+            else statement = null;
+
+            if(statement instanceof Statements)
+                for (final Statement substatement : ((Statements) statement))
+                    blockStatement.append(substatement);
+
+            else blockStatement.append((Statement) statement);
+
+        });
+
+        // Return the result
+        return blockStatement;
+
     }
 
     @Override
@@ -1887,6 +1956,28 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     @Override
     public AST visitStatementWithoutTrailingSubstatement(ProcessJParser.StatementWithoutTrailingSubstatementContext context) {
+
+        final AST result;
+
+        if(context.block() != null)
+            result = context.block().accept(this);
+        else if(context.altBlockStatement() != null)
+            result = context.altBlockStatement().accept(this);
+        else if(context.variableDeclaration() != null)
+            result = context.variableDeclaration().accept(this);
+        else result = null;
+
+
+        return result;
+    }
+
+    @Override
+    public AST visitParBlockStatement(ProcessJParser.ParBlockStatementContext ctx) {
+        return null;
+    }
+
+    @Override
+    public AST visitSequentialBlock(ProcessJParser.SequentialBlockContext ctx) {
         return null;
     }
 
@@ -1936,8 +2027,10 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     @Override
-    public AST visitForInit(ProcessJParser.ForInitContext context) {
-        return null;
+    public AST visitForInit(ProcessJParser.ForInitContext forInitContext) {
+
+        return forInitContext.variableDeclaration().accept(this);
+
     }
 
     @Override
@@ -1946,7 +2039,32 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     @Override
+    public AST visitBreakStatement(ProcessJParser.BreakStatementContext ctx) {
+        return null;
+    }
+
+    @Override
     public AST visitDoStatement(ProcessJParser.DoStatementContext context) {
+        return null;
+    }
+
+    @Override
+    public AST visitReturnStatement(ProcessJParser.ReturnStatementContext ctx) {
+        return null;
+    }
+
+    @Override
+    public AST visitSkipStatement(ProcessJParser.SkipStatementContext ctx) {
+        return null;
+    }
+
+    @Override
+    public AST visitStopStatement(ProcessJParser.StopStatementContext ctx) {
+        return null;
+    }
+
+    @Override
+    public AST visitSuspendStatement(ProcessJParser.SuspendStatementContext ctx) {
         return null;
     }
 
@@ -1961,22 +2079,17 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     @Override
+    public AST visitContinueStatement(ProcessJParser.ContinueStatementContext ctx) {
+        return null;
+    }
+
+    @Override
     public AST visitChannels_(ProcessJParser.Channels_Context context) {
         return null;
     }
 
     @Override
     public AST visitChannel_(ProcessJParser.Channel_Context context) {
-        return null;
-    }
-
-    @Override
-    public AST visitBarrierSyncStatement(ProcessJParser.BarrierSyncStatementContext context) {
-        return null;
-    }
-
-    @Override
-    public AST visitTimeoutStatement(ProcessJParser.TimeoutStatementContext context) {
         return null;
     }
 
@@ -2006,7 +2119,24 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     }
 
     @Override
-    public AST visitAltBlock(ProcessJParser.AltBlockContext context) {
+    public AST visitAltBlockStatement(ProcessJParser.AltBlockStatementContext context) {
+
+        return new AltStatement((context.forInit() != null)
+                ? (Statements) context.forInit().accept(this)
+                        : null,
+                (context.expression() != null)
+                ? (Expression) context.expression().accept(this)
+                        : null,
+                (context.forUpdate() != null)
+                ? (Statements) context.forUpdate().accept(this)
+                        : new Statements(),
+                (BlockStatement) context.altCases().accept(this),
+                context.getText().contains("pri"));
+
+    }
+
+    @Override
+    public AST visitAltCases(ProcessJParser.AltCasesContext ctx) {
         return null;
     }
 
@@ -2022,7 +2152,9 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     @Override
     public AST visitExpression(ProcessJParser.ExpressionContext context) {
-        return null;
+        return (context.assignmentExpression() != null)
+                ? context.assignmentExpression().accept(this)
+                : context.conditionalExpression().accept(this);
     }
 
     @Override
@@ -2032,137 +2164,398 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     @Override
     public AST visitConditionalExpression(ProcessJParser.ConditionalExpressionContext context) {
-        return null;
+
+        return (context.expression() == null)
+                ? context.conditionalOrExpression().accept(this)
+                : new TernaryExpression(
+                (Expression) context.conditionalOrExpression().accept(this),
+                (Expression) context.expression().accept(this),
+                (Expression) context.conditionalExpression().accept(this));
+
     }
 
     @Override
     public AST visitConditionalOrExpression(ProcessJParser.ConditionalOrExpressionContext context) {
-        return null;
+
+        return (context.conditionalOrExpression() == null)
+                ? context.conditionalAndExpression().accept(this)
+                : new BinaryExpression(
+                        (Expression) context.conditionalAndExpression().accept(this),
+                        (Expression) context.conditionalOrExpression().accept(this),
+                        BinaryExpression.OROR);
+
     }
 
     @Override
     public AST visitConditionalAndExpression(ProcessJParser.ConditionalAndExpressionContext context) {
-        return null;
+
+        return (context.conditionalAndExpression() == null)
+                ? context.inclusiveOrExpression().accept(this)
+                : new BinaryExpression(
+                        (Expression) context.inclusiveOrExpression().accept(this),
+                        (Expression) context.conditionalAndExpression().accept(this),
+                        BinaryExpression.ANDAND);
+
     }
 
     @Override
     public AST visitInclusiveOrExpression(ProcessJParser.InclusiveOrExpressionContext context) {
-        return null;
+
+        return (context.inclusiveOrExpression() == null)
+                ? context.exclusiveOrExpression().accept(this)
+                : new BinaryExpression(
+                (Expression) context.exclusiveOrExpression().accept(this),
+                (Expression) context.inclusiveOrExpression().accept(this),
+                BinaryExpression.OR);
+
     }
 
     @Override
     public AST visitExclusiveOrExpression(ProcessJParser.ExclusiveOrExpressionContext context) {
-        return null;
+
+        return (context.exclusiveOrExpression() == null)
+                ? context.andExpression().accept(this)
+                : new BinaryExpression(
+                (Expression) context.andExpression().accept(this),
+                (Expression) context.exclusiveOrExpression().accept(this),
+                BinaryExpression.XOR);
+
     }
 
     @Override
     public AST visitAndExpression(ProcessJParser.AndExpressionContext context) {
-        return null;
+
+        return (context.andExpression() == null)
+                ? context.equalityExpression().accept(this)
+                : new BinaryExpression(
+                (Expression) context.equalityExpression().accept(this),
+                (Expression) context.andExpression().accept(this),
+                BinaryExpression.AND);
+
     }
 
     @Override
     public AST visitEqualityExpression(ProcessJParser.EqualityExpressionContext context) {
-        return null;
+
+        final int operator;
+
+        if(context.getText().contains("=="))
+            operator = BinaryExpression.EQEQ;
+        else if(context.getText().contains("!="))
+            operator = BinaryExpression.NOTEQ;
+        else operator = -1;
+
+        return (context.equalityExpression() == null)
+                ? context.relationalExpression().accept(this)
+                : new BinaryExpression(
+                (Expression) context.relationalExpression().accept(this),
+                (Expression) context.equalityExpression().accept(this),
+                operator);
+
     }
 
     @Override
     public AST visitRelationalExpression(ProcessJParser.RelationalExpressionContext context) {
-        return null;
+
+        final Expression leftHandSide = (Expression) context.shiftExpression().accept(this);
+        int operator = -1;
+        AST result = leftHandSide;
+
+        if(context.name() != null) {
+
+            final String[] tokens = context.getText().split(" ");
+
+            for(final String token: tokens)
+                if(token.equals("is") && context.name() != null)
+                    operator = BinaryExpression.INSTANCEOF;
+
+            result = new BinaryExpression(leftHandSide,
+                    new NameExpression((Name) context.name().accept(this)), operator);
+
+        } else if (context.relationalExpression() != null){
+
+            if(context.getText().contains("<="))
+                operator = BinaryExpression.LTEQ;
+            else if(context.getText().contains("<"))
+                operator = BinaryExpression.LT;
+            else if(context.getText().contains(">="))
+                operator = BinaryExpression.GTEQ;
+            else if(context.getText().contains(">"))
+                operator = BinaryExpression.GT;
+
+            result = new BinaryExpression(leftHandSide,
+                    (Expression) context.relationalExpression().accept(this),
+                    operator);
+
+        }
+
+        return result;
+
     }
 
     @Override
     public AST visitShiftExpression(ProcessJParser.ShiftExpressionContext context) {
-        return null;
+
+        final int operator;
+
+        if(context.getText().contains("<<"))
+            operator = BinaryExpression.EQEQ;
+        else if(context.getText().contains(">>>"))
+            operator = BinaryExpression.RRSHIFT;
+        else if(context.getText().contains(">>"))
+            operator = BinaryExpression.NOTEQ;
+        else operator = -1;
+
+        return (context.shiftExpression() == null)
+                ? context.additiveExpression().accept(this)
+                : new BinaryExpression(
+                (Expression) context.additiveExpression().accept(this),
+                (Expression) context.shiftExpression().accept(this),
+                operator);
+
     }
 
     @Override
     public AST visitAdditiveExpression(ProcessJParser.AdditiveExpressionContext context) {
-        return null;
+
+        final int operator;
+
+        if(context.getText().contains("+"))
+            operator = BinaryExpression.PLUS;
+        else if(context.getText().contains("-"))
+            operator = BinaryExpression.MINUS;
+        else operator = -1;
+
+        return (context.additiveExpression() == null)
+                ? context.multiplicativeExpression().accept(this)
+                : new BinaryExpression(
+                (Expression) context.multiplicativeExpression().accept(this),
+                (Expression) context.additiveExpression().accept(this),
+                operator);
+
     }
 
     @Override
     public AST visitMultiplicativeExpression(ProcessJParser.MultiplicativeExpressionContext context) {
-        return null;
+
+        final int operator;
+
+        if(context.getText().contains("*"))
+            operator = BinaryExpression.MULT;
+        else if(context.getText().contains("/"))
+            operator = BinaryExpression.DIV;
+        else if(context.getText().contains("%"))
+            operator = BinaryExpression.MOD;
+        else operator = -1;
+
+        return (context.multiplicativeExpression() == null)
+                ? context.unaryExpression().accept(this)
+                : new BinaryExpression(
+                (Expression) context.unaryExpression().accept(this),
+                (Expression) context.multiplicativeExpression().accept(this),
+                operator);
+
     }
 
     @Override
     public AST visitUnaryExpression(ProcessJParser.UnaryExpressionContext context) {
-        return null;
+
+        final AST result;
+
+        if(context.castExpression() != null) {
+
+            result = context.castExpression().accept(this);
+
+        } else if(context.primaryExpression() != null) {
+
+            result = context.primaryExpression().accept(this);
+
+        } else if(context.literal() != null) {
+
+            result = context.literal().accept(this);
+
+        } else if(context.getText().contains("++")) {
+
+            result = (context.preIncrementExpression() != null)
+                    ? context.preIncrementExpression().accept(this)
+                    : context.postIncrementExpression().accept(this);
+
+        } else if(context.getText().contains("--")) {
+
+            result = (context.preDecrementExpression() != null)
+                    ? context.preDecrementExpression().accept(this)
+                    : context.postDecrementExpression().accept(this);
+
+        } else if(context.getText().contains("-")) {
+
+            result = new UnaryPreExpression(
+                    (Expression) context.unaryExpression().accept(this),
+                    UnaryPreExpression.MINUS);
+
+        } else if(context.getText().contains("~")) {
+
+            result = new UnaryPreExpression(
+                    (Expression) context.unaryExpression().accept(this),
+                    UnaryPreExpression.COMP);
+
+        } else if(context.getText().contains("!")) {
+
+            result = new UnaryPreExpression(
+                    (Expression) context.unaryExpression().accept(this),
+                    UnaryPreExpression.NOT);
+
+        } else result = null;
+
+        return result;
+
+
     }
 
     @Override
     public AST visitPreIncrementExpression(ProcessJParser.PreIncrementExpressionContext context) {
-        return null;
+        return new UnaryPreExpression(
+                (Expression) context.unaryExpression().accept(this),
+                UnaryPreExpression.PLUSPLUS);
     }
 
     @Override
     public AST visitPreDecrementExpression(ProcessJParser.PreDecrementExpressionContext context) {
-        return null;
-    }
-
-    @Override
-    public AST visitUnaryExpressionNotPlusMinus(ProcessJParser.UnaryExpressionNotPlusMinusContext context) {
-        return null;
+        return new UnaryPreExpression(
+                (Expression) context.unaryExpression().accept(this),
+                UnaryPreExpression.MINUSMINUS);
     }
 
     @Override
     public AST visitCastExpression(ProcessJParser.CastExpressionContext context) {
-        return null;
+        return new CastExpression(
+                (Type) context.typeWithoutDims().accept(this),
+                (Expression) context.unaryExpression().accept(this));
     }
 
     @Override
-    public AST visitPostfixExpression(ProcessJParser.PostfixExpressionContext context) {
-        return null;
+    public AST visitPostIncrementExpression(ProcessJParser.PostIncrementExpressionContext postIncrementExpressionContext) {
+
+        return new UnaryPostExpression(
+                (Expression) postIncrementExpressionContext.primaryExpression().accept(this),
+                UnaryPostExpression.PLUSPLUS);
+
+    }
+
+    @Override
+    public AST visitPostDecrementExpression(ProcessJParser.PostDecrementExpressionContext postIncrementExpressionContext) {
+
+        return new UnaryPostExpression(
+                (Expression) postIncrementExpressionContext.primaryExpression().accept(this),
+                UnaryPostExpression.MINUSMINUS);
+
     }
 
     @Override
     public AST visitPrimaryExpression(ProcessJParser.PrimaryExpressionContext context) {
-        return null;
+
+        final AST result;
+
+        if(context.primaryExpressionNoCreation() != null)
+            result = context.primaryExpressionNoCreation().accept(this);
+        else if(context.newArrayExpression() != null)
+            result = context.newArrayExpression().accept(this);
+        else if(context.newMobileExpression() != null)
+            result = context.newMobileExpression().accept(this);
+        else if(context.newProtocolExpression() != null)
+            result = context.newProtocolExpression().accept(this);
+        else if(context.newRecordExpression() != null)
+            result = context.newRecordExpression().accept(this);
+        else result = null;
+
+        return result;
     }
 
     @Override
     public AST visitPrimaryExpressionNoCreation(ProcessJParser.PrimaryExpressionNoCreationContext context) {
-        return null;
-    }
 
-    @Override
-    public AST visitLeftHandSideExpression(ProcessJParser.LeftHandSideExpressionContext context) {
-        return null;
+        ProcessJParser.SuffixContext suffixContext = context.suffix();
+        Expression expression = new NameExpression((Name) context.name().accept(this));
+
+        while(suffixContext != null) {
+
+            if(suffixContext.recordAccessSuffix() != null) {
+
+                expression = new RecordAccessExpression(expression,
+                        (Name) suffixContext.recordAccessSuffix().name().accept(this));
+
+            } else if(suffixContext.arrayAccessSuffix() != null) {
+
+                expression = new ArrayAccessExpression(expression,
+                        (Expression) suffixContext.arrayAccessSuffix().expression().accept(this));
+
+            } else if(suffixContext.invocationSuffix() != null) {
+
+                final ProcessJParser.InvocationSuffixContext invocationSuffixContext = suffixContext.invocationSuffix();
+                AST arguments = null;
+
+                if(invocationSuffixContext.arguments() != null) {
+
+                    final Sequence<Expression> expressions = new Sequence<>();
+
+                    ProcessJParser.ArgumentsContext argumentsContext =  invocationSuffixContext.arguments();
+
+                    do {
+
+                        expressions.append((Expression) argumentsContext.expression().accept(this));
+
+                        argumentsContext = argumentsContext.arguments();
+
+                    } while(argumentsContext != null);
+
+                    arguments = expressions;
+
+                } else if(invocationSuffixContext.block() != null) {
+
+                    arguments = invocationSuffixContext.block().accept(this);
+
+                }
+
+                expression = new InvocationExpression(expression, arguments);
+
+            }
+
+            suffixContext = suffixContext.suffix();
+
+        }
+
+        return expression;
+
     }
 
     @Override
     public AST visitSuffix(ProcessJParser.SuffixContext context) {
-        return null;
+        return null; // TODO: Don't need
     }
 
     @Override
-    public AST visitArrayAccessSuffix(ProcessJParser.ArrayAccessSuffixContext context) {
-        return null;
+    public AST visitArrayAccessSuffix(ProcessJParser.ArrayAccessSuffixContext ctx) {
+        return null; // TODO: Don't need
     }
 
     @Override
-    public AST visitRecordAccessSuffix(ProcessJParser.RecordAccessSuffixContext context) {
-        return null;
+    public AST visitRecordAccessSuffix(ProcessJParser.RecordAccessSuffixContext ctx) {
+        return null; // TODO: Don't need
     }
 
     @Override
-    public AST visitChannelReadSuffix(ProcessJParser.ChannelReadSuffixContext context) {
-        return null;
+    public AST visitInvocationSuffix(ProcessJParser.InvocationSuffixContext ctx) {
+        return null; // TODO: Don't need
     }
 
-    @Override
-    public AST visitChannelWriteSuffix(ProcessJParser.ChannelWriteSuffixContext context) {
-        return null;
-    }
-
-    @Override
-    public AST visitInvocationSuffix(ProcessJParser.InvocationSuffixContext context) {
-        return null;
-    }
+    // TODO: Check for sync(), timeout(expression), write(expression), read(blockStatement)
+    // sync() BarrierSyncStatement
+    // timeout(expression) TimeoutExpression Requires Single Expression
+    // .read(block?) ReadExpression with extended Rendezvous Requires name read and channel type or channel end type
+    // .write(expression) ChannelReadStatment Requires Single Expression and channel type or channel end type
 
     @Override
     public AST visitArguments(ProcessJParser.ArgumentsContext context) {
-        return null;
+        return null; // TODO: Don't need
     }
 
     @Override

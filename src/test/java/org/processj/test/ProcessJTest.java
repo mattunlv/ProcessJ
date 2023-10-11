@@ -212,8 +212,28 @@ public class ProcessJTest extends Phase.Listener {
 
     public static class Case {
 
+        public final static SourceFile Alt01
+                = new SourceFile("src/test/resources/code/test/Alt01.pj");
+        public final static SourceFile Alt02
+                = new SourceFile("src/test/resources/code/test/Alt02.pj");
+        public final static SourceFile Alt03
+                = new SourceFile("src/test/resources/code/test/Alt03.pj");
+        public final static SourceFile Alt04
+                = new SourceFile("src/test/resources/code/test/Alt04.pj");
+        public final static SourceFile Alt05
+                = new SourceFile("src/test/resources/code/test/Alt05.pj");
+        public final static SourceFile Alt06
+                = new SourceFile("src/test/resources/code/test/Alt06.pj");
+        public final static SourceFile Alt07
+                = new SourceFile("src/test/resources/code/test/Alt07.pj");
+        public final static SourceFile Alt08
+                = new SourceFile("src/test/resources/code/test/Alt08.pj");
+        public final static SourceFile Alt09
+                = new SourceFile("src/test/resources/code/test/Alt09.pj");
         public final static SourceFile Empty
                 = new SourceFile("src/test/resources/code/test/Empty.pj");
+        public final static SourceFile Expression01
+                = new SourceFile("src/test/resources/code/test/Expression01.pj");
         public final static SourceFile ImportDeclaration01
                 = new SourceFile("src/test/resources/code/test/ImportDeclaration01.pj");
         public final static SourceFile ImportDeclaration02

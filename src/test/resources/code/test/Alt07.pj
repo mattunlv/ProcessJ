@@ -1,0 +1,7 @@
+import std.*;
+
+void main(string[] args) {
+
+    pri alt(int index = 0; index < 10;) { }
+
+}

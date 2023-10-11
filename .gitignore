@@ -1,4 +1,8 @@
+.gradletasknamecache
 .gradle
+.project
+.classpath
+.DS_Store
 **/build/
 !src/**/build/
 
@@ -6,8 +10,4 @@ gradle-app.setting
 !gradle-wrapper.jar
 !gradle-wrapper.properties
 
-.gradletasknamecache
-.project
-.classpath
-.DS_Store
 

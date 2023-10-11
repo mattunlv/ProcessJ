@@ -4,7 +4,7 @@ import org.processj.compiler.ast.*;
 import org.processj.compiler.phase.Phase;
 import org.processj.compiler.phase.Visitor;
 
-public class NamedType implements Type {
+public class NamedType extends AST implements Type {
 
     /// --------------
     /// Private Fields

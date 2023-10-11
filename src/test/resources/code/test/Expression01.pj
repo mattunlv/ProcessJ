@@ -1,0 +1,8 @@
+
+void main(string[] arguments) {
+
+    int x = 0;
+
+    x++;
+
+}

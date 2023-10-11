@@ -1,0 +1,9 @@
+import std.*;
+
+public void main(string[] args) {
+
+    int x = 0;
+
+    alt(;;x++) { }
+
+}
