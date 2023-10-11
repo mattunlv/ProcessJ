@@ -1,0 +1,12 @@
+
+void main(string[] args) {
+
+    int x = 0;
+
+    alt {
+
+        (x == 10) && foo(25): stop;
+
+    }
+
+}

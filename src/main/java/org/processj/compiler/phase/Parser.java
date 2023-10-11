@@ -1681,11 +1681,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     }
 
-
-
-
-
-
     @Override
     public AST visitProcedureTypeDeclaration(ProcessJParser.ProcedureTypeDeclarationContext context) {
 
@@ -1785,24 +1780,21 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     @Override
     public AST visitPrimitiveType(ProcessJParser.PrimitiveTypeContext context) {
 
-        PrimitiveType result = null;
-
-        switch (context.getText()) {
-            case "boolean": result = new BooleanType(); break;
-            case "char": result = new CharType(); break;
-            case "byte": result = new ByteType(); break;
-            case "short": result = new ShortType(); break;
-            case "int": result = new IntegerType(); break;
-            case "long": result = new LongType(); break;
-            case "float": result = new FloatType(); break;
-            case "double": result = new DoubleType(); break;
-            case "string": result = new StringType(); break;
-            case "barrier": result = new BarrierType(); break;
-            case "timer": result = new TimerType(); break;
-            case "void": result = new VoidType(); break;
+        return switch (context.getText()) {
+            case "boolean" -> new BooleanType();
+            case "char" -> new CharType();
+            case "byte" -> new ByteType();
+            case "short" -> new ShortType();
+            case "int" -> new IntegerType();
+            case "long" -> new LongType();
+            case "float" -> new FloatType();
+            case "double" -> new DoubleType();
+            case "string" -> new StringType();
+            case "barrier" -> new BarrierType();
+            case "timer" -> new TimerType();
+            case "void" -> new VoidType();
+            default -> null;
         };
-
-        return result;
 
     }
 
@@ -1828,7 +1820,7 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
     @Override
     public AST visitModifier(final ProcessJParser.ModifierContext modifierContext) {
 
-        final Modifier modifier = switch (modifierContext.getText()) {
+        return switch (modifierContext.getText()) {
             case "public" -> new Public(new Token("public"));
             case "private" -> new Private(new Token("private"));
             case "protected" -> new Protected(new Token("protected"));
@@ -1837,8 +1829,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
             case "mobile" -> new Mobile(new Token("mobile"));
             default -> null;
         };
-
-        return modifier;
 
     }
 
@@ -1965,7 +1955,6 @@ public class Parser extends Phase implements ProcessJVisitor<AST> {
 
     }
 
-    // todo: we should be able to declare mobile channels and procedures here
     @Override
     public AST visitStatement(ProcessJParser.StatementContext context) {
 

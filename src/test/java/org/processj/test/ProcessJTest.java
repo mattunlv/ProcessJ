@@ -230,6 +230,8 @@ public class ProcessJTest extends Phase.Listener {
                 = new SourceFile("src/test/resources/code/test/Alt08.pj");
         public final static SourceFile Alt09
                 = new SourceFile("src/test/resources/code/test/Alt09.pj");
+        public final static SourceFile Alt10
+                = new SourceFile("src/test/resources/code/test/Alt10.pj");
         public final static SourceFile Empty
                 = new SourceFile("src/test/resources/code/test/Empty.pj");
         public final static SourceFile Expression01
@@ -314,8 +316,7 @@ public class ProcessJTest extends Phase.Listener {
         }
 
     }
-
-
+    
     /// ----------------------
     /// Private Static Methods
 
