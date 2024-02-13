@@ -2,6 +2,14 @@
 
 A new programming language being developed at the University of Nevada, Las Vegas.
 
+## The easiest way to get started
+
+```bash
+curl https://raw.githubusercontent.com/mattunlv/ProcessJ/main/setup.sh >> setup.sh && chmod a+x setup.sh && ./setup.sh
+```
+
+Run the command above on your terminal.
+
 ## Setup
 
 This section outlines the required steps to get the ProcessJ compiler functional on your system.
