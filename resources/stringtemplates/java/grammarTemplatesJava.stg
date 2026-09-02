@@ -147,7 +147,7 @@ Invocation(name, vars) ::= <<
 // 5.) isPar:
 InvocationProcType(name, vars, parBlock, barrier, isPar) ::= <<
 (new <name>(<if(vars)><vars:{v | <v>}; separator=", "><endif>) {
-    @Override public void finalize() {
+    @Override public void onTerminate() {
         <parBlock>.decrement();
         <if(barrier)><barrier:{b | <b>.resign()}; separator=";\n">;<endif>
     }
@@ -277,8 +277,8 @@ new PJProcess() {
         terminate();
     }
     
-    <! Finalize method !>
-    @Override public void finalize() {
+    <! Termination hook, run once by the scheduler !>
+    @Override public void onTerminate() {
         <if(parBlock)><parBlock>.decrement();<endif>
         <if(barrier)><barrier:{b | <b>.resign()}; separator=";\n">;<endif>
     } <!-- The setter should be called inside the generated code for a par-for.
@@ -299,8 +299,8 @@ new PJProcess() {
         terminate();
     }
     
-    <! Finalize method !>
-    @Override public void finalize() {
+    <! Termination hook, run once by the scheduler !>
+    @Override public void onTerminate() {
         <if(parBlock)><parBlock>.decrement();<endif>
         <if(barrier)><barrier:{b | <b>.resign()}; separator=";\n">;<endif>
     }

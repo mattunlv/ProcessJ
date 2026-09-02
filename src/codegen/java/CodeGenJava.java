@@ -633,7 +633,7 @@ public class CodeGenJava extends Visitor<Object> {
                             // class for this procedure; e.g.
                             // (new <classType>(...) {
                             // @Override public synchronized void run() { ... }
-                            // @Override public finalize() { ... }
+                            // @Override public void onTerminate() { ... }
                             // }.schedule();
                             if (Helper.doesProcYield(in.targetProc))
                                 stmts.add((String) in.visit(this));
@@ -1728,7 +1728,7 @@ public class CodeGenJava extends Visitor<Object> {
                 // class for this procedure; e.g.
                 // (new <classType>(...) {
                 // @Override public synchronized void run() { ... }
-                // @Override public finalize() { ... }
+                // @Override public void onTerminate() { ... }
                 // }.schedule();
                 if (Helper.doesProcYield(in.targetProc))
                     stmts.add((String) in.visit(this));

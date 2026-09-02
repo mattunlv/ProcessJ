@@ -62,7 +62,7 @@ public class Scheduler extends Thread {
                     rq.insert(p);
                 } else {
                     // did terminate so do nothing
-                    p.finalize();
+                    p.onTerminate();
                 }
             } else {
                 // no, not ready, put it back in the run queue
