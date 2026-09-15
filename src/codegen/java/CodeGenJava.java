@@ -2099,8 +2099,7 @@ public class CodeGenJava extends Visitor<Object> {
 //                ST stTimeout = stGroup.getInstanceOf("TimeoutStatCase");
 //                stTimeout.add("name", ts.timer().visit(this));
 //                stTimeout.add("delay", ts.delay().visit(this));
-//                tlocals.add(stTimeout.render());
-                tlocals.add((String) ts.visit(this));
+                tlocals.add((String) generate_timer_initializer(ts));
                 guards.add((String) ts.timer().visit(this));
             }
             altCases.add((String) ac.visit(this));
@@ -2144,6 +2143,19 @@ public class CodeGenJava extends Visitor<Object> {
         objectGuardID = currObjectGuard;
 
         return stAltStat.render();
+    }
+
+    private Object generate_timer_initializer(TimeoutStat ts) {
+        Log.log(ts, "Visiting a TimeoutStat - Special ALT Version - No try/catch");
+
+        ST stTimeoutStatCase = stGroup.getInstanceOf("TimeoutStatCase");
+        String timer = (String) ts.timer().visit(this);
+        String delay = (String) ts.delay().visit(this);
+
+        stTimeoutStatCase.add("name", timer);
+        stTimeoutStatCase.add("delay", delay);
+
+        return stTimeoutStatCase.render();
     }
 
     private Object createAltForStat(AltStat as) {

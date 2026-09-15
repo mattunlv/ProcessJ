@@ -15,6 +15,10 @@ public class Scheduler extends Thread {
         tq.insert(t);
     }
 
+    void removeTimer(PJTimer t) {
+        tq.removeTimer(t);
+    }
+
     synchronized int size() {
         return rq.size();
     }
@@ -62,7 +66,7 @@ public class Scheduler extends Thread {
                     rq.insert(p);
                 } else {
                     // did terminate so do nothing
-                    p.finalize();
+                    p._finalize();
                 }
             } else {
                 // no, not ready, put it back in the run queue

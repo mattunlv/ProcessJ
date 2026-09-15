@@ -42,7 +42,7 @@ public class TimerQueue {
                     size--;
                 }
             } catch (InterruptedException e) {
-//                System.err.println("[TimerQueue] Unexpected interrupt exception encountered.");
+                // System.err.println("[TimerQueue] Unexpected interrupt exception encountered.");
                 return;
             }
         }
@@ -71,6 +71,10 @@ public class TimerQueue {
      */
     public synchronized void kill() {
         this.timerThread.interrupt();
+    }
+
+    public synchronized void removeTimer(PJTimer t) {
+        delayQueue.remove(t);
     }
 
     public int size() {

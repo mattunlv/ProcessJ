@@ -47,7 +47,7 @@ public class PJProcess {
     /**
      * The finalize method is run by the scheduler once the process terminates.
      */
-    public void finalize() {
+    public void _finalize() {
     }
 
     /**

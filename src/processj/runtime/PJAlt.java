@@ -3,6 +3,8 @@ package processj.runtime;
 import java.util.ArrayList;
 import java.util.List;
 
+import processj.runtime.PJTimer.ElapsedTimeException;
+
 public class PJAlt {
     
     /** Can be skips, timers or channel-reads */
@@ -70,18 +72,25 @@ public class PJAlt {
             }
             // A timer?
             if (guards.get(i) instanceof PJTimer) {
-                // TODO: Shouldn't this be formally verified??
                 PJTimer t = (PJTimer) guards.get(i);
-                if (t.getDelay() <= 0L) {
-                    process.setReady();
+                /**
+                 * All "timeout" Timers should "start ticking" from the moment all timers have been 
+                 * gathered on the guard list. This is when we should compute a timers delay, just before
+                 * scheduler enrollment.
+                 * 
+                 * Since the implementaion of PJTimer abstracts away the difference between absolute and
+                 * relative timers, we need only try to start a timer and handle the thrown exceptions.
+                 */
+                try {
+                    t.start();
+                } catch (InterruptedException e) { // Scheduler failed to insert a timer into the DelayQueue
+                    System.err.printf("Unexpected error - PJTimer could not be started!%n%n%s", e.getMessage());
+                    System.exit(2);
+                } catch (ElapsedTimeException e) {  // Process delay (deadline) has passed
+                    System.err.printf("%s%nSetting process %s to ready and expiring timer", e.getMessage(), this);
                     t.expire();
+                    this.process.setReady();
                     return i;
-                } else {
-                    try {
-                        t.start();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }
