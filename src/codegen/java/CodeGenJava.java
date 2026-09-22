@@ -1085,20 +1085,36 @@ public class CodeGenJava extends Visitor<Object> {
     public Object visitChannelReadExpr(ChannelReadExpr cr) {
         Log.log(cr, "Visiting a ChannelReadExpr");
 
-        ST stChannelReadExpr = stGroup.getInstanceOf("ChannelReadExpr");
-        // 'c.read()' is a channel-end expression, where 'c' is the reading
-        // end of the channel
-        Expression chanExpr = cr.channel();
-        // 'c' is the name of the channel
-        String chanEndName = (String) chanExpr.visit(this);
-        stChannelReadExpr.add("chanName", chanEndName);
-        // One for the 'label' and one for the 'read' operation
-        int countLabel = 2;
-        // Add the switch block for resumption
-        for (int label = 0; label < countLabel; ++label) {
-            // Increment jump label and it to the switch-stmt list
-            stChannelReadExpr.add("resume" + label, ++jumpLabel);
-            switchCases.add(renderSwitchCase(jumpLabel));
+        ST stChannelReadExpr;
+        if (cr.channel().type.isTimerType()) {
+            /**
+             * This check is inserted to overcome the issues that occur when the following code exists
+             * 
+             * timer t;
+             * alt {
+             *  (t.read() + 1000) : ...
+             *  (t.read() + 3000) : ...
+             * }
+             * 
+             * A channelreadexpr really ought to have a flag or be rewritten as a new AST PJTimerExpr
+             */
+            stChannelReadExpr = stGroup.getInstanceOf("TimerRedIndep");
+        } else {
+            stChannelReadExpr = stGroup.getInstanceOf("ChannelReadExpr");
+            // 'c.read()' is a channel-end expression, where 'c' is the reading
+            // end of the channel
+            Expression chanExpr = cr.channel();
+            // 'c' is the name of the channel
+            String chanEndName = (String) chanExpr.visit(this);
+            stChannelReadExpr.add("chanName", chanEndName);
+            // One for the 'label' and one for the 'read' operation
+            int countLabel = 2;
+            // Add the switch block for resumption
+            for (int label = 0; label < countLabel; ++label) {
+                // Increment jump label and it to the switch-stmt list
+                stChannelReadExpr.add("resume" + label, ++jumpLabel);
+                switchCases.add(renderSwitchCase(jumpLabel));
+            }
         }
 
         return stChannelReadExpr.render();
