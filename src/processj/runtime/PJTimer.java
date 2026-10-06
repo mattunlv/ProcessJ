@@ -82,7 +82,8 @@ public class PJTimer implements Delayed {
         this.delay = absolute ? timeout - System.currentTimeMillis() : System.currentTimeMillis() + timeout;
 
         if (this.delay <= 0l || timeout == 0) {
-            throw new ElapsedTimeException("PJTimer\t\t:::\tTimer " + this + " is past deadline or 0.");
+            throw new ElapsedTimeException();
+            // throw new ElapsedTimeException("PJTimer\t\t:::\tTimer " + this + " is past deadline or 0.");
         }
 
         PJProcess.scheduler.insertTimer(this);
